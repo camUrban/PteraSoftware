@@ -99,6 +99,12 @@ _SPLIT_ROUNDS = 3
 # fills abut and, if they are the same color, can be painted together.
 _ABUT_TOLERANCE = 1.0e-4
 
+# Define how far, in pixels, a fill painted before an abutting fill reaches under it
+# along their shared edge, and how far inside the later fill's other edges it stays.
+# Both are scaled with the line widths.
+_UNDERLAP_WIDTH = 1.5
+_UNDERLAP_INSET = 1.0
+
 # Define the resolution the figures are laid out at. Each pixel of the window becomes
 # one unit of the figure's axes, and is this many points wide.
 _FIGURE_DPI = 100.0
@@ -1908,6 +1914,209 @@ def _fills_abut(
     return False
 
 
+def _get_strips(
+    near_corners: list[tuple[float, float]],
+    far_corners: list[tuple[float, float]],
+    width: float,
+    inset: float,
+) -> list[np.ndarray]:
+    """Finds the parts of one fill on screen near each stretch of edge it shares with
+    another.
+
+    :param near_corners: The first fill's corners, in order counterclockwise around it,
+        each a tuple of its x and y positions, in pixels.
+    :param far_corners: The second fill's corners, in the same form.
+    :param width: The distance, in pixels, from a shared stretch of edge within which
+        the second fill's part near it lies.
+    :param inset: The distance, in pixels, that each part stays inside the second fill's
+        other edges, where its own anti-aliased edge would otherwise show past the
+        fills' edges.
+    :return: The parts, each a (S,2) ndarray of floats holding its corners, in order
+        counterclockwise around it, in pixels.
+    """
+    num_near_corners = len(near_corners)
+    num_far_corners = len(far_corners)
+    farXs = np.array([x for x, _ in far_corners], dtype=float)
+    farYs = np.array([y for _, y in far_corners], dtype=float)
+
+    # Each clip adds at most one corner, so these buffers can hold the second fill
+    # clipped against three lines and then against each of its edges.
+    buffer_size = 2 * num_far_corners + 4
+    stripXs = np.empty(buffer_size)
+    stripYs = np.empty(buffer_size)
+    spareXs = np.empty(buffer_size)
+    spareYs = np.empty(buffer_size)
+
+    strips: list[np.ndarray] = []
+    for corner_id in range(num_near_corners):
+        x, y = near_corners[corner_id]
+        next_x, next_y = near_corners[(corner_id + 1) % num_near_corners]
+        edge_x = next_x - x
+        edge_y = next_y - y
+        length = (edge_x * edge_x + edge_y * edge_y) ** 0.5
+        if length <= _ABUT_TOLERANCE:
+            continue
+        along_x = edge_x / length
+        along_y = edge_y / length
+
+        # The first fill is wound counterclockwise, so it lies to the left of its edge,
+        # and the second, if it shares the edge, lies to its right.
+        right_x = along_y
+        right_y = -along_x
+        heights = [
+            (corner_x - x) * right_x + (corner_y - y) * right_y
+            for corner_x, corner_y in far_corners
+        ]
+        positions = [
+            (corner_x - x) * along_x + (corner_y - y) * along_y
+            for corner_x, corner_y in far_corners
+        ]
+        on_edge = [abs(height) <= _ABUT_TOLERANCE for height in heights]
+        for far_id in range(num_far_corners):
+            next_far_id = (far_id + 1) % num_far_corners
+            if not (on_edge[far_id] and on_edge[next_far_id]):
+                continue
+            low = max(0.0, min(positions[far_id], positions[next_far_id]))
+            high = min(length, max(positions[far_id], positions[next_far_id]))
+            if high - low <= _ABUT_TOLERANCE:
+                continue
+
+            # Clip the second fill to within width of the edge, along the stretch they
+            # share.
+            num_strip = _clip_to_half_plane(
+                farXs,
+                farYs,
+                num_far_corners,
+                right_x,
+                right_y,
+                right_x * x + right_y * y + width,
+                stripXs,
+                stripYs,
+            )
+            num_strip = _clip_to_half_plane(
+                stripXs,
+                stripYs,
+                num_strip,
+                -along_x,
+                -along_y,
+                -(along_x * x + along_y * y + low),
+                spareXs,
+                spareYs,
+            )
+            num_strip = _clip_to_half_plane(
+                spareXs,
+                spareYs,
+                num_strip,
+                along_x,
+                along_y,
+                along_x * x + along_y * y + high,
+                stripXs,
+                stripYs,
+            )
+
+            # Keep the part inset from the second fill's other edges.
+            for other_id in range(num_far_corners):
+                next_other_id = (other_id + 1) % num_far_corners
+                if on_edge[other_id] and on_edge[next_other_id]:
+                    continue
+                other_x, other_y = far_corners[other_id]
+                next_other_x, next_other_y = far_corners[next_other_id]
+                other_edge_x = next_other_x - other_x
+                other_edge_y = next_other_y - other_y
+                other_length = (
+                    other_edge_x * other_edge_x + other_edge_y * other_edge_y
+                ) ** 0.5
+                if other_length <= _ABUT_TOLERANCE:
+                    continue
+                inward_x = -other_edge_y / other_length
+                inward_y = other_edge_x / other_length
+                num_strip = _clip_to_half_plane(
+                    stripXs,
+                    stripYs,
+                    num_strip,
+                    -inward_x,
+                    -inward_y,
+                    -(inward_x * other_x + inward_y * other_y + inset),
+                    spareXs,
+                    spareYs,
+                )
+                stripXs, spareXs = spareXs, stripXs
+                stripYs, spareYs = spareYs, stripYs
+            if _get_area_and_centroid(stripXs, stripYs, num_strip)[3]:
+                strips.append(
+                    np.column_stack([stripXs[:num_strip], stripYs[:num_strip]])
+                )
+    return strips
+
+
+def _get_underlaps(
+    fill_corners: list[list[tuple[float, float]]],
+    fill_run_ids: list[int],
+    width: float,
+    inset: float,
+) -> dict[int, list[np.ndarray]]:
+    """Finds the strips by which each fill painted before an abutting fill in a later
+    run reaches under it, along their shared edge.
+
+    Each strip covers the parts of both fills within width of a stretch of edge they
+    share, and is painted in the earlier fill's color, just after its run. The later
+    fill covers the strip's part on its side, so nothing visible changes, except that
+    the later fill's anti-aliased edge blends with the earlier fill's color, rather than
+    with whatever is behind both, which leaves no seam. The strip's part on the earlier
+    fill's side overlaps it, so the strip has no anti-aliased edge of its own along the
+    shared edge.
+
+    :param fill_corners: Each fill's corners, in order counterclockwise around it, each
+        a tuple of its x and y positions, in pixels.
+    :param fill_run_ids: The index of the run each fill is painted in, where the runs
+        are numbered in the order they are painted.
+    :param width: The distance, in pixels, from a shared stretch of edge within which
+        each strip lies.
+    :param inset: The distance, in pixels, that each strip stays inside its fill's other
+        edges.
+    :return: A dict mapping the index of each run that has strips to them, each a (S,2)
+        ndarray of floats holding its corners, in order counterclockwise around it, in
+        pixels.
+    """
+    fill_mins = np.array(
+        [
+            [min(x for x, _ in corners), min(y for _, y in corners)]
+            for corners in fill_corners
+        ],
+        dtype=float,
+    ).reshape(-1, 2)
+    fill_maxs = np.array(
+        [
+            [max(x for x, _ in corners), max(y for _, y in corners)]
+            for corners in fill_corners
+        ],
+        dtype=float,
+    ).reshape(-1, 2)
+    underlaps: dict[int, list[np.ndarray]] = {}
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(
+            fill_mins,
+            fill_maxs,
+            fill_mins - _ABUT_TOLERANCE,
+            fill_maxs + _ABUT_TOLERANCE,
+        )
+    ):
+        for second_id in candidate_ids[candidate_ids > first_id].tolist():
+            if fill_run_ids[first_id] == fill_run_ids[second_id]:
+                continue
+            earlier_id, later_id = sorted(
+                (first_id, second_id), key=lambda fill_id: fill_run_ids[fill_id]
+            )
+            strips = _get_strips(
+                fill_corners[earlier_id], fill_corners[later_id], width, inset
+            ) + _get_strips(
+                fill_corners[later_id], fill_corners[earlier_id], width, inset
+            )
+            if strips:
+                underlaps.setdefault(fill_run_ids[earlier_id], []).extend(strips)
+    return underlaps
+
+
 def _merge_abutting_fills(
     fills: list[tuple[np.ndarray, int]],
     fill_colors: Sequence[np.ndarray],
@@ -2526,14 +2735,17 @@ class VectorLayer:
                         float(stroke_widths[stroke_id]),
                     )
                 )
-        paths: list[matplotlib.path.Path] = []
-        path_face_colors: list[tuple[float, ...]] = []
-        path_edge_colors: list[tuple[float, ...]] = []
-        path_widths: list[float] = []
+        runs: list[
+            tuple[matplotlib.path.Path, tuple[float, ...], tuple[float, ...], float]
+        ] = []
         run_paths: list[matplotlib.path.Path] = []
+        fill_corners: list[list[tuple[float, float]]] = []
+        fill_run_ids: list[int] = []
         for position, item_id in enumerate(order):
             if item_id < num_fills:
                 corners_display = fills[item_id][0][:, :2]
+                fill_corners.append([(x, y) for x, y in corners_display.tolist()])
+                fill_run_ids.append(len(runs))
                 run_paths.append(
                     matplotlib.path.Path(
                         np.vstack([corners_display, corners_display[:1]]), closed=True
@@ -2560,15 +2772,47 @@ class VectorLayer:
             ):
                 path = matplotlib.path.Path.make_compound_path(*run_paths)
                 path.should_simplify = False
-                paths.append(path)
-                path_edge_colors.append(color)
                 if width is None:
-                    path_face_colors.append(color)
-                    path_widths.append(_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL)
+                    runs.append(
+                        (path, color, color, _FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL)
+                    )
                 else:
-                    path_face_colors.append((0.0, 0.0, 0.0, 0.0))
-                    path_widths.append(width * POINTS_PER_PIXEL)
+                    runs.append(
+                        (path, (0.0, 0.0, 0.0, 0.0), color, width * POINTS_PER_PIXEL)
+                    )
                 run_paths = []
+
+        # Each run of fills that a fill in a later run abuts is followed by the strips
+        # by which its fills reach under that fill, as _get_underlaps finds, in one
+        # compound path of its color, with no outline, which would reach past the fills'
+        # edges.
+        underlaps = _get_underlaps(
+            fill_corners,
+            fill_run_ids,
+            _UNDERLAP_WIDTH * line_width_scale,
+            _UNDERLAP_INSET * line_width_scale,
+        )
+        paths: list[matplotlib.path.Path] = []
+        path_face_colors: list[tuple[float, ...]] = []
+        path_edge_colors: list[tuple[float, ...]] = []
+        path_widths: list[float] = []
+        for run_id, (path, face_color, edge_color, path_width) in enumerate(runs):
+            paths.append(path)
+            path_face_colors.append(face_color)
+            path_edge_colors.append(edge_color)
+            path_widths.append(path_width)
+            if run_id in underlaps:
+                strip_path = matplotlib.path.Path.make_compound_path(
+                    *[
+                        matplotlib.path.Path(np.vstack([strip, strip[:1]]), closed=True)
+                        for strip in underlaps[run_id]
+                    ]
+                )
+                strip_path.should_simplify = False
+                paths.append(strip_path)
+                path_face_colors.append(face_color)
+                path_edge_colors.append((0.0, 0.0, 0.0, 0.0))
+                path_widths.append(0.0)
         if paths:
             axes.add_collection(
                 matplotlib.collections.PathCollection(

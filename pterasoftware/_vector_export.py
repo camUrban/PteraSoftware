@@ -830,20 +830,19 @@ def _round_svg_path_data(svg: str) -> str:
 
 class VectorLayer:
     """A layer of a scene, holding its opaque fills, the strokes that outline and run
-    among them, the convex occluders that hide strokes behind them, its dots, and its
-    translucent polygons.
+    among them, its convex occluders, its dots, and its translucent polygons.
 
     Visibility is resolved within a layer, and the layers are painted in the order they
-    were added, each over the ones before it. A layer is painted in five passes: its
-    fills from back to front, then its convex occluders from back to front, then its
-    strokes with their hidden parts removed, then its dots, and then its translucent
-    polygons. The fills and the occluders hide the strokes behind them, but not each
-    other, so a layer should hold one or the other. The strokes and the occluders'
-    outlines also hide the strokes behind them, across their own widths, so where
-    strokes cross, the nearer one shows. Where two strokes are equally deep, neither
-    hides the other, and the one added later is painted over the other, which matches
-    VTK, whose depth test lets a later fragment replace an equally deep one. The dots
-    and the translucent polygons hide nothing and are hidden by nothing.
+    were added, each over the ones before it. When a layer is drawn, each convex
+    occluder becomes opaque fills and the strokes that outline it. The layer is then
+    painted in four passes: its fills from back to front, then its strokes with their
+    hidden parts removed, then its dots, and then its translucent polygons. The fills
+    hide each other and the strokes behind them. The strokes also hide the strokes
+    behind them, across their own widths, so where strokes cross, the nearer one shows.
+    Where two strokes are equally deep, neither hides the other, and the one added later
+    is painted over the other, which matches VTK, whose depth test lets a later fragment
+    replace an equally deep one. The dots and the translucent polygons hide nothing and
+    are hidden by nothing.
     """
 
     def __init__(self) -> None:
@@ -981,12 +980,13 @@ class VectorLayer:
         outlined_face_ids: Sequence[int] = (),
     ) -> None:
         """Adds an opaque convex polyhedron, which is outlined along its silhouette and
-        hides the strokes behind it.
+        hides the fills and strokes behind it.
 
         Its silhouette is the boundary of its footprint on screen, which, since it is
         convex, is the convex hull of its points' positions on screen. The boundaries of
         the faces in outlined_face_ids are outlined too, while those faces face the
-        camera.
+        camera. Its faces are ordered against the layer's fills, and its outlines
+        against the layer's strokes, so it is hidden by whatever is nearer.
 
         :param stackPoints_D_Do: A (P,3) ndarray of floats holding the polyhedron's
             points (in diagram axes, relative to the diagram origin). The units are in
@@ -1064,16 +1064,25 @@ class VectorLayer:
         :param camera: The VectorCamera to project the layer through.
         :param zorder: The zorder of the layer's first pass. Each pass takes the next
             whole zorder.
-        :param line_width_scale: The factor that the widths of the strokes and of the
-            convex occluders' outlines are scaled by, both where they are drawn and
+        :param line_width_scale: The factor that the widths of the strokes, including
+            the convex occluders' outlines, are scaled by, both where they are drawn and
             where they hide the strokes behind them. It must be positive. The default is
             1.0.
         :return: The zorder for whatever is drawn after the layer.
         """
+        (
+            listFillTriangles_D_Do,
+            fill_colors,
+            listStrokes_D_Do,
+            base_stroke_owners,
+            base_stroke_colors,
+            base_stroke_widths,
+        ) = self._get_fills_and_strokes(camera)
+
         fill_triangles_display = np.zeros((0, 3, 3), dtype=float)
-        if self._listFillTriangles_D_Do:
+        if listFillTriangles_D_Do:
             fill_triangles_display = camera.to_display(
-                np.concatenate(self._listFillTriangles_D_Do)
+                np.concatenate(listFillTriangles_D_Do)
             ).reshape(-1, 3, 3)
             order = get_paint_order(
                 [
@@ -1104,9 +1113,9 @@ class VectorLayer:
                         np.vstack([corners_display, corners_display[:1]]), closed=True
                     )
                 )
-                color = self._fill_colors[fill_id]
+                color = fill_colors[fill_id]
                 if piece_id == len(order) - 1 or not np.array_equal(
-                    color, self._fill_colors[order[piece_id + 1][1]]
+                    color, fill_colors[order[piece_id + 1][1]]
                 ):
                     fill_paths.append(
                         matplotlib.path.Path.make_compound_path(*run_pieces)
@@ -1124,33 +1133,20 @@ class VectorLayer:
             )
         zorder += 1.0
 
-        (
-            occluder_triangles_display,
-            outlineSegments_display,
-            outline_widths,
-        ) = self._draw_occluders(axes, camera, zorder, line_width_scale)
-        zorder += 1.0
-
-        if self._listStrokes_D_Do:
+        if listStrokes_D_Do:
             strokes_display = camera.to_display(
-                np.concatenate(self._listStrokes_D_Do)
+                np.concatenate(listStrokes_D_Do)
             ).reshape(-1, 2, 3)
-            stroke_widths = line_width_scale * np.array(
-                self._stroke_widths, dtype=float
-            )
+            stroke_widths = line_width_scale * np.array(base_stroke_widths, dtype=float)
             num_strokes = strokes_display.shape[0]
 
-            # Every stroke, and every piece of an occluder's outline, hides the strokes
-            # behind it with a ribbon of its own width, in the plane through it that
-            # faces the camera. The ribbons follow the fills' and occluders' triangles,
-            # two per stroke or piece. A stroke is never hidden by its own ribbon, or by
-            # the ribbon of a stroke that shares an end with it, such as its neighbor
-            # along a polyline, which would otherwise clip it where they meet.
-            first_stroke_ribbon_id = (
-                fill_triangles_display.shape[0]
-                + occluder_triangles_display.shape[0]
-                + 2 * outlineSegments_display.shape[0]
-            )
+            # Every stroke hides the strokes behind it with a ribbon of its own width,
+            # in the plane through it that faces the camera. The ribbons follow the
+            # fills' triangles, two per stroke. A stroke is never hidden by its own
+            # ribbon, or by the ribbon of a stroke that shares an end with it, such as
+            # its neighbor along a polyline, which would otherwise clip it where they
+            # meet.
+            first_stroke_ribbon_id = fill_triangles_display.shape[0]
             stroke_ids_by_end: dict[tuple[float, ...], list[int]] = {}
             for stroke_id, stroke_display in enumerate(strokes_display):
                 for end_display in stroke_display:
@@ -1165,7 +1161,7 @@ class VectorLayer:
                         stroke_ids_by_end[tuple(np.round(end_display, 6))]
                     )
                 stroke_owners.append(
-                    self._stroke_owners[stroke_id]
+                    base_stroke_owners[stroke_id]
                     | {
                         first_stroke_ribbon_id + 2 * connected_id + half
                         for connected_id in connected_ids
@@ -1186,11 +1182,6 @@ class VectorLayer:
                     np.concatenate(
                         [
                             fill_triangles_display,
-                            occluder_triangles_display,
-                            _get_ribbon_triangles(
-                                outlineSegments_display,
-                                0.5 * (outline_widths + width),
-                            ),
                             _get_ribbon_triangles(
                                 strokes_display, 0.5 * (stroke_widths + width)
                             ),
@@ -1224,7 +1215,7 @@ class VectorLayer:
                             dtype=float,
                         )
                     )
-                    segment_colors.append(self._stroke_colors[stroke_id])
+                    segment_colors.append(base_stroke_colors[stroke_id])
                     segment_widths.append(
                         float(stroke_widths[stroke_id]) * POINTS_PER_PIXEL
                     )
@@ -1309,38 +1300,44 @@ class VectorLayer:
             )
         return zorder + 1.0
 
-    def _draw_occluders(
-        self,
-        axes: matplotlib.axes.Axes,
-        camera: VectorCamera,
-        zorder: float,
-        line_width_scale: float,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Draws the layer's convex occluders from back to front, and returns their
-        triangles and outlines for clipping the strokes.
+    def _get_fills_and_strokes(self, camera: VectorCamera) -> tuple[
+        list[np.ndarray],
+        list[np.ndarray],
+        list[np.ndarray],
+        list[set[int]],
+        list[np.ndarray],
+        list[float],
+    ]:
+        """Returns the layer's fills and strokes, with its convex occluders converted
+        into more of each as seen through a camera.
 
-        Each occluder is painted whole, filled within its silhouette and outlined along
-        it, followed by the outlines of its outlined faces that face the camera, before
-        the next nearer occluder is painted. They are ordered by the mean depth of their
-        points, which orders convex occluders that don't overlap in depth exactly.
+        Each occluder's faces, split into triangles, become opaque fills, which the BSP
+        then orders exactly against the layer's other fills and against each other,
+        however they interpenetrate. Its outline becomes strokes, owned by its own
+        triangles, so they are hidden by whatever is nearer, but never by the occluder
+        they outline. The outline runs along its silhouette, which is the boundary of
+        its footprint on screen and, since it is convex, the convex hull of its points'
+        positions on screen, and along the boundaries of its outlined faces that face
+        the camera. The layer itself isn't changed.
 
-        :param axes: The Axes to draw the occluders onto.
-        :param camera: The VectorCamera to project the occluders through.
-        :param zorder: The zorder of the occluders' collection.
-        :param line_width_scale: The factor that the widths of the occluders' outlines
-            are scaled by.
-        :return: A tuple of three ndarrays of floats. The first is a (T,3,3) ndarray
-            holding every occluder's faces, split into triangles (in display
-            coordinates). The second is a (R,2,3) ndarray holding the start and end of
-            each straight piece of every outline drawn (in display coordinates), and the
-            third is a (R,) ndarray holding each piece's width, in pixels.
+        :param camera: The VectorCamera that decides which of the occluders' faces face
+            the camera, and where their silhouettes are.
+        :return: A tuple of six lists. The first holds each fill triangle as a (3,3)
+            ndarray of floats (in diagram axes, relative to the diagram origin), and the
+            second holds each fill triangle's RGBA color as a (4,) ndarray of floats.
+            The third holds each stroke's ends as a (2,3) ndarray of floats (in diagram
+            axes, relative to the diagram origin), the fourth holds the set of indices
+            of the fill triangles each stroke outlines, the fifth holds each stroke's
+            RGBA color as a (4,) ndarray of floats, and the sixth holds each stroke's
+            width, in pixels. The units of the positions are in meters.
         """
-        triangles: list[np.ndarray] = []
-        outline_segments: list[np.ndarray] = []
-        outline_widths: list[float] = []
-        entries: list[tuple[float, list[np.ndarray], np.ndarray, np.ndarray, float]] = (
-            []
-        )
+        listFillTriangles_D_Do = list(self._listFillTriangles_D_Do)
+        fill_colors = list(self._fill_colors)
+        listStrokes_D_Do = list(self._listStrokes_D_Do)
+        stroke_owners = [set(owners) for owners in self._stroke_owners]
+        stroke_colors = list(self._stroke_colors)
+        stroke_widths = list(self._stroke_widths)
+
         for (
             stackPoints_D_Do,
             faces,
@@ -1349,20 +1346,24 @@ class VectorLayer:
             outline_width,
             outlined_face_ids,
         ) in self._occluders:
-            outline_width = line_width_scale * outline_width
-            points_display = camera.to_display(stackPoints_D_Do)
+            first_triangle_id = len(listFillTriangles_D_Do)
             for face in faces:
-                triangles += [
-                    points_display[[face[0], face[corner_id], face[corner_id + 1]]]
-                    for corner_id in range(1, face.shape[0] - 1)
-                ]
+                for corner_id in range(1, face.shape[0] - 1):
+                    listFillTriangles_D_Do.append(
+                        stackPoints_D_Do[
+                            [face[0], face[corner_id], face[corner_id + 1]]
+                        ]
+                    )
+                    fill_colors.append(fill_rgba)
+            owners = set(range(first_triangle_id, len(listFillTriangles_D_Do)))
 
+            points_display = camera.to_display(stackPoints_D_Do)
             try:
                 hull = scipy.spatial.ConvexHull(points_display[:, :2])
             except scipy.spatial.QhullError:
-                # A polyhedron whose footprint on screen has no area shows nothing.
+                # A polyhedron whose footprint on screen has no area shows no outline.
                 continue
-            outlines_display = [points_display[hull.vertices]]
+            outlines = [hull.vertices]
 
             # A face of a convex polyhedron faces the camera where its outward normal
             # points back toward negative depth. Each face's normal is turned outward,
@@ -1374,57 +1375,28 @@ class VectorLayer:
                 if normal_display @ (face_display.mean(axis=0) - center_display) < 0.0:
                     normal_display = -normal_display
                 if normal_display[2] < 0.0:
-                    outlines_display.append(face_display)
-            paths = [outline_display[:, :2] for outline_display in outlines_display]
+                    outlines.append(faces[face_id])
 
-            # Each closed outline is drawn as straight pieces between its consecutive
-            # points, at their depths, which strokes behind it are clipped against.
-            for outline_display in outlines_display:
-                outline_segments += [
-                    outline_display[[point_id, (point_id + 1) % len(outline_display)]]
-                    for point_id in range(len(outline_display))
-                ]
-                outline_widths += [outline_width] * len(outline_display)
-            entries.append(
-                (
-                    float(points_display[:, 2].mean()),
-                    paths,
-                    fill_rgba,
-                    outline_rgba,
-                    outline_width,
-                )
-            )
-
-        if entries:
-            # Paint the farthest occluder first. Each occluder's fill is its first path,
-            # and the outlines of its faces follow it unfilled.
-            entries.sort(key=lambda entry: -entry[0])
-            all_paths: list[np.ndarray] = []
-            face_colors: list[np.ndarray] = []
-            edge_colors: list[np.ndarray] = []
-            line_widths: list[float] = []
-            for _, paths, fill_rgba, outline_rgba, outline_width in entries:
-                all_paths += paths
-                face_colors += [fill_rgba] + [np.zeros(4, dtype=float)] * (
-                    len(paths) - 1
-                )
-                edge_colors += [outline_rgba] * len(paths)
-                line_widths += [outline_width * POINTS_PER_PIXEL] * len(paths)
-            axes.add_collection(
-                matplotlib.collections.PolyCollection(
-                    all_paths,
-                    facecolors=face_colors,
-                    edgecolors=edge_colors,
-                    linewidths=line_widths,
-                    joinstyle="round",
-                    zorder=zorder,
-                )
-            )
+            # Each closed outline becomes a stroke between each pair of its consecutive
+            # points.
+            for outline in outlines:
+                for point_id in range(len(outline)):
+                    listStrokes_D_Do.append(
+                        stackPoints_D_Do[
+                            [outline[point_id], outline[(point_id + 1) % len(outline)]]
+                        ]
+                    )
+                    stroke_owners.append(set(owners))
+                    stroke_colors.append(outline_rgba)
+                    stroke_widths.append(outline_width)
 
         return (
-            np.array(triangles, dtype=float).reshape(-1, 3, 3),
-            np.array(outline_segments, dtype=float).reshape(-1, 2, 3),
-            np.array(outline_widths, dtype=float),
+            listFillTriangles_D_Do,
+            fill_colors,
+            listStrokes_D_Do,
+            stroke_owners,
+            stroke_colors,
+            stroke_widths,
         )
 
 

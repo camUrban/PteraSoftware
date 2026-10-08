@@ -340,6 +340,26 @@ class TestVectorLayer(unittest.TestCase):
         self.assertEqual(len(collections), 1)
         return collections[0]
 
+    def get_drawn_stroke_collection(
+        self, line_width_scale: float = 1.0
+    ) -> matplotlib.collections.Collection:
+        """Draws the layer and returns the one collection it drew its strokes in, which
+        is the PathCollection that isn't filled.
+
+        :param line_width_scale: The factor to scale the strokes' widths by. The default
+            is 1.0.
+        :return: The collection.
+        """
+        self.layer.draw(self.axes, self.camera, 1.0, line_width_scale=line_width_scale)
+        collections = [
+            collection
+            for collection in self.axes.collections
+            if type(collection) is matplotlib.collections.PathCollection
+            and len(collection.get_facecolor()) == 0
+        ]
+        self.assertEqual(len(collections), 1)
+        return collections[0]
+
     def test_outlines_a_shared_edge_once(self) -> None:
         """Test that neighboring quadrilaterals outline the edge they share once, and
         that it is owned by both of their triangles."""
@@ -423,7 +443,8 @@ class TestVectorLayer(unittest.TestCase):
         The cube's silhouette is at x = 90.0 and x = 110.0 pixels, and its 1.0 pixel
         wide outline hides the polyline for another pixel beyond it on each side, which
         is half the outline's width plus half the polyline's, so the polyline's round
-        ends stop short of the outline rather than covering it.
+        ends stop short of the outline rather than covering it. The polyline was added
+        first, so its parts are drawn before the four sides of the cube's outline.
         """
         self.layer.add_convex_occluder(
             vector_export_fixtures.make_cube_points_fixture(),
@@ -440,18 +461,16 @@ class TestVectorLayer(unittest.TestCase):
         segments = np.concatenate(
             [
                 np.reshape(path.vertices, (-1, 2, 2))
-                for path in self.get_drawn_collection(
-                    matplotlib.collections.PathCollection
-                ).get_paths()
+                for path in self.get_drawn_stroke_collection().get_paths()
             ]
         )
-        self.assertEqual(len(segments), 2)
+        self.assertEqual(len(segments), 6)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
         npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
 
     def test_scales_the_line_widths_where_drawn_and_where_they_hide(self) -> None:
-        """Test that a line width scale widens the strokes and the convex occluders'
-        outlines both as drawn and where they hide the strokes behind them.
+        """Test that a line width scale widens the strokes, including the convex
+        occluders' outlines, both as drawn and where they hide the strokes behind them.
 
         With a scale of 2.0, the cube's outline and the polyline are each 2.0 pixels
         wide, so the outline hides the polyline for 2.0 pixels beyond the cube's
@@ -470,32 +489,18 @@ class TestVectorLayer(unittest.TestCase):
             "black",
             1.0,
         )
-        self.layer.draw(self.axes, self.camera, 1.0, line_width_scale=2.0)
-        stroke_collection = next(
-            collection
-            for collection in self.axes.collections
-            if type(collection) is matplotlib.collections.PathCollection
-        )
-        polygon_collection = next(
-            collection
-            for collection in self.axes.collections
-            if type(collection) is matplotlib.collections.PolyCollection
-        )
+        stroke_collection = self.get_drawn_stroke_collection(line_width_scale=2.0)
         segments = np.concatenate(
             [
                 np.reshape(path.vertices, (-1, 2, 2))
                 for path in stroke_collection.get_paths()
             ]
         )
-        self.assertEqual(len(segments), 2)
+        self.assertEqual(len(segments), 6)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [88.0, 50.0]])
         npt.assert_allclose(segments[1], [[112.0, 50.0], [130.0, 50.0]])
         npt.assert_allclose(
             np.array(stroke_collection.get_linewidth(), dtype=float),
-            np.full(1, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
-        )
-        npt.assert_allclose(
-            np.array(polygon_collection.get_linewidth(), dtype=float),
             np.full(1, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
         )
 
@@ -516,19 +521,21 @@ class TestVectorLayer(unittest.TestCase):
         segments = np.concatenate(
             [
                 np.reshape(path.vertices, (-1, 2, 2))
-                for path in self.get_drawn_collection(
-                    matplotlib.collections.PathCollection
-                ).get_paths()
+                for path in self.get_drawn_stroke_collection().get_paths()
             ]
         )
-        self.assertEqual(len(segments), 1)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
 
     def test_outlines_an_outlined_face_only_while_it_faces_the_camera(self) -> None:
         """Test that a convex occluder is outlined along its silhouette, plus the
         boundary of each outlined face that faces the camera, but not of one that faces
-        away."""
-        for outlined_face_id, num_paths in ((1, 2), (0, 1)):
+        away.
+
+        The cube's silhouette and each of its faces have four sides, so it is outlined
+        by eight strokes while its outlined face faces the camera, and by four while it
+        faces away.
+        """
+        for outlined_face_id, num_strokes in ((1, 8), (0, 4)):
             with self.subTest(outlined_face_id=outlined_face_id):
                 self.setUp()
                 self.layer.add_convex_occluder(
@@ -539,14 +546,12 @@ class TestVectorLayer(unittest.TestCase):
                     1.0,
                     outlined_face_ids=[outlined_face_id],
                 )
-                paths = self.get_drawn_collection(
-                    matplotlib.collections.PolyCollection
-                ).get_paths()
-                self.assertEqual(len(paths), num_paths)
+                listStrokes_D_Do = self.layer._get_fills_and_strokes(self.camera)[2]
+                self.assertEqual(len(listStrokes_D_Do), num_strokes)
 
     def test_returns_the_zorder_after_its_passes(self) -> None:
-        """Test that drawing a layer returns the zorder after its five passes."""
-        self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 8.0)
+        """Test that drawing a layer returns the zorder after its four passes."""
+        self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 7.0)
 
     def test_paints_the_later_of_two_coincident_strokes_on_top(self) -> None:
         """Test that where two strokes lie on top of each other, neither hides the

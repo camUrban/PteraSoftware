@@ -11,9 +11,12 @@ import math
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
 import numpy as np
 import numpy.testing as npt
+import pyvista as pv
 import webp
 
 import pterasoftware as ps
@@ -36,6 +39,101 @@ def _count_saved_webp_frames(path: Path) -> int:
         webp_data = webp.WebPData.from_buffer(webp_file.read())
     decoder = webp.WebPAnimDecoder.new(webp_data)
     return int(decoder.anim_info.frame_count)
+
+
+def _get_saved_webp_animation_size(path: Path) -> tuple[int, int]:
+    """Gets the width and height of a saved WebP animation's canvas.
+
+    :param path: The path of the saved WebP animation.
+    :return: A tuple of the canvas's width and height, in pixels.
+    """
+    with open(path, "rb") as webp_file:
+        webp_data = webp.WebPData.from_buffer(webp_file.read())
+    decoder = webp.WebPAnimDecoder.new(webp_data)
+    return int(decoder.anim_info.width), int(decoder.anim_info.height)
+
+
+# Define the size, in pixels, that the visible window is resized to after it is shown,
+# standing in for a user resizing it.
+_RESIZED_WINDOW_SIZE = (400, 360)
+
+_original_show = pv.Plotter.show
+
+
+def _show_then_resize(plotter: pv.Plotter, *args: Any, **kwargs: Any) -> Any:
+    """Shows a Plotter, then resizes its window, standing in for a user resizing it
+    before the output is saved.
+
+    :param plotter: The Plotter to show and then resize.
+    :param args: The positional arguments to pass to the Plotter's show method.
+    :param kwargs: The keyword arguments to pass to the Plotter's show method.
+    :return: Whatever the Plotter's show method returns.
+    """
+    result = _original_show(plotter, *args, **kwargs)
+    assert plotter.ren_win is not None
+    plotter.ren_win.SetSize(*_RESIZED_WINDOW_SIZE)
+    plotter.render()
+    return result
+
+
+class _ShrinkingRenderWindow:
+    """This is a stand-in for an on-screen render window whose window manager grants it
+    no more than a fixed size."""
+
+    def __init__(self, width: int, height: int, max_width: int, max_height: int):
+        """The initialization method.
+
+        :param width: The requested width, in pixels.
+        :param height: The requested height, in pixels.
+        :param max_width: The largest width, in pixels, the window manager grants.
+        :param max_height: The largest height, in pixels, the window manager grants.
+        :return: None
+        """
+        self.size = (min(width, max_width), min(height, max_height))
+
+    def Render(self) -> None:
+        """Does nothing, since there is nothing to render.
+
+        :return: None
+        """
+
+    def SetWindowName(self, name: str) -> None:
+        """Ignores the window's title.
+
+        :param name: The title.
+        :return: None
+        """
+
+    def GetSize(self) -> tuple[int, int]:
+        """Gets the size the window manager granted.
+
+        :return: A tuple of the granted width and height, in pixels.
+        """
+        return self.size
+
+
+class _ShrinkingPlotter:
+    """This is a stand-in for an on-screen Plotter whose window manager grants its
+    window no more than a fixed size."""
+
+    def __init__(self, width: int, height: int, max_width: int, max_height: int):
+        """The initialization method.
+
+        :param width: The requested width, in pixels.
+        :param height: The requested height, in pixels.
+        :param max_width: The largest width, in pixels, the window manager grants.
+        :param max_height: The largest height, in pixels, the window manager grants.
+        :return: None
+        """
+        self.ren_win = _ShrinkingRenderWindow(width, height, max_width, max_height)
+        self.closed = False
+
+    def close(self) -> None:
+        """Records that the Plotter was closed.
+
+        :return: None
+        """
+        self.closed = True
 
 
 class TestOutput(unittest.TestCase):
@@ -204,6 +302,20 @@ class TestOutputSurfaceEffect(unittest.TestCase):
             scalar_type=None,
             show_wake_vortices=True,
             show_streamlines=False,
+            testing=True,
+        )
+
+    def test_draw_with_surface_effect_and_streamlines_does_not_throw(self) -> None:
+        """This method tests that the draw function does not throw any errors when an
+        image surface is defined and streamlines are shown.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=True,
             testing=True,
         )
 
@@ -610,6 +722,128 @@ class TestOutputFileWriting(unittest.TestCase):
 
         self.assertEqual(list(self.temporary_path.iterdir()), [])
 
+    def test_draw_saves_at_the_window_size_after_the_window_resizes(self) -> None:
+        """Test that draw saves the image at the requested window size even when the
+        visible window is resized before saving.
+
+        :return: None
+        """
+        saved_path = self.temporary_path / "draw.webp"
+
+        with patch.object(pv.Plotter, "show", _show_then_resize):
+            ps.output.draw(
+                solver=self.unsteady_solver,
+                scalar_type=None,
+                show_wake_vortices=False,
+                show_streamlines=False,
+                window_size=(320, 240),
+                save=True,
+                path=saved_path,
+                testing=True,
+            )
+
+        self.assertEqual(webp.load_image(str(saved_path), "RGB").size, (320, 240))
+
+    def test_draw_rejects_a_window_size_the_screen_cannot_fit(self) -> None:
+        """Test that draw rejects a window size when the window manager shrinks both the
+        requested window and the one scaled down to fit, closes both windows, and writes
+        nothing.
+
+        :return: None
+        """
+        plotters: list[_ShrinkingPlotter] = []
+
+        def create_shrinking_plotter(
+            width: int, height: int, off_screen: bool
+        ) -> _ShrinkingPlotter:
+            """Creates a stand-in Plotter whose window manager grants the first window
+            1920 by 1050 pixels and every later window 1800 by 1000 pixels.
+
+            :param width: The requested width, in pixels.
+            :param height: The requested height, in pixels.
+            :param off_screen: Ignored, since the stand-in never renders.
+            :return: The stand-in Plotter.
+            """
+            max_size = (1920, 1050) if not plotters else (1800, 1000)
+            plotter = _ShrinkingPlotter(width, height, *max_size)
+            plotters.append(plotter)
+            return plotter
+
+        with (
+            patch.object(pv, "OFF_SCREEN", False),
+            patch.object(ps.output, "_create_plotter", create_shrinking_plotter),
+        ):
+            with self.assertRaises(ValueError) as context:
+                ps.output.draw(
+                    solver=self.unsteady_solver,
+                    scalar_type=None,
+                    show_wake_vortices=False,
+                    show_streamlines=False,
+                    window_size=(7680, 4320),
+                    save=True,
+                    path=self.temporary_path / "draw.webp",
+                    testing=True,
+                )
+
+        self.assertIn("does not fit on screen", str(context.exception))
+        self.assertEqual(len(plotters), 2)
+        self.assertTrue(all(plotter.closed for plotter in plotters))
+        self.assertEqual(list(self.temporary_path.iterdir()), [])
+
+    def test_draw_scales_down_a_window_the_screen_cannot_fit(self) -> None:
+        """Test that draw replaces a preview window the window manager shrinks with one
+        scaled down uniformly to fit, and still saves the image at the requested window
+        size.
+
+        :return: None
+        """
+        original_create_plotter = ps.output._create_plotter
+        requested_sizes: list[tuple[int, int]] = []
+        shrinking_plotters: list[_ShrinkingPlotter] = []
+
+        def create_plotter(
+            width: int, height: int, off_screen: bool
+        ) -> _ShrinkingPlotter | pv.Plotter:
+            """Creates a stand-in Plotter whose window manager grants the first window
+            400 by 300 pixels, and a real off-screen Plotter for every later window,
+            standing in for a window that is granted the size it asks for.
+
+            :param width: The requested width, in pixels.
+            :param height: The requested height, in pixels.
+            :param off_screen: Ignored, since every real Plotter is created off screen.
+            :return: The stand-in Plotter or the real Plotter.
+            """
+            requested_sizes.append((width, height))
+            if not shrinking_plotters:
+                shrinking_plotter = _ShrinkingPlotter(width, height, 400, 300)
+                shrinking_plotters.append(shrinking_plotter)
+                return shrinking_plotter
+            return original_create_plotter(width, height, True)
+
+        saved_path = self.temporary_path / "draw.webp"
+
+        with (
+            patch.object(pv, "OFF_SCREEN", False),
+            patch.object(ps.output, "_create_plotter", create_plotter),
+        ):
+            ps.output.draw(
+                solver=self.unsteady_solver,
+                scalar_type=None,
+                show_wake_vortices=False,
+                show_streamlines=False,
+                window_size=(800, 450),
+                save=True,
+                path=saved_path,
+                testing=True,
+            )
+
+        # The preview is scaled by the smaller of the two granted fractions, 400 / 800,
+        # so it keeps the requested aspect ratio. The saved image's Plotter is the last
+        # one created.
+        self.assertEqual(requested_sizes, [(800, 450), (400, 225), (800, 450)])
+        self.assertTrue(shrinking_plotters[0].closed)
+        self.assertEqual(webp.load_image(str(saved_path), "RGB").size, (800, 450))
+
     def test_animate_saves_under_the_default_name_while_dropping_frames(self) -> None:
         """Test that animate's default path saves the animation as animate.webp and that
         the aliasing warning stays silent for a static geometry even when frames are
@@ -661,6 +895,27 @@ class TestOutputFileWriting(unittest.TestCase):
             )
 
         self.assertEqual(list(self.temporary_path.iterdir()), [])
+
+    def test_animate_saves_at_the_window_size_after_the_window_resizes(self) -> None:
+        """Test that animate saves the animation at the requested window size even when
+        the visible window is resized before the frames are rendered.
+
+        :return: None
+        """
+        saved_path = self.temporary_path / "animate.webp"
+
+        with patch.object(pv.Plotter, "show", _show_then_resize):
+            ps.output.animate(
+                unsteady_solver=self.unsteady_solver,
+                scalar_type=None,
+                show_wake_vortices=False,
+                window_size=(320, 240),
+                save=True,
+                path=saved_path,
+                testing=True,
+            )
+
+        self.assertEqual(_get_saved_webp_animation_size(saved_path), (320, 240))
 
     def test_plot_results_versus_time_saves_under_the_default_names(self) -> None:
         """Test that the default directory and prefix save the four load figures under

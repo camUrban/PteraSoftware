@@ -71,11 +71,6 @@ VALID_SCALAR_TYPES = ("induced drag", "crosswind force", "lift")
 _MUJOCO_GEOMETRY_AMBIENT = 0.3
 _MUJOCO_GEOMETRY_DIFFUSE = 0.7
 
-# Define the window length used to measure the largest window a window manager will
-# grant. X11 window dimensions are 16 bit, so this is the largest a window can ask to be
-# and is certain to be shrunk to the maximum on any display.
-_OVERSIZED_WINDOW_LENGTH = 32767
-
 # Set constants for the color maps, scalar bars, and text boxes. The positions are
 # fractions of the render window, so they track its size on their own. The font sizes
 # are in pixels and do not, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by
@@ -288,40 +283,6 @@ def get_window_scale(window_width: int, window_height: int) -> float:
         window_width / REFERENCE_WINDOW_SIZE[0],
         window_height / REFERENCE_WINDOW_SIZE[1],
     )
-
-
-def get_largest_window_size() -> tuple[int, int]:
-    """Returns the largest on-screen render window a window manager will grant.
-
-    A window cannot be larger than the area the window manager grants, which is the
-    display less any docks or bars and less the window's own title bar, and VTK silently
-    shrinks one that asks for more. GetScreenSize reports neither reduction, and the
-    granted size only becomes readable once a window has been realized, so this measures
-    it rather than computing it.
-
-    The measurement is taken on a throwaway render window asking to be far larger than
-    any display, which is shrunk in both dimensions and so reports the maximum in both.
-    draw and animate detect a shrink on their own render window and call this only to
-    name the ceiling in the resulting error, so the throwaway window is created on the
-    error path alone.
-
-    :return: A tuple of the largest grantable width and height in pixels. Off-screen
-        rendering has no such ceiling, so this reports the requested size there.
-    """
-    probe = pv.Plotter(
-        window_size=[_OVERSIZED_WINDOW_LENGTH, _OVERSIZED_WINDOW_LENGTH], lighting=None
-    )
-    try:
-        # Match the background the visualizations render on so the probe, which is
-        # briefly visible, does not flash a bright window against a dark one.
-        probe.set_background(color=PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
-        probe_render_window = probe.ren_win
-        assert probe_render_window is not None
-        probe_render_window.Render()
-        granted_width, granted_height = probe_render_window.GetSize()
-    finally:
-        probe.close()
-    return granted_width, granted_height
 
 
 class Playback(NamedTuple):

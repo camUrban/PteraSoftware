@@ -15,6 +15,7 @@ import matplotlib.typing
 import numpy as np
 import pyvista as pv
 import webp
+from tqdm import tqdm
 
 from . import (
     _logging,
@@ -44,8 +45,10 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
 # differ by a few intensity levels along an anti-aliased edge, which makes a saved WebP
-# vary between runs. Four samples is stable and renders indistinguishably, so the
-# visualizations pin it rather than take the default.
+# vary between runs. Four samples renders indistinguishably and varied less than 8 in
+# testing, so the visualizations pin it rather than take the default. It is not fully
+# reproducible either, since a pixel along an edge can still differ by one intensity
+# level between runs.
 _MULTI_SAMPLES = 4
 
 # Define the colors of the series in the results plots, which are named colors from
@@ -146,6 +149,241 @@ def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
             actor.prop.opacity = opacity
 
 
+def _create_plotter(
+    window_width: int, window_height: int, off_screen: bool
+) -> pv.Plotter:
+    """Creates a Plotter with a parallel projection, multisample anti-aliasing, and the
+    background color.
+
+    The background color is set before anything realizes the window, so that the window
+    appears in its final color rather than flashing white first.
+
+    :param window_width: The width, in pixels, of the render window.
+    :param window_height: The height, in pixels, of the render window.
+    :param off_screen: Set this to True to render off screen, without showing a window.
+    :return: The new Plotter.
+    """
+    plotter = pv.Plotter(
+        window_size=[window_width, window_height],
+        off_screen=off_screen,
+        lighting=None,
+    )
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
+    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
+    return plotter
+
+
+def _create_preview_plotter(
+    window_width: int, window_height: int
+) -> tuple[pv.Plotter, float]:
+    """Creates the Plotter whose window shows a drawing or an animation's preview,
+    scaled down when necessary to fit on screen with the requested aspect ratio.
+
+    A window manager will not grant an on-screen render window larger than the display
+    less any docks or bars and less the window's own title bar, and VTK silently shrinks
+    one that asks for more. A window that was shrunk is replaced with one scaled down
+    uniformly to fit within the size that was granted, so it keeps the requested aspect
+    ratio and frames the scene the same way a saved file of the requested size does. The
+    sizes compared are all ones the render window reports about itself, which accounts
+    for the title bar and the other window decorations without measuring them. Only a
+    granted size smaller than the request counts as a shrink, since a display that
+    scales its pixels reports a larger one. Off screen, the window is never shrunk.
+
+    :param window_width: The requested width, in pixels, of the render window.
+    :param window_height: The requested height, in pixels, of the render window.
+    :return: A tuple of the new Plotter and the factor by which to scale the font sizes
+        and line widths in its window, as returned by _output_rendering.get_window_scale
+        for the window's size.
+    """
+    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
+    if pv.OFF_SCREEN:
+        return plotter, _output_rendering.get_window_scale(window_width, window_height)
+
+    # Rendering the empty scene realizes the window, which is what makes the granted
+    # size readable.
+    render_window = plotter.ren_win
+    assert render_window is not None
+    render_window.Render()
+    render_window.SetWindowName("Assembling the scene. Please wait.")
+    render_window.Render()
+    granted_width, granted_height = render_window.GetSize()
+    fit = min(granted_width / window_width, granted_height / window_height)
+    if fit >= 1.0:
+        return plotter, _output_rendering.get_window_scale(window_width, window_height)
+
+    # The window was shrunk, so replace it with one scaled down uniformly to fit within
+    # the granted size. Its outer frame is then no larger than the one the window
+    # manager just granted.
+    plotter.close()
+    fitted_width = max(1, int(window_width * fit))
+    fitted_height = max(1, int(window_height * fit))
+    plotter = _create_plotter(fitted_width, fitted_height, False)
+    render_window = plotter.ren_win
+    assert render_window is not None
+    render_window.Render()
+    render_window.SetWindowName("Assembling the scene. Please wait.")
+    render_window.Render()
+    granted_width, granted_height = render_window.GetSize()
+    if granted_width < fitted_width or granted_height < fitted_height:
+        plotter.close()
+        raise ValueError(
+            f"window_size {window_width} by {window_height} does not fit on screen, "
+            f"and the window manager granted only {granted_width} by "
+            f"{granted_height} pixels to a window scaled down to {fitted_width} by "
+            f"{fitted_height} pixels to fit. Request a smaller window, or render off "
+            f"screen by setting pyvista.OFF_SCREEN to True."
+        )
+    return plotter, _output_rendering.get_window_scale(fitted_width, fitted_height)
+
+
+def _add_scene(
+    plotter: pv.Plotter,
+    panel_surfaces: pv.PolyData,
+    wake_ring_vortex_surfaces: pv.PolyData | None,
+    coloring: _output_rendering.ScalarColoring | None,
+    reflect_T_act: np.ndarray | None,
+    window_scale: float,
+    streamline_surfaces: pv.PolyData | None,
+    image_surface_mesh: pv.PolyData | None,
+    image_surface_texture: pv.Texture | None,
+    worldbody_geoms: list[_mujoco_model.RenderGeom],
+    body_geoms: list[_mujoco_model.RenderGeom],
+    T_pas_BP1_CgP1_to_E_Eo: np.ndarray | None,
+) -> None:
+    """Adds the actors of a drawing's scene, or of one animation frame's scene, to a
+    Plotter.
+
+    The actors are added in a fixed order: the wake and the Panels, the streamlines, the
+    image surface plane, and then the MuJoCo geometry. The meshes arrive already mapped
+    into whichever axes they are being rendered in. This function does not touch the
+    camera, and it does not add an animation's text overlays.
+
+    :param plotter: The Plotter to add the scene to.
+    :param panel_surfaces: The PolyData representation of the Panel surfaces.
+    :param wake_ring_vortex_surfaces: The PolyData representation of the wake ring
+        vortex surfaces, or None to omit the wake.
+    :param coloring: The scalar coloring to apply to the Panels, or None to color them
+        uniformly.
+    :param reflect_T_act: A (4,4) ndarray of floats representing the active
+        transformation (in whichever axes the meshes are rendered in) that reflects
+        geometry across the image surface, or None when no image surface is defined, in
+        which case no reflected geometry is added.
+    :param window_scale: The factor by which to scale the line widths and font sizes, as
+        returned by _output_rendering.get_window_scale.
+    :param streamline_surfaces: The PolyData representation of the streamlines, or None
+        to omit them.
+    :param image_surface_mesh: The image surface plane's mesh, or None to omit it. It
+        must not be None when reflect_T_act is not None.
+    :param image_surface_texture: The image surface plane's Texture, or None when
+        image_surface_mesh is None.
+    :param worldbody_geoms: The RenderGeoms attached to the worldbody.
+    :param body_geoms: The RenderGeoms attached to the body.
+    :param T_pas_BP1_CgP1_to_E_Eo: A (4,4) ndarray of floats representing the passive
+        transformation from the first Airplane's body axes, relative to the first
+        Airplane's CG, to Earth axes, relative to the Earth origin, at the scene's time
+        step, or None to omit the MuJoCo geometry.
+    :return: None
+    """
+    # Add the wake, the Panels, and, if an image surface is defined, their reflections.
+    _output_rendering.add_frame_geometry(
+        plotter,
+        panel_surfaces,
+        wake_ring_vortex_surfaces,
+        coloring,
+        reflect_T_act,
+        window_scale,
+    )
+
+    # If showing streamlines, plot them.
+    if streamline_surfaces is not None:
+        plotter.add_mesh(
+            streamline_surfaces,
+            show_edges=True,
+            color=_STREAMLINE_COLOR,
+            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+            smooth_shading=False,
+            lighting=False,
+            render=False,
+        )
+
+        # If an image surface is defined, add the reflected streamlines, muted toward
+        # gray so that they read as a reflection rather than as more streamlines.
+        if reflect_T_act is not None:
+            plotter.add_mesh(
+                _output_rendering.transform_mesh(streamline_surfaces, reflect_T_act),
+                show_edges=True,
+                color=_output_rendering.mute_color(
+                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
+                ),
+                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+                smooth_shading=False,
+                lighting=False,
+                render=False,
+            )
+
+    # If an image surface is defined, add its plane.
+    if image_surface_mesh is not None:
+        plotter.add_mesh(
+            image_surface_mesh,
+            texture=image_surface_texture,
+            opacity=_IMAGE_SURFACE_OPACITY,
+            smooth_shading=True,
+            lighting=False,
+            render=False,
+        )
+
+    # If showing MuJoCo geometry, add it posed at the scene's time step.
+    if T_pas_BP1_CgP1_to_E_Eo is not None:
+        _output_rendering.add_mujoco_geometry(
+            plotter,
+            worldbody_geoms,
+            body_geoms,
+            T_pas_BP1_CgP1_to_E_Eo,
+            reflect_T_act,
+        )
+
+
+def _get_draw_geometry_meshes(
+    panel_surfaces: pv.PolyData,
+    wake_ring_vortex_surfaces: pv.PolyData | None,
+    streamline_surfaces: pv.PolyData | None,
+    reflect_T_act: np.ndarray | None,
+) -> list[pv.PolyData]:
+    """Returns the meshes of draw's geometry, which are the wake, the Panels, and the
+    streamlines, along with their reflections when an image surface is defined.
+
+    Empty meshes are left out, since PyVista cannot add them to a Plotter, so the
+    returned meshes' bounds match the bounds of the actors draw adds for its geometry.
+
+    :param panel_surfaces: The PolyData representation of the Panel surfaces.
+    :param wake_ring_vortex_surfaces: The PolyData representation of the wake ring
+        vortex surfaces, or None when the wake is omitted.
+    :param streamline_surfaces: The PolyData representation of the streamlines, or None
+        when they are omitted.
+    :param reflect_T_act: A (4,4) ndarray of floats representing the active
+        transformation (in whichever axes the meshes are rendered in) that reflects
+        geometry across the image surface, or None when no image surface is defined, in
+        which case no reflected meshes are returned.
+    :return: A list of the non empty geometry meshes.
+    """
+    geometry_meshes = [panel_surfaces]
+    if wake_ring_vortex_surfaces is not None:
+        geometry_meshes.append(wake_ring_vortex_surfaces)
+    if streamline_surfaces is not None:
+        geometry_meshes.append(streamline_surfaces)
+    if reflect_T_act is not None:
+        geometry_meshes += [
+            _output_rendering.transform_mesh(geometry_mesh, reflect_T_act)
+            for geometry_mesh in geometry_meshes
+        ]
+    return [
+        geometry_mesh for geometry_mesh in geometry_meshes if geometry_mesh.n_points > 0
+    ]
+
+
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -203,13 +441,18 @@ def draw(
         False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
-        ints, and, when rendering on screen, must fit within the area the window manager
-        grants, which is the display less any docks or bars and less the window's own
-        title bar. The text and line widths scale with it, so a larger or smaller window
-        is legible rather than being drawn with the same pixel counts as the default.
-        The default is (1024, 768).
-    :param save: Set this to True to save the image as a WebP. It can be a bool or a
-        numpy bool and will be converted internally to a bool. The default is False.
+        ints. The text and line widths scale with it, so a larger or smaller window is
+        legible rather than being drawn with the same pixel counts as the default. When
+        rendering on screen, a window_size that does not fit in the area the window
+        manager grants is shown scaled down to fit, keeping its aspect ratio, with its
+        text and line widths scaled down to match, while a saved WebP keeps the
+        requested size. The default is (1024, 768).
+    :param save: Set this to True to save the image as a WebP. The image is rendered
+        separately, off screen, at window_size and from the view the window ends with,
+        so resizing the window does not change the saved image's size or styling.
+        However, a window resized to a different aspect ratio shows more or less of the
+        scene horizontally than the saved image does. It can be a bool or a numpy bool
+        and will be converted internally to a bool. The default is False.
     :param path: The file path to save the image to. It can be a str or a Path, must end
         with ".webp", and its directory must already exist. This has no effect unless
         save is True. The default is "draw.webp".
@@ -308,41 +551,10 @@ def draw(
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-    # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
-    plotter.enable_parallel_projection()  # type: ignore[call-arg]
-    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
-
-    # Set the background color before the check below realizes the window, so that the
-    # window appears in its final color rather than flashing white first.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
-
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing a file of a size the caller never
-    # asked for. Rendering the empty scene realizes the window, which is what makes the
-    # granted size readable. Only a granted size smaller than the request counts as a
-    # shrink, since a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        render_window = plotter.ren_win
-        assert render_window is not None
-        render_window.Render()
-        render_window.SetWindowName("Assembling the scene. Please wait.")
-        render_window.Render()
-        granted_width, granted_height = render_window.GetSize()
-        if granted_width < window_width or granted_height < window_height:
-            plotter.close()
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered "
-                f"on screen, where the window manager grants at most "
-                f"{largest_width} by {largest_height} pixels. Request a smaller "
-                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
-                f"True."
-            )
-
+    # Create the Plotter whose window shows the drawing, along with the scale of its
+    # text and line widths. Those differ from the saved WebP's when the requested window
+    # does not fit on screen and is scaled down.
+    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
@@ -395,17 +607,18 @@ def draw(
             panel_surfaces, T_pas_GP1_CgP1_to_E_Eo
         )
 
-    T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
-    image_surface_mesh = None
+    reflect_T_act = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+    image_surface_mesh: pv.PolyData | None = None
+    image_surface_texture: pv.Texture | None = None
 
     # For free flight, the active reflection is represented in geometry axes, but the
     # geometry has been mapped into Earth axes. Re-expressing the reflection in Earth
     # axes (a change of basis by the same passive transformation) lets the
     # reflected-geometry code below operate entirely in Earth axes.
-    if T_pas_GP1_CgP1_to_E_Eo is not None and T_reflect is not None:
-        T_reflect = (
+    if T_pas_GP1_CgP1_to_E_Eo is not None and reflect_T_act is not None:
+        reflect_T_act = (
             T_pas_GP1_CgP1_to_E_Eo
-            @ T_reflect
+            @ reflect_T_act
             @ _transformations.invert_T_pas(T_pas_GP1_CgP1_to_E_Eo)
         )
 
@@ -428,23 +641,12 @@ def draw(
             c_max=c_max,
         )
 
-    # Add the wake, the Panels, and, if an image surface is defined, their reflections.
-    # The image surface plane is added later, after the geometry bounds are captured.
-    _output_rendering.add_frame_geometry(
-        plotter,
-        panel_surfaces,
-        wake_ring_vortex_surfaces,
-        coloring,
-        T_reflect,
-        window_scale,
-    )
-
-    # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
-    # actors are added later, between the camera's framing fit and its clipping fit, so
-    # the body geoms can join the framing bounds while the worldbody geoms join only the
-    # clipping range.
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects, along with
+    # the drawn time step's body axes to Earth axes transformation. The worldbody geoms
+    # are left out of the camera's framing fit below, while the body geoms join it.
     worldbody_geoms: list[_mujoco_model.RenderGeom] = []
     body_geoms: list[_mujoco_model.RenderGeom] = []
+    T_pas_BP1_CgP1_to_E_Eo: np.ndarray | None = None
     if show_mujoco_geometry:
         assert isinstance(
             solver,
@@ -453,52 +655,37 @@ def draw(
         worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
             solver
         )
+        if worldbody_geoms or body_geoms:
+            T_pas_BP1_CgP1_to_E_Eo = (
+                _output_rendering.get_free_flight_body_transformation(
+                    draw_operating_point
+                )
+            )
 
-    # If showing streamlines, plot them.
+    # If showing streamlines, get their surfaces, mapping them into Earth axes for free
+    # flight. They stay None otherwise, which omits them from the scene.
+    streamline_surfaces: pv.PolyData | None = None
     if show_streamlines:
         streamline_surfaces = _output_rendering.get_streamline_surfaces(
             solver.gridStreamlinePoints_GP1_CgP1
         )
-
-        # For free flight, map the streamlines into Earth axes.
         if T_pas_GP1_CgP1_to_E_Eo is not None:
             streamline_surfaces = _output_rendering.transform_mesh(
                 streamline_surfaces, T_pas_GP1_CgP1_to_E_Eo
             )
 
-        plotter.add_mesh(
-            streamline_surfaces,
-            show_edges=True,
-            color=_STREAMLINE_COLOR,
-            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-            smooth_shading=False,
-            lighting=False,
-            render=False,
-        )
+    # Find the bounds of the geometry. They are found from the meshes rather than from a
+    # Plotter's actors, so the image surface plane they size is known before any actor
+    # is added. The scene meshes start as the geometry meshes and gain the image surface
+    # plane when one is defined, which gives the free flight camera its framing bounds.
+    geometry_meshes = _get_draw_geometry_meshes(
+        panel_surfaces, wake_ring_vortex_surfaces, streamline_surfaces, reflect_T_act
+    )
+    geometry_bounds = pv.MultiBlock(geometry_meshes).bounds
+    scene_meshes = list(geometry_meshes)
 
-        # If an image surface is defined, add the reflected streamlines, muted toward
-        # gray so that they read as a reflection rather than as more streamlines.
-        if T_reflect is not None:
-            plotter.add_mesh(
-                _output_rendering.transform_mesh(streamline_surfaces, T_reflect),
-                show_edges=True,
-                color=_output_rendering.mute_color(
-                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
-                ),
-                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-                smooth_shading=False,
-                lighting=False,
-                render=False,
-            )
-
-    # If an image surface is defined, save the geometry bounds (which now include the
-    # reflected geometry but not the image surface plane), add the image surface plane,
-    # then fit the camera to the saved bounds so the view is not dominated by the much
-    # larger image surface plane. When an image surface is present, cpos is not passed
-    # to show() because that would trigger an auto-fit to all actors (including the
-    # image surface).
-    if T_reflect is not None:
-        geometry_bounds = plotter.bounds
+    # If an image surface is defined, build its plane.
+    if reflect_T_act is not None:
         if T_pas_GP1_CgP1_to_E_Eo is not None:
             # The image surface helper builds the plane from geometry-axis quantities,
             # so it needs geometry-axis bounds. Build the plane there, then map it into
@@ -520,23 +707,34 @@ def draw(
             )
             assert image_surface_result is not None
             image_surface_mesh, image_surface_texture = image_surface_result
-        plotter.add_mesh(
-            image_surface_mesh,
-            texture=image_surface_texture,
-            opacity=_IMAGE_SURFACE_OPACITY,
-            smooth_shading=True,
-            lighting=False,
-            render=False,
-        )
+        scene_meshes.append(image_surface_mesh)
 
-        # For the standard body-fixed rendering, fit the camera to the geometry bounds
-        # so the much larger image surface plane does not dominate the view. Free flight
-        # uses its own Earth-axes camera, computed below.
-        if T_pas_GP1_CgP1_to_E_Eo is None:
-            plotter.camera.position = (-1, -1, 1)
-            plotter.camera.focal_point = (0, 0, 0)
-            plotter.camera.up = (0, 0, 1)
-            plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
+    # Add the scene's actors.
+    _add_scene(
+        plotter,
+        panel_surfaces,
+        wake_ring_vortex_surfaces,
+        coloring,
+        reflect_T_act,
+        preview_window_scale,
+        streamline_surfaces,
+        image_surface_mesh,
+        image_surface_texture,
+        worldbody_geoms,
+        body_geoms,
+        T_pas_BP1_CgP1_to_E_Eo,
+    )
+
+    # For the standard body-fixed rendering with an image surface, fit the camera to the
+    # geometry bounds so the view is not dominated by the much larger image surface
+    # plane. When an image surface is present, cpos is not passed to show() because that
+    # would trigger an auto-fit to all actors (including the image surface). Free flight
+    # uses its own Earth-axes camera, computed below.
+    if reflect_T_act is not None and T_pas_GP1_CgP1_to_E_Eo is None:
+        plotter.camera.position = (-1, -1, 1)
+        plotter.camera.focal_point = (0, 0, 0)
+        plotter.camera.up = (0, 0, 1)
+        plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
 
     # Choose the camera position. Free flight frames the body in Earth axes with
     # physical up as Earth -z. The standard rendering views geometry axes from (-1, -1,
@@ -560,29 +758,28 @@ def draw(
         )
         plotter.camera.up = _freeFlightViewUp_E
 
-        if worldbody_geoms or body_geoms:
-            # Fit the camera to explicit framing bounds: every actor already present,
-            # plus the body geoms posed at the drawn time step, plus their reflections
-            # when an image surface is defined. The fit re-centers the focal point on
-            # those bounds and keeps the view direction and up set above.
-            T_pas_BP1_CgP1_to_E_Eo = (
-                _output_rendering.get_free_flight_body_transformation(
-                    draw_operating_point
-                )
-            )
+        if T_pas_BP1_CgP1_to_E_Eo is not None:
+            # Fit the camera to explicit framing bounds: the geometry and the image
+            # surface plane, plus the body geoms posed at the drawn time step, plus
+            # their reflections when an image surface is defined. The worldbody geoms
+            # stay out of the fit, so a worldbody geom that is much larger than the
+            # body, like a ground plane, cannot dominate it. The fit re-centers the
+            # focal point on those bounds and keeps the view direction and up set above.
             posed_body_geom_meshes = [
                 _output_rendering.transform_mesh(
                     render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
                 )
                 for render_geom in body_geoms
             ]
-            if T_reflect is not None:
+            if reflect_T_act is not None:
                 posed_body_geom_meshes += [
-                    _output_rendering.transform_mesh(posed_body_geom_mesh, T_reflect)
+                    _output_rendering.transform_mesh(
+                        posed_body_geom_mesh, reflect_T_act
+                    )
                     for posed_body_geom_mesh in posed_body_geom_meshes
                 ]
             all_bounds = np.array(
-                [plotter.bounds]
+                [pv.MultiBlock(scene_meshes).bounds]
                 + [
                     posed_body_geom_mesh.bounds
                     for posed_body_geom_mesh in posed_body_geom_meshes
@@ -594,18 +791,8 @@ def draw(
             framing_bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
             plotter.reset_camera(bounds=tuple(framing_bounds))  # type: ignore[call-arg]
 
-            # Add the geom actors only now, so the worldbody geoms stay out of the
-            # framing fit and a worldbody geom that is much larger than the body, like a
-            # ground plane, cannot dominate it. Then re-fit only the clipping range to
-            # all actors, which keeps the fitted framing while ensuring the worldbody
-            # geoms are not cut off.
-            _output_rendering.add_mujoco_geometry(
-                plotter,
-                worldbody_geoms,
-                body_geoms,
-                T_pas_BP1_CgP1_to_E_Eo,
-                T_reflect,
-            )
+            # Re-fit only the clipping range to all actors, which keeps the fitted
+            # framing while ensuring the worldbody geoms are not cut off.
             plotter.reset_camera_clipping_range()
         else:
             plotter.reset_camera()  # type: ignore[call-arg]
@@ -619,7 +806,7 @@ def draw(
     # rgba has an alpha below one. Settle the scalar bar layout before such a drawing is
     # displayed. This is the first of the two passes it takes, and show below is the
     # second, so the labels are in place by the time the user sees anything.
-    scene_is_translucent = T_reflect is not None or any(
+    scene_is_translucent = reflect_T_act is not None or any(
         float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
     )
     if scene_is_translucent:
@@ -647,9 +834,35 @@ def draw(
         )
         time.sleep(1)
 
-    # If saving, take a screenshot and save it as a WebP.
+    # If saving, render the scene again in a separate off-screen Plotter, from the
+    # camera the window ended with, and save that as a WebP. The user can resize the
+    # window in ways that cannot be prevented on every platform, and the window's text
+    # and line widths stay scaled to the size it opened at, so capturing the window
+    # could save an image of a different size with mismatched styling. The off-screen
+    # Plotter is always the requested size. Its scalar bar layout is settled whether or
+    # not its scene is translucent, since an opaque scene's layout is already settled
+    # and the extra pass leaves it unchanged.
     if save:
-        image = _output_rendering.screenshot_image(plotter)
+        save_plotter = _create_plotter(window_width, window_height, True)
+        _add_scene(
+            save_plotter,
+            panel_surfaces,
+            wake_ring_vortex_surfaces,
+            coloring,
+            reflect_T_act,
+            window_scale,
+            streamline_surfaces,
+            image_surface_mesh,
+            image_surface_texture,
+            worldbody_geoms,
+            body_geoms,
+            T_pas_BP1_CgP1_to_E_Eo,
+        )
+        save_plotter.camera.DeepCopy(plotter.camera)
+        save_plotter.renderer.camera_set = True
+        _output_rendering.settle_scalar_bar_layout(save_plotter)
+        image = _output_rendering.screenshot_image(save_plotter)
+        save_plotter.close()
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.
         webp.save_image(
@@ -703,14 +916,21 @@ def animate(
         default is False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
-        ints, and, when rendering on screen, must fit within the area the window manager
-        grants, which is the display less any docks or bars and less the window's own
-        title bar. The text and line widths scale with it, so a larger or smaller window
-        is legible rather than being drawn with the same pixel counts as the default.
-        The default is (1024, 768).
-    :param save: Set this to True to save the animation as an animated WebP. It can be a
-        bool or a numpy bool and will be converted internally to a bool. The default is
-        False.
+        ints. The text and line widths scale with it, so a larger or smaller window is
+        legible rather than being drawn with the same pixel counts as the default. When
+        rendering on screen, a window_size that does not fit in the area the window
+        manager grants is shown scaled down to fit, keeping its aspect ratio, with its
+        text and line widths scaled down to match, while a saved WebP keeps the
+        requested size. The default is (1024, 768).
+    :param save: Set this to True to save the animation as an animated WebP. Once the
+        view is oriented, the window closes and the frames are rendered separately, off
+        screen, at window_size and from the view the window ended with, while a progress
+        bar reports the rendering's progress. Resizing the window therefore does not
+        change the saved frames' size or styling. However, a window resized to a
+        different aspect ratio shows more or less of the scene horizontally than the
+        saved frames do. If False, the animation plays in the window instead. It can be
+        a bool or a numpy bool and will be converted internally to a bool. The default
+        is False.
     :param path: The file path to save the animation to. It can be a str or a Path, must
         end with ".webp", and its directory must already exist. This has no effect
         unless save is True. The default is "animate.webp".
@@ -851,41 +1071,10 @@ def animate(
     # that describe how the saved animation steps through the time steps.
     playback = _output_rendering.resolve_playback(unsteady_solver, speed, save)
 
-    # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
-    plotter.enable_parallel_projection()  # type: ignore[call-arg]
-    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
-
-    # Set the background color before the check below realizes the window, so that the
-    # window appears in its final color rather than flashing white first.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
-
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing a file of a size the caller never
-    # asked for. Rendering the empty scene realizes the window, which is what makes the
-    # granted size readable. Only a granted size smaller than the request counts as a
-    # shrink, since a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        render_window = plotter.ren_win
-        assert render_window is not None
-        render_window.Render()
-        render_window.SetWindowName("Assembling the scene. Please wait.")
-        render_window.Render()
-        granted_width, granted_height = render_window.GetSize()
-        if granted_width < window_width or granted_height < window_height:
-            plotter.close()
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered "
-                f"on screen, where the window manager grants at most "
-                f"{largest_width} by {largest_height} pixels. Request a smaller "
-                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
-                f"True."
-            )
-
+    # Create the Plotter whose window shows the preview, along with the scale of its
+    # text and line widths. Those differ from the saved WebP's when the requested window
+    # does not fit on screen and is scaled down.
+    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # Initialize values to hold the color map choice and its limits.
@@ -932,7 +1121,7 @@ def animate(
     (
         image_surface_mesh,
         image_surface_texture,
-        T_reflect,
+        reflect_T_act,
         image_surface_geometry_bounds,
     ) = _output_rendering.get_animation_image_surface(
         unsteady_solver,
@@ -943,7 +1132,7 @@ def animate(
     )
     animate_text_color = (
         _output_rendering.TEXT_COLOR_SURFACE
-        if T_reflect is not None
+        if reflect_T_act is not None
         else _output_rendering.TEXT_COLOR
     )
 
@@ -1047,11 +1236,8 @@ def animate(
     # If saving the animation, add the text overlays that describe its playback.
     if save:
         _output_rendering.add_playback_overlays(
-            plotter, playback, window_scale, animate_text_color
+            plotter, playback, preview_window_scale, animate_text_color
         )
-
-    # Hold the temporary preview actors shown during the framing phase.
-    preview_actors: list[pv.Actor] = []
 
     # Show the first and last time steps together during framing. This gives the user
     # both the initial body pose and the final wake/trajectory extent without
@@ -1088,20 +1274,18 @@ def animate(
         first_panel_surfaces,
         None,
         first_frame_coloring,
-        T_reflect,
-        window_scale,
+        reflect_T_act,
+        preview_window_scale,
     )
     if last_step != 0:
         _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
-    preview_actors.extend(first_preview_actors)
 
     if show_mujoco_geometry:
         first_mujoco_actors = _output_rendering.add_mujoco_geometry(
-            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
+            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], reflect_T_act
         )
         if last_step != 0:
             _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
-        preview_actors.extend(first_mujoco_actors)
 
     if last_step != 0:
         last_panel_surfaces = _output_rendering.get_panel_surfaces(
@@ -1145,11 +1329,10 @@ def animate(
             last_panel_surfaces,
             last_wake_surfaces,
             last_coloring,
-            T_reflect,
-            window_scale,
+            reflect_T_act,
+            preview_window_scale,
         )
         _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
-        preview_actors.extend(last_preview_actors)
 
         if show_mujoco_geometry:
             last_mujoco_actors = _output_rendering.add_mujoco_geometry(
@@ -1157,17 +1340,16 @@ def animate(
                 [],
                 body_geoms,
                 step_body_transforms[last_step],
-                T_reflect,
+                reflect_T_act,
             )
             _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
-            preview_actors.extend(last_mujoco_actors)
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
     # is not dominated by the much larger image surface plane. When an image surface is
     # present, cpos is not passed to show() because that would trigger an auto-fit to
     # all actors (including the image surface).
-    if T_reflect is not None:
+    if reflect_T_act is not None:
         assert image_surface_mesh is not None
 
         # Add the image surface plane.
@@ -1215,7 +1397,7 @@ def animate(
     # matches the animation that follows it. This is the first of the two passes the
     # layout takes to settle, and show below is the second, so the labels are in place
     # by the time the user sees anything.
-    scene_is_translucent = T_reflect is not None or any(
+    scene_is_translucent = reflect_T_act is not None or any(
         float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
     )
     if scene_is_translucent or last_step != 0:
@@ -1245,42 +1427,61 @@ def animate(
             auto_close=False,
         )
         time.sleep(1)
-    assert plotter.ren_win is not None
-    plotter.ren_win.SetWindowName(
-        "Rendering animation. Please leave the window open until rendering finishes."
-    )
-    plotter.render()
 
-    plotter.disable_depth_peeling()  # type: ignore[call-arg]
+    # If saving, render the frames in a separate off-screen Plotter, from the camera the
+    # window ended with, and close the window. The user can resize the window in ways
+    # that cannot be prevented on every platform, and the window's text and line widths
+    # stay scaled to the size it opened at, so frames captured from it could change size
+    # partway through an animation and have mismatched styling. The off-screen Plotter
+    # is always the requested size, and it starts with the playback text overlays. If
+    # not saving, the frames play in the window, which is cleared of the preview first,
+    # and keep its scale. Saving or not, the first frame then starts from a Plotter
+    # without any of the preview, so it is built in full, with the image surface plane.
+    if save:
+        frame_plotter = _create_plotter(window_width, window_height, True)
+        frame_window_scale = window_scale
+        frame_plotter.camera.DeepCopy(plotter.camera)
+        frame_plotter.renderer.camera_set = True
+        _output_rendering.add_playback_overlays(
+            frame_plotter, playback, window_scale, animate_text_color
+        )
+        plotter.close()
+    else:
+        frame_plotter = plotter
+        frame_window_scale = preview_window_scale
+        assert plotter.ren_win is not None
+        plotter.ren_win.SetWindowName(
+            "Rendering animation. Please leave the window open until rendering "
+            "finishes."
+        )
+        plotter.render()
+        plotter.disable_depth_peeling()  # type: ignore[call-arg]
+        plotter.clear()
 
-    # Remove the temporary preview actors before the animation begins.
-    for actor in preview_actors:
-        plotter.remove_actor(actor, render=False)
-    # Rebuild the first frame as the actual animation frame after removing the preview.
+    # Build the first frame as the actual animation frame, and settle its scalar bar
+    # layout. The layout is settled whether or not the frame is translucent, since an
+    # opaque frame's layout is already settled and the extra pass leaves it unchanged.
+    # The first time step has not shed a wake yet.
     first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
     if is_free_flight:
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
-    first_frame_wake_surfaces = None
-    _output_rendering.add_frame_geometry(
-        plotter,
+    _add_scene(
+        frame_plotter,
         first_frame_panel_surfaces,
-        first_frame_wake_surfaces,
+        None,
         first_frame_coloring,
-        T_reflect,
-        window_scale,
+        reflect_T_act,
+        frame_window_scale,
+        None,
+        image_surface_mesh,
+        image_surface_texture,
+        worldbody_geoms,
+        body_geoms,
+        step_body_transforms[0] if show_mujoco_geometry else None,
     )
-    if show_mujoco_geometry:
-        _output_rendering.add_mujoco_geometry(
-            plotter,
-            worldbody_geoms,
-            body_geoms,
-            step_body_transforms[0],
-            T_reflect,
-        )
-    if scene_is_translucent:
-        _output_rendering.settle_scalar_bar_layout(plotter)
+    _output_rendering.settle_scalar_bar_layout(frame_plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
     # Preserve that camera and only size the clipping range so every frame stays
@@ -1290,16 +1491,29 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh, lighting=False, render=False)
+            frame_plotter.add_mesh(clip_mesh, lighting=False, render=False)
             for clip_mesh in free_flight_clip_meshes
         ]
-        plotter.reset_camera_clipping_range()
-        free_flight_clipping_range = plotter.camera.clipping_range
+        frame_plotter.reset_camera_clipping_range()
+        free_flight_clipping_range = frame_plotter.camera.clipping_range
         for temporary_actor in temporary_actors:
-            plotter.remove_actor(temporary_actor, render=False)
-        plotter.camera.clipping_range = free_flight_clipping_range
+            frame_plotter.remove_actor(temporary_actor, render=False)
+        frame_plotter.camera.clipping_range = free_flight_clipping_range
 
-    plotter.render()
+    frame_plotter.render()
+
+    # Show the rendering's progress, one time step at a time. When saving, the window
+    # has closed, so this is the only sign that the animation is still being rendered.
+    # When not saving, the window itself shows the progress, so the bar is disabled.
+    progress_bar = tqdm(
+        total=len(step_airplanes),
+        unit="",
+        ncols=100,
+        desc="Rendering",
+        disable=not save,
+        bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
+        "Remaining: {remaining}",
+    )
 
     # If saving, start the writer that encodes each frame into the WebP as it is
     # captured, so the frames never accumulate in memory, and hand it this first frame.
@@ -1313,12 +1527,14 @@ def animate(
         # ignore, in which case capture simply keeps the refresh rate's pace. It is not
         # made when not saving, since the window is then what the user watches, and the
         # wait is the only pacing the playback has.
-        plotter.ren_win.SetSwapControl(0)
+        assert frame_plotter.ren_win is not None
+        frame_plotter.ren_win.SetSwapControl(0)
 
         animation_writer = _output_rendering.AnimationWriter(
             path, playback.frame_rate, quality
         )
-        animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
+        animation_writer.add_frame(_output_rendering.screenshot_image(frame_plotter))
+    progress_bar.update()
 
     # Initialize a variable to keep track of the current time step.
     current_step = 1
@@ -1327,7 +1543,7 @@ def animate(
     for airplanes in step_airplanes[1:]:
 
         # Clear the Plotter.
-        plotter.clear()
+        frame_plotter.clear()
 
         # Get the Panel surfaces of this time step's Airplane(s), mapping them into
         # Earth axes for free flight.
@@ -1340,7 +1556,7 @@ def animate(
         # If saving the animation, add the text overlays that describe its playback.
         if save:
             _output_rendering.add_playback_overlays(
-                plotter, playback, window_scale, animate_text_color
+                frame_plotter, playback, window_scale, animate_text_color
             )
 
         # If showing wake ring vortices, get their surfaces, mapping them into Earth
@@ -1379,64 +1595,54 @@ def animate(
                 c_max,
             )
 
-        # Add this time step's geometry.
-        _output_rendering.add_frame_geometry(
-            plotter,
+        # Add this time step's scene, which includes the pre-computed image surface
+        # plane when one is defined.
+        _add_scene(
+            frame_plotter,
             panel_surfaces,
             wake_ring_vortex_surfaces,
             coloring,
-            T_reflect,
-            window_scale,
+            reflect_T_act,
+            frame_window_scale,
+            None,
+            image_surface_mesh,
+            image_surface_texture,
+            worldbody_geoms,
+            body_geoms,
+            step_body_transforms[current_step] if show_mujoco_geometry else None,
         )
-
-        # If showing MuJoCo geometry, add it at this time step's pose.
-        if show_mujoco_geometry:
-            _output_rendering.add_mujoco_geometry(
-                plotter,
-                worldbody_geoms,
-                body_geoms,
-                step_body_transforms[current_step],
-                T_reflect,
-            )
-
-        # If an image surface is defined, add the pre-computed image surface plane.
-        if T_reflect is not None:
-            assert image_surface_mesh is not None
-            plotter.add_mesh(
-                image_surface_mesh,
-                texture=image_surface_texture,
-                opacity=_IMAGE_SURFACE_OPACITY,
-                smooth_shading=True,
-                lighting=False,
-                render=False,
-            )
 
         # If the frame is translucent, settle the scalar bar layout before it is
         # displayed, leaving the second of its two passes to the render below.
         if scene_is_translucent:
-            _output_rendering.settle_scalar_bar_layout(plotter)
+            _output_rendering.settle_scalar_bar_layout(frame_plotter)
 
         # Render the assembled frame. Every add above is made with render=False, so
         # without this the frame would never reach the screen. Rendering once the frame
         # is whole is invisible, unlike the renders the adds used to trigger.
-        plotter.render()
+        frame_plotter.render()
 
         # If saving, hand a WebP Image of this frame to the writer. Only the time steps
         # that are multiples of the stride are saved, so a speed the maximum frame rate
-        # cannot carry drops the ones in between. The render above is not skipped, so
-        # the animation on screen still steps through every time step.
+        # cannot carry drops the ones in between.
         if animation_writer is not None and current_step % playback.keep_every == 0:
-            animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
+            animation_writer.add_frame(
+                _output_rendering.screenshot_image(frame_plotter)
+            )
 
-        # Increment the time step tracker.
+        # Increment the time step tracker, and advance the progress bar.
         current_step += 1
+        progress_bar.update()
+
+    progress_bar.close()
 
     # If saving, finish the animation and write it to its file.
     if animation_writer is not None:
         animation_writer.close()
 
-    # Close the Plotter.
-    plotter.close()
+    # Close the Plotter the frames were rendered in. When saving, the window's Plotter
+    # was already closed before the frames were rendered.
+    frame_plotter.close()
 
 
 def plot_results_versus_time(

@@ -36,6 +36,9 @@ import matplotlib.patches
 import matplotlib.path
 import matplotlib.typing
 import numpy as np
+import scipy.optimize
+import scipy.sparse
+import scipy.sparse.csgraph
 import scipy.spatial
 
 from . import _fonts
@@ -75,8 +78,8 @@ _OVERLAP_TOLERANCE = 1.0e-6
 _CAP_SIDES = 16
 
 # Define the number of rounds in which the pieces of strokes caught in a cycle of depth
-# constraints are split before the weakest constraints in the cycles that survive are
-# dropped.
+# constraints are split before the cycles that survive are broken by dropping
+# constraints.
 _SPLIT_ROUNDS = 3
 
 # Define the resolution the figures are laid out at. Each pixel of the window becomes
@@ -1178,59 +1181,190 @@ def _get_constraints(
 def _sort_items(
     num_items: int,
     constraints: list[tuple[int, int, float, float | None, float | None]],
-    drop_weakest: bool,
 ) -> list[int] | None:
     """Sorts items so that each constraint's first item comes before its later one,
     keeping the items' given order wherever the constraints allow.
-
-    Where the constraints form a cycle, which no order can satisfy, the sort is blocked.
-    It then either gives up or drops, one at a time, the constraint with the smallest
-    weight among those on items not yet sorted, until it can go on.
 
     :param num_items: The number of items.
     :param constraints: The constraints, each a tuple of the index of the item painted
         first, the index of the item painted later, the constraint's weight, and the
         fractions along the first and later items where they touch, or None for a fill.
-    :param drop_weakest: Determines whether to drop constraints where a cycle blocks the
-        sort, rather than giving up.
-    :return: The items' indices in the order to paint them, or None if a cycle blocks
-        the sort and drop_weakest is False.
+    :return: The items' indices in the order to paint them, or None if the constraints
+        form a cycle, which no order can satisfy.
     """
-    incoming: list[dict[int, float]] = [{} for _ in range(num_items)]
-    outgoing: list[set[int]] = [set() for _ in range(num_items)]
-    for first_id, later_id, weight, _, _ in constraints:
-        incoming[later_id][first_id] = max(
-            weight, incoming[later_id].get(first_id, 0.0)
-        )
-        outgoing[first_id].add(later_id)
-    ready = [item_id for item_id in range(num_items) if not incoming[item_id]]
+    incoming_counts = [0] * num_items
+    outgoing: list[list[int]] = [[] for _ in range(num_items)]
+    for first_id, later_id, _, _, _ in constraints:
+        incoming_counts[later_id] += 1
+        outgoing[first_id].append(later_id)
+    ready = [item_id for item_id in range(num_items) if incoming_counts[item_id] == 0]
     heapq.heapify(ready)
     order: list[int] = []
-    while len(order) < num_items:
-        if not ready:
-            if not drop_weakest:
-                return None
-            first_id, later_id = min(
-                (
-                    (first_id, later_id)
-                    for later_id in range(num_items)
-                    for first_id in incoming[later_id]
-                ),
-                key=lambda pair: incoming[pair[1]][pair[0]],
-            )
-            del incoming[later_id][first_id]
-            outgoing[first_id].discard(later_id)
-            if not incoming[later_id]:
-                heapq.heappush(ready, later_id)
-            continue
+    while ready:
         item_id = heapq.heappop(ready)
         order.append(item_id)
         for later_id in outgoing[item_id]:
-            del incoming[later_id][item_id]
-            if not incoming[later_id]:
+            incoming_counts[later_id] -= 1
+            if incoming_counts[later_id] == 0:
                 heapq.heappush(ready, later_id)
-        outgoing[item_id] = set()
+    if len(order) < num_items:
+        return None
     return order
+
+
+def _find_cycle(
+    successors: dict[int, set[int]], item_ids: list[int]
+) -> list[tuple[int, int]] | None:
+    """Finds a cycle of constraints among some items, by a depth first search.
+
+    :param successors: The constraints, as a dict mapping each item's index to the set
+        of indices of the items it must be painted before.
+    :param item_ids: The indices of the items to search among. Constraints to other
+        items are ignored.
+    :return: The cycle's constraints, each a tuple of the index of the item painted
+        first and the index of the item painted later, or None if there is no cycle.
+    """
+    # Each item is unvisited (0), on the current path (1), or finished (2).
+    states = {item_id: 0 for item_id in item_ids}
+    for root_id in item_ids:
+        if states[root_id]:
+            continue
+        path = [root_id]
+        iterators = [iter(successors.get(root_id, ()))]
+        states[root_id] = 1
+        while path:
+            for next_id in iterators[-1]:
+                if next_id not in states:
+                    continue
+                if states[next_id] == 1:
+                    cycle_ids = path[path.index(next_id) :]
+                    return list(zip(cycle_ids, cycle_ids[1:] + cycle_ids[:1]))
+                if states[next_id] == 0:
+                    states[next_id] = 1
+                    path.append(next_id)
+                    iterators.append(iter(successors.get(next_id, ())))
+                    break
+            else:
+                states[path.pop()] = 2
+                iterators.pop()
+    return None
+
+
+def _get_cheapest_drops(
+    item_ids: list[int], weights: dict[tuple[int, int], float]
+) -> set[tuple[int, int]]:
+    """Finds the set of constraints among some items whose removal leaves no cycle and
+    whose total weight is smallest.
+
+    It is solved exactly, as an integer program in which each constraint of finite
+    weight is either dropped or kept, and every cycle must lose at least one of its
+    constraints. Listing every cycle up front would take too long, so the cycles are
+    added as they are found: each time, the cycles that the cheapest drops so far leave
+    are collected, and the program is solved again with them, until none are left.
+
+    :param item_ids: The indices of the items.
+    :param weights: A dict mapping each constraint among the items, as a tuple of the
+        index of the item painted first and the index of the item painted later, to its
+        weight. A constraint of infinite weight is never dropped.
+    :return: The dropped constraints, each a tuple of the index of the item painted
+        first and the index of the item painted later.
+    """
+    finite = [pair for pair, weight in weights.items() if np.isfinite(weight)]
+    finite_ids = {pair: pair_id for pair_id, pair in enumerate(finite)}
+
+    # Every drop costs a little more than its weight, so a constraint of zero weight is
+    # only dropped where that breaks a cycle.
+    costs = np.array([weights[pair] for pair in finite], dtype=float) + 1.0e-9
+
+    rows: list[list[int]] = []
+    dropped: set[tuple[int, int]] = set()
+    while True:
+        # Collect the cycles the drops so far leave. Each cycle found has its cheapest
+        # constraint removed from a working copy, so the next search finds another.
+        successors: dict[int, set[int]] = {}
+        for first_id, later_id in weights:
+            if (first_id, later_id) not in dropped:
+                successors.setdefault(first_id, set()).add(later_id)
+        new_rows: list[list[int]] = []
+        while True:
+            cycle = _find_cycle(successors, item_ids)
+            if cycle is None:
+                break
+            row = [finite_ids[pair] for pair in cycle if pair in finite_ids]
+            if not row:
+                raise RuntimeError(
+                    "The constraints on the paint order form a cycle that can't be "
+                    "broken."
+                )
+            new_rows.append(row)
+            first_id, later_id = finite[min(row, key=lambda pair_id: costs[pair_id])]
+            successors[first_id].discard(later_id)
+        if not new_rows:
+            return dropped
+        rows += new_rows
+
+        matrix = np.zeros((len(rows), len(finite)), dtype=float)
+        for row_id, row in enumerate(rows):
+            matrix[row_id, row] = 1.0
+        result = scipy.optimize.milp(
+            costs,
+            integrality=np.ones(len(finite), dtype=int),
+            bounds=scipy.optimize.Bounds(0.0, 1.0),
+            constraints=scipy.optimize.LinearConstraint(matrix, 1.0, np.inf),
+        )
+        if result.x is None:
+            raise RuntimeError(
+                "The constraints on the paint order couldn't be freed of their cycles: "
+                + result.message
+            )
+        dropped = {finite[pair_id] for pair_id in np.flatnonzero(result.x > 0.5)}
+
+
+def _break_cycles(
+    num_items: int,
+    constraints: list[tuple[int, int, float, float | None, float | None]],
+) -> list[tuple[int, int, float, float | None, float | None]]:
+    """Drops the set of constraints whose total weight is smallest among those whose
+    removal leaves no cycle.
+
+    Constraints between the same two items are dropped together, at their summed weight.
+    A cycle lies within one strongly connected component of the constraints, so each
+    component is freed of its cycles on its own, by _get_cheapest_drops.
+
+    :param num_items: The number of items.
+    :param constraints: The constraints, each a tuple of the index of the item painted
+        first, the index of the item painted later, the constraint's weight, and the
+        fractions along the first and later items where they touch, or None for a fill.
+    :return: The constraints that are kept, in the same form and order.
+    """
+    weights: dict[tuple[int, int], float] = {}
+    for first_id, later_id, weight, _, _ in constraints:
+        weights[(first_id, later_id)] = weights.get((first_id, later_id), 0.0) + weight
+    if not weights:
+        return constraints
+    pairs = np.array(list(weights), dtype=int)
+    graph = scipy.sparse.coo_matrix(
+        (np.ones(len(pairs), dtype=float), (pairs[:, 0], pairs[:, 1])),
+        shape=(num_items, num_items),
+    )
+    _, components = scipy.sparse.csgraph.connected_components(
+        graph, directed=True, connection="strong"
+    )
+    dropped: set[tuple[int, int]] = set()
+    for component in np.flatnonzero(np.bincount(components) > 1).tolist():
+        dropped |= _get_cheapest_drops(
+            np.flatnonzero(components == component).tolist(),
+            {
+                pair: weight
+                for pair, weight in weights.items()
+                if components[pair[0]] == component and components[pair[1]] == component
+            },
+        )
+    return [
+        constraint
+        for constraint in constraints
+        if (constraint[0], constraint[1]) not in dropped
+    ]
 
 
 def _get_blocked_items(
@@ -1285,7 +1419,8 @@ def _order_items(
     deep one. Where the constraints form a cycle, each piece of a stroke in it is split
     midway between the places it touches the others, wherever two of those places are at
     least its width apart, and the sort is retried, for up to _SPLIT_ROUNDS rounds. Any
-    cycles that survive are broken by dropping their weakest constraints.
+    cycles that survive are broken by dropping the set of constraints with the smallest
+    total weight whose removal breaks them all, as _break_cycles finds.
 
     :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
         of floats holding its vertices, in order counterclockwise around it on screen
@@ -1310,7 +1445,7 @@ def _order_items(
             fills, pieces, strokes_display, stroke_owners, occluders, widths
         )
         num_items = num_fills + len(pieces)
-        if _sort_items(num_items, constraints, drop_weakest=False) is not None:
+        if _sort_items(num_items, constraints) is not None:
             break
 
         blocked_ids = _get_blocked_items(num_items, constraints)
@@ -1353,7 +1488,8 @@ def _order_items(
     constraints = _get_constraints(
         fills, pieces, strokes_display, stroke_owners, occluders, widths
     )
-    order = _sort_items(num_fills + len(pieces), constraints, drop_weakest=True)
+    num_items = num_fills + len(pieces)
+    order = _sort_items(num_items, _break_cycles(num_items, constraints))
     assert order is not None
     return order, pieces
 

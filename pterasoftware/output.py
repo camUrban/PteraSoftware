@@ -859,6 +859,7 @@ def draw(
             T_pas_BP1_CgP1_to_E_Eo,
         )
         save_plotter.camera.DeepCopy(plotter.camera)
+        save_plotter.renderer.camera_set = True
         _output_rendering.settle_scalar_bar_layout(save_plotter)
         image = _output_rendering.screenshot_image(save_plotter)
         save_plotter.close()

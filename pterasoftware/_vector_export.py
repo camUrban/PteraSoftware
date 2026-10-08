@@ -11,10 +11,10 @@ they keep every plane flat and every intersection where it was.
 
 Visibility is resolved exactly in display coordinates. The opaque fills are split and
 ordered by a binary space partitioning (BSP) tree, which paints them from back to front.
-The strokes are clipped against every nearer triangle, which removes their hidden
-stretches, and are painted after the fills, in depth order among themselves. Matplotlib
-then writes the result, which makes the svg and pdf writers the same ones the results
-plots use.
+The strokes are cut wherever they pass through a fill and painted among the fills in
+depth order, each before the fills that hide it, so those fills cover it, and after
+everything else it overlaps. Matplotlib then writes the result, which makes the svg and
+pdf writers the same ones the results plots use.
 """
 
 from __future__ import annotations
@@ -61,14 +61,18 @@ _DEGENERATE_TOLERANCE = 1.0e-12
 _SPLITTER_CANDIDATES = 8
 _SPLITTER_SEED = 7
 
-# Define the side, in pixels, of the cells of the grid on screen that the triangles are
-# registered in when clipping strokes, so that each stroke is only tested against the
-# triangles near it.
+# Define the side, in pixels, of the cells of the grid on screen that boxes are
+# registered in when finding which ones overlap, so that each box is only tested against
+# the boxes near it.
 _GRID_CELL_SIZE = 32.0
 
-# Define the shortest fraction of a stroke that is still drawn once its hidden stretches
-# are removed.
-_MIN_VISIBLE_FRACTION = 1.0e-9
+# Define the length, in pixels, by which two fills must overlap on screen to count as
+# overlapping, so fills that only touch don't constrain each other's order.
+_OVERLAP_TOLERANCE = 1.0e-6
+
+# Define the number of sides of the polygon that approximates each round end of a
+# stroke's footprint on screen, where it is compared with the fills it overlaps.
+_CAP_SIDES = 16
 
 # Define the number of rounds in which the pieces of strokes caught in a cycle of depth
 # constraints are split before the weakest constraints in the cycles that survive are
@@ -496,7 +500,7 @@ def get_paint_order(
 
 
 class _Occluders(NamedTuple):
-    """The quantities that clipping strokes against a set of triangles needs, computed
+    """The quantities that comparing strokes with a set of triangles needs, computed
     once for all of them.
 
     :param mins_display: A (T,3) ndarray of floats holding the smallest x, y, and depth
@@ -522,7 +526,7 @@ class _Occluders(NamedTuple):
 
 
 def _prepare_occluders(triangles_display: np.ndarray) -> _Occluders:
-    """Computes the quantities that clipping strokes against a set of triangles needs.
+    """Computes the quantities that comparing strokes with a set of triangles needs.
 
     :param triangles_display: A (T,3,3) ndarray of floats holding each triangle's
         vertices (in display coordinates).
@@ -549,258 +553,358 @@ def _prepare_occluders(triangles_display: np.ndarray) -> _Occluders:
     )
 
 
-def _clip_to_footprint(
-    start_display: np.ndarray, direction_display: np.ndarray, wound_display: np.ndarray
-) -> tuple[float, float] | None:
-    """Finds the part of a stroke that lies within a triangle's footprint on screen.
+def _get_overlapping_boxes(
+    query_mins: np.ndarray,
+    query_maxs: np.ndarray,
+    mins: np.ndarray,
+    maxs: np.ndarray,
+) -> list[np.ndarray]:
+    """Finds, for each of a set of query boxes on screen, the boxes of another set that
+    it overlaps or touches.
 
-    The stroke is clipped against the half plane inside each of the triangle's edges in
-    turn.
+    Each box of the other set is registered in the cells of a square grid on screen that
+    it overlaps, so each query box is only compared with the boxes registered in the
+    cells it overlaps.
 
-    :param start_display: A (3,) ndarray of floats holding the stroke's start (in
-        display coordinates).
-    :param direction_display: A (3,) ndarray of floats holding the vector from the
-        stroke's start to its end (in display coordinates).
-    :param wound_display: A (3,3) ndarray of floats holding the triangle's vertices (in
-        display coordinates), ordered counterclockwise on screen.
-    :return: A tuple of the fractions along the stroke where the part within the
-        footprint starts and ends, or None if the stroke misses the footprint.
+    :param query_mins: A (Q,2) ndarray of floats holding the smallest x and y of each
+        query box, in pixels.
+    :param query_maxs: A (Q,2) ndarray of floats holding the largest x and y of each
+        query box, in pixels.
+    :param mins: A (B,2) ndarray of floats holding the smallest x and y of each of the
+        other boxes, in pixels.
+    :param maxs: A (B,2) ndarray of floats holding the largest x and y of each of the
+        other boxes, in pixels.
+    :return: A list of Q (K,) ndarrays of ints, each holding the indices of the other
+        boxes that a query box overlaps or touches, in increasing order.
     """
-    low = 0.0
-    high = 1.0
-    for vertex_id in range(3):
-        corner = wound_display[vertex_id, :2]
-        along = wound_display[(vertex_id + 1) % 3, :2] - corner
+    grid: dict[tuple[int, int], list[int]] = {}
+    cell_mins = np.floor(mins / _GRID_CELL_SIZE).astype(int)
+    cell_maxs = np.floor(maxs / _GRID_CELL_SIZE).astype(int)
+    for box_id in range(mins.shape[0]):
+        for cell_x in range(cell_mins[box_id, 0], cell_maxs[box_id, 0] + 1):
+            for cell_y in range(cell_mins[box_id, 1], cell_maxs[box_id, 1] + 1):
+                grid.setdefault((cell_x, cell_y), []).append(box_id)
 
-        # The stroke is inside this edge's half plane where the cross product of the
-        # edge with the vector from its corner to the stroke is positive, and that cross
-        # product is linear in the fraction along the stroke.
-        constant = along[0] * (start_display[1] - corner[1]) - along[1] * (
-            start_display[0] - corner[0]
+    query_cell_mins = np.floor(query_mins / _GRID_CELL_SIZE).astype(int)
+    query_cell_maxs = np.floor(query_maxs / _GRID_CELL_SIZE).astype(int)
+    overlapping_ids: list[np.ndarray] = []
+    for query_id in range(query_mins.shape[0]):
+        registered_ids: set[int] = set()
+        for cell_x in range(
+            query_cell_mins[query_id, 0], query_cell_maxs[query_id, 0] + 1
+        ):
+            for cell_y in range(
+                query_cell_mins[query_id, 1], query_cell_maxs[query_id, 1] + 1
+            ):
+                registered_ids.update(grid.get((cell_x, cell_y), ()))
+        registered = np.array(sorted(registered_ids), dtype=int)
+        overlapping_ids.append(
+            registered[
+                np.all(mins[registered] <= query_maxs[query_id], axis=1)
+                & np.all(maxs[registered] >= query_mins[query_id], axis=1)
+            ]
         )
-        slope = along[0] * direction_display[1] - along[1] * direction_display[0]
-        if abs(slope) < _DEGENERATE_TOLERANCE:
-            if constant < 0.0:
-                return None
-            continue
-        crossing = -constant / slope
-        if slope > 0.0:
-            low = max(low, crossing)
-        else:
-            high = min(high, crossing)
-        if low >= high:
-            return None
-    return low, high
+    return overlapping_ids
 
 
-def _get_occluded_range(
-    start_display: np.ndarray,
-    direction_display: np.ndarray,
-    normal_display: np.ndarray,
-    offset: float,
-    low: float,
-    high: float,
-) -> tuple[float, float] | None:
-    """Finds the part of a stroke, within a triangle's footprint, that the triangle's
-    plane is nearer than.
-
-    Both the stroke's depth and the plane's depth beneath it are linear in the fraction
-    along the stroke, so their difference crosses zero at most once. The stroke wins a
-    tie within _PLANE_TOLERANCE.
-
-    :param start_display: A (3,) ndarray of floats holding the stroke's start (in
-        display coordinates).
-    :param direction_display: A (3,) ndarray of floats holding the vector from the
-        stroke's start to its end (in display coordinates).
-    :param normal_display: A (3,) ndarray of floats holding the triangle's normal (in
-        display coordinates), whose depth component mustn't be zero.
-    :param offset: The dot product of the triangle's normal with its vertices.
-    :param low: The fraction along the stroke where its part within the footprint
-        starts.
-    :param high: The fraction along the stroke where its part within the footprint ends.
-    :return: A tuple of the fractions along the stroke where the hidden part starts and
-        ends, or None if the triangle hides none of it.
-    """
-    gap_constant = (
-        start_display[2]
-        - (
-            offset
-            - normal_display[0] * start_display[0]
-            - normal_display[1] * start_display[1]
-        )
-        / normal_display[2]
-        - _PLANE_TOLERANCE
-    )
-    gap_slope = (
-        direction_display[2]
-        + (
-            normal_display[0] * direction_display[0]
-            + normal_display[1] * direction_display[1]
-        )
-        / normal_display[2]
-    )
-    if abs(gap_slope) < _DEGENERATE_TOLERANCE:
-        if gap_constant <= 0.0:
-            return None
-        hidden_low, hidden_high = low, high
-    else:
-        crossing = -gap_constant / gap_slope
-        if gap_slope > 0.0:
-            hidden_low, hidden_high = max(low, crossing), high
-        else:
-            hidden_low, hidden_high = low, min(high, crossing)
-    if hidden_low < hidden_high:
-        return hidden_low, hidden_high
-    return None
-
-
-def _subtract_interval(
-    intervals: list[tuple[float, float, bool, bool]],
-    low: float,
-    high: float,
-    low_at_boundary: bool,
-    high_at_boundary: bool,
-) -> list[tuple[float, float, bool, bool]]:
-    """Removes an interval from a list of disjoint intervals, each of whose ends records
-    whether it was cut at the boundary of a triangle's footprint on screen.
-
-    :param intervals: The disjoint intervals, each a tuple of its start, its end, and
-        whether each of them was cut at a footprint's boundary.
-    :param low: The start of the interval to remove.
-    :param high: The end of the interval to remove.
-    :param low_at_boundary: Whether the interval to remove starts at a footprint's
-        boundary, which the end it leaves behind records.
-    :param high_at_boundary: Whether the interval to remove ends at a footprint's
-        boundary, which the start it leaves behind records.
-    :return: The remaining disjoint intervals, in the same form.
-    """
-    remaining: list[tuple[float, float, bool, bool]] = []
-    for start, end, start_at_boundary, end_at_boundary in intervals:
-        if high <= start or low >= end:
-            remaining.append((start, end, start_at_boundary, end_at_boundary))
-            continue
-        if low > start:
-            remaining.append((start, low, start_at_boundary, low_at_boundary))
-        if high < end:
-            remaining.append((high, end, high_at_boundary, end_at_boundary))
-    return remaining
-
-
-def get_visible_intervals(
+def _cut_at_pierces(
     strokes_display: np.ndarray,
     stroke_owners: Sequence[set[int]],
-    triangles_display: np.ndarray,
-    half_widths: np.ndarray,
-) -> list[list[tuple[float, float]]]:
-    """Finds the parts of each stroke that no triangle hides.
+    occluders: _Occluders,
+) -> list[tuple[int, float, float]]:
+    """Cuts each stroke into pieces wherever its centerline passes through a triangle
+    that it doesn't outline.
 
-    A triangle hides the part of a stroke that lies within its footprint on screen and
-    behind its plane. A stroke is never hidden by the triangles that own it, which are
-    the faces it outlines, and it wins a depth tie against any other triangle. A
-    triangle seen exactly edge on has no footprint, so it hides nothing.
-
-    Visibility is judged along each stroke's centerline, so a stroke whose centerline
-    runs along the boundary of what hides it keeps or loses its whole width at once.
-    Where a stroke is cut at the boundary of a triangle's footprint, its line is pulled
-    back along it by half its width on screen, so its round end stops at the boundary
-    rather than reaching over the triangle. Where it is cut where it passes through a
-    triangle's plane, the cut is left where it is.
+    A stroke passes through a triangle where it crosses the triangle's plane within the
+    triangle's footprint on screen. A triangle seen exactly edge on has no footprint, so
+    no stroke passes through it.
 
     :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
         end (in display coordinates).
     :param stroke_owners: A sequence of N sets of ints, holding the indices of the
-        triangles that own each stroke.
-    :param triangles_display: A (T,3,3) ndarray of floats holding each triangle's
-        vertices (in display coordinates).
-    :param half_widths: A (N,) ndarray of floats holding half of each stroke's width, in
-        pixels.
-    :return: A list of N lists, each holding a stroke's visible parts as tuples of the
-        fractions along it where they start and end. A part pulled back to nothing ends
-        before it starts.
+        triangles each stroke outlines.
+    :param occluders: The _Occluders holding the triangles' quantities.
+    :return: The pieces, each a tuple of its stroke's index and the fractions along the
+        stroke where it starts and ends, in the order of their strokes and then of their
+        positions along them.
     """
-    occluders = _prepare_occluders(triangles_display)
+    usable_ids = np.flatnonzero(occluders.usable)
+    candidate_ids = _get_overlapping_boxes(
+        strokes_display[:, :, :2].min(axis=1),
+        strokes_display[:, :, :2].max(axis=1),
+        occluders.mins_display[usable_ids, :2],
+        occluders.maxs_display[usable_ids, :2],
+    )
 
-    # Register each triangle that can hide anything in the cells of a square grid on
-    # screen that its bounding box overlaps, so each stroke only needs to consider the
-    # triangles registered in the cells its own bounding box overlaps.
-    grid: dict[tuple[int, int], list[int]] = {}
-    cell_mins = np.floor(occluders.mins_display[:, :2] / _GRID_CELL_SIZE).astype(int)
-    cell_maxs = np.floor(occluders.maxs_display[:, :2] / _GRID_CELL_SIZE).astype(int)
-    for triangle_id in np.flatnonzero(occluders.usable):
-        for cell_x in range(cell_mins[triangle_id, 0], cell_maxs[triangle_id, 0] + 1):
-            for cell_y in range(
-                cell_mins[triangle_id, 1], cell_maxs[triangle_id, 1] + 1
-            ):
-                grid.setdefault((cell_x, cell_y), []).append(int(triangle_id))
-
-    visible_intervals: list[list[tuple[float, float]]] = []
-    for stroke_display, owners, half_width in zip(
-        strokes_display, stroke_owners, half_widths
+    pieces: list[tuple[int, float, float]] = []
+    for stroke_id, (stroke_display, owners) in enumerate(
+        zip(strokes_display, stroke_owners)
     ):
         start_display = stroke_display[0]
         direction_display = stroke_display[1] - stroke_display[0]
-        stroke_mins_display = stroke_display.min(axis=0)
-        stroke_maxs_display = stroke_display.max(axis=0)
+        cuts: set[float] = set()
+        for triangle_id in usable_ids[candidate_ids[stroke_id]].tolist():
+            if triangle_id in owners:
+                continue
 
-        registered_ids: set[int] = set()
-        stroke_cell_mins = np.floor(stroke_mins_display[:2] / _GRID_CELL_SIZE)
-        stroke_cell_maxs = np.floor(stroke_maxs_display[:2] / _GRID_CELL_SIZE)
-        for cell_x in range(int(stroke_cell_mins[0]), int(stroke_cell_maxs[0]) + 1):
-            for cell_y in range(int(stroke_cell_mins[1]), int(stroke_cell_maxs[1]) + 1):
-                registered_ids.update(grid.get((cell_x, cell_y), ()))
-        registered = np.array(sorted(registered_ids), dtype=int)
-
-        # Only a triangle whose bounding box overlaps the stroke's on screen, and whose
-        # nearest vertex is nearer than the stroke's farthest point, can hide any of it.
-        candidate_ids = registered[
-            (occluders.mins_display[registered, 0] <= stroke_maxs_display[0])
-            & (occluders.maxs_display[registered, 0] >= stroke_mins_display[0])
-            & (occluders.mins_display[registered, 1] <= stroke_maxs_display[1])
-            & (occluders.maxs_display[registered, 1] >= stroke_mins_display[1])
-            & (
-                occluders.mins_display[registered, 2]
-                < stroke_maxs_display[2] - _PLANE_TOLERANCE
+            # The stroke's depth minus the depth of the triangle's plane beneath it is
+            # linear in the fraction along the stroke.
+            normal_display = occluders.normals_display[triangle_id]
+            gap_constant = (
+                start_display[2]
+                - (
+                    occluders.offsets[triangle_id]
+                    - normal_display[0] * start_display[0]
+                    - normal_display[1] * start_display[1]
+                )
+                / normal_display[2]
             )
+            gap_slope = (
+                direction_display[2]
+                + (
+                    normal_display[0] * direction_display[0]
+                    + normal_display[1] * direction_display[1]
+                )
+                / normal_display[2]
+            )
+            if abs(gap_slope) < _DEGENERATE_TOLERANCE:
+                continue
+            crossing = float(-gap_constant / gap_slope)
+            if not 0.0 < crossing < 1.0:
+                continue
+
+            # The crossing is within the footprint where it is to the left of each of
+            # the triangle's edges, which are ordered counterclockwise on screen.
+            crossing_display = start_display[:2] + crossing * direction_display[:2]
+            corners_display = occluders.wound_display[triangle_id, :, :2]
+            edges_display = np.roll(corners_display, -1, axis=0) - corners_display
+            offsets_display = crossing_display - corners_display
+            if np.all(
+                edges_display[:, 0] * offsets_display[:, 1]
+                - edges_display[:, 1] * offsets_display[:, 0]
+                >= 0.0
+            ):
+                cuts.add(crossing)
+
+        bounds = [0.0, *sorted(cuts), 1.0]
+        pieces += [(stroke_id, low, high) for low, high in zip(bounds, bounds[1:])]
+    return pieces
+
+
+def _clip_to_half_plane(
+    corners_display: np.ndarray, normal: np.ndarray, bound: float
+) -> np.ndarray:
+    """Clips a convex polygon on screen to the half plane where a point's dot product
+    with a normal is at most a bound.
+
+    :param corners_display: A (K,2) ndarray of floats holding the polygon's corners, in
+        order around it (in display coordinates).
+    :param normal: A (2,) ndarray of floats holding the normal of the half plane's
+        boundary, pointing out of the half plane.
+    :param bound: The largest dot product with the normal of a point in the half plane.
+    :return: A (M,2) ndarray of floats holding the clipped polygon's corners, in order
+        around it (in display coordinates). It holds fewer than three corners if none of
+        the polygon's area is left.
+    """
+    clipped_display: list[np.ndarray] = []
+    for corner_display, next_corner_display in zip(
+        corners_display, np.roll(corners_display, -1, axis=0)
+    ):
+        side = corner_display @ normal - bound
+        next_side = next_corner_display @ normal - bound
+        if side <= 0.0:
+            clipped_display.append(corner_display)
+        if (side < 0.0 < next_side) or (next_side < 0.0 < side):
+            fraction = side / (side - next_side)
+            clipped_display.append(
+                corner_display + fraction * (next_corner_display - corner_display)
+            )
+    return np.array(clipped_display, dtype=float).reshape(-1, 2)
+
+
+def _get_area_and_centroid(
+    corners_display: np.ndarray,
+) -> tuple[float, np.ndarray | None]:
+    """Returns a polygon's area on screen and its centroid.
+
+    :param corners_display: A (K,2) ndarray of floats holding the polygon's corners, in
+        order around it (in display coordinates).
+    :return: A tuple of the polygon's area, in square pixels, and a (2,) ndarray of
+        floats holding its centroid (in display coordinates), or of zero and None if its
+        area is at most _SLIVER_AREA.
+    """
+    if corners_display.shape[0] < 3:
+        return 0.0, None
+    x = corners_display[:, 0]
+    y = corners_display[:, 1]
+    next_x = np.roll(x, -1)
+    next_y = np.roll(y, -1)
+    crosses = x * next_y - next_x * y
+    double_area = float(crosses.sum())
+    if abs(double_area) <= 2.0 * _SLIVER_AREA:
+        return 0.0, None
+    centroid_display = np.array(
+        [np.sum((x + next_x) * crosses), np.sum((y + next_y) * crosses)]
+    ) / (3.0 * double_area)
+    return 0.5 * abs(double_area), centroid_display
+
+
+def _polygons_overlap(
+    firstCorners_display: np.ndarray, secondCorners_display: np.ndarray
+) -> bool:
+    """Returns whether two convex polygons on screen overlap by more than
+    _OVERLAP_TOLERANCE, by the separating axis test.
+
+    :param firstCorners_display: A (K,2) ndarray of floats holding the first polygon's
+        corners, in order around it (in display coordinates).
+    :param secondCorners_display: A (M,2) ndarray of floats holding the second polygon's
+        corners, in order around it (in display coordinates).
+    :return: True if the polygons overlap, and False otherwise.
+    """
+    for corners_display in (firstCorners_display, secondCorners_display):
+        for edge_display in np.roll(corners_display, -1, axis=0) - corners_display:
+            length = float(np.linalg.norm(edge_display))
+            if length == 0.0:
+                continue
+            axis = np.array([edge_display[1], -edge_display[0]]) / length
+            first_along = firstCorners_display @ axis
+            second_along = secondCorners_display @ axis
+            if (
+                first_along.max() <= second_along.min() + _OVERLAP_TOLERANCE
+                or second_along.max() <= first_along.min() + _OVERLAP_TOLERANCE
+            ):
+                return False
+    return True
+
+
+def _get_overlap_gap(
+    corners_display: np.ndarray,
+    normal_display: np.ndarray,
+    offset: float,
+    ends_display: np.ndarray,
+    radius: float,
+) -> tuple[float, float] | None:
+    """Compares a piece of a stroke's depth with a fill's over the region where they
+    overlap on screen.
+
+    The piece's footprint on screen is its line, widened by its radius on either side
+    and capped at each end by a half circle of that radius, which is approximated by
+    _CAP_SIDES sides. At each point of the region where it overlaps the fill, the
+    piece's depth is that of the point of its centerline nearest on screen, which is its
+    start, a point between its ends, or its end. The region is split into the three
+    parts where each is nearest, within each of which the piece's depth minus the fill's
+    is linear, so it averages to its value at the part's centroid.
+
+    :param corners_display: A (K,2) ndarray of floats holding the fill's corners, in
+        order counterclockwise around it on screen (in display coordinates).
+    :param normal_display: A (3,) ndarray of floats holding the normal of the fill's
+        plane (in display coordinates), whose depth component mustn't be zero.
+    :param offset: The dot product of the fill plane's normal with any point in it.
+    :param ends_display: A (2,3) ndarray of floats holding the piece's start and end (in
+        display coordinates).
+    :param radius: Half of the piece's width, in pixels.
+    :return: A tuple of the piece's depth minus the fill's, averaged over the region, in
+        pixels, which is positive where the piece is behind on average, and the fraction
+        along the piece nearest the region's centroid, or None if the piece and the fill
+        don't overlap.
+    """
+    start_display = ends_display[0, :2]
+    direction_display = ends_display[1, :2] - start_display
+    length = float(np.linalg.norm(direction_display))
+    along = direction_display / length if length > 0.0 else np.array([1.0, 0.0])
+    left = np.array([-along[1], along[0]])
+    end_angles = np.linspace(-0.5 * np.pi, 0.5 * np.pi, _CAP_SIDES + 1)
+    start_angles = np.linspace(0.5 * np.pi, 1.5 * np.pi, _CAP_SIDES + 1)
+    footprint_display = np.concatenate(
+        [
+            ends_display[1, :2]
+            + radius
+            * (
+                np.cos(end_angles)[:, np.newaxis] * along
+                + np.sin(end_angles)[:, np.newaxis] * left
+            ),
+            ends_display[0, :2]
+            + radius
+            * (
+                np.cos(start_angles)[:, np.newaxis] * along
+                + np.sin(start_angles)[:, np.newaxis] * left
+            ),
         ]
+    )
 
-        intervals = [(0.0, 1.0, False, False)]
-        for triangle_id in candidate_ids:
-            if not intervals:
-                break
-            if int(triangle_id) in owners:
-                continue
-            footprint = _clip_to_footprint(
-                start_display, direction_display, occluders.wound_display[triangle_id]
-            )
-            if footprint is None:
-                continue
-            hidden = _get_occluded_range(
-                start_display,
-                direction_display,
-                occluders.normals_display[triangle_id],
-                float(occluders.offsets[triangle_id]),
-                *footprint,
-            )
-            if hidden is not None:
-                intervals = _subtract_interval(
-                    intervals,
-                    *hidden,
-                    hidden[0] == footprint[0],
-                    hidden[1] == footprint[1],
-                )
-
-        length = float(np.linalg.norm(direction_display[:2]))
-        pull = float(half_width) / length if length > 0.0 else 0.0
-        visible_intervals.append(
-            [
-                (
-                    start + pull if start_at_boundary else start,
-                    end - pull if end_at_boundary else end,
-                )
-                for start, end, start_at_boundary, end_at_boundary in intervals
-            ]
+    # The footprint is wound counterclockwise, so the region is the part of the fill to
+    # the left of each of its edges.
+    region_display = corners_display
+    for corner_display, next_corner_display in zip(
+        footprint_display, np.roll(footprint_display, -1, axis=0)
+    ):
+        edge_display = next_corner_display - corner_display
+        outward = np.array([edge_display[1], -edge_display[0]])
+        region_display = _clip_to_half_plane(
+            region_display, outward, float(outward @ corner_display)
         )
-    return visible_intervals
+        if region_display.shape[0] < 3:
+            return None
+
+    length_squared = float(direction_display @ direction_display)
+    end_display = ends_display[1, :2]
+    if length_squared > 0.0:
+        parts_display = [
+            _clip_to_half_plane(
+                region_display,
+                direction_display,
+                float(direction_display @ start_display),
+            ),
+            _clip_to_half_plane(
+                _clip_to_half_plane(
+                    region_display,
+                    -direction_display,
+                    -float(direction_display @ start_display),
+                ),
+                direction_display,
+                float(direction_display @ end_display),
+            ),
+            _clip_to_half_plane(
+                region_display,
+                -direction_display,
+                -float(direction_display @ end_display),
+            ),
+        ]
+    else:
+        parts_display = [region_display]
+
+    def get_fraction(point_display: np.ndarray) -> float:
+        if length_squared == 0.0:
+            return 0.0
+        return float(
+            np.clip(
+                (point_display - start_display) @ direction_display / length_squared,
+                0.0,
+                1.0,
+            )
+        )
+
+    total_area = 0.0
+    weighted_gap = 0.0
+    weightedCentroid_display = np.zeros(2, dtype=float)
+    for part_display in parts_display:
+        area, centroid_display = _get_area_and_centroid(part_display)
+        if centroid_display is None:
+            continue
+        piece_depth = ends_display[0, 2] + get_fraction(centroid_display) * (
+            ends_display[1, 2] - ends_display[0, 2]
+        )
+        fill_depth = (offset - centroid_display @ normal_display[:2]) / normal_display[
+            2
+        ]
+        total_area += area
+        weighted_gap += area * float(piece_depth - fill_depth)
+        weightedCentroid_display += area * centroid_display
+    if total_area <= _SLIVER_AREA:
+        return None
+    return weighted_gap / total_area, get_fraction(
+        weightedCentroid_display / total_area
+    )
 
 
 def _get_closest_approach(
@@ -965,126 +1069,258 @@ def _get_stroke_constraints(
     return constraints
 
 
-def _sort_pieces(
-    num_pieces: int,
-    constraints: list[tuple[int, int, float, float, float]],
-    drop_weakest: bool,
-) -> list[int] | None:
-    """Sorts pieces so that each constraint's farther piece comes before its nearer one,
-    keeping the pieces' given order wherever the constraints allow.
-
-    Where the constraints form a cycle, which no order can satisfy, the sort is blocked.
-    It then either gives up or drops, one at a time, the constraint with the smallest
-    depth difference among those on pieces not yet sorted, until it can go on.
-
-    :param num_pieces: The number of pieces.
-    :param constraints: The constraints, each a tuple of the farther piece's index, the
-        nearer piece's index, the difference in their depths, in pixels, and the
-        fractions along the farther and nearer pieces where they come closest.
-    :param drop_weakest: Determines whether to drop constraints where a cycle blocks the
-        sort, rather than giving up.
-    :return: The pieces' indices in the order to paint them, or None if a cycle blocks
-        the sort and drop_weakest is False.
-    """
-    incoming: list[dict[int, float]] = [{} for _ in range(num_pieces)]
-    outgoing: list[set[int]] = [set() for _ in range(num_pieces)]
-    for far_id, near_id, gap, _, _ in constraints:
-        incoming[near_id][far_id] = max(gap, incoming[near_id].get(far_id, 0.0))
-        outgoing[far_id].add(near_id)
-    ready = [piece_id for piece_id in range(num_pieces) if not incoming[piece_id]]
-    heapq.heapify(ready)
-    order: list[int] = []
-    while len(order) < num_pieces:
-        if not ready:
-            if not drop_weakest:
-                return None
-            far_id, near_id = min(
-                (
-                    (far_id, near_id)
-                    for near_id in range(num_pieces)
-                    for far_id in incoming[near_id]
-                ),
-                key=lambda pair: incoming[pair[1]][pair[0]],
-            )
-            del incoming[near_id][far_id]
-            outgoing[far_id].discard(near_id)
-            if not incoming[near_id]:
-                heapq.heappush(ready, near_id)
-            continue
-        piece_id = heapq.heappop(ready)
-        order.append(piece_id)
-        for near_id in outgoing[piece_id]:
-            del incoming[near_id][piece_id]
-            if not incoming[near_id]:
-                heapq.heappush(ready, near_id)
-        outgoing[piece_id] = set()
-    return order
-
-
-def _get_blocked_pieces(
-    num_pieces: int, constraints: list[tuple[int, int, float, float, float]]
-) -> set[int]:
-    """Finds the pieces that a cycle of constraints keeps from being sorted, which are
-    those in a cycle or nearer than one.
-
-    :param num_pieces: The number of pieces.
-    :param constraints: The constraints, each a tuple of the farther piece's index, the
-        nearer piece's index, the difference in their depths, in pixels, and the
-        fractions along the farther and nearer pieces where they come closest.
-    :return: The blocked pieces' indices.
-    """
-    incoming_counts = [0] * num_pieces
-    outgoing: list[list[int]] = [[] for _ in range(num_pieces)]
-    for far_id, near_id, _, _, _ in constraints:
-        incoming_counts[near_id] += 1
-        outgoing[far_id].append(near_id)
-    ready = [
-        piece_id for piece_id in range(num_pieces) if incoming_counts[piece_id] == 0
-    ]
-    while ready:
-        piece_id = ready.pop()
-        for near_id in outgoing[piece_id]:
-            incoming_counts[near_id] -= 1
-            if incoming_counts[near_id] == 0:
-                ready.append(near_id)
-    return {piece_id for piece_id in range(num_pieces) if incoming_counts[piece_id] > 0}
-
-
-def _order_pieces(
+def _get_constraints(
+    fills: list[tuple[np.ndarray, int]],
     pieces: list[tuple[int, float, float]],
     strokes_display: np.ndarray,
+    stroke_owners: Sequence[set[int]],
+    occluders: _Occluders,
     widths: np.ndarray,
-) -> list[tuple[int, float, float]]:
-    """Orders the visible pieces of strokes to be painted, each nearer piece after the
-    farther pieces it overlaps on screen.
+) -> list[tuple[int, int, float, float | None, float | None]]:
+    """Finds the constraints on the order the fills' pieces and the strokes' pieces are
+    painted in, each of which requires one item to be painted before another.
 
-    Pieces start in the order their strokes were added, which the sort keeps wherever
-    the constraints allow, so where two pieces are equally deep, the later one is
-    painted over the other, which matches VTK, whose depth test lets a later fragment
-    replace an equally deep one. Where the constraints form a cycle, each piece in it is
-    split midway between the places it touches the others, wherever two of those places
-    are at least its width apart, and the sort is retried, for up to _SPLIT_ROUNDS
-    rounds. Any cycles that survive are broken by dropping their weakest constraints.
+    The items are indexed with the fills' pieces first, followed by the strokes'. Fills
+    that overlap on screen keep the BSP's order. Pieces of different strokes that
+    overlap on screen are painted farther first, as _get_stroke_constraints finds. Each
+    piece of a stroke is painted after every fill it overlaps on screen that is part of
+    a triangle it outlines. Of the other fills it overlaps, it is painted before each
+    that it is behind, on average over the region where they overlap, and after the
+    rest, so it wins a tie within _PLANE_TOLERANCE.
 
-    :param pieces: The visible pieces, each a tuple of its stroke's index and the
+    :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
+        of floats holding its vertices, in order counterclockwise around it on screen
+        (in display coordinates), and the index of the triangle it was cut from.
+    :param pieces: The strokes' pieces, each a tuple of its stroke's index and the
         fractions along the stroke where it starts and ends.
     :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
         end (in display coordinates).
+    :param stroke_owners: A sequence of N sets of ints, holding the indices of the
+        triangles each stroke outlines.
+    :param occluders: The _Occluders holding the triangles' quantities.
     :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
-    :return: The pieces, some of them split, in the order to paint them.
+    :return: The constraints, each a tuple of the index of the item painted first, the
+        index of the item painted later, the constraint's weight, and the fractions
+        along the first and later items where they touch, which are None for a fill. The
+        weight is the difference in their depths, in pixels, or infinity for a
+        constraint between fills or between a piece and a fill it outlines.
     """
-    pieces = sorted(pieces)
+    num_fills = len(fills)
+    fill_mins = np.array(
+        [corners_display[:, :2].min(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+    fill_maxs = np.array(
+        [corners_display[:, :2].max(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+
+    constraints: list[tuple[int, int, float, float | None, float | None]] = []
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(fill_mins, fill_maxs, fill_mins, fill_maxs)
+    ):
+        for second_id in candidate_ids[candidate_ids > first_id].tolist():
+            if _polygons_overlap(fills[first_id][0][:, :2], fills[second_id][0][:, :2]):
+                constraints.append((first_id, second_id, np.inf, None, None))
+
+    for far_id, near_id, gap, far_fraction, near_fraction in _get_stroke_constraints(
+        pieces, strokes_display, widths
+    ):
+        constraints.append(
+            (num_fills + far_id, num_fills + near_id, gap, far_fraction, near_fraction)
+        )
+
+    if not pieces:
+        return constraints
+    stroke_ids = np.array([stroke_id for stroke_id, _, _ in pieces], dtype=int)
+    fractions = np.array([[low, high] for _, low, high in pieces], dtype=float)
+    starts_display = strokes_display[stroke_ids, 0]
+    directions_display = strokes_display[stroke_ids, 1] - starts_display
+    piecesEnds_display = (
+        starts_display[:, np.newaxis]
+        + fractions[:, :, np.newaxis] * directions_display[:, np.newaxis]
+    )
+    radii = 0.5 * widths[stroke_ids]
+    for piece_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(
+            piecesEnds_display[:, :, :2].min(axis=1) - radii[:, np.newaxis],
+            piecesEnds_display[:, :, :2].max(axis=1) + radii[:, np.newaxis],
+            fill_mins,
+            fill_maxs,
+        )
+    ):
+        stroke_id = int(stroke_ids[piece_id])
+        for fill_id in candidate_ids.tolist():
+            corners_display, triangle_id = fills[fill_id]
+            if not occluders.usable[triangle_id]:
+                continue
+            overlap = _get_overlap_gap(
+                corners_display[:, :2],
+                occluders.normals_display[triangle_id],
+                float(occluders.offsets[triangle_id]),
+                piecesEnds_display[piece_id],
+                float(radii[piece_id]),
+            )
+            if overlap is None:
+                continue
+            gap, fraction = overlap
+            if triangle_id in stroke_owners[stroke_id]:
+                constraints.append(
+                    (fill_id, num_fills + piece_id, np.inf, None, fraction)
+                )
+            elif gap > _PLANE_TOLERANCE:
+                constraints.append((num_fills + piece_id, fill_id, gap, fraction, None))
+            else:
+                constraints.append(
+                    (fill_id, num_fills + piece_id, max(-gap, 0.0), None, fraction)
+                )
+    return constraints
+
+
+def _sort_items(
+    num_items: int,
+    constraints: list[tuple[int, int, float, float | None, float | None]],
+    drop_weakest: bool,
+) -> list[int] | None:
+    """Sorts items so that each constraint's first item comes before its later one,
+    keeping the items' given order wherever the constraints allow.
+
+    Where the constraints form a cycle, which no order can satisfy, the sort is blocked.
+    It then either gives up or drops, one at a time, the constraint with the smallest
+    weight among those on items not yet sorted, until it can go on.
+
+    :param num_items: The number of items.
+    :param constraints: The constraints, each a tuple of the index of the item painted
+        first, the index of the item painted later, the constraint's weight, and the
+        fractions along the first and later items where they touch, or None for a fill.
+    :param drop_weakest: Determines whether to drop constraints where a cycle blocks the
+        sort, rather than giving up.
+    :return: The items' indices in the order to paint them, or None if a cycle blocks
+        the sort and drop_weakest is False.
+    """
+    incoming: list[dict[int, float]] = [{} for _ in range(num_items)]
+    outgoing: list[set[int]] = [set() for _ in range(num_items)]
+    for first_id, later_id, weight, _, _ in constraints:
+        incoming[later_id][first_id] = max(
+            weight, incoming[later_id].get(first_id, 0.0)
+        )
+        outgoing[first_id].add(later_id)
+    ready = [item_id for item_id in range(num_items) if not incoming[item_id]]
+    heapq.heapify(ready)
+    order: list[int] = []
+    while len(order) < num_items:
+        if not ready:
+            if not drop_weakest:
+                return None
+            first_id, later_id = min(
+                (
+                    (first_id, later_id)
+                    for later_id in range(num_items)
+                    for first_id in incoming[later_id]
+                ),
+                key=lambda pair: incoming[pair[1]][pair[0]],
+            )
+            del incoming[later_id][first_id]
+            outgoing[first_id].discard(later_id)
+            if not incoming[later_id]:
+                heapq.heappush(ready, later_id)
+            continue
+        item_id = heapq.heappop(ready)
+        order.append(item_id)
+        for later_id in outgoing[item_id]:
+            del incoming[later_id][item_id]
+            if not incoming[later_id]:
+                heapq.heappush(ready, later_id)
+        outgoing[item_id] = set()
+    return order
+
+
+def _get_blocked_items(
+    num_items: int,
+    constraints: list[tuple[int, int, float, float | None, float | None]],
+) -> set[int]:
+    """Finds the items that a cycle of constraints keeps from being sorted, which are
+    those in a cycle or required to come after one.
+
+    :param num_items: The number of items.
+    :param constraints: The constraints, each a tuple of the index of the item painted
+        first, the index of the item painted later, the constraint's weight, and the
+        fractions along the first and later items where they touch, or None for a fill.
+    :return: The blocked items' indices.
+    """
+    incoming_counts = [0] * num_items
+    outgoing: list[list[int]] = [[] for _ in range(num_items)]
+    for first_id, later_id, _, _, _ in constraints:
+        incoming_counts[later_id] += 1
+        outgoing[first_id].append(later_id)
+    ready = [item_id for item_id in range(num_items) if incoming_counts[item_id] == 0]
+    while ready:
+        item_id = ready.pop()
+        for later_id in outgoing[item_id]:
+            incoming_counts[later_id] -= 1
+            if incoming_counts[later_id] == 0:
+                ready.append(later_id)
+    return {item_id for item_id in range(num_items) if incoming_counts[item_id] > 0}
+
+
+def _order_items(
+    fills: list[tuple[np.ndarray, int]],
+    strokes_display: np.ndarray,
+    stroke_owners: Sequence[set[int]],
+    triangles_display: np.ndarray,
+    widths: np.ndarray,
+) -> tuple[list[int], list[tuple[int, float, float]]]:
+    """Cuts the strokes into pieces, and orders the fills' pieces and the strokes'
+    pieces to be painted together, each after everything it hides.
+
+    Each stroke is cut wherever its centerline passes through a triangle it doesn't
+    outline, and the items are then ordered by the constraints _get_constraints finds. A
+    fill painted after a piece of a stroke covers the part of the piece's width that it
+    overlaps on screen, so where a fill is in front of part of a piece and behind the
+    rest, no order paints both parts exactly, and the piece is painted wherever it is on
+    average.
+
+    The fills' pieces start in the BSP's order, followed by the strokes' pieces in the
+    order their strokes were added, which the sort keeps wherever the constraints allow,
+    so where two pieces of strokes are equally deep, the later one is painted over the
+    other, which matches VTK, whose depth test lets a later fragment replace an equally
+    deep one. Where the constraints form a cycle, each piece of a stroke in it is split
+    midway between the places it touches the others, wherever two of those places are at
+    least its width apart, and the sort is retried, for up to _SPLIT_ROUNDS rounds. Any
+    cycles that survive are broken by dropping their weakest constraints.
+
+    :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
+        of floats holding its vertices, in order counterclockwise around it on screen
+        (in display coordinates), and the index of the triangle it was cut from.
+    :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
+        end (in display coordinates).
+    :param stroke_owners: A sequence of N sets of ints, holding the indices of the
+        triangles each stroke outlines.
+    :param triangles_display: A (T,3,3) ndarray of floats holding each triangle's
+        vertices (in display coordinates).
+    :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
+    :return: A tuple of the items' indices in the order to paint them, where the fills'
+        pieces are indexed first, followed by the strokes' pieces, and the strokes'
+        pieces, some of them split, each a tuple of its stroke's index and the fractions
+        along the stroke where it starts and ends.
+    """
+    occluders = _prepare_occluders(triangles_display)
+    num_fills = len(fills)
+    pieces = _cut_at_pierces(strokes_display, stroke_owners, occluders)
     for _ in range(_SPLIT_ROUNDS):
-        constraints = _get_stroke_constraints(pieces, strokes_display, widths)
-        if _sort_pieces(len(pieces), constraints, drop_weakest=False) is not None:
+        constraints = _get_constraints(
+            fills, pieces, strokes_display, stroke_owners, occluders, widths
+        )
+        num_items = num_fills + len(pieces)
+        if _sort_items(num_items, constraints, drop_weakest=False) is not None:
             break
 
-        blocked_ids = _get_blocked_pieces(len(pieces), constraints)
+        blocked_ids = _get_blocked_items(num_items, constraints)
         contacts: dict[int, list[float]] = {}
-        for far_id, near_id, _, far_fraction, near_fraction in constraints:
-            if far_id in blocked_ids and near_id in blocked_ids:
-                contacts.setdefault(far_id, []).append(far_fraction)
-                contacts.setdefault(near_id, []).append(near_fraction)
+        for first_id, later_id, _, first_fraction, later_fraction in constraints:
+            if first_id in blocked_ids and later_id in blocked_ids:
+                if first_fraction is not None:
+                    contacts.setdefault(first_id - num_fills, []).append(first_fraction)
+                if later_fraction is not None:
+                    contacts.setdefault(later_id - num_fills, []).append(later_fraction)
         split_any = False
         split_pieces: list[tuple[int, float, float]] = []
         for piece_id, (stroke_id, low, high) in enumerate(pieces):
@@ -1114,10 +1350,12 @@ def _order_pieces(
         if not split_any:
             break
 
-    constraints = _get_stroke_constraints(pieces, strokes_display, widths)
-    order = _sort_pieces(len(pieces), constraints, drop_weakest=True)
+    constraints = _get_constraints(
+        fills, pieces, strokes_display, stroke_owners, occluders, widths
+    )
+    order = _sort_items(num_fills + len(pieces), constraints, drop_weakest=True)
     assert order is not None
-    return [pieces[piece_id] for piece_id in order]
+    return order, pieces
 
 
 def _round_svg_path_data(svg: str) -> str:
@@ -1153,14 +1391,16 @@ class VectorLayer:
     Visibility is resolved within a layer, and the layers are painted in the order they
     were added, each over the ones before it. When a layer is drawn, each convex
     occluder becomes opaque fills and the strokes that outline it. The layer is then
-    painted in four passes: its fills from back to front, then its strokes with their
-    hidden parts removed, then its dots, and then its translucent polygons. The fills
-    hide each other and the strokes behind them. The strokes don't clip each other.
-    Instead, wherever two overlap on screen, the nearer one is painted over the farther
-    one. Where two strokes are equally deep, the one added later is painted over the
-    other, which matches VTK, whose depth test lets a later fragment replace an equally
-    deep one. The dots and the translucent polygons hide nothing and are hidden by
-    nothing.
+    painted in three passes: its fills and strokes together, in depth order, then its
+    dots, and then its translucent polygons. The fills are split where they cross and
+    painted from back to front. Each stroke is cut where it passes through a fill, and
+    each of its pieces is painted before the fills that hide it, so they cover it, and
+    after the rest of the fills it overlaps on screen. The strokes don't clip each
+    other. Instead, wherever two overlap on screen, the nearer one is painted over the
+    farther one. Where two strokes are equally deep, the one added later is painted over
+    the other, which matches VTK, whose depth test lets a later fragment replace an
+    equally deep one. The dots and the translucent polygons hide nothing and are hidden
+    by nothing.
     """
 
     def __init__(self) -> None:
@@ -1384,8 +1624,8 @@ class VectorLayer:
             whole zorder.
         :param line_width_scale: The factor that the widths of the strokes, including
             the convex occluders' outlines, are scaled by, both where they are drawn and
-            where they decide which strokes overlap and how far a stroke's ends are
-            pulled back from what hides it. It must be positive. The default is 1.0.
+            where they decide which strokes and fills each stroke overlaps. It must be
+            positive. The default is 1.0.
         :return: The zorder for whatever is drawn after the layer.
         """
         (
@@ -1402,142 +1642,110 @@ class VectorLayer:
             fill_triangles_display = camera.to_display(
                 np.concatenate(listFillTriangles_D_Do)
             ).reshape(-1, 3, 3)
-            order = get_paint_order(
-                [
-                    (triangle_display, triangle_id)
-                    for triangle_id, triangle_display in enumerate(
-                        fill_triangles_display
-                    )
-                ]
-            )
-            # Each run of consecutive pieces of the same color is written as one
-            # compound path, rather than one path per piece, which keeps the file small.
-            # Merging a run doesn't change what is painted, since its pieces are all
-            # opaque and the same color. The files are filled by the nonzero rule, so
-            # every piece is wound counterclockwise, which keeps overlapping pieces from
-            # cancelling each other out.
-            fill_paths: list[matplotlib.path.Path] = []
-            fill_path_colors: list[np.ndarray] = []
-            run_pieces: list[matplotlib.path.Path] = []
-            for piece_id, (piece_display, fill_id) in enumerate(order):
-                corners_display = piece_display[:, :2]
-                signed_double_area = np.dot(
-                    corners_display[:, 0], np.roll(corners_display[:, 1], -1)
-                ) - np.dot(np.roll(corners_display[:, 0], -1), corners_display[:, 1])
-                if signed_double_area < 0.0:
-                    corners_display = corners_display[::-1]
-                run_pieces.append(
-                    matplotlib.path.Path(
-                        np.vstack([corners_display, corners_display[:1]]), closed=True
-                    )
-                )
-                color = fill_colors[fill_id]
-                if piece_id == len(order) - 1 or not np.array_equal(
-                    color, fill_colors[order[piece_id + 1][1]]
-                ):
-                    fill_paths.append(
-                        matplotlib.path.Path.make_compound_path(*run_pieces)
-                    )
-                    fill_path_colors.append(color)
-                    run_pieces = []
-            axes.add_collection(
-                matplotlib.collections.PathCollection(
-                    fill_paths,
-                    facecolors=fill_path_colors,
-                    edgecolors=fill_path_colors,
-                    linewidths=_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL,
-                    zorder=zorder,
-                )
-            )
-        zorder += 1.0
-
+        strokes_display = np.zeros((0, 2, 3), dtype=float)
         if listStrokes_D_Do:
             strokes_display = camera.to_display(
                 np.concatenate(listStrokes_D_Do)
             ).reshape(-1, 2, 3)
-            stroke_widths = line_width_scale * np.array(base_stroke_widths, dtype=float)
+        stroke_widths = line_width_scale * np.array(base_stroke_widths, dtype=float)
 
-            # Each stroke is clipped only against the fills, and no stroke clips
-            # another, so no gaps open where strokes cross. The visible pieces are
-            # instead painted in depth order, each nearer piece after the farther ones
-            # it overlaps on screen.
-            visible_intervals = get_visible_intervals(
-                strokes_display,
-                base_stroke_owners,
-                fill_triangles_display,
-                0.5 * stroke_widths,
-            )
-            pieces = _order_pieces(
-                [
-                    (stroke_id, low, high)
-                    for stroke_id, intervals in enumerate(visible_intervals)
-                    for low, high in intervals
-                    if high - low > _MIN_VISIBLE_FRACTION
-                ],
-                strokes_display,
-                stroke_widths,
-            )
+        # The files are filled by the nonzero rule, so every piece of a fill is wound
+        # counterclockwise, which keeps overlapping pieces from cancelling each other
+        # out.
+        fills: list[tuple[np.ndarray, int]] = []
+        for piece_display, fill_id in get_paint_order(
+            [
+                (triangle_display, triangle_id)
+                for triangle_id, triangle_display in enumerate(fill_triangles_display)
+            ]
+        ):
+            corners_display = piece_display[:, :2]
+            signed_double_area = np.dot(
+                corners_display[:, 0], np.roll(corners_display[:, 1], -1)
+            ) - np.dot(np.roll(corners_display[:, 0], -1), corners_display[:, 1])
+            if signed_double_area < 0.0:
+                piece_display = piece_display[::-1]
+            fills.append((piece_display, fill_id))
+        order, pieces = _order_items(
+            fills,
+            strokes_display,
+            base_stroke_owners,
+            fill_triangles_display,
+            stroke_widths,
+        )
+        num_fills = len(fills)
 
-            segments: list[np.ndarray] = []
-            segment_colors: list[np.ndarray] = []
-            segment_widths: list[float] = []
-            for stroke_id, low, high in pieces:
-                start_display = strokes_display[stroke_id, 0]
-                direction_display = (
-                    strokes_display[stroke_id, 1] - strokes_display[stroke_id, 0]
+        # Each fill is painted with its color and outlined in it, and each stroke is
+        # painted as a line with no fill. Each run of consecutive fills of the same
+        # color, or of consecutive opaque pieces of strokes of the same color and width,
+        # is written as one compound path, rather than one path per item, which keeps
+        # the file small. Merging a run doesn't change what is painted, since its items
+        # are all opaque and the same color. Translucent pieces are each written alone,
+        # since a compound path paints where its pieces overlap only once. Matplotlib
+        # simplifies a long path of straight pieces by dropping some of its points,
+        # which is turned off so that every piece is kept.
+        item_keys: list[tuple[tuple[float, ...], float | None]] = []
+        for item_id in order:
+            if item_id < num_fills:
+                item_keys.append((tuple(fill_colors[fills[item_id][1]].tolist()), None))
+            else:
+                stroke_id = pieces[item_id - num_fills][0]
+                item_keys.append(
+                    (
+                        tuple(base_stroke_colors[stroke_id].tolist()),
+                        float(stroke_widths[stroke_id]),
+                    )
                 )
-                segments.append(
-                    np.array(
+        paths: list[matplotlib.path.Path] = []
+        path_face_colors: list[tuple[float, ...]] = []
+        path_edge_colors: list[tuple[float, ...]] = []
+        path_widths: list[float] = []
+        run_paths: list[matplotlib.path.Path] = []
+        for position, item_id in enumerate(order):
+            if item_id < num_fills:
+                corners_display = fills[item_id][0][:, :2]
+                run_paths.append(
+                    matplotlib.path.Path(
+                        np.vstack([corners_display, corners_display[:1]]), closed=True
+                    )
+                )
+            else:
+                stroke_id, low, high = pieces[item_id - num_fills]
+                start_display = strokes_display[stroke_id, 0, :2]
+                direction_display = strokes_display[stroke_id, 1, :2] - start_display
+                run_paths.append(
+                    matplotlib.path.Path(
                         [
-                            start_display[:2] + low * direction_display[:2],
-                            start_display[:2] + high * direction_display[:2],
+                            start_display + low * direction_display,
+                            start_display + high * direction_display,
                         ],
-                        dtype=float,
+                        [matplotlib.path.Path.MOVETO, matplotlib.path.Path.LINETO],
                     )
                 )
-                segment_colors.append(base_stroke_colors[stroke_id])
-                segment_widths.append(
-                    float(stroke_widths[stroke_id]) * POINTS_PER_PIXEL
-                )
-
-            # Each run of consecutive opaque segments of the same color and width is
-            # written as one compound path, rather than one path per segment, which
-            # keeps the file small. Translucent segments are each written alone, since a
-            # compound path paints where its segments overlap only once. Matplotlib
-            # simplifies a long path of straight pieces by dropping some of its points,
-            # which is turned off so that every segment is kept.
-            stroke_paths: list[matplotlib.path.Path] = []
-            stroke_path_colors: list[np.ndarray] = []
-            stroke_path_widths: list[float] = []
-            run_segments: list[np.ndarray] = []
-            for segment_id, segment_display in enumerate(segments):
-                run_segments.append(segment_display)
-                color = segment_colors[segment_id]
-                width = segment_widths[segment_id]
-                if (
-                    segment_id == len(segments) - 1
-                    or color[3] < 1.0
-                    or not np.array_equal(color, segment_colors[segment_id + 1])
-                    or width != segment_widths[segment_id + 1]
-                ):
-                    stroke_path = matplotlib.path.Path(
-                        np.concatenate(run_segments),
-                        np.tile(
-                            [matplotlib.path.Path.MOVETO, matplotlib.path.Path.LINETO],
-                            len(run_segments),
-                        ),
-                    )
-                    stroke_path.should_simplify = False
-                    stroke_paths.append(stroke_path)
-                    stroke_path_colors.append(color)
-                    stroke_path_widths.append(width)
-                    run_segments = []
+            color, width = item_keys[position]
+            if (
+                position == len(order) - 1
+                or (width is not None and color[3] < 1.0)
+                or item_keys[position + 1] != item_keys[position]
+            ):
+                path = matplotlib.path.Path.make_compound_path(*run_paths)
+                path.should_simplify = False
+                paths.append(path)
+                path_edge_colors.append(color)
+                if width is None:
+                    path_face_colors.append(color)
+                    path_widths.append(_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL)
+                else:
+                    path_face_colors.append((0.0, 0.0, 0.0, 0.0))
+                    path_widths.append(width * POINTS_PER_PIXEL)
+                run_paths = []
+        if paths:
             axes.add_collection(
                 matplotlib.collections.PathCollection(
-                    stroke_paths,
-                    facecolors="none",
-                    edgecolors=stroke_path_colors,
-                    linewidths=stroke_path_widths,
+                    paths,
+                    facecolors=path_face_colors,
+                    edgecolors=path_edge_colors,
+                    linewidths=path_widths,
                     capstyle="round",
                     joinstyle="round",
                     zorder=zorder,

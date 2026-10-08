@@ -69,18 +69,6 @@ def make_random_triangles_fixture() -> list[tuple[np.ndarray, int]]:
     ]
 
 
-def make_flat_triangle_fixture() -> np.ndarray:
-    """Makes a triangle at a constant depth of 50.0 pixels, whose footprint is the lower
-    left half of the square from (0.0, 0.0) to (100.0, 100.0) on screen.
-
-    :return: A (1,3,3) ndarray of floats holding the triangle's vertices (in display
-        coordinates).
-    """
-    return np.array(
-        [[[0.0, 0.0, 50.0], [100.0, 0.0, 50.0], [0.0, 100.0, 50.0]]], dtype=float
-    )
-
-
 def make_cube_points_fixture() -> np.ndarray:
     """Makes the corners of a cube with 2.0 m sides, centered on the diagram origin.
 

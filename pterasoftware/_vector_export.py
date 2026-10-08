@@ -77,6 +77,18 @@ _OVERLAP_TOLERANCE = 1.0e-6
 # stroke's footprint on screen, where it is compared with the fills it overlaps.
 _CAP_SIDES = 16
 
+# Define the cosines and sines of the angles, from a stroke's direction on screen, of
+# the corners of the polygons that approximate its round ends, running counterclockwise
+# around the end cap and then around the start cap.
+_END_CAP_ANGLES = np.linspace(-0.5 * np.pi, 0.5 * np.pi, _CAP_SIDES + 1)
+_START_CAP_ANGLES = np.linspace(0.5 * np.pi, 1.5 * np.pi, _CAP_SIDES + 1)
+_END_CAP_COSINES_AND_SINES = list(
+    zip(np.cos(_END_CAP_ANGLES).tolist(), np.sin(_END_CAP_ANGLES).tolist())
+)
+_START_CAP_COSINES_AND_SINES = list(
+    zip(np.cos(_START_CAP_ANGLES).tolist(), np.sin(_START_CAP_ANGLES).tolist())
+)
+
 # Define the number of rounds in which the pieces of strokes caught in a cycle of depth
 # constraints are split before the cycles that survive are broken by dropping
 # constraints.
@@ -695,61 +707,69 @@ def _cut_at_pierces(
 
 
 def _clip_to_half_plane(
-    corners_display: np.ndarray, normal: np.ndarray, bound: float
-) -> np.ndarray:
+    corners: list[tuple[float, float]], normal_x: float, normal_y: float, bound: float
+) -> list[tuple[float, float]]:
     """Clips a convex polygon on screen to the half plane where a point's dot product
     with a normal is at most a bound.
 
-    :param corners_display: A (K,2) ndarray of floats holding the polygon's corners, in
-        order around it (in display coordinates).
-    :param normal: A (2,) ndarray of floats holding the normal of the half plane's
-        boundary, pointing out of the half plane.
+    The polygon is handled as plain floats, rather than as an ndarray, since it has few
+    corners, and numpy's overhead on arrays that small would far outweigh the
+    arithmetic.
+
+    :param corners: The polygon's corners, in order around it, each a tuple of its x and
+        y positions, in pixels.
+    :param normal_x: The x component of the normal of the half plane's boundary, which
+        points out of the half plane.
+    :param normal_y: The y component of the normal of the half plane's boundary.
     :param bound: The largest dot product with the normal of a point in the half plane.
-    :return: A (M,2) ndarray of floats holding the clipped polygon's corners, in order
-        around it (in display coordinates). It holds fewer than three corners if none of
-        the polygon's area is left.
+    :return: The clipped polygon's corners, in the same form. There are fewer than three
+        if none of the polygon's area is left.
     """
-    clipped_display: list[np.ndarray] = []
-    for corner_display, next_corner_display in zip(
-        corners_display, np.roll(corners_display, -1, axis=0)
-    ):
-        side = corner_display @ normal - bound
-        next_side = next_corner_display @ normal - bound
+    clipped: list[tuple[float, float]] = []
+    num_corners = len(corners)
+    for corner_id in range(num_corners):
+        x, y = corners[corner_id]
+        next_x, next_y = corners[(corner_id + 1) % num_corners]
+        side = x * normal_x + y * normal_y - bound
+        next_side = next_x * normal_x + next_y * normal_y - bound
         if side <= 0.0:
-            clipped_display.append(corner_display)
+            clipped.append((x, y))
         if (side < 0.0 < next_side) or (next_side < 0.0 < side):
             fraction = side / (side - next_side)
-            clipped_display.append(
-                corner_display + fraction * (next_corner_display - corner_display)
-            )
-    return np.array(clipped_display, dtype=float).reshape(-1, 2)
+            clipped.append((x + fraction * (next_x - x), y + fraction * (next_y - y)))
+    return clipped
 
 
 def _get_area_and_centroid(
-    corners_display: np.ndarray,
-) -> tuple[float, np.ndarray | None]:
+    corners: list[tuple[float, float]],
+) -> tuple[float, tuple[float, float] | None]:
     """Returns a polygon's area on screen and its centroid.
 
-    :param corners_display: A (K,2) ndarray of floats holding the polygon's corners, in
-        order around it (in display coordinates).
-    :return: A tuple of the polygon's area, in square pixels, and a (2,) ndarray of
-        floats holding its centroid (in display coordinates), or of zero and None if its
-        area is at most _SLIVER_AREA.
+    :param corners: The polygon's corners, in order around it, each a tuple of its x and
+        y positions, in pixels.
+    :return: A tuple of the polygon's area, in square pixels, and its centroid, as a
+        tuple of its x and y positions, in pixels, or of zero and None if its area is at
+        most _SLIVER_AREA.
     """
-    if corners_display.shape[0] < 3:
+    num_corners = len(corners)
+    if num_corners < 3:
         return 0.0, None
-    x = corners_display[:, 0]
-    y = corners_display[:, 1]
-    next_x = np.roll(x, -1)
-    next_y = np.roll(y, -1)
-    crosses = x * next_y - next_x * y
-    double_area = float(crosses.sum())
+    double_area = 0.0
+    weighted_x = 0.0
+    weighted_y = 0.0
+    for corner_id in range(num_corners):
+        x, y = corners[corner_id]
+        next_x, next_y = corners[(corner_id + 1) % num_corners]
+        cross = x * next_y - next_x * y
+        double_area += cross
+        weighted_x += (x + next_x) * cross
+        weighted_y += (y + next_y) * cross
     if abs(double_area) <= 2.0 * _SLIVER_AREA:
         return 0.0, None
-    centroid_display = np.array(
-        [np.sum((x + next_x) * crosses), np.sum((y + next_y) * crosses)]
-    ) / (3.0 * double_area)
-    return 0.5 * abs(double_area), centroid_display
+    return 0.5 * abs(double_area), (
+        weighted_x / (3.0 * double_area),
+        weighted_y / (3.0 * double_area),
+    )
 
 
 def _polygons_overlap(
@@ -798,6 +818,11 @@ def _get_overlap_gap(
     parts where each is nearest, within each of which the piece's depth minus the fill's
     is linear, so it averages to its value at the part's centroid.
 
+    The region is found by clipping the footprint against each of the fill's few edges,
+    rather than the fill against each of the footprint's many, and the geometry is done
+    in plain floats, since this is called for every pair of a piece and a fill that
+    overlap on screen.
+
     :param corners_display: A (K,2) ndarray of floats holding the fill's corners, in
         order counterclockwise around it on screen (in display coordinates).
     :param normal_display: A (3,) ndarray of floats holding the normal of the fill's
@@ -811,102 +836,87 @@ def _get_overlap_gap(
         along the piece nearest the region's centroid, or None if the piece and the fill
         don't overlap.
     """
-    start_display = ends_display[0, :2]
-    direction_display = ends_display[1, :2] - start_display
-    length = float(np.linalg.norm(direction_display))
-    along = direction_display / length if length > 0.0 else np.array([1.0, 0.0])
-    left = np.array([-along[1], along[0]])
-    end_angles = np.linspace(-0.5 * np.pi, 0.5 * np.pi, _CAP_SIDES + 1)
-    start_angles = np.linspace(0.5 * np.pi, 1.5 * np.pi, _CAP_SIDES + 1)
-    footprint_display = np.concatenate(
-        [
-            ends_display[1, :2]
-            + radius
-            * (
-                np.cos(end_angles)[:, np.newaxis] * along
-                + np.sin(end_angles)[:, np.newaxis] * left
-            ),
-            ends_display[0, :2]
-            + radius
-            * (
-                np.cos(start_angles)[:, np.newaxis] * along
-                + np.sin(start_angles)[:, np.newaxis] * left
-            ),
-        ]
+    (start_x, start_y, start_depth), (end_x, end_y, end_depth) = ends_display.tolist()
+    direction_x = end_x - start_x
+    direction_y = end_y - start_y
+    length_squared = direction_x * direction_x + direction_y * direction_y
+    length = length_squared**0.5
+    along_x, along_y = (
+        (direction_x / length, direction_y / length) if length > 0.0 else (1.0, 0.0)
     )
 
-    # The footprint is wound counterclockwise, so the region is the part of the fill to
-    # the left of each of its edges.
-    region_display = corners_display
-    for corner_display, next_corner_display in zip(
-        footprint_display, np.roll(footprint_display, -1, axis=0)
-    ):
-        edge_display = next_corner_display - corner_display
-        outward = np.array([edge_display[1], -edge_display[0]])
-        region_display = _clip_to_half_plane(
-            region_display, outward, float(outward @ corner_display)
+    # The footprint's corners run counterclockwise around it, first around the end cap
+    # and then around the start cap.
+    footprint = [
+        (
+            center_x + radius * (cosine * along_x - sine * along_y),
+            center_y + radius * (cosine * along_y + sine * along_x),
         )
-        if region_display.shape[0] < 3:
+        for (center_x, center_y), cap_cosines_and_sines in (
+            ((end_x, end_y), _END_CAP_COSINES_AND_SINES),
+            ((start_x, start_y), _START_CAP_COSINES_AND_SINES),
+        )
+        for cosine, sine in cap_cosines_and_sines
+    ]
+
+    # The fill is wound counterclockwise, so the region is the part of the footprint to
+    # the left of each of the fill's edges.
+    corners = [(x, y) for x, y in corners_display.tolist()]
+    region = footprint
+    for corner_id, (x, y) in enumerate(corners):
+        next_x, next_y = corners[(corner_id + 1) % len(corners)]
+        normal_x = next_y - y
+        normal_y = x - next_x
+        region = _clip_to_half_plane(
+            region, normal_x, normal_y, normal_x * x + normal_y * y
+        )
+        if len(region) < 3:
             return None
 
-    length_squared = float(direction_display @ direction_display)
-    end_display = ends_display[1, :2]
     if length_squared > 0.0:
-        parts_display = [
+        start_bound = direction_x * start_x + direction_y * start_y
+        end_bound = direction_x * end_x + direction_y * end_y
+        parts = [
+            _clip_to_half_plane(region, direction_x, direction_y, start_bound),
             _clip_to_half_plane(
-                region_display,
-                direction_display,
-                float(direction_display @ start_display),
+                _clip_to_half_plane(region, -direction_x, -direction_y, -start_bound),
+                direction_x,
+                direction_y,
+                end_bound,
             ),
-            _clip_to_half_plane(
-                _clip_to_half_plane(
-                    region_display,
-                    -direction_display,
-                    -float(direction_display @ start_display),
-                ),
-                direction_display,
-                float(direction_display @ end_display),
-            ),
-            _clip_to_half_plane(
-                region_display,
-                -direction_display,
-                -float(direction_display @ end_display),
-            ),
+            _clip_to_half_plane(region, -direction_x, -direction_y, -end_bound),
         ]
     else:
-        parts_display = [region_display]
+        parts = [region]
 
-    def get_fraction(point_display: np.ndarray) -> float:
+    def get_fraction(x: float, y: float) -> float:
         if length_squared == 0.0:
             return 0.0
-        return float(
-            np.clip(
-                (point_display - start_display) @ direction_display / length_squared,
-                0.0,
-                1.0,
-            )
-        )
+        fraction = (
+            (x - start_x) * direction_x + (y - start_y) * direction_y
+        ) / length_squared
+        return float(min(max(fraction, 0.0), 1.0))
 
+    normal_x, normal_y, normal_depth = normal_display.tolist()
     total_area = 0.0
     weighted_gap = 0.0
-    weightedCentroid_display = np.zeros(2, dtype=float)
-    for part_display in parts_display:
-        area, centroid_display = _get_area_and_centroid(part_display)
-        if centroid_display is None:
+    weighted_x = 0.0
+    weighted_y = 0.0
+    for part in parts:
+        area, centroid = _get_area_and_centroid(part)
+        if centroid is None:
             continue
-        piece_depth = ends_display[0, 2] + get_fraction(centroid_display) * (
-            ends_display[1, 2] - ends_display[0, 2]
-        )
-        fill_depth = (offset - centroid_display @ normal_display[:2]) / normal_display[
-            2
-        ]
+        x, y = centroid
+        piece_depth = start_depth + get_fraction(x, y) * (end_depth - start_depth)
+        fill_depth = (offset - (x * normal_x + y * normal_y)) / normal_depth
         total_area += area
-        weighted_gap += area * float(piece_depth - fill_depth)
-        weightedCentroid_display += area * centroid_display
+        weighted_gap += area * (piece_depth - fill_depth)
+        weighted_x += area * x
+        weighted_y += area * y
     if total_area <= _SLIVER_AREA:
         return None
     return weighted_gap / total_area, get_fraction(
-        weightedCentroid_display / total_area
+        weighted_x / total_area, weighted_y / total_area
     )
 
 

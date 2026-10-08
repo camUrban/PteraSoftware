@@ -218,8 +218,8 @@ def _create_preview_plotter(
     # the granted size. Its outer frame is then no larger than the one the window
     # manager just granted.
     plotter.close()
-    fitted_width = int(window_width * fit)
-    fitted_height = int(window_height * fit)
+    fitted_width = max(1, int(window_width * fit))
+    fitted_height = max(1, int(window_height * fit))
     plotter = _create_plotter(fitted_width, fitted_height, False)
     render_window = plotter.ren_win
     assert render_window is not None

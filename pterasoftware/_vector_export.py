@@ -50,8 +50,9 @@ from . import _fonts
 # shared by two faces is never hidden by the face that doesn't own it.
 _PLANE_TOLERANCE = 1.0e-3
 
-# Define the area, in square pixels, below which a fragment split off by the BSP is
-# dropped rather than painted. Such a fragment is a sliver that no pixel can show.
+# Define the area, in square pixels, below which a fragment split off by the BSP, or a
+# fill's piece on screen, is dropped rather than painted. Such a fragment or piece is a
+# sliver that no pixel can show.
 _SLIVER_AREA = 1.0e-6
 
 # Define the tolerance below which a polygon's normal or a triangle's footprint counts
@@ -93,6 +94,10 @@ _START_CAP_SINES = np.sin(_START_CAP_ANGLES)
 # constraints are split before the cycles that survive are broken by dropping
 # constraints.
 _SPLIT_ROUNDS = 3
+
+# Define the distance, in pixels, within which two fills' edges count as shared, so the
+# fills abut and, if they are the same color, can be painted together.
+_ABUT_TOLERANCE = 1.0e-4
 
 # Define the resolution the figures are laid out at. Each pixel of the window becomes
 # one unit of the figure's axes, and is this many points wide.
@@ -1850,8 +1855,187 @@ def _get_blocked_items(
     return {item_id for item_id in range(num_items) if incoming_counts[item_id] > 0}
 
 
+def _fills_abut(
+    first_corners: list[tuple[float, float]],
+    second_corners: list[tuple[float, float]],
+) -> bool:
+    """Returns whether two fills on screen share a stretch of an edge longer than
+    _ABUT_TOLERANCE, along which each one's edge is within _ABUT_TOLERANCE of the
+    other's line.
+
+    The fills are handled as plain floats, rather than as ndarrays, for the same reason
+    as in _polygons_overlap.
+
+    :param first_corners: The first fill's corners, in order around it, each a tuple of
+        its x and y positions, in pixels.
+    :param second_corners: The second fill's corners, in the same form.
+    :return: True if the fills abut, and False otherwise.
+    """
+    num_first_corners = len(first_corners)
+    num_second_corners = len(second_corners)
+    for corner_id in range(num_first_corners):
+        x, y = first_corners[corner_id]
+        next_x, next_y = first_corners[(corner_id + 1) % num_first_corners]
+        edge_x = next_x - x
+        edge_y = next_y - y
+        length = (edge_x * edge_x + edge_y * edge_y) ** 0.5
+        if length <= _ABUT_TOLERANCE:
+            continue
+        along_x = edge_x / length
+        along_y = edge_y / length
+
+        # Find each of the second fill's corners' distances across and along the edge's
+        # line, from its first corner.
+        heights = [
+            (corner_y - y) * along_x - (corner_x - x) * along_y
+            for corner_x, corner_y in second_corners
+        ]
+        positions = [
+            (corner_x - x) * along_x + (corner_y - y) * along_y
+            for corner_x, corner_y in second_corners
+        ]
+        for second_id in range(num_second_corners):
+            next_second_id = (second_id + 1) % num_second_corners
+            if (
+                abs(heights[second_id]) > _ABUT_TOLERANCE
+                or abs(heights[next_second_id]) > _ABUT_TOLERANCE
+            ):
+                continue
+            low = max(0.0, min(positions[second_id], positions[next_second_id]))
+            high = min(length, max(positions[second_id], positions[next_second_id]))
+            if high - low > _ABUT_TOLERANCE:
+                return True
+    return False
+
+
+def _merge_abutting_fills(
+    fills: list[tuple[np.ndarray, int]],
+    fill_colors: Sequence[np.ndarray],
+    num_items: int,
+    constraints: list[tuple[int, int, float, float | None, float | None]],
+) -> list[list[int]]:
+    """Groups the items so that abutting fills of the same color share a group wherever
+    painting them together keeps the constraints free of cycles.
+
+    Two groups can be painted together exactly when no chain of constraints through
+    another group runs from either one to the other. A constraint directly between them
+    is harmless, since painting them together satisfies it. Each pair of abutting fills
+    of the same color is tried in turn, and their groups are merged wherever that holds.
+
+    :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
+        of floats holding its vertices, in order counterclockwise around it on screen
+        (in display coordinates), and the index of the triangle it was cut from.
+    :param fill_colors: A sequence holding each triangle's RGBA color as a (4,) ndarray
+        of floats.
+    :param num_items: The number of items, where the fills' pieces are indexed first,
+        followed by the strokes' pieces.
+    :param constraints: The constraints, free of cycles, each a tuple of the index of
+        the item painted first, the index of the item painted later, the constraint's
+        weight, and the fractions along the first and later items where they touch, or
+        None for a fill.
+    :return: The groups, each a list of its items' indices in increasing order, ordered
+        by their first items.
+    """
+    # Each group is represented by one of its items, which every item leads to by
+    # following its parents, and holds the constraints between the groups.
+    parent_ids = list(range(num_items))
+    successors: list[set[int]] = [set() for _ in range(num_items)]
+    predecessors: list[set[int]] = [set() for _ in range(num_items)]
+    for first_id, later_id, _, _, _ in constraints:
+        successors[first_id].add(later_id)
+        predecessors[later_id].add(first_id)
+
+    def find_group(item_id: int) -> int:
+        """Returns the index of the item that represents an item's group, halving the
+        path to it as it goes.
+
+        :param item_id: The index of the item.
+        :return: The index of the item that represents its group.
+        """
+        while parent_ids[item_id] != item_id:
+            parent_ids[item_id] = parent_ids[parent_ids[item_id]]
+            item_id = parent_ids[item_id]
+        return item_id
+
+    def reaches_through_others(source_id: int, target_id: int) -> bool:
+        """Returns whether a chain of constraints through at least one other group runs
+        from one group to another.
+
+        :param source_id: The index of the item that represents the first group.
+        :param target_id: The index of the item that represents the second group.
+        :return: True if such a chain exists, and False otherwise.
+        """
+        stack = [next_id for next_id in successors[source_id] if next_id != target_id]
+        seen = set(stack)
+        while stack:
+            group_id = stack.pop()
+            if group_id == target_id:
+                return True
+            for next_id in successors[group_id]:
+                if next_id not in seen:
+                    seen.add(next_id)
+                    stack.append(next_id)
+        return False
+
+    fill_mins = np.array(
+        [corners_display[:, :2].min(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+    fill_maxs = np.array(
+        [corners_display[:, :2].max(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+    fill_corners = [
+        [(x, y) for x, y in corners_display[:, :2].tolist()]
+        for corners_display, _ in fills
+    ]
+    color_keys = [tuple(fill_colors[fill_id].tolist()) for _, fill_id in fills]
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(
+            fill_mins,
+            fill_maxs,
+            fill_mins - _ABUT_TOLERANCE,
+            fill_maxs + _ABUT_TOLERANCE,
+        )
+    ):
+        for second_id in candidate_ids[candidate_ids > first_id].tolist():
+            if color_keys[first_id] != color_keys[second_id]:
+                continue
+            first_group_id = find_group(first_id)
+            second_group_id = find_group(second_id)
+            if first_group_id == second_group_id:
+                continue
+            if not _fills_abut(fill_corners[first_id], fill_corners[second_id]):
+                continue
+            if reaches_through_others(
+                first_group_id, second_group_id
+            ) or reaches_through_others(second_group_id, first_group_id):
+                continue
+
+            # Merge the second group into the first, moving its constraints onto it.
+            parent_ids[second_group_id] = first_group_id
+            for next_id in successors[second_group_id]:
+                predecessors[next_id].discard(second_group_id)
+                if next_id != first_group_id:
+                    successors[first_group_id].add(next_id)
+                    predecessors[next_id].add(first_group_id)
+            for previous_id in predecessors[second_group_id]:
+                successors[previous_id].discard(second_group_id)
+                if previous_id != first_group_id:
+                    predecessors[first_group_id].add(previous_id)
+                    successors[previous_id].add(first_group_id)
+            successors[second_group_id] = set()
+            predecessors[second_group_id] = set()
+            successors[first_group_id].discard(first_group_id)
+            predecessors[first_group_id].discard(first_group_id)
+
+    groups: dict[int, list[int]] = {}
+    for item_id in range(num_items):
+        groups.setdefault(find_group(item_id), []).append(item_id)
+    return sorted(groups.values(), key=lambda group: group[0])
+
+
 def _order_items(
     fills: list[tuple[np.ndarray, int]],
+    fill_colors: Sequence[np.ndarray],
     strokes_display: np.ndarray,
     stroke_owners: Sequence[set[int]],
     triangles_display: np.ndarray,
@@ -1877,9 +2061,15 @@ def _order_items(
     cycles that survive are broken by dropping the set of constraints with the smallest
     total weight whose removal breaks them all, as _break_cycles finds.
 
+    Finally, abutting fills of the same color are painted together wherever that keeps
+    the order possible, as _merge_abutting_fills finds, so they are written as one
+    compound path, which leaves no seam between them.
+
     :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
         of floats holding its vertices, in order counterclockwise around it on screen
         (in display coordinates), and the index of the triangle it was cut from.
+    :param fill_colors: A sequence holding each triangle's RGBA color as a (4,) ndarray
+        of floats.
     :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
         end (in display coordinates).
     :param stroke_owners: A sequence of N sets of ints, holding the indices of the
@@ -1965,9 +2155,29 @@ def _order_items(
         piece_fill_cache,
     )
     num_items = num_fills + len(pieces)
-    order = _sort_items(num_items, _break_cycles(num_items, constraints))
-    assert order is not None
-    return order, pieces
+    kept_constraints = _break_cycles(num_items, constraints)
+
+    # Group abutting fills of the same color wherever that keeps the order possible, and
+    # sort the groups, painting each group's items together.
+    groups = _merge_abutting_fills(fills, fill_colors, num_items, kept_constraints)
+    item_groups = [0] * num_items
+    for group_id, group in enumerate(groups):
+        for item_id in group:
+            item_groups[item_id] = group_id
+    group_pairs = {
+        (item_groups[first_id], item_groups[later_id])
+        for first_id, later_id, _, _, _ in kept_constraints
+        if item_groups[first_id] != item_groups[later_id]
+    }
+    group_order = _sort_items(
+        len(groups),
+        [
+            (first_group_id, later_group_id, 0.0, None, None)
+            for first_group_id, later_group_id in group_pairs
+        ],
+    )
+    assert group_order is not None
+    return [item_id for group_id in group_order for item_id in groups[group_id]], pieces
 
 
 def _round_svg_path_data(svg: str) -> str:
@@ -2266,7 +2476,9 @@ class VectorLayer:
 
         # The files are filled by the nonzero rule, so every piece of a fill is wound
         # counterclockwise, which keeps overlapping pieces from cancelling each other
-        # out.
+        # out. A piece with less than _SLIVER_AREA on screen, such as one of a face seen
+        # edge on, is dropped, since it can't hide anything, and its outline would
+        # otherwise paint a line of its color wherever it falls in the order.
         fills: list[tuple[np.ndarray, int]] = []
         for piece_display, fill_id in get_paint_order(
             [
@@ -2278,11 +2490,14 @@ class VectorLayer:
             signed_double_area = np.dot(
                 corners_display[:, 0], np.roll(corners_display[:, 1], -1)
             ) - np.dot(np.roll(corners_display[:, 0], -1), corners_display[:, 1])
+            if abs(signed_double_area) < 2.0 * _SLIVER_AREA:
+                continue
             if signed_double_area < 0.0:
                 piece_display = piece_display[::-1]
             fills.append((piece_display, fill_id))
         order, pieces = _order_items(
             fills,
+            fill_colors,
             strokes_display,
             base_stroke_owners,
             fill_triangles_display,

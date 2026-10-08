@@ -15,6 +15,7 @@ import matplotlib.typing
 import numpy as np
 import pyvista as pv
 import webp
+from tqdm import tqdm
 
 from . import (
     _logging,
@@ -877,9 +878,15 @@ def animate(
         title bar. The text and line widths scale with it, so a larger or smaller window
         is legible rather than being drawn with the same pixel counts as the default.
         The default is (1024, 768).
-    :param save: Set this to True to save the animation as an animated WebP. It can be a
-        bool or a numpy bool and will be converted internally to a bool. The default is
-        False.
+    :param save: Set this to True to save the animation as an animated WebP. Once the
+        view is oriented, the window closes and the frames are rendered separately, off
+        screen, at window_size and from the view the window ended with, while a progress
+        bar reports the rendering's progress. Resizing the window therefore does not
+        change the saved frames' size or styling. However, a window resized to a
+        different aspect ratio shows more or less of the scene horizontally than the
+        saved frames do. If False, the animation plays in the window instead. It can be
+        a bool or a numpy bool and will be converted internally to a bool. The default
+        is False.
     :param path: The file path to save the animation to. It can be a str or a Path, must
         end with ".webp", and its directory must already exist. This has no effect
         unless save is True. The default is "animate.webp".
@@ -1212,9 +1219,6 @@ def animate(
             plotter, playback, window_scale, animate_text_color
         )
 
-    # Hold the temporary preview actors shown during the framing phase.
-    preview_actors: list[pv.Actor] = []
-
     # Show the first and last time steps together during framing. This gives the user
     # both the initial body pose and the final wake/trajectory extent without
     # multiplying actors across every time step of a long simulation.
@@ -1255,7 +1259,6 @@ def animate(
     )
     if last_step != 0:
         _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
-    preview_actors.extend(first_preview_actors)
 
     if show_mujoco_geometry:
         first_mujoco_actors = _output_rendering.add_mujoco_geometry(
@@ -1263,7 +1266,6 @@ def animate(
         )
         if last_step != 0:
             _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
-        preview_actors.extend(first_mujoco_actors)
 
     if last_step != 0:
         last_panel_surfaces = _output_rendering.get_panel_surfaces(
@@ -1311,7 +1313,6 @@ def animate(
             window_scale,
         )
         _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
-        preview_actors.extend(last_preview_actors)
 
         if show_mujoco_geometry:
             last_mujoco_actors = _output_rendering.add_mujoco_geometry(
@@ -1322,7 +1323,6 @@ def animate(
                 reflect_T_act,
             )
             _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
-            preview_actors.extend(last_mujoco_actors)
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
@@ -1407,41 +1407,58 @@ def animate(
             auto_close=False,
         )
         time.sleep(1)
-    assert plotter.ren_win is not None
-    plotter.ren_win.SetWindowName(
-        "Rendering animation. Please leave the window open until rendering finishes."
-    )
-    plotter.render()
 
-    plotter.disable_depth_peeling()  # type: ignore[call-arg]
+    # If saving, render the frames in a separate off-screen Plotter, from the camera the
+    # window ended with, and close the window. The user can resize the window in ways
+    # that cannot be prevented on every platform, and the window's text and line widths
+    # stay scaled to the requested size, so frames captured from it could change size
+    # partway through an animation and have mismatched styling. The off-screen Plotter
+    # is always the requested size, and it starts with the playback text overlays. If
+    # not saving, the frames play in the window, which is cleared of the preview first.
+    # Saving or not, the first frame then starts from a Plotter without any of the
+    # preview, so it is built in full, with the image surface plane.
+    if save:
+        frame_plotter = _create_plotter(window_width, window_height, True)
+        frame_plotter.camera.DeepCopy(plotter.camera)
+        _output_rendering.add_playback_overlays(
+            frame_plotter, playback, window_scale, animate_text_color
+        )
+        plotter.close()
+    else:
+        frame_plotter = plotter
+        assert plotter.ren_win is not None
+        plotter.ren_win.SetWindowName(
+            "Rendering animation. Please leave the window open until rendering "
+            "finishes."
+        )
+        plotter.render()
+        plotter.disable_depth_peeling()  # type: ignore[call-arg]
+        plotter.clear()
 
-    # Remove the temporary preview actors before the animation begins.
-    for actor in preview_actors:
-        plotter.remove_actor(actor, render=False)
-    # Rebuild the first frame as the actual animation frame after removing the preview.
-    # The image surface plane is not a preview actor, so it is still present and is not
-    # added again. The first time step has not shed a wake yet.
+    # Build the first frame as the actual animation frame, and settle its scalar bar
+    # layout. The layout is settled whether or not the frame is translucent, since an
+    # opaque frame's layout is already settled and the extra pass leaves it unchanged.
+    # The first time step has not shed a wake yet.
     first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
     if is_free_flight:
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
     _add_scene(
-        plotter,
+        frame_plotter,
         first_frame_panel_surfaces,
         None,
         first_frame_coloring,
         reflect_T_act,
         window_scale,
         None,
-        None,
-        None,
+        image_surface_mesh,
+        image_surface_texture,
         worldbody_geoms,
         body_geoms,
         step_body_transforms[0] if show_mujoco_geometry else None,
     )
-    if scene_is_translucent:
-        _output_rendering.settle_scalar_bar_layout(plotter)
+    _output_rendering.settle_scalar_bar_layout(frame_plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
     # Preserve that camera and only size the clipping range so every frame stays
@@ -1451,16 +1468,29 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh, lighting=False, render=False)
+            frame_plotter.add_mesh(clip_mesh, lighting=False, render=False)
             for clip_mesh in free_flight_clip_meshes
         ]
-        plotter.reset_camera_clipping_range()
-        free_flight_clipping_range = plotter.camera.clipping_range
+        frame_plotter.reset_camera_clipping_range()
+        free_flight_clipping_range = frame_plotter.camera.clipping_range
         for temporary_actor in temporary_actors:
-            plotter.remove_actor(temporary_actor, render=False)
-        plotter.camera.clipping_range = free_flight_clipping_range
+            frame_plotter.remove_actor(temporary_actor, render=False)
+        frame_plotter.camera.clipping_range = free_flight_clipping_range
 
-    plotter.render()
+    frame_plotter.render()
+
+    # Show the rendering's progress, one time step at a time. When saving, the window
+    # has closed, so this is the only sign that the animation is still being rendered.
+    # When not saving, the window itself shows the progress, so the bar is disabled.
+    progress_bar = tqdm(
+        total=len(step_airplanes),
+        unit="",
+        ncols=100,
+        desc="Rendering",
+        disable=not save,
+        bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
+        "Remaining: {remaining}",
+    )
 
     # If saving, start the writer that encodes each frame into the WebP as it is
     # captured, so the frames never accumulate in memory, and hand it this first frame.
@@ -1474,12 +1504,14 @@ def animate(
         # ignore, in which case capture simply keeps the refresh rate's pace. It is not
         # made when not saving, since the window is then what the user watches, and the
         # wait is the only pacing the playback has.
-        plotter.ren_win.SetSwapControl(0)
+        assert frame_plotter.ren_win is not None
+        frame_plotter.ren_win.SetSwapControl(0)
 
         animation_writer = _output_rendering.AnimationWriter(
             path, playback.frame_rate, quality
         )
-        animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
+        animation_writer.add_frame(_output_rendering.screenshot_image(frame_plotter))
+    progress_bar.update()
 
     # Initialize a variable to keep track of the current time step.
     current_step = 1
@@ -1488,7 +1520,7 @@ def animate(
     for airplanes in step_airplanes[1:]:
 
         # Clear the Plotter.
-        plotter.clear()
+        frame_plotter.clear()
 
         # Get the Panel surfaces of this time step's Airplane(s), mapping them into
         # Earth axes for free flight.
@@ -1501,7 +1533,7 @@ def animate(
         # If saving the animation, add the text overlays that describe its playback.
         if save:
             _output_rendering.add_playback_overlays(
-                plotter, playback, window_scale, animate_text_color
+                frame_plotter, playback, window_scale, animate_text_color
             )
 
         # If showing wake ring vortices, get their surfaces, mapping them into Earth
@@ -1543,7 +1575,7 @@ def animate(
         # Add this time step's scene, which includes the pre-computed image surface
         # plane when one is defined.
         _add_scene(
-            plotter,
+            frame_plotter,
             panel_surfaces,
             wake_ring_vortex_surfaces,
             coloring,
@@ -1560,29 +1592,34 @@ def animate(
         # If the frame is translucent, settle the scalar bar layout before it is
         # displayed, leaving the second of its two passes to the render below.
         if scene_is_translucent:
-            _output_rendering.settle_scalar_bar_layout(plotter)
+            _output_rendering.settle_scalar_bar_layout(frame_plotter)
 
         # Render the assembled frame. Every add above is made with render=False, so
         # without this the frame would never reach the screen. Rendering once the frame
         # is whole is invisible, unlike the renders the adds used to trigger.
-        plotter.render()
+        frame_plotter.render()
 
         # If saving, hand a WebP Image of this frame to the writer. Only the time steps
         # that are multiples of the stride are saved, so a speed the maximum frame rate
-        # cannot carry drops the ones in between. The render above is not skipped, so
-        # the animation on screen still steps through every time step.
+        # cannot carry drops the ones in between.
         if animation_writer is not None and current_step % playback.keep_every == 0:
-            animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
+            animation_writer.add_frame(
+                _output_rendering.screenshot_image(frame_plotter)
+            )
 
-        # Increment the time step tracker.
+        # Increment the time step tracker, and advance the progress bar.
         current_step += 1
+        progress_bar.update()
+
+    progress_bar.close()
 
     # If saving, finish the animation and write it to its file.
     if animation_writer is not None:
         animation_writer.close()
 
-    # Close the Plotter.
-    plotter.close()
+    # Close the Plotter the frames were rendered in. When saving, the window's Plotter
+    # was already closed before the frames were rendered.
+    frame_plotter.close()
 
 
 def plot_results_versus_time(

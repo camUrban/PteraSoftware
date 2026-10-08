@@ -525,8 +525,61 @@ class TestVectorLayer(unittest.TestCase):
         )
 
     def test_returns_the_zorder_after_its_passes(self) -> None:
-        """Test that drawing a layer returns the zorder after its three passes."""
-        self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 6.0)
+        """Test that drawing a layer returns the zorder after its two passes."""
+        self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 5.0)
+
+    def test_paints_a_dot_among_the_fills_in_depth_order(self) -> None:
+        """Test that a dot behind a fill is painted before it, so the fill covers it,
+        and that a dot in front of it is painted after it, each as a filled circle of
+        its diameter.
+
+        The quadrilateral lies at z = 0.0 meters, and the dots are at its center, one
+        1.0 meter behind it and one 1.0 meter in front of it.
+        """
+        self.layer.add_quadrilaterals(
+            np.array(
+                [
+                    [
+                        [-2.0, -2.0, 0.0],
+                        [2.0, -2.0, 0.0],
+                        [2.0, 2.0, 0.0],
+                        [-2.0, 2.0, 0.0],
+                    ]
+                ],
+                dtype=float,
+            ),
+            np.ones((1, 4), dtype=float),
+            "black",
+            1.0,
+        )
+        self.layer.add_dots(np.array([[0.0, 0.0, -1.0]], dtype=float), "red", 6.0)
+        self.layer.add_dots(np.array([[0.0, 0.0, 1.0]], dtype=float), "blue", 6.0)
+        collection = self.get_drawn_collection(matplotlib.collections.PathCollection)
+        face_colors = np.array(collection.get_facecolor(), dtype=float)
+        dot_ids = {
+            name: [
+                path_id
+                for path_id, face_color in enumerate(face_colors)
+                if np.array_equal(face_color, matplotlib.colors.to_rgba(name))
+            ]
+            for name in ("red", "blue")
+        }
+        quadrilateral_ids = [
+            path_id
+            for path_id, face_color in enumerate(face_colors)
+            if np.array_equal(face_color, np.ones(4))
+        ]
+        self.assertEqual(len(dot_ids["red"]), 1)
+        self.assertEqual(len(dot_ids["blue"]), 1)
+        self.assertEqual(len(quadrilateral_ids), 1)
+        self.assertLess(dot_ids["red"][0], quadrilateral_ids[0])
+        self.assertLess(quadrilateral_ids[0], dot_ids["blue"][0])
+        for name in ("red", "blue"):
+            vertices = np.array(
+                collection.get_paths()[dot_ids[name][0]].vertices, dtype=float
+            )
+            npt.assert_allclose(vertices.min(axis=0), [97.0, 47.0])
+            npt.assert_allclose(vertices.max(axis=0), [103.0, 53.0])
 
     def test_paints_the_later_of_two_coincident_strokes_on_top(self) -> None:
         """Test that where two strokes lie on top of each other, neither hides the

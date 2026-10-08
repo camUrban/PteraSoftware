@@ -2756,17 +2756,17 @@ class VectorLayer:
 
     Visibility is resolved within a layer, and the layers are painted in the order they
     were added, each over the ones before it. When a layer is drawn, each convex
-    occluder becomes opaque fills and the strokes that outline it. The layer is then
-    painted in three passes: its fills and strokes together, in depth order, then its
-    dots, and then its translucent polygons. The fills are split where they cross and
-    painted from back to front. Each stroke is cut where it passes through a fill, and
-    each of its pieces is painted before the fills that hide it, so they cover it, and
-    after the rest of the fills it overlaps on screen. The strokes don't clip each
-    other. Instead, wherever two overlap on screen, the nearer one is painted over the
-    farther one. Where two strokes are equally deep, the one added later is painted over
-    the other, which matches VTK, whose depth test lets a later fragment replace an
-    equally deep one. The dots and the translucent polygons hide nothing and are hidden
-    by nothing.
+    occluder becomes opaque fills and the strokes that outline it, and each dot becomes
+    a stroke of zero length as wide as the dot. The layer is then painted in two passes:
+    its fills, strokes, and dots together, in depth order, and then its translucent
+    polygons. The fills are split where they cross and painted from back to front. Each
+    stroke is cut where it passes through a fill, and each of its pieces is painted
+    before the fills that hide it, so they cover it, and after the rest of the fills it
+    overlaps on screen. The strokes don't clip each other. Instead, wherever two overlap
+    on screen, the nearer one is painted over the farther one. Where two strokes are
+    equally deep, the one added later is painted over the other, which matches VTK,
+    whose depth test lets a later fragment replace an equally deep one. The translucent
+    polygons hide nothing and are hidden by nothing.
     """
 
     def __init__(self) -> None:
@@ -2945,7 +2945,8 @@ class VectorLayer:
         color: matplotlib.typing.ColorType,
         diameter: float,
     ) -> None:
-        """Adds round dots of a fixed size on screen.
+        """Adds round dots of a fixed size on screen, which are painted among the fills
+        and strokes in depth order, by the depths of their centers.
 
         :param stackDots_D_Do: A (N,3) ndarray of floats holding each dot's center (in
             diagram axes, relative to the diagram origin). The units are in meters.
@@ -3018,6 +3019,24 @@ class VectorLayer:
             ).reshape(-1, 2, 3)
         stroke_widths = line_width_scale * np.array(base_stroke_widths, dtype=float)
 
+        # Each dot joins the strokes as one of zero length, as wide as the dot, so it is
+        # ordered among the fills and strokes by its footprint, a circle, like any other
+        # stroke. The strokes from num_lines on are the dots, whose sizes aren't scaled
+        # with the line widths.
+        num_lines = strokes_display.shape[0]
+        stroke_owners = list(base_stroke_owners)
+        stroke_colors = list(base_stroke_colors)
+        if self._listDots_D_Do:
+            dots_display = camera.to_display(np.array(self._listDots_D_Do, dtype=float))
+            strokes_display = np.concatenate(
+                [strokes_display, np.repeat(dots_display[:, np.newaxis], 2, axis=1)]
+            )
+            stroke_owners += [set() for _ in self._listDots_D_Do]
+            stroke_colors += self._dot_colors
+            stroke_widths = np.concatenate(
+                [stroke_widths, np.array(self._dot_diameters, dtype=float)]
+            )
+
         # The files are filled by the nonzero rule, so every piece of a fill is wound
         # counterclockwise, which keeps overlapping pieces from cancelling each other
         # out. A piece with less than _SLIVER_AREA on screen, such as one of a face seen
@@ -3043,31 +3062,37 @@ class VectorLayer:
             fills,
             fill_colors,
             strokes_display,
-            base_stroke_owners,
+            stroke_owners,
             fill_triangles_display,
             stroke_widths,
         )
         num_fills = len(fills)
 
-        # Each fill is painted with its color and outlined in it, and each stroke is
-        # painted as a line with no fill. Each run of consecutive fills of the same
-        # color, or of consecutive opaque pieces of strokes of the same color and width,
-        # is written as one compound path, rather than one path per item, which keeps
-        # the file small. Merging a run doesn't change what is painted, since its items
-        # are all opaque and the same color. Translucent pieces are each written alone,
-        # since a compound path paints where its pieces overlap only once. Matplotlib
-        # simplifies a long path of straight pieces by dropping some of its points,
-        # which is turned off so that every piece is kept.
-        item_keys: list[tuple[tuple[float, ...], float | None]] = []
+        # Each fill is painted with its color and outlined in it, each stroke is painted
+        # as a line with no fill, and each dot is painted as a filled circle with no
+        # outline, rather than as a stroke of zero length, which Matplotlib's own
+        # renderer draws nothing for. Each run of consecutive fills of the same color,
+        # of consecutive opaque pieces of strokes of the same color and width, or of
+        # consecutive opaque dots of the same color and size, is written as one compound
+        # path, rather than one path per item, which keeps the file small. Merging a run
+        # doesn't change what is painted, since its items are all opaque and the same
+        # color. Translucent pieces and dots are each written alone, since a compound
+        # path paints where its pieces overlap only once. Matplotlib simplifies a long
+        # path of straight pieces by dropping some of its points, which is turned off so
+        # that every piece is kept.
+        item_keys: list[tuple[tuple[float, ...], float | None, bool]] = []
         for item_id in order:
             if item_id < num_fills:
-                item_keys.append((tuple(fill_colors[fills[item_id][1]].tolist()), None))
+                item_keys.append(
+                    (tuple(fill_colors[fills[item_id][1]].tolist()), None, False)
+                )
             else:
                 stroke_id = pieces[item_id - num_fills][0]
                 item_keys.append(
                     (
-                        tuple(base_stroke_colors[stroke_id].tolist()),
+                        tuple(stroke_colors[stroke_id].tolist()),
                         float(stroke_widths[stroke_id]),
+                        stroke_id >= num_lines,
                     )
                 )
         runs: list[
@@ -3090,16 +3115,24 @@ class VectorLayer:
                 stroke_id, low, high = pieces[item_id - num_fills]
                 start_display = strokes_display[stroke_id, 0, :2]
                 direction_display = strokes_display[stroke_id, 1, :2] - start_display
-                run_paths.append(
-                    matplotlib.path.Path(
-                        [
-                            start_display + low * direction_display,
-                            start_display + high * direction_display,
-                        ],
-                        [matplotlib.path.Path.MOVETO, matplotlib.path.Path.LINETO],
+                if stroke_id >= num_lines:
+                    run_paths.append(
+                        matplotlib.path.Path.circle(
+                            (float(start_display[0]), float(start_display[1])),
+                            0.5 * float(stroke_widths[stroke_id]),
+                        )
                     )
-                )
-            color, width = item_keys[position]
+                else:
+                    run_paths.append(
+                        matplotlib.path.Path(
+                            [
+                                start_display + low * direction_display,
+                                start_display + high * direction_display,
+                            ],
+                            [matplotlib.path.Path.MOVETO, matplotlib.path.Path.LINETO],
+                        )
+                    )
+            color, width, is_dot = item_keys[position]
             if (
                 position == len(order) - 1
                 or (width is not None and color[3] < 1.0)
@@ -3111,6 +3144,8 @@ class VectorLayer:
                     runs.append(
                         (path, color, color, _FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL)
                     )
+                elif is_dot:
+                    runs.append((path, color, (0.0, 0.0, 0.0, 0.0), 0.0))
                 else:
                     runs.append(
                         (path, (0.0, 0.0, 0.0, 0.0), color, width * POINTS_PER_PIXEL)
@@ -3157,26 +3192,6 @@ class VectorLayer:
                     linewidths=path_widths,
                     capstyle="round",
                     joinstyle="round",
-                    zorder=zorder,
-                )
-            )
-        zorder += 1.0
-
-        if self._listDots_D_Do:
-            dots_display = camera.to_display(np.array(self._listDots_D_Do, dtype=float))
-            axes.add_collection(
-                matplotlib.collections.PatchCollection(
-                    [
-                        matplotlib.patches.Circle(
-                            (float(dot_display[0]), float(dot_display[1])),
-                            0.5 * diameter,
-                        )
-                        for dot_display, diameter in zip(
-                            dots_display, self._dot_diameters
-                        )
-                    ],
-                    facecolors=self._dot_colors,
-                    edgecolors="none",
                     zorder=zorder,
                 )
             )

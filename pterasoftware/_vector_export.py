@@ -40,6 +40,7 @@ import scipy.optimize
 import scipy.sparse
 import scipy.sparse.csgraph
 import scipy.spatial
+from numba import njit
 
 from . import _fonts
 
@@ -82,12 +83,10 @@ _CAP_SIDES = 16
 # around the end cap and then around the start cap.
 _END_CAP_ANGLES = np.linspace(-0.5 * np.pi, 0.5 * np.pi, _CAP_SIDES + 1)
 _START_CAP_ANGLES = np.linspace(0.5 * np.pi, 1.5 * np.pi, _CAP_SIDES + 1)
-_END_CAP_COSINES_AND_SINES = list(
-    zip(np.cos(_END_CAP_ANGLES).tolist(), np.sin(_END_CAP_ANGLES).tolist())
-)
-_START_CAP_COSINES_AND_SINES = list(
-    zip(np.cos(_START_CAP_ANGLES).tolist(), np.sin(_START_CAP_ANGLES).tolist())
-)
+_END_CAP_COSINES = np.cos(_END_CAP_ANGLES)
+_END_CAP_SINES = np.sin(_END_CAP_ANGLES)
+_START_CAP_COSINES = np.cos(_START_CAP_ANGLES)
+_START_CAP_SINES = np.sin(_START_CAP_ANGLES)
 
 # Define the number of rounds in which the pieces of strokes caught in a cycle of depth
 # constraints are split before the cycles that survive are broken by dropping
@@ -568,6 +567,120 @@ def _prepare_occluders(triangles_display: np.ndarray) -> _Occluders:
     )
 
 
+@njit(cache=True, fastmath=False)
+def _find_overlapping_boxes(
+    query_cell_mins: np.ndarray,
+    query_cell_maxs: np.ndarray,
+    query_mins: np.ndarray,
+    query_maxs: np.ndarray,
+    cell_mins: np.ndarray,
+    cell_maxs: np.ndarray,
+    mins: np.ndarray,
+    maxs: np.ndarray,
+    min_cell_x: int,
+    min_cell_y: int,
+    num_cell_rows: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Finds, for each of a set of query boxes on screen, the boxes of another set that
+    it overlaps or touches, given the ranges of grid cells that every box overlaps.
+
+    Each box of the other set is registered in each cell it overlaps, under a key that
+    numbers the cell, and the registrations are sorted by key, so each query box only
+    looks up the boxes registered in the cells it overlaps.
+
+    This function has been optimized for JIT compilation using Numba.
+
+    :param query_cell_mins: A (Q,2) ndarray of ints holding the smallest x and y indices
+        of the cells each query box overlaps.
+    :param query_cell_maxs: A (Q,2) ndarray of ints holding the largest x and y indices
+        of the cells each query box overlaps.
+    :param query_mins: A (Q,2) ndarray of floats holding the smallest x and y of each
+        query box, in pixels.
+    :param query_maxs: A (Q,2) ndarray of floats holding the largest x and y of each
+        query box, in pixels.
+    :param cell_mins: A (B,2) ndarray of ints holding the smallest x and y indices of
+        the cells each of the other boxes overlaps.
+    :param cell_maxs: A (B,2) ndarray of ints holding the largest x and y indices of the
+        cells each of the other boxes overlaps.
+    :param mins: A (B,2) ndarray of floats holding the smallest x and y of each of the
+        other boxes, in pixels.
+    :param maxs: A (B,2) ndarray of floats holding the largest x and y of each of the
+        other boxes, in pixels.
+    :param min_cell_x: The smallest x index of any cell that any box overlaps.
+    :param min_cell_y: The smallest y index of any cell that any box overlaps.
+    :param num_cell_rows: The number of y indices from the smallest to the largest of
+        any cell that any box overlaps.
+    :return: A tuple of two ndarrays of ints. The first, of shape (Q+1,), holds where
+        each query box's overlapping boxes start in the second, which holds their
+        indices, each query box's in increasing order.
+    """
+    num_boxes = mins.shape[0]
+    num_queries = query_mins.shape[0]
+
+    # Register each box in each cell it overlaps, and sort the registrations by their
+    # cells' keys, which keeps each cell's boxes in increasing order.
+    num_registrations = 0
+    for box_id in range(num_boxes):
+        num_registrations += (cell_maxs[box_id, 0] - cell_mins[box_id, 0] + 1) * (
+            cell_maxs[box_id, 1] - cell_mins[box_id, 1] + 1
+        )
+    keys = np.empty(num_registrations, dtype=np.int64)
+    registered_ids = np.empty(num_registrations, dtype=np.int64)
+    registration_id = 0
+    for box_id in range(num_boxes):
+        for cell_x in range(cell_mins[box_id, 0], cell_maxs[box_id, 0] + 1):
+            for cell_y in range(cell_mins[box_id, 1], cell_maxs[box_id, 1] + 1):
+                keys[registration_id] = (cell_x - min_cell_x) * num_cell_rows + (
+                    cell_y - min_cell_y
+                )
+                registered_ids[registration_id] = box_id
+                registration_id += 1
+    order = np.argsort(keys, kind="mergesort")
+    keys = keys[order]
+    registered_ids = registered_ids[order]
+
+    # Each query box gathers the boxes registered in its cells, counting each once by
+    # marking it with the query box's index, and keeps those whose boxes overlap its
+    # own, in increasing order.
+    last_query_ids = np.full(num_boxes, -1, dtype=np.int64)
+    candidate_ids = np.empty(num_boxes, dtype=np.int64)
+    offsets = np.zeros(num_queries + 1, dtype=np.int64)
+    found_ids = np.empty(max(16, 4 * num_queries), dtype=np.int64)
+    num_found = 0
+    for query_id in range(num_queries):
+        num_candidates = 0
+        for cell_x in range(
+            query_cell_mins[query_id, 0], query_cell_maxs[query_id, 0] + 1
+        ):
+            for cell_y in range(
+                query_cell_mins[query_id, 1], query_cell_maxs[query_id, 1] + 1
+            ):
+                key = (cell_x - min_cell_x) * num_cell_rows + (cell_y - min_cell_y)
+                position = np.searchsorted(keys, key)
+                while position < num_registrations and keys[position] == key:
+                    box_id = registered_ids[position]
+                    if last_query_ids[box_id] != query_id:
+                        last_query_ids[box_id] = query_id
+                        candidate_ids[num_candidates] = box_id
+                        num_candidates += 1
+                    position += 1
+        for box_id in np.sort(candidate_ids[:num_candidates]):
+            if (
+                mins[box_id, 0] <= query_maxs[query_id, 0]
+                and mins[box_id, 1] <= query_maxs[query_id, 1]
+                and maxs[box_id, 0] >= query_mins[query_id, 0]
+                and maxs[box_id, 1] >= query_mins[query_id, 1]
+            ):
+                if num_found == found_ids.shape[0]:
+                    grown_ids = np.empty(2 * found_ids.shape[0], dtype=np.int64)
+                    grown_ids[:num_found] = found_ids
+                    found_ids = grown_ids
+                found_ids[num_found] = box_id
+                num_found += 1
+        offsets[query_id + 1] = num_found
+    return offsets, found_ids[:num_found]
+
+
 def _get_overlapping_boxes(
     query_mins: np.ndarray,
     query_maxs: np.ndarray,
@@ -577,9 +690,9 @@ def _get_overlapping_boxes(
     """Finds, for each of a set of query boxes on screen, the boxes of another set that
     it overlaps or touches.
 
-    Each box of the other set is registered in the cells of a square grid on screen that
-    it overlaps, so each query box is only compared with the boxes registered in the
-    cells it overlaps.
+    Each box is assigned the cells of a square grid on screen that it overlaps, so each
+    query box is only compared with the boxes that share a cell with it, as
+    _find_overlapping_boxes finds.
 
     :param query_mins: A (Q,2) ndarray of floats holding the smallest x and y of each
         query box, in pixels.
@@ -592,34 +705,29 @@ def _get_overlapping_boxes(
     :return: A list of Q (K,) ndarrays of ints, each holding the indices of the other
         boxes that a query box overlaps or touches, in increasing order.
     """
-    grid: dict[tuple[int, int], list[int]] = {}
-    cell_mins = np.floor(mins / _GRID_CELL_SIZE).astype(int)
-    cell_maxs = np.floor(maxs / _GRID_CELL_SIZE).astype(int)
-    for box_id in range(mins.shape[0]):
-        for cell_x in range(cell_mins[box_id, 0], cell_maxs[box_id, 0] + 1):
-            for cell_y in range(cell_mins[box_id, 1], cell_maxs[box_id, 1] + 1):
-                grid.setdefault((cell_x, cell_y), []).append(box_id)
-
-    query_cell_mins = np.floor(query_mins / _GRID_CELL_SIZE).astype(int)
-    query_cell_maxs = np.floor(query_maxs / _GRID_CELL_SIZE).astype(int)
-    overlapping_ids: list[np.ndarray] = []
-    for query_id in range(query_mins.shape[0]):
-        registered_ids: set[int] = set()
-        for cell_x in range(
-            query_cell_mins[query_id, 0], query_cell_maxs[query_id, 0] + 1
-        ):
-            for cell_y in range(
-                query_cell_mins[query_id, 1], query_cell_maxs[query_id, 1] + 1
-            ):
-                registered_ids.update(grid.get((cell_x, cell_y), ()))
-        registered = np.array(sorted(registered_ids), dtype=int)
-        overlapping_ids.append(
-            registered[
-                np.all(mins[registered] <= query_maxs[query_id], axis=1)
-                & np.all(maxs[registered] >= query_mins[query_id], axis=1)
-            ]
-        )
-    return overlapping_ids
+    if mins.shape[0] == 0:
+        return [np.zeros(0, dtype=int) for _ in range(query_mins.shape[0])]
+    if query_mins.shape[0] == 0:
+        return []
+    cell_mins = np.floor(mins / _GRID_CELL_SIZE).astype(np.int64)
+    cell_maxs = np.floor(maxs / _GRID_CELL_SIZE).astype(np.int64)
+    query_cell_mins = np.floor(query_mins / _GRID_CELL_SIZE).astype(np.int64)
+    query_cell_maxs = np.floor(query_maxs / _GRID_CELL_SIZE).astype(np.int64)
+    min_cell_y = int(min(cell_mins[:, 1].min(), query_cell_mins[:, 1].min()))
+    offsets, found_ids = _find_overlapping_boxes(
+        query_cell_mins,
+        query_cell_maxs,
+        np.ascontiguousarray(query_mins, dtype=float),
+        np.ascontiguousarray(query_maxs, dtype=float),
+        cell_mins,
+        cell_maxs,
+        np.ascontiguousarray(mins, dtype=float),
+        np.ascontiguousarray(maxs, dtype=float),
+        int(min(cell_mins[:, 0].min(), query_cell_mins[:, 0].min())),
+        min_cell_y,
+        int(max(cell_maxs[:, 1].max(), query_cell_maxs[:, 1].max())) - min_cell_y + 1,
+    )
+    return np.split(found_ids, offsets[1:-1])
 
 
 def _cut_at_pierces(
@@ -706,69 +814,96 @@ def _cut_at_pierces(
     return pieces
 
 
+@njit(cache=True, fastmath=True)
 def _clip_to_half_plane(
-    corners: list[tuple[float, float]], normal_x: float, normal_y: float, bound: float
-) -> list[tuple[float, float]]:
+    sourceXs: np.ndarray,
+    sourceYs: np.ndarray,
+    num_source: int,
+    normal_x: float,
+    normal_y: float,
+    bound: float,
+    targetXs: np.ndarray,
+    targetYs: np.ndarray,
+) -> int:
     """Clips a convex polygon on screen to the half plane where a point's dot product
     with a normal is at most a bound.
 
-    The polygon is handled as plain floats, rather than as an ndarray, since it has few
-    corners, and numpy's overhead on arrays that small would far outweigh the
-    arithmetic.
+    This function has been optimized for JIT compilation using Numba.
 
-    :param corners: The polygon's corners, in order around it, each a tuple of its x and
-        y positions, in pixels.
+    :param sourceXs: A ndarray of floats whose first num_source entries hold the x
+        positions of the polygon's corners, in order around it, in pixels.
+    :param sourceYs: A ndarray of floats whose first num_source entries hold the y
+        positions of the polygon's corners, in pixels.
+    :param num_source: The number of the polygon's corners.
     :param normal_x: The x component of the normal of the half plane's boundary, which
         points out of the half plane.
     :param normal_y: The y component of the normal of the half plane's boundary.
     :param bound: The largest dot product with the normal of a point in the half plane.
-    :return: The clipped polygon's corners, in the same form. There are fewer than three
-        if none of the polygon's area is left.
+    :param targetXs: A ndarray of floats, at least num_source + 1 long, whose first
+        entries are overwritten with the x positions of the clipped polygon's corners,
+        in pixels.
+    :param targetYs: A ndarray of floats, at least num_source + 1 long, whose first
+        entries are overwritten with the y positions of the clipped polygon's corners,
+        in pixels.
+    :return: The number of the clipped polygon's corners. It is fewer than three if none
+        of the polygon's area is left.
     """
-    clipped: list[tuple[float, float]] = []
-    num_corners = len(corners)
-    for corner_id in range(num_corners):
-        x, y = corners[corner_id]
-        next_x, next_y = corners[(corner_id + 1) % num_corners]
+    num_target = 0
+    for corner_id in range(num_source):
+        next_corner_id = corner_id + 1 if corner_id + 1 < num_source else 0
+        x = sourceXs[corner_id]
+        y = sourceYs[corner_id]
+        next_x = sourceXs[next_corner_id]
+        next_y = sourceYs[next_corner_id]
         side = x * normal_x + y * normal_y - bound
         next_side = next_x * normal_x + next_y * normal_y - bound
         if side <= 0.0:
-            clipped.append((x, y))
+            targetXs[num_target] = x
+            targetYs[num_target] = y
+            num_target += 1
         if (side < 0.0 < next_side) or (next_side < 0.0 < side):
             fraction = side / (side - next_side)
-            clipped.append((x + fraction * (next_x - x), y + fraction * (next_y - y)))
-    return clipped
+            targetXs[num_target] = x + fraction * (next_x - x)
+            targetYs[num_target] = y + fraction * (next_y - y)
+            num_target += 1
+    return num_target
 
 
+@njit(cache=True, fastmath=True)
 def _get_area_and_centroid(
-    corners: list[tuple[float, float]],
-) -> tuple[float, tuple[float, float] | None]:
+    xs: np.ndarray, ys: np.ndarray, num_corners: int
+) -> tuple[float, float, float, bool]:
     """Returns a polygon's area on screen and its centroid.
 
-    :param corners: The polygon's corners, in order around it, each a tuple of its x and
-        y positions, in pixels.
-    :return: A tuple of the polygon's area, in square pixels, and its centroid, as a
-        tuple of its x and y positions, in pixels, or of zero and None if its area is at
-        most _SLIVER_AREA.
+    This function has been optimized for JIT compilation using Numba.
+
+    :param xs: A ndarray of floats whose first num_corners entries hold the x positions
+        of the polygon's corners, in order around it, in pixels.
+    :param ys: A ndarray of floats whose first num_corners entries hold the y positions
+        of the polygon's corners, in pixels.
+    :param num_corners: The number of the polygon's corners.
+    :return: A tuple of the polygon's area, in square pixels, its centroid's x and y
+        positions, in pixels, and whether its area is more than _SLIVER_AREA. If it
+        isn't, the area and the centroid are all zero.
     """
-    num_corners = len(corners)
     if num_corners < 3:
-        return 0.0, None
+        return 0.0, 0.0, 0.0, False
     double_area = 0.0
     weighted_x = 0.0
     weighted_y = 0.0
     for corner_id in range(num_corners):
-        x, y = corners[corner_id]
-        next_x, next_y = corners[(corner_id + 1) % num_corners]
-        cross = x * next_y - next_x * y
+        next_corner_id = corner_id + 1 if corner_id + 1 < num_corners else 0
+        cross = xs[corner_id] * ys[next_corner_id] - xs[next_corner_id] * ys[corner_id]
         double_area += cross
-        weighted_x += (x + next_x) * cross
-        weighted_y += (y + next_y) * cross
+        weighted_x += (xs[corner_id] + xs[next_corner_id]) * cross
+        weighted_y += (ys[corner_id] + ys[next_corner_id]) * cross
     if abs(double_area) <= 2.0 * _SLIVER_AREA:
-        return 0.0, None
-    return 0.5 * abs(double_area), (
+        return 0.0, 0.0, 0.0, False
+    return (
+        0.5 * abs(double_area),
         weighted_x / (3.0 * double_area),
         weighted_y / (3.0 * double_area),
+        True,
     )
 
 
@@ -816,124 +951,243 @@ def _polygons_overlap(
     return True
 
 
-def _get_overlap_gap(
-    corners_display: np.ndarray,
-    normal_display: np.ndarray,
-    offset: float,
-    ends_display: np.ndarray,
-    radius: float,
-) -> tuple[float, float] | None:
-    """Compares a piece of a stroke's depth with a fill's over the region where they
-    overlap on screen.
+@njit(cache=True, fastmath=True)
+def _get_overlap_gaps(
+    pair_piece_ids: np.ndarray,
+    pair_fill_ids: np.ndarray,
+    piecesEnds_display: np.ndarray,
+    radii: np.ndarray,
+    fillsCorners_display: np.ndarray,
+    fill_corner_counts: np.ndarray,
+    fillNormals_display: np.ndarray,
+    fill_offsets: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compares the depths of pieces of strokes with fills' over the regions where they
+    overlap on screen, for a set of pairs of pieces and fills.
 
-    The piece's footprint on screen is its line, widened by its radius on either side
-    and capped at each end by a half circle of that radius, which is approximated by
-    _CAP_SIDES sides. At each point of the region where it overlaps the fill, the
-    piece's depth is that of the point of its centerline nearest on screen, which is its
-    start, a point between its ends, or its end. The region is split into the three
-    parts where each is nearest, within each of which the piece's depth minus the fill's
-    is linear, so it averages to its value at the part's centroid.
+    A piece's footprint on screen is its line, widened by its radius on either side and
+    capped at each end by a half circle of that radius, which is approximated by
+    _CAP_SIDES sides. At each point of the region where it overlaps a fill, the piece's
+    depth is that of the point of its centerline nearest on screen, which is its start,
+    a point between its ends, or its end. The region is split into the three parts where
+    each is nearest, within each of which the piece's depth minus the fill's is linear,
+    so it averages to its value at the part's centroid. The region is found by clipping
+    the footprint against each of the fill's few edges, rather than the fill against
+    each of the footprint's many.
 
-    The region is found by clipping the footprint against each of the fill's few edges,
-    rather than the fill against each of the footprint's many, and the geometry is done
-    in plain floats, since this is called for every pair of a piece and a fill that
-    overlap on screen.
+    This function has been optimized for JIT compilation using Numba.
 
-    :param corners_display: A (K,2) ndarray of floats holding the fill's corners, in
-        order counterclockwise around it on screen (in display coordinates).
-    :param normal_display: A (3,) ndarray of floats holding the normal of the fill's
-        plane (in display coordinates), whose depth component mustn't be zero.
-    :param offset: The dot product of the fill plane's normal with any point in it.
-    :param ends_display: A (2,3) ndarray of floats holding the piece's start and end (in
-        display coordinates).
-    :param radius: Half of the piece's width, in pixels.
-    :return: A tuple of the piece's depth minus the fill's, averaged over the region, in
-        pixels, which is positive where the piece is behind on average, and the fraction
-        along the piece nearest the region's centroid, or None if the piece and the fill
-        don't overlap.
+    :param pair_piece_ids: A (M,) ndarray of ints holding each pair's piece's index.
+    :param pair_fill_ids: A (M,) ndarray of ints holding each pair's fill's index.
+    :param piecesEnds_display: A (P,2,3) ndarray of floats holding each piece's start
+        and end (in display coordinates).
+    :param radii: A (P,) ndarray of floats holding half of each piece's width, in
+        pixels.
+    :param fillsCorners_display: A (F,K,2) ndarray of floats holding each fill's
+        corners, in order counterclockwise around it on screen (in display coordinates),
+        padded to the most corners any fill has.
+    :param fill_corner_counts: A (F,) ndarray of ints holding each fill's number of
+        corners.
+    :param fillNormals_display: A (F,3) ndarray of floats holding the normal of each
+        fill's plane (in display coordinates), whose depth component mustn't be zero.
+    :param fill_offsets: A (F,) ndarray of floats holding the dot product of each fill
+        plane's normal with any point in it.
+    :return: A tuple of three (M,) ndarrays. The first holds each pair's piece's depth
+        minus its fill's, averaged over the region where they overlap, in pixels, which
+        is positive where the piece is behind on average. The second holds the fraction
+        along each pair's piece nearest the region's centroid. The third holds bools
+        that are False for each pair whose piece and fill don't overlap, for which the
+        first two are zero.
     """
-    (start_x, start_y, start_depth), (end_x, end_y, end_depth) = ends_display.tolist()
-    direction_x = end_x - start_x
-    direction_y = end_y - start_y
-    length_squared = direction_x * direction_x + direction_y * direction_y
-    length = length_squared**0.5
-    along_x, along_y = (
-        (direction_x / length, direction_y / length) if length > 0.0 else (1.0, 0.0)
-    )
+    num_pairs = pair_piece_ids.shape[0]
+    gaps = np.zeros(num_pairs)
+    fractions = np.zeros(num_pairs)
+    overlapping = np.zeros(num_pairs, dtype=np.bool_)
+    num_cap_corners = _END_CAP_COSINES.shape[0]
 
-    # The footprint's corners run counterclockwise around it, first around the end cap
-    # and then around the start cap.
-    footprint = [
-        (
-            center_x + radius * (cosine * along_x - sine * along_y),
-            center_y + radius * (cosine * along_y + sine * along_x),
-        )
-        for (center_x, center_y), cap_cosines_and_sines in (
-            ((end_x, end_y), _END_CAP_COSINES_AND_SINES),
-            ((start_x, start_y), _START_CAP_COSINES_AND_SINES),
-        )
-        for cosine, sine in cap_cosines_and_sines
-    ]
+    # Each clip adds at most one corner, so these buffers can hold the footprint clipped
+    # against every edge of any fill, and then against up to two more lines.
+    buffer_size = 2 * num_cap_corners + fillsCorners_display.shape[1] + 2
+    firstXs = np.empty(buffer_size)
+    firstYs = np.empty(buffer_size)
+    secondXs = np.empty(buffer_size)
+    secondYs = np.empty(buffer_size)
+    middleXs = np.empty(buffer_size)
+    middleYs = np.empty(buffer_size)
+    partXs = np.empty(buffer_size)
+    partYs = np.empty(buffer_size)
 
-    # The fill is wound counterclockwise, so the region is the part of the footprint to
-    # the left of each of the fill's edges.
-    corners = [(x, y) for x, y in corners_display.tolist()]
-    region = footprint
-    for corner_id, (x, y) in enumerate(corners):
-        next_x, next_y = corners[(corner_id + 1) % len(corners)]
-        normal_x = next_y - y
-        normal_y = x - next_x
-        region = _clip_to_half_plane(
-            region, normal_x, normal_y, normal_x * x + normal_y * y
-        )
-        if len(region) < 3:
-            return None
+    for pair_id in range(num_pairs):
+        piece_id = pair_piece_ids[pair_id]
+        fill_id = pair_fill_ids[pair_id]
+        start_x = piecesEnds_display[piece_id, 0, 0]
+        start_y = piecesEnds_display[piece_id, 0, 1]
+        start_depth = piecesEnds_display[piece_id, 0, 2]
+        end_x = piecesEnds_display[piece_id, 1, 0]
+        end_y = piecesEnds_display[piece_id, 1, 1]
+        end_depth = piecesEnds_display[piece_id, 1, 2]
+        radius = radii[piece_id]
+        direction_x = end_x - start_x
+        direction_y = end_y - start_y
+        length_squared = direction_x * direction_x + direction_y * direction_y
+        length = length_squared**0.5
+        along_x = 1.0
+        along_y = 0.0
+        if length > 0.0:
+            along_x = direction_x / length
+            along_y = direction_y / length
 
-    if length_squared > 0.0:
+        # The footprint's corners run counterclockwise around it, first around the end
+        # cap and then around the start cap.
+        for cap_corner_id in range(num_cap_corners):
+            cosine = _END_CAP_COSINES[cap_corner_id]
+            sine = _END_CAP_SINES[cap_corner_id]
+            firstXs[cap_corner_id] = end_x + radius * (
+                cosine * along_x - sine * along_y
+            )
+            firstYs[cap_corner_id] = end_y + radius * (
+                cosine * along_y + sine * along_x
+            )
+            cosine = _START_CAP_COSINES[cap_corner_id]
+            sine = _START_CAP_SINES[cap_corner_id]
+            firstXs[num_cap_corners + cap_corner_id] = start_x + radius * (
+                cosine * along_x - sine * along_y
+            )
+            firstYs[num_cap_corners + cap_corner_id] = start_y + radius * (
+                cosine * along_y + sine * along_x
+            )
+
+        # The fill is wound counterclockwise, so the region is the part of the footprint
+        # to the left of each of the fill's edges. Each clip writes into the buffer the
+        # last one read from.
+        num_region = 2 * num_cap_corners
+        regionXs = firstXs
+        regionYs = firstYs
+        spareXs = secondXs
+        spareYs = secondYs
+        num_corners = fill_corner_counts[fill_id]
+        for corner_id in range(num_corners):
+            next_corner_id = corner_id + 1 if corner_id + 1 < num_corners else 0
+            x = fillsCorners_display[fill_id, corner_id, 0]
+            y = fillsCorners_display[fill_id, corner_id, 1]
+            next_x = fillsCorners_display[fill_id, next_corner_id, 0]
+            next_y = fillsCorners_display[fill_id, next_corner_id, 1]
+            normal_x = next_y - y
+            normal_y = x - next_x
+            num_region = _clip_to_half_plane(
+                regionXs,
+                regionYs,
+                num_region,
+                normal_x,
+                normal_y,
+                normal_x * x + normal_y * y,
+                spareXs,
+                spareYs,
+            )
+            regionXs, spareXs = spareXs, regionXs
+            regionYs, spareYs = spareYs, regionYs
+            if num_region < 3:
+                break
+        if num_region < 3:
+            continue
+
+        normal_x = fillNormals_display[fill_id, 0]
+        normal_y = fillNormals_display[fill_id, 1]
+        normal_depth = fillNormals_display[fill_id, 2]
+        offset = fill_offsets[fill_id]
         start_bound = direction_x * start_x + direction_y * start_y
         end_bound = direction_x * end_x + direction_y * end_y
-        parts = [
-            _clip_to_half_plane(region, direction_x, direction_y, start_bound),
-            _clip_to_half_plane(
-                _clip_to_half_plane(region, -direction_x, -direction_y, -start_bound),
-                direction_x,
-                direction_y,
-                end_bound,
-            ),
-            _clip_to_half_plane(region, -direction_x, -direction_y, -end_bound),
-        ]
-    else:
-        parts = [region]
-
-    def get_fraction(x: float, y: float) -> float:
-        if length_squared == 0.0:
-            return 0.0
-        fraction = (
-            (x - start_x) * direction_x + (y - start_y) * direction_y
-        ) / length_squared
-        return float(min(max(fraction, 0.0), 1.0))
-
-    normal_x, normal_y, normal_depth = normal_display.tolist()
-    total_area = 0.0
-    weighted_gap = 0.0
-    weighted_x = 0.0
-    weighted_y = 0.0
-    for part in parts:
-        area, centroid = _get_area_and_centroid(part)
-        if centroid is None:
+        num_parts = 3 if length_squared > 0.0 else 1
+        total_area = 0.0
+        weighted_gap = 0.0
+        weighted_x = 0.0
+        weighted_y = 0.0
+        for part_id in range(num_parts):
+            if num_parts == 1:
+                num_part = num_region
+                partXs[:num_region] = regionXs[:num_region]
+                partYs[:num_region] = regionYs[:num_region]
+            elif part_id == 0:
+                num_part = _clip_to_half_plane(
+                    regionXs,
+                    regionYs,
+                    num_region,
+                    direction_x,
+                    direction_y,
+                    start_bound,
+                    partXs,
+                    partYs,
+                )
+            elif part_id == 1:
+                num_middle = _clip_to_half_plane(
+                    regionXs,
+                    regionYs,
+                    num_region,
+                    -direction_x,
+                    -direction_y,
+                    -start_bound,
+                    middleXs,
+                    middleYs,
+                )
+                num_part = _clip_to_half_plane(
+                    middleXs,
+                    middleYs,
+                    num_middle,
+                    direction_x,
+                    direction_y,
+                    end_bound,
+                    partXs,
+                    partYs,
+                )
+            else:
+                num_part = _clip_to_half_plane(
+                    regionXs,
+                    regionYs,
+                    num_region,
+                    -direction_x,
+                    -direction_y,
+                    -end_bound,
+                    partXs,
+                    partYs,
+                )
+            area, x, y, has_area = _get_area_and_centroid(partXs, partYs, num_part)
+            if not has_area:
+                continue
+            fraction = 0.0
+            if length_squared > 0.0:
+                fraction = min(
+                    max(
+                        ((x - start_x) * direction_x + (y - start_y) * direction_y)
+                        / length_squared,
+                        0.0,
+                    ),
+                    1.0,
+                )
+            piece_depth = start_depth + fraction * (end_depth - start_depth)
+            fill_depth = (offset - (x * normal_x + y * normal_y)) / normal_depth
+            total_area += area
+            weighted_gap += area * (piece_depth - fill_depth)
+            weighted_x += area * x
+            weighted_y += area * y
+        if total_area <= _SLIVER_AREA:
             continue
-        x, y = centroid
-        piece_depth = start_depth + get_fraction(x, y) * (end_depth - start_depth)
-        fill_depth = (offset - (x * normal_x + y * normal_y)) / normal_depth
-        total_area += area
-        weighted_gap += area * (piece_depth - fill_depth)
-        weighted_x += area * x
-        weighted_y += area * y
-    if total_area <= _SLIVER_AREA:
-        return None
-    return weighted_gap / total_area, get_fraction(
-        weighted_x / total_area, weighted_y / total_area
-    )
+
+        x = weighted_x / total_area
+        y = weighted_y / total_area
+        fraction = 0.0
+        if length_squared > 0.0:
+            fraction = min(
+                max(
+                    ((x - start_x) * direction_x + (y - start_y) * direction_y)
+                    / length_squared,
+                    0.0,
+                ),
+                1.0,
+            )
+        gaps[pair_id] = weighted_gap / total_area
+        fractions[pair_id] = fraction
+        overlapping[pair_id] = True
+    return gaps, fractions, overlapping
 
 
 def _get_closest_approaches(
@@ -1263,37 +1517,80 @@ def _get_constraints(
             + fractions[:, :, np.newaxis] * directions_display[:, np.newaxis]
         )
         radii = 0.5 * widths[stroke_ids]
-        for new_piece_id, candidate_ids in enumerate(
-            _get_overlapping_boxes(
-                piecesEnds_display[:, :, :2].min(axis=1) - radii[:, np.newaxis],
-                piecesEnds_display[:, :, :2].max(axis=1) + radii[:, np.newaxis],
-                fill_mins,
-                fill_maxs,
-            )
+        candidate_ids_list = _get_overlapping_boxes(
+            piecesEnds_display[:, :, :2].min(axis=1) - radii[:, np.newaxis],
+            piecesEnds_display[:, :, :2].max(axis=1) + radii[:, np.newaxis],
+            fill_mins,
+            fill_maxs,
+        )
+
+        # Gather each pair of a new piece and a fill whose bounding boxes overlap, and
+        # whose fill is part of a triangle that can hide anything, and compare them all
+        # in one compiled call. The fills' corners are padded to the most any fill has.
+        fill_triangle_ids = np.array(
+            [triangle_id for _, triangle_id in fills], dtype=int
+        )
+        pair_piece_ids = np.concatenate(
+            [
+                np.full(candidate_ids.shape[0], new_piece_id, dtype=int)
+                for new_piece_id, candidate_ids in enumerate(candidate_ids_list)
+            ]
+        )
+        pair_fill_ids = np.concatenate(candidate_ids_list).astype(int)
+        usable = occluders.usable[fill_triangle_ids[pair_fill_ids]]
+        pair_piece_ids = pair_piece_ids[usable]
+        pair_fill_ids = pair_fill_ids[usable]
+        fillsCorners_display = np.zeros(
+            (
+                num_fills,
+                max(
+                    (corners_display.shape[0] for corners_display, _ in fills),
+                    default=0,
+                ),
+                2,
+            ),
+            dtype=float,
+        )
+        fill_corner_counts = np.zeros(num_fills, dtype=int)
+        for fill_id, (corners_display, _) in enumerate(fills):
+            fill_corner_counts[fill_id] = corners_display.shape[0]
+            fillsCorners_display[fill_id, : corners_display.shape[0]] = corners_display[
+                :, :2
+            ]
+        gaps, pair_fractions, overlapping = _get_overlap_gaps(
+            pair_piece_ids,
+            pair_fill_ids,
+            np.ascontiguousarray(piecesEnds_display),
+            np.ascontiguousarray(radii),
+            fillsCorners_display,
+            fill_corner_counts,
+            np.ascontiguousarray(occluders.normals_display[fill_triangle_ids]),
+            np.ascontiguousarray(occluders.offsets[fill_triangle_ids], dtype=float),
+        )
+
+        piece_constraints_lists: list[list[tuple[int, bool, float, float]]] = [
+            [] for _ in new_pieces
+        ]
+        for new_piece_id, fill_id, gap, fraction in zip(
+            pair_piece_ids[overlapping].tolist(),
+            pair_fill_ids[overlapping].tolist(),
+            gaps[overlapping].tolist(),
+            pair_fractions[overlapping].tolist(),
         ):
-            stroke_id = int(stroke_ids[new_piece_id])
-            piece_constraints: list[tuple[int, bool, float, float]] = []
-            for fill_id in candidate_ids.tolist():
-                corners_display, triangle_id = fills[fill_id]
-                if not occluders.usable[triangle_id]:
-                    continue
-                overlap = _get_overlap_gap(
-                    corners_display[:, :2],
-                    occluders.normals_display[triangle_id],
-                    float(occluders.offsets[triangle_id]),
-                    piecesEnds_display[new_piece_id],
-                    float(radii[new_piece_id]),
+            if fills[fill_id][1] in stroke_owners[int(stroke_ids[new_piece_id])]:
+                piece_constraints_lists[new_piece_id].append(
+                    (fill_id, False, np.inf, fraction)
                 )
-                if overlap is None:
-                    continue
-                gap, fraction = overlap
-                if triangle_id in stroke_owners[stroke_id]:
-                    piece_constraints.append((fill_id, False, np.inf, fraction))
-                elif gap > _PLANE_TOLERANCE:
-                    piece_constraints.append((fill_id, True, gap, fraction))
-                else:
-                    piece_constraints.append((fill_id, False, max(-gap, 0.0), fraction))
-            piece_fill_cache[new_pieces[new_piece_id]] = piece_constraints
+            elif gap > _PLANE_TOLERANCE:
+                piece_constraints_lists[new_piece_id].append(
+                    (fill_id, True, gap, fraction)
+                )
+            else:
+                piece_constraints_lists[new_piece_id].append(
+                    (fill_id, False, max(-gap, 0.0), fraction)
+                )
+        for piece, piece_constraints in zip(new_pieces, piece_constraints_lists):
+            piece_fill_cache[piece] = piece_constraints
 
     for piece_id, piece in enumerate(pieces):
         for fill_id, piece_first, weight, fraction in piece_fill_cache[piece]:
@@ -1390,7 +1687,9 @@ def _get_cheapest_drops(
     weight is either dropped or kept, and every cycle must lose at least one of its
     constraints. Listing every cycle up front would take too long, so the cycles are
     added as they are found: each time, the cycles that the cheapest drops so far leave
-    are collected, and the program is solved again with them, until none are left.
+    are collected, and the program is solved again with them, until none are left. Where
+    the cycles first found share no droppable constraints, dropping each one's cheapest
+    is already exact, so the program isn't solved at all.
 
     :param item_ids: The indices of the items.
     :param weights: A dict mapping each constraint among the items, as a tuple of the
@@ -1416,6 +1715,7 @@ def _get_cheapest_drops(
             if (first_id, later_id) not in dropped:
                 successors.setdefault(first_id, set()).add(later_id)
         new_rows: list[list[int]] = []
+        greedy_drops: set[tuple[int, int]] = set()
         while True:
             cycle = _find_cycle(successors, item_ids)
             if cycle is None:
@@ -1429,8 +1729,19 @@ def _get_cheapest_drops(
             new_rows.append(row)
             first_id, later_id = finite[min(row, key=lambda pair_id: costs[pair_id])]
             successors[first_id].discard(later_id)
+            greedy_drops.add((first_id, later_id))
         if not new_rows:
             return dropped
+
+        # On the first pass, if no two of the cycles found share a droppable constraint,
+        # dropping each one's cheapest is exact, and the integer program isn't needed.
+        # Any set of drops that breaks every cycle must take a separate constraint from
+        # each of them, so it costs at least as much, and dropping those breaks every
+        # cycle, since the search found no more.
+        if not rows and sum(len(row) for row in new_rows) == len(
+            {pair_id for row in new_rows for pair_id in row}
+        ):
+            return greedy_drops
         rows += new_rows
 
         matrix = np.zeros((len(rows), len(finite)), dtype=float)

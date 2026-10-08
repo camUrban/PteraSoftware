@@ -11,10 +11,11 @@ they keep every plane flat and every intersection where it was.
 
 Visibility is resolved exactly in display coordinates. The opaque fills are split and
 ordered by a binary space partitioning (BSP) tree, which paints them from back to front.
-The strokes are cut wherever they pass through a fill and painted among the fills in
-depth order, each before the fills that hide it, so those fills cover it, and after
-everything else it overlaps. Matplotlib then writes the result, which makes the svg and
-pdf writers the same ones the results plots use.
+The strokes are cut wherever they pass through a fill or swap depth order with another
+stroke they overlap, and painted among the fills in depth order, each before the fills
+that hide it, so those fills cover it, and after everything else it overlaps. Matplotlib
+then writes the result, which makes the svg and pdf writers the same ones the results
+plots use.
 """
 
 from __future__ import annotations
@@ -89,6 +90,13 @@ _END_CAP_COSINES = np.cos(_END_CAP_ANGLES)
 _END_CAP_SINES = np.sin(_END_CAP_ANGLES)
 _START_CAP_COSINES = np.cos(_START_CAP_ANGLES)
 _START_CAP_SINES = np.sin(_START_CAP_ANGLES)
+
+# Define the fractions along a stroke at which it is compared in depth with another
+# stroke it overlaps on screen, both when finding where their depth order swaps, which
+# needs the finer spacing, and when averaging their depth difference over the stretch
+# where they overlap.
+_SWAP_SAMPLE_FRACTIONS = np.linspace(0.0, 1.0, 129)
+_GAP_SAMPLE_FRACTIONS = np.linspace(0.0, 1.0, 33)
 
 # Define the number of rounds in which the pieces of strokes caught in a cycle of depth
 # constraints are split before the cycles that survive are broken by dropping
@@ -1322,6 +1330,299 @@ def _get_closest_approaches(
     )
 
 
+@njit(cache=True, fastmath=True)
+def _find_depth_swaps(
+    starts_display: np.ndarray,
+    ends_display: np.ndarray,
+    radii: np.ndarray,
+    pair_first_ids: np.ndarray,
+    pair_second_ids: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Finds where the depth order of each of a set of pairs of strokes swaps within the
+    stretch where they overlap on screen.
+
+    Each pair's first stroke is sampled at _SWAP_SAMPLE_FRACTIONS, and its depth at each
+    sample is compared with that of the second stroke's point nearest it on screen.
+    Wherever the samples within the overlap go from one stroke being nearer by more than
+    _PLANE_TOLERANCE to the other being nearer, the difference's zero is interpolated
+    between them, and both strokes are cut there, the second at its point nearest the
+    first's cut. Strokes that share an end, such as neighboring segments of a polyline,
+    are never cut against each other.
+
+    This function has been optimized for JIT compilation using Numba.
+
+    :param starts_display: A (N,3) ndarray of floats holding each stroke's start (in
+        display coordinates).
+    :param ends_display: A (N,3) ndarray of floats holding each stroke's end (in display
+        coordinates).
+    :param radii: A (N,) ndarray of floats holding half of each stroke's width, in
+        pixels.
+    :param pair_first_ids: A (M,) ndarray of ints holding each pair's first stroke's
+        index.
+    :param pair_second_ids: A (M,) ndarray of ints holding each pair's second stroke's
+        index.
+    :return: A tuple of two ndarrays of the same length, holding the index of the stroke
+        each cut is on, as ints, and the fraction along the stroke where it is, as
+        floats.
+    """
+    num_samples = _SWAP_SAMPLE_FRACTIONS.shape[0]
+    cut_stroke_ids = np.empty(64, dtype=np.int64)
+    cut_fractions = np.empty(64)
+    num_cuts = 0
+    second_fractions = np.empty(num_samples)
+    gaps = np.empty(num_samples)
+    overlapping = np.empty(num_samples, dtype=np.bool_)
+    for pair_id in range(pair_first_ids.shape[0]):
+        first_id = pair_first_ids[pair_id]
+        second_id = pair_second_ids[pair_id]
+        shares_an_end = False
+        for first_end_id in range(2):
+            for second_end_id in range(2):
+                first_end_display = (
+                    starts_display[first_id]
+                    if first_end_id == 0
+                    else ends_display[first_id]
+                )
+                second_end_display = (
+                    starts_display[second_id]
+                    if second_end_id == 0
+                    else ends_display[second_id]
+                )
+                if (
+                    abs(first_end_display[0] - second_end_display[0])
+                    <= _PLANE_TOLERANCE
+                    and abs(first_end_display[1] - second_end_display[1])
+                    <= _PLANE_TOLERANCE
+                    and abs(first_end_display[2] - second_end_display[2])
+                    <= _PLANE_TOLERANCE
+                ):
+                    shares_an_end = True
+        if shares_an_end:
+            continue
+
+        reach = radii[first_id] + radii[second_id]
+        direction_x = ends_display[second_id, 0] - starts_display[second_id, 0]
+        direction_y = ends_display[second_id, 1] - starts_display[second_id, 1]
+        direction_depth = ends_display[second_id, 2] - starts_display[second_id, 2]
+        length_squared = direction_x * direction_x + direction_y * direction_y
+        for sample_id in range(num_samples):
+            fraction = _SWAP_SAMPLE_FRACTIONS[sample_id]
+            x = starts_display[first_id, 0] + fraction * (
+                ends_display[first_id, 0] - starts_display[first_id, 0]
+            )
+            y = starts_display[first_id, 1] + fraction * (
+                ends_display[first_id, 1] - starts_display[first_id, 1]
+            )
+            depth = starts_display[first_id, 2] + fraction * (
+                ends_display[first_id, 2] - starts_display[first_id, 2]
+            )
+            second_fraction = 0.0
+            if length_squared != 0.0:
+                second_fraction = min(
+                    max(
+                        (
+                            (x - starts_display[second_id, 0]) * direction_x
+                            + (y - starts_display[second_id, 1]) * direction_y
+                        )
+                        / length_squared,
+                        0.0,
+                    ),
+                    1.0,
+                )
+            nearest_x = starts_display[second_id, 0] + second_fraction * direction_x
+            nearest_y = starts_display[second_id, 1] + second_fraction * direction_y
+            second_fractions[sample_id] = second_fraction
+            gaps[sample_id] = depth - (
+                starts_display[second_id, 2] + second_fraction * direction_depth
+            )
+            overlapping[sample_id] = (
+                (x - nearest_x) ** 2 + (y - nearest_y) ** 2
+            ) ** 0.5 < reach
+
+        # Walk the samples within the overlap, keeping the last one whose difference is
+        # past the tolerance, and cut between it and the next one past it on the other
+        # side.
+        previous_id = -1
+        for sample_id in range(num_samples):
+            if not overlapping[sample_id]:
+                previous_id = -1
+                continue
+            gap = gaps[sample_id]
+            if abs(gap) <= _PLANE_TOLERANCE:
+                continue
+            if previous_id < 0 or (gaps[previous_id] > 0.0) == (gap > 0.0):
+                previous_id = sample_id
+                continue
+            weight = gaps[previous_id] / (gaps[previous_id] - gap)
+            first_cut = _SWAP_SAMPLE_FRACTIONS[previous_id] + weight * (
+                _SWAP_SAMPLE_FRACTIONS[sample_id] - _SWAP_SAMPLE_FRACTIONS[previous_id]
+            )
+            second_cut = second_fractions[previous_id] + weight * (
+                second_fractions[sample_id] - second_fractions[previous_id]
+            )
+            previous_id = sample_id
+            for stroke_id, cut in ((first_id, first_cut), (second_id, second_cut)):
+                if 0.0 < cut < 1.0:
+                    if num_cuts == cut_stroke_ids.shape[0]:
+                        grown_stroke_ids = np.empty(2 * num_cuts, dtype=np.int64)
+                        grown_stroke_ids[:num_cuts] = cut_stroke_ids
+                        cut_stroke_ids = grown_stroke_ids
+                        grown_fractions = np.empty(2 * num_cuts)
+                        grown_fractions[:num_cuts] = cut_fractions
+                        cut_fractions = grown_fractions
+                    cut_stroke_ids[num_cuts] = stroke_id
+                    cut_fractions[num_cuts] = cut
+                    num_cuts += 1
+    return cut_stroke_ids[:num_cuts], cut_fractions[:num_cuts]
+
+
+def _cut_at_depth_swaps(
+    pieces: list[tuple[int, float, float]],
+    strokes_display: np.ndarray,
+    widths: np.ndarray,
+) -> list[tuple[int, float, float]]:
+    """Cuts the pieces of strokes wherever two strokes that overlap on screen swap which
+    of them is nearer, as _find_depth_swaps finds.
+
+    Without the cuts, two strokes lying along each other on screen would be ordered by
+    one comparison, which paints one over the other along the whole stretch, though each
+    is nearer along part of it.
+
+    :param pieces: The pieces, each a tuple of its stroke's index and the fractions
+        along the stroke where it starts and ends, in the order of their strokes and
+        then of their positions along them.
+    :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
+        end (in display coordinates).
+    :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
+    :return: The pieces, with those that span a cut split there, in the same order.
+    """
+    if strokes_display.shape[0] == 0:
+        return pieces
+    radii = 0.5 * widths
+    starts_display = np.ascontiguousarray(strokes_display[:, 0], dtype=float)
+    ends_display = np.ascontiguousarray(strokes_display[:, 1], dtype=float)
+    mins = np.minimum(starts_display[:, :2], ends_display[:, :2]) - radii[:, np.newaxis]
+    maxs = np.maximum(starts_display[:, :2], ends_display[:, :2]) + radii[:, np.newaxis]
+    first_ids_list: list[np.ndarray] = []
+    second_ids_list: list[np.ndarray] = []
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(mins, maxs, mins, maxs)
+    ):
+        later_ids = candidate_ids[candidate_ids > first_id]
+        first_ids_list.append(np.full(later_ids.shape[0], first_id, dtype=np.int64))
+        second_ids_list.append(later_ids.astype(np.int64))
+    cut_stroke_ids, cut_fractions = _find_depth_swaps(
+        starts_display,
+        ends_display,
+        np.ascontiguousarray(radii, dtype=float),
+        np.concatenate(first_ids_list),
+        np.concatenate(second_ids_list),
+    )
+    cuts: dict[int, set[float]] = {}
+    for stroke_id, fraction in zip(cut_stroke_ids.tolist(), cut_fractions.tolist()):
+        cuts.setdefault(stroke_id, set()).add(fraction)
+
+    split_pieces: list[tuple[int, float, float]] = []
+    for stroke_id, low, high in pieces:
+        bounds = [
+            low,
+            *sorted(cut for cut in cuts.get(stroke_id, ()) if low < cut < high),
+            high,
+        ]
+        for first_bound, second_bound in zip(bounds, bounds[1:]):
+            split_pieces.append((stroke_id, first_bound, second_bound))
+    return split_pieces
+
+
+@njit(cache=True, fastmath=True)
+def _get_average_gaps(
+    piecesStarts_display: np.ndarray,
+    piecesEnds_display: np.ndarray,
+    radii: np.ndarray,
+    first_ids: np.ndarray,
+    second_ids: np.ndarray,
+    closest_gaps: np.ndarray,
+) -> np.ndarray:
+    """Averages the depth difference of each of a set of pairs of pieces of strokes over
+    the stretch where they overlap on screen.
+
+    Each pair's first piece is sampled at _GAP_SAMPLE_FRACTIONS, and its depth at each
+    sample within the overlap is compared with that of the second piece's point nearest
+    it on screen.
+
+    This function has been optimized for JIT compilation using Numba.
+
+    :param piecesStarts_display: A (P,3) ndarray of floats holding each piece's start
+        (in display coordinates).
+    :param piecesEnds_display: A (P,3) ndarray of floats holding each piece's end (in
+        display coordinates).
+    :param radii: A (P,) ndarray of floats holding half of each piece's width, in
+        pixels.
+    :param first_ids: A (M,) ndarray of ints holding each pair's first piece's index.
+    :param second_ids: A (M,) ndarray of ints holding each pair's second piece's index.
+    :param closest_gaps: A (M,) ndarray of floats holding each pair's first piece's
+        depth minus its second's where they come closest on screen, in pixels, which is
+        kept for a pair whose overlap falls between the samples.
+    :return: A (M,) ndarray of floats holding each pair's first piece's depth minus its
+        second's, averaged over the samples within their overlap, in pixels.
+    """
+    gaps = np.empty(first_ids.shape[0])
+    for pair_id in range(first_ids.shape[0]):
+        first_id = first_ids[pair_id]
+        second_id = second_ids[pair_id]
+        reach = radii[first_id] + radii[second_id]
+        direction_x = (
+            piecesEnds_display[second_id, 0] - piecesStarts_display[second_id, 0]
+        )
+        direction_y = (
+            piecesEnds_display[second_id, 1] - piecesStarts_display[second_id, 1]
+        )
+        direction_depth = (
+            piecesEnds_display[second_id, 2] - piecesStarts_display[second_id, 2]
+        )
+        length_squared = direction_x * direction_x + direction_y * direction_y
+        total = 0.0
+        count = 0
+        for sample_id in range(_GAP_SAMPLE_FRACTIONS.shape[0]):
+            fraction = _GAP_SAMPLE_FRACTIONS[sample_id]
+            x = piecesStarts_display[first_id, 0] + fraction * (
+                piecesEnds_display[first_id, 0] - piecesStarts_display[first_id, 0]
+            )
+            y = piecesStarts_display[first_id, 1] + fraction * (
+                piecesEnds_display[first_id, 1] - piecesStarts_display[first_id, 1]
+            )
+            depth = piecesStarts_display[first_id, 2] + fraction * (
+                piecesEnds_display[first_id, 2] - piecesStarts_display[first_id, 2]
+            )
+            second_fraction = 0.0
+            if length_squared != 0.0:
+                second_fraction = min(
+                    max(
+                        (
+                            (x - piecesStarts_display[second_id, 0]) * direction_x
+                            + (y - piecesStarts_display[second_id, 1]) * direction_y
+                        )
+                        / length_squared,
+                        0.0,
+                    ),
+                    1.0,
+                )
+            nearest_x = (
+                piecesStarts_display[second_id, 0] + second_fraction * direction_x
+            )
+            nearest_y = (
+                piecesStarts_display[second_id, 1] + second_fraction * direction_y
+            )
+            if ((x - nearest_x) ** 2 + (y - nearest_y) ** 2) ** 0.5 < reach:
+                total += depth - (
+                    piecesStarts_display[second_id, 2]
+                    + second_fraction * direction_depth
+                )
+                count += 1
+        gaps[pair_id] = total / count if count > 0 else closest_gaps[pair_id]
+    return gaps
+
+
 def _get_stroke_constraints(
     pieces: list[tuple[int, float, float]],
     strokes_display: np.ndarray,
@@ -1332,10 +1633,12 @@ def _get_stroke_constraints(
     the nearer one.
 
     Two pieces overlap where they come within the sum of their half widths of each other
-    on screen, and are compared by depth where they come closest. Pieces whose depths
-    there are within _PLANE_TOLERANCE of each other don't constrain each other. The
-    pairs whose bounding boxes overlap are found first, and are then all compared at
-    once.
+    on screen, and are compared by their depth difference averaged over the stretch
+    where they overlap, as _get_average_gaps finds, so pieces lying along each other are
+    compared along their whole overlap, and crossing pieces around their crossing.
+    Pieces whose average depths are within _PLANE_TOLERANCE of each other don't
+    constrain each other. The pairs whose bounding boxes overlap are found first, and
+    are then all compared at once.
 
     :param pieces: The pieces, each a tuple of its stroke's index and the fractions
         along the stroke where it starts and ends.
@@ -1343,9 +1646,9 @@ def _get_stroke_constraints(
         end (in display coordinates).
     :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
     :return: The constraints, each a tuple of the farther piece's index, the nearer
-        piece's index, the difference in their depths, in pixels, and the fractions
-        along the farther and nearer pieces where they come closest, in the order of
-        their pairs' first and then second pieces.
+        piece's index, the difference in their average depths, in pixels, and the
+        fractions along the farther and nearer pieces where they come closest, in the
+        order of their pairs' first and then second pieces.
     """
     if not pieces:
         return []
@@ -1393,13 +1696,21 @@ def _get_stroke_constraints(
     second_ids = second_ids[overlapping]
     first_fractions = first_fractions[overlapping]
     second_fractions = second_fractions[overlapping]
-    gaps = (
+    closest_gaps = (
         piecesStarts_display[first_ids, 2]
         + first_fractions
         * (piecesEnds_display[first_ids, 2] - piecesStarts_display[first_ids, 2])
         - piecesStarts_display[second_ids, 2]
         - second_fractions
         * (piecesEnds_display[second_ids, 2] - piecesStarts_display[second_ids, 2])
+    )
+    gaps = _get_average_gaps(
+        np.ascontiguousarray(piecesStarts_display),
+        np.ascontiguousarray(piecesEnds_display),
+        np.ascontiguousarray(radii, dtype=float),
+        first_ids.astype(np.int64),
+        second_ids.astype(np.int64),
+        np.ascontiguousarray(closest_gaps, dtype=float),
     )
 
     constraints: list[tuple[int, int, float, float, float]] = []
@@ -1652,19 +1963,26 @@ def _sort_items(
 
 
 def _find_cycle(
-    successors: dict[int, set[int]], item_ids: list[int]
+    successors: dict[int, set[int]], item_ids: list[int], states: dict[int, int]
 ) -> list[tuple[int, int]] | None:
     """Finds a cycle of constraints among some items, by a depth first search.
+
+    An item is finished once everything it leads to has been searched without meeting a
+    cycle, which stays true however many constraints are then removed, so a search after
+    removing some skips the items an earlier one finished. It still meets the other
+    items in the same order, so it finds the same cycle as a search from scratch.
 
     :param successors: The constraints, as a dict mapping each item's index to the set
         of indices of the items it must be painted before.
     :param item_ids: The indices of the items to search among. Constraints to other
         items are ignored.
+    :param states: A dict mapping each item's index to its state, which is unvisited (0)
+        or finished (2) between searches, and on the current path (1) during one. The
+        search updates it, and leaves the items on its path unvisited when it finds a
+        cycle.
     :return: The cycle's constraints, each a tuple of the index of the item painted
         first and the index of the item painted later, or None if there is no cycle.
     """
-    # Each item is unvisited (0), on the current path (1), or finished (2).
-    states = {item_id: 0 for item_id in item_ids}
     for root_id in item_ids:
         if states[root_id]:
             continue
@@ -1676,6 +1994,8 @@ def _find_cycle(
                 if next_id not in states:
                     continue
                 if states[next_id] == 1:
+                    for path_id in path:
+                        states[path_id] = 0
                     cycle_ids = path[path.index(next_id) :]
                     return list(zip(cycle_ids, cycle_ids[1:] + cycle_ids[:1]))
                 if states[next_id] == 0:
@@ -1728,8 +2048,9 @@ def _get_cheapest_drops(
                 successors.setdefault(first_id, set()).add(later_id)
         new_rows: list[list[int]] = []
         greedy_drops: set[tuple[int, int]] = set()
+        states = {item_id: 0 for item_id in item_ids}
         while True:
-            cycle = _find_cycle(successors, item_ids)
+            cycle = _find_cycle(successors, item_ids, states)
             if cycle is None:
                 break
             row = [finite_ids[pair] for pair in cycle if pair in finite_ids]
@@ -1756,9 +2077,18 @@ def _get_cheapest_drops(
             return greedy_drops
         rows += new_rows
 
-        matrix = np.zeros((len(rows), len(finite)), dtype=float)
-        for row_id, row in enumerate(rows):
-            matrix[row_id, row] = 1.0
+        # Each cycle holds few of the component's constraints, so the matrix is built
+        # sparse, which saves the solver from finding its nonzero entries itself.
+        matrix = scipy.sparse.csr_array(
+            (
+                np.ones(sum(len(row) for row in rows), dtype=float),
+                (
+                    np.repeat(np.arange(len(rows)), [len(row) for row in rows]),
+                    np.concatenate(rows),
+                ),
+            ),
+            shape=(len(rows), len(finite)),
+        )
         result = scipy.optimize.milp(
             costs,
             integrality=np.ones(len(finite), dtype=int),
@@ -2254,11 +2584,12 @@ def _order_items(
     pieces to be painted together, each after everything it hides.
 
     Each stroke is cut wherever its centerline passes through a triangle it doesn't
-    outline, and the items are then ordered by the constraints _get_constraints finds. A
-    fill painted after a piece of a stroke covers the part of the piece's width that it
-    overlaps on screen, so where a fill is in front of part of a piece and behind the
-    rest, no order paints both parts exactly, and the piece is painted wherever it is on
-    average.
+    outline, and wherever it and another stroke it overlaps on screen swap which of them
+    is nearer, as _cut_at_depth_swaps finds. The items are then ordered by the
+    constraints _get_constraints finds. A fill painted after a piece of a stroke covers
+    the part of the piece's width that it overlaps on screen, so where a fill is in
+    front of part of a piece and behind the rest, no order paints both parts exactly,
+    and the piece is painted wherever it is on average.
 
     The fills' pieces start in the BSP's order, followed by the strokes' pieces in the
     order their strokes were added, which the sort keeps wherever the constraints allow,
@@ -2293,7 +2624,11 @@ def _order_items(
     """
     occluders = _prepare_occluders(triangles_display)
     num_fills = len(fills)
-    pieces = _cut_at_pierces(strokes_display, stroke_owners, occluders)
+    pieces = _cut_at_depth_swaps(
+        _cut_at_pierces(strokes_display, stroke_owners, occluders),
+        strokes_display,
+        widths,
+    )
 
     # The fills never change, so their constraints with each other are found once, and
     # each piece's constraints with them are kept until the piece is split.

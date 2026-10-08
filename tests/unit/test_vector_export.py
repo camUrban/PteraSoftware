@@ -578,6 +578,36 @@ class TestVectorLayer(unittest.TestCase):
             stroke_collection.get_edgecolor()[-1], matplotlib.colors.to_rgba("blue")
         )
 
+    def test_cuts_two_strokes_where_their_depth_order_swaps(self) -> None:
+        """Test that two strokes lying along each other on screen are cut where they
+        swap which of them is nearer, and that each part of each is painted after the
+        part of the other that is farther.
+
+        Both run along the x axis on screen, with the red one sloping toward the camera
+        and the blue one away from it, so they are equally deep at the window's center,
+        at x = 100.0 pixels.
+        """
+        self.layer.add_polylines(
+            [np.array([[-3.0, 0.0, -1.0], [3.0, 0.0, 1.0]], dtype=float)], "red", 1.0
+        )
+        self.layer.add_polylines(
+            [np.array([[-3.0, 0.0, 1.0], [3.0, 0.0, -1.0]], dtype=float)], "blue", 1.0
+        )
+        positions = {}
+        for path_id, (path, _, edge_color) in enumerate(self.get_drawn_paths()):
+            for segment in np.reshape(np.array(path.vertices, dtype=float), (-1, 2, 2)):
+                side = "left" if np.mean(segment[:, 0]) < 100.0 else "right"
+                name = "red" if edge_color[0] > edge_color[2] else "blue"
+                npt.assert_allclose(
+                    np.sort(segment[:, 0]),
+                    [70.0, 100.0] if side == "left" else [100.0, 130.0],
+                    atol=0.1,
+                )
+                positions[(name, side)] = path_id
+        self.assertEqual(len(positions), 4)
+        self.assertLess(positions[("red", "left")], positions[("blue", "left")])
+        self.assertLess(positions[("blue", "right")], positions[("red", "right")])
+
     def test_equally_deep_crossing_strokes_hide_nothing(self) -> None:
         """Test that two strokes crossing on screen at the same depth are both drawn
         whole."""
@@ -599,13 +629,15 @@ class TestVectorLayer(unittest.TestCase):
         npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
         npt.assert_allclose(segments[1], [[100.0, 30.0], [100.0, 70.0]])
 
-    def test_strokes_that_share_an_end_never_hide_each_other(self) -> None:
-        """Test that a polyline's segments don't hide each other where they meet.
+    def test_never_cuts_strokes_that_share_an_end(self) -> None:
+        """Test that a polyline's segments aren't cut against each other where they
+        meet, and that the farther one is painted first.
 
         The polyline turns sharply back on itself at its middle point, so its second
         segment starts within the first segment's width on screen and runs away from the
-        camera, behind it. Since the two share an end, neither hides the other, and both
-        are drawn whole.
+        camera, behind it. Since the two share an end, neither is cut, so both are drawn
+        whole, and the second is painted before the first, which covers it where they
+        overlap.
         """
         polyline_D_Do = np.array(
             [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 0.05, -1.0]], dtype=float
@@ -620,8 +652,8 @@ class TestVectorLayer(unittest.TestCase):
             ]
         )
         self.assertEqual(len(segments), 2)
-        npt.assert_allclose(segments[0], [[100.0, 50.0], [110.0, 50.0]])
-        npt.assert_allclose(segments[1], [[110.0, 50.0], [105.0, 50.5]])
+        npt.assert_allclose(segments[0], [[110.0, 50.0], [105.0, 50.5]])
+        npt.assert_allclose(segments[1], [[100.0, 50.0], [110.0, 50.0]])
 
 
 class TestVectorSceneSave(unittest.TestCase):

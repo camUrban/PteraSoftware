@@ -1844,13 +1844,16 @@ class VectorLayer:
         convex, is the convex hull of its points' positions on screen. The boundaries of
         the faces in outlined_face_ids are outlined too, while those faces face the
         camera. Its faces are ordered against the layer's fills, and its outlines
-        against the layer's strokes, so it is hidden by whatever is nearer.
+        against the layer's strokes, so it is hidden by whatever is nearer. Only the
+        faces that face the camera are drawn, since they hide the rest, so the
+        polyhedron must be closed.
 
         :param stackPoints_D_Do: A (P,3) ndarray of floats holding the polyhedron's
             points (in diagram axes, relative to the diagram origin). The units are in
             meters.
         :param faces: A sequence of (K,) ndarrays of ints, each holding the indices of a
-            face's points, in order around it. The faces must be convex.
+            face's points, in order around it. The faces must be convex, and must
+            together enclose the polyhedron.
         :param fill_color: The polyhedron's fill color, as any color Matplotlib accepts.
         :param outline_color: The color of its outlines, as any color Matplotlib
             accepts.
@@ -2099,14 +2102,16 @@ class VectorLayer:
         """Returns the layer's fills and strokes, with its convex occluders converted
         into more of each as seen through a camera.
 
-        Each occluder's faces, split into triangles, become opaque fills, which the BSP
-        then orders exactly against the layer's other fills and against each other,
-        however they interpenetrate. Its outline becomes strokes, owned by its own
-        triangles, so they are hidden by whatever is nearer, but never by the occluder
-        they outline. The outline runs along its silhouette, which is the boundary of
-        its footprint on screen and, since it is convex, the convex hull of its points'
-        positions on screen, and along the boundaries of its outlined faces that face
-        the camera. The layer itself isn't changed.
+        Each occluder's faces that face the camera, split into triangles, become opaque
+        fills, which the BSP then orders exactly against the layer's other fills and
+        against each other, however they interpenetrate. Its other faces are always
+        hidden behind those, since it is closed and convex, so they are dropped. Its
+        outline becomes strokes, owned by its own triangles, so they are hidden by
+        whatever is nearer, but never by the occluder they outline. The outline runs
+        along its silhouette, which is the boundary of its footprint on screen and,
+        since it is convex, the convex hull of its points' positions on screen, and
+        along the boundaries of its outlined faces that face the camera. The layer
+        itself isn't changed.
 
         :param camera: The VectorCamera that decides which of the occluders' faces face
             the camera, and where their silhouettes are.
@@ -2134,8 +2139,26 @@ class VectorLayer:
             outline_width,
             outlined_face_ids,
         ) in self._occluders:
-            first_triangle_id = len(listFillTriangles_D_Do)
+            # A face of a convex polyhedron faces the camera where its outward normal
+            # points back toward negative depth. Each face's normal is turned outward,
+            # away from the polyhedron's center, so the faces may wind either way.
+            points_display = camera.to_display(stackPoints_D_Do)
+            center_display = points_display.mean(axis=0)
+            faces_camera: list[bool] = []
             for face in faces:
+                face_display = points_display[face]
+                normal_display = _get_newell_normal(face_display)
+                if normal_display @ (face_display.mean(axis=0) - center_display) < 0.0:
+                    normal_display = -normal_display
+                faces_camera.append(bool(normal_display[2] < 0.0))
+
+            # The faces that face the camera cover the polyhedron's whole footprint on
+            # screen, in front of the rest, which are always hidden behind them, so only
+            # they become fills.
+            first_triangle_id = len(listFillTriangles_D_Do)
+            for face, face_faces_camera in zip(faces, faces_camera):
+                if not face_faces_camera:
+                    continue
                 for corner_id in range(1, face.shape[0] - 1):
                     listFillTriangles_D_Do.append(
                         stackPoints_D_Do[
@@ -2145,24 +2168,14 @@ class VectorLayer:
                     fill_colors.append(fill_rgba)
             owners = set(range(first_triangle_id, len(listFillTriangles_D_Do)))
 
-            points_display = camera.to_display(stackPoints_D_Do)
             try:
                 hull = scipy.spatial.ConvexHull(points_display[:, :2])
             except scipy.spatial.QhullError:
                 # A polyhedron whose footprint on screen has no area shows no outline.
                 continue
             outlines = [hull.vertices]
-
-            # A face of a convex polyhedron faces the camera where its outward normal
-            # points back toward negative depth. Each face's normal is turned outward,
-            # away from the polyhedron's center, so the faces may wind either way.
-            center_display = points_display.mean(axis=0)
             for face_id in outlined_face_ids:
-                face_display = points_display[faces[face_id]]
-                normal_display = _get_newell_normal(face_display)
-                if normal_display @ (face_display.mean(axis=0) - center_display) < 0.0:
-                    normal_display = -normal_display
-                if normal_display[2] < 0.0:
+                if faces_camera[face_id]:
                     outlines.append(faces[face_id])
 
             # Each closed outline becomes a stroke between each pair of its consecutive

@@ -502,6 +502,28 @@ class TestVectorLayer(unittest.TestCase):
                 listStrokes_D_Do = self.layer._get_fills_and_strokes(self.camera)[2]
                 self.assertEqual(len(listStrokes_D_Do), num_strokes)
 
+    def test_fills_only_the_faces_of_a_convex_occluder_that_face_the_camera(
+        self,
+    ) -> None:
+        """Test that a convex occluder becomes fills only where its faces face the
+        camera.
+
+        The camera looks straight down at the cube, so only its face at z = 1.0 faces
+        it, and its four sides are seen edge on. That face is split into two triangles.
+        """
+        self.layer.add_convex_occluder(
+            vector_export_fixtures.make_cube_points_fixture(),
+            vector_export_fixtures.make_cube_faces_fixture(),
+            "white",
+            "black",
+            1.0,
+        )
+        listFillTriangles_D_Do = self.layer._get_fills_and_strokes(self.camera)[0]
+        self.assertEqual(len(listFillTriangles_D_Do), 2)
+        npt.assert_allclose(
+            np.concatenate(listFillTriangles_D_Do)[:, 2], np.ones(6, dtype=float)
+        )
+
     def test_returns_the_zorder_after_its_passes(self) -> None:
         """Test that drawing a layer returns the zorder after its three passes."""
         self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 6.0)

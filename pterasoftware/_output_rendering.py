@@ -2394,8 +2394,8 @@ def show_diagram(
                 window_width / figure_size_in[0], window_height / figure_size_in[1]
             )
             plotter.window_size = [
-                round(window_scale * figure_size_in[0]),
-                round(window_scale * figure_size_in[1]),
+                max(1, round(window_scale * figure_size_in[0])),
+                max(1, round(window_scale * figure_size_in[1])),
             ]
 
     with matplotlib.rc_context({"font.serif": [_fonts.MONO_FONT_FAMILY]}):

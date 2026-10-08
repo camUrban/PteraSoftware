@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import heapq
 import io
+import math
 import re
 from collections.abc import Sequence
 from pathlib import Path
@@ -81,8 +82,8 @@ _CAP_SIDES = 16
 # Define the cosines and sines of the angles, from a stroke's direction on screen, of
 # the corners of the polygons that approximate its round ends, running counterclockwise
 # around the end cap and then around the start cap.
-_END_CAP_ANGLES = np.linspace(-0.5 * np.pi, 0.5 * np.pi, _CAP_SIDES + 1)
-_START_CAP_ANGLES = np.linspace(0.5 * np.pi, 1.5 * np.pi, _CAP_SIDES + 1)
+_END_CAP_ANGLES = np.linspace(-0.5 * math.pi, 0.5 * math.pi, _CAP_SIDES + 1)
+_START_CAP_ANGLES = np.linspace(0.5 * math.pi, 1.5 * math.pi, _CAP_SIDES + 1)
 _END_CAP_COSINES = np.cos(_END_CAP_ANGLES)
 _END_CAP_SINES = np.sin(_END_CAP_ANGLES)
 _START_CAP_COSINES = np.cos(_START_CAP_ANGLES)

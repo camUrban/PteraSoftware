@@ -174,6 +174,69 @@ def _create_plotter(
     return plotter
 
 
+def _create_preview_plotter(
+    window_width: int, window_height: int
+) -> tuple[pv.Plotter, float]:
+    """Creates the Plotter whose window shows a drawing or an animation's preview,
+    scaled down when necessary to fit on screen with the requested aspect ratio.
+
+    A window manager will not grant an on-screen render window larger than the display
+    less any docks or bars and less the window's own title bar, and VTK silently shrinks
+    one that asks for more. A window that was shrunk is replaced with one scaled down
+    uniformly to fit within the size that was granted, so it keeps the requested aspect
+    ratio and frames the scene the same way a saved file of the requested size does. The
+    sizes compared are all ones the render window reports about itself, which accounts
+    for the title bar and the other window decorations without measuring them. Only a
+    granted size smaller than the request counts as a shrink, since a display that
+    scales its pixels reports a larger one. Off screen, the window is never shrunk.
+
+    :param window_width: The requested width, in pixels, of the render window.
+    :param window_height: The requested height, in pixels, of the render window.
+    :return: A tuple of the new Plotter and the factor by which to scale the font sizes
+        and line widths in its window, as returned by _output_rendering.get_window_scale
+        for the window's size.
+    """
+    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
+    if pv.OFF_SCREEN:
+        return plotter, _output_rendering.get_window_scale(window_width, window_height)
+
+    # Rendering the empty scene realizes the window, which is what makes the granted
+    # size readable.
+    render_window = plotter.ren_win
+    assert render_window is not None
+    render_window.Render()
+    render_window.SetWindowName("Assembling the scene. Please wait.")
+    render_window.Render()
+    granted_width, granted_height = render_window.GetSize()
+    fit = min(granted_width / window_width, granted_height / window_height)
+    if fit >= 1.0:
+        return plotter, _output_rendering.get_window_scale(window_width, window_height)
+
+    # The window was shrunk, so replace it with one scaled down uniformly to fit within
+    # the granted size. Its outer frame is then no larger than the one the window
+    # manager just granted.
+    plotter.close()
+    fitted_width = int(window_width * fit)
+    fitted_height = int(window_height * fit)
+    plotter = _create_plotter(fitted_width, fitted_height, False)
+    render_window = plotter.ren_win
+    assert render_window is not None
+    render_window.Render()
+    render_window.SetWindowName("Assembling the scene. Please wait.")
+    render_window.Render()
+    granted_width, granted_height = render_window.GetSize()
+    if granted_width < fitted_width or granted_height < fitted_height:
+        plotter.close()
+        raise ValueError(
+            f"window_size {window_width} by {window_height} does not fit on screen, "
+            f"and the window manager granted only {granted_width} by "
+            f"{granted_height} pixels to a window scaled down to {fitted_width} by "
+            f"{fitted_height} pixels to fit. Request a smaller window, or render off "
+            f"screen by setting pyvista.OFF_SCREEN to True."
+        )
+    return plotter, _output_rendering.get_window_scale(fitted_width, fitted_height)
+
+
 def _add_scene(
     plotter: pv.Plotter,
     panel_surfaces: pv.PolyData,
@@ -376,11 +439,12 @@ def draw(
         False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
-        ints, and, when rendering on screen, must fit within the area the window manager
-        grants, which is the display less any docks or bars and less the window's own
-        title bar. The text and line widths scale with it, so a larger or smaller window
-        is legible rather than being drawn with the same pixel counts as the default.
-        The default is (1024, 768).
+        ints. The text and line widths scale with it, so a larger or smaller window is
+        legible rather than being drawn with the same pixel counts as the default. When
+        rendering on screen, a window_size that does not fit in the area the window
+        manager grants is shown scaled down to fit, keeping its aspect ratio, with its
+        text and line widths scaled down to match, while a saved WebP keeps the
+        requested size. The default is (1024, 768).
     :param save: Set this to True to save the image as a WebP. The image is rendered
         separately, off screen, at window_size and from the view the window ends with,
         so resizing the window does not change the saved image's size or styling.
@@ -485,34 +549,10 @@ def draw(
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-    # Create the Plotter. Its background color is set before the check below realizes
-    # the window.
-    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
-
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing a file of a size the caller never
-    # asked for. Rendering the empty scene realizes the window, which is what makes the
-    # granted size readable. Only a granted size smaller than the request counts as a
-    # shrink, since a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        render_window = plotter.ren_win
-        assert render_window is not None
-        render_window.Render()
-        render_window.SetWindowName("Assembling the scene. Please wait.")
-        render_window.Render()
-        granted_width, granted_height = render_window.GetSize()
-        if granted_width < window_width or granted_height < window_height:
-            plotter.close()
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered "
-                f"on screen, where the window manager grants at most "
-                f"{largest_width} by {largest_height} pixels. Request a smaller "
-                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
-                f"True."
-            )
-
+    # Create the Plotter whose window shows the drawing, along with the scale of its
+    # text and line widths. Those differ from the saved WebP's when the requested window
+    # does not fit on screen and is scaled down.
+    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
@@ -674,7 +714,7 @@ def draw(
         wake_ring_vortex_surfaces,
         coloring,
         reflect_T_act,
-        window_scale,
+        preview_window_scale,
         streamline_surfaces,
         image_surface_mesh,
         image_surface_texture,
@@ -795,11 +835,11 @@ def draw(
     # If saving, render the scene again in a separate off-screen Plotter, from the
     # camera the window ended with, and save that as a WebP. The user can resize the
     # window in ways that cannot be prevented on every platform, and the window's text
-    # and line widths stay scaled to the requested size, so capturing the window could
-    # save an image of a different size with mismatched styling. The off-screen Plotter
-    # is always the requested size. Its scalar bar layout is settled whether or not its
-    # scene is translucent, since an opaque scene's layout is already settled and the
-    # extra pass leaves it unchanged.
+    # and line widths stay scaled to the size it opened at, so capturing the window
+    # could save an image of a different size with mismatched styling. The off-screen
+    # Plotter is always the requested size. Its scalar bar layout is settled whether or
+    # not its scene is translucent, since an opaque scene's layout is already settled
+    # and the extra pass leaves it unchanged.
     if save:
         save_plotter = _create_plotter(window_width, window_height, True)
         _add_scene(
@@ -873,11 +913,12 @@ def animate(
         default is False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
-        ints, and, when rendering on screen, must fit within the area the window manager
-        grants, which is the display less any docks or bars and less the window's own
-        title bar. The text and line widths scale with it, so a larger or smaller window
-        is legible rather than being drawn with the same pixel counts as the default.
-        The default is (1024, 768).
+        ints. The text and line widths scale with it, so a larger or smaller window is
+        legible rather than being drawn with the same pixel counts as the default. When
+        rendering on screen, a window_size that does not fit in the area the window
+        manager grants is shown scaled down to fit, keeping its aspect ratio, with its
+        text and line widths scaled down to match, while a saved WebP keeps the
+        requested size. The default is (1024, 768).
     :param save: Set this to True to save the animation as an animated WebP. Once the
         view is oriented, the window closes and the frames are rendered separately, off
         screen, at window_size and from the view the window ended with, while a progress
@@ -1027,34 +1068,10 @@ def animate(
     # that describe how the saved animation steps through the time steps.
     playback = _output_rendering.resolve_playback(unsteady_solver, speed, save)
 
-    # Create the Plotter. Its background color is set before the check below realizes
-    # the window.
-    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
-
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing a file of a size the caller never
-    # asked for. Rendering the empty scene realizes the window, which is what makes the
-    # granted size readable. Only a granted size smaller than the request counts as a
-    # shrink, since a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        render_window = plotter.ren_win
-        assert render_window is not None
-        render_window.Render()
-        render_window.SetWindowName("Assembling the scene. Please wait.")
-        render_window.Render()
-        granted_width, granted_height = render_window.GetSize()
-        if granted_width < window_width or granted_height < window_height:
-            plotter.close()
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered "
-                f"on screen, where the window manager grants at most "
-                f"{largest_width} by {largest_height} pixels. Request a smaller "
-                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
-                f"True."
-            )
-
+    # Create the Plotter whose window shows the preview, along with the scale of its
+    # text and line widths. Those differ from the saved WebP's when the requested window
+    # does not fit on screen and is scaled down.
+    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # Initialize values to hold the color map choice and its limits.
@@ -1216,7 +1233,7 @@ def animate(
     # If saving the animation, add the text overlays that describe its playback.
     if save:
         _output_rendering.add_playback_overlays(
-            plotter, playback, window_scale, animate_text_color
+            plotter, playback, preview_window_scale, animate_text_color
         )
 
     # Show the first and last time steps together during framing. This gives the user
@@ -1255,7 +1272,7 @@ def animate(
         None,
         first_frame_coloring,
         reflect_T_act,
-        window_scale,
+        preview_window_scale,
     )
     if last_step != 0:
         _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
@@ -1310,7 +1327,7 @@ def animate(
             last_wake_surfaces,
             last_coloring,
             reflect_T_act,
-            window_scale,
+            preview_window_scale,
         )
         _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
 
@@ -1411,14 +1428,15 @@ def animate(
     # If saving, render the frames in a separate off-screen Plotter, from the camera the
     # window ended with, and close the window. The user can resize the window in ways
     # that cannot be prevented on every platform, and the window's text and line widths
-    # stay scaled to the requested size, so frames captured from it could change size
+    # stay scaled to the size it opened at, so frames captured from it could change size
     # partway through an animation and have mismatched styling. The off-screen Plotter
     # is always the requested size, and it starts with the playback text overlays. If
-    # not saving, the frames play in the window, which is cleared of the preview first.
-    # Saving or not, the first frame then starts from a Plotter without any of the
-    # preview, so it is built in full, with the image surface plane.
+    # not saving, the frames play in the window, which is cleared of the preview first,
+    # and keep its scale. Saving or not, the first frame then starts from a Plotter
+    # without any of the preview, so it is built in full, with the image surface plane.
     if save:
         frame_plotter = _create_plotter(window_width, window_height, True)
+        frame_window_scale = window_scale
         frame_plotter.camera.DeepCopy(plotter.camera)
         _output_rendering.add_playback_overlays(
             frame_plotter, playback, window_scale, animate_text_color
@@ -1426,6 +1444,7 @@ def animate(
         plotter.close()
     else:
         frame_plotter = plotter
+        frame_window_scale = preview_window_scale
         assert plotter.ren_win is not None
         plotter.ren_win.SetWindowName(
             "Rendering animation. Please leave the window open until rendering "
@@ -1450,7 +1469,7 @@ def animate(
         None,
         first_frame_coloring,
         reflect_T_act,
-        window_scale,
+        frame_window_scale,
         None,
         image_surface_mesh,
         image_surface_texture,
@@ -1580,7 +1599,7 @@ def animate(
             wake_ring_vortex_surfaces,
             coloring,
             reflect_T_act,
-            window_scale,
+            frame_window_scale,
             None,
             image_surface_mesh,
             image_surface_texture,

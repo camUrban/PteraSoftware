@@ -166,7 +166,7 @@ def _create_plotter(window_width: int, window_height: int) -> pv.Plotter:
     return plotter
 
 
-def _add_draw_scene(
+def _add_scene(
     plotter: pv.Plotter,
     panel_surfaces: pv.PolyData,
     wake_ring_vortex_surfaces: pv.PolyData | None,
@@ -180,12 +180,13 @@ def _add_draw_scene(
     body_geoms: list[_mujoco_model.RenderGeom],
     T_pas_BP1_CgP1_to_E_Eo: np.ndarray | None,
 ) -> None:
-    """Adds every actor in draw's scene to a Plotter.
+    """Adds the actors of a drawing's scene, or of one animation frame's scene, to a
+    Plotter.
 
     The actors are added in a fixed order: the wake and the Panels, the streamlines, the
     image surface plane, and then the MuJoCo geometry. The meshes arrive already mapped
     into whichever axes they are being rendered in. This function does not touch the
-    camera.
+    camera, and it does not add an animation's text overlays.
 
     :param plotter: The Plotter to add the scene to.
     :param panel_surfaces: The PolyData representation of the Panel surfaces.
@@ -209,8 +210,8 @@ def _add_draw_scene(
     :param body_geoms: The RenderGeoms attached to the body.
     :param T_pas_BP1_CgP1_to_E_Eo: A (4,4) ndarray of floats representing the passive
         transformation from the first Airplane's body axes, relative to the first
-        Airplane's CG, to Earth axes, relative to the Earth origin, or None to omit the
-        MuJoCo geometry.
+        Airplane's CG, to Earth axes, relative to the Earth origin, at the scene's time
+        step, or None to omit the MuJoCo geometry.
     :return: None
     """
     # Add the wake, the Panels, and, if an image surface is defined, their reflections.
@@ -261,7 +262,7 @@ def _add_draw_scene(
             render=False,
         )
 
-    # If showing MuJoCo geometry, add it at the drawn time step's pose.
+    # If showing MuJoCo geometry, add it posed at the scene's time step.
     if T_pas_BP1_CgP1_to_E_Eo is not None:
         _output_rendering.add_mujoco_geometry(
             plotter,
@@ -655,7 +656,7 @@ def draw(
         scene_meshes.append(image_surface_mesh)
 
     # Add the scene's actors.
-    _add_draw_scene(
+    _add_scene(
         plotter,
         panel_surfaces,
         wake_ring_vortex_surfaces,
@@ -983,16 +984,9 @@ def animate(
     # that describe how the saved animation steps through the time steps.
     playback = _output_rendering.resolve_playback(unsteady_solver, speed, save)
 
-    # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
-    plotter.enable_parallel_projection()  # type: ignore[call-arg]
-    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
-
-    # Set the background color before the check below realizes the window, so that the
-    # window appears in its final color rather than flashing white first.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
+    # Create the Plotter. Its background color is set before the check below realizes
+    # the window.
+    plotter = _create_plotter(window_width, window_height)
 
     # A window manager will not grant an on-screen render window the whole display, and
     # VTK silently shrinks one that asks for it, so a request that would be shrunk is
@@ -1389,28 +1383,27 @@ def animate(
     for actor in preview_actors:
         plotter.remove_actor(actor, render=False)
     # Rebuild the first frame as the actual animation frame after removing the preview.
+    # The image surface plane is not a preview actor, so it is still present and is not
+    # added again. The first time step has not shed a wake yet.
     first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
     if is_free_flight:
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
-    first_frame_wake_surfaces = None
-    _output_rendering.add_frame_geometry(
+    _add_scene(
         plotter,
         first_frame_panel_surfaces,
-        first_frame_wake_surfaces,
+        None,
         first_frame_coloring,
         reflect_T_act,
         window_scale,
+        None,
+        None,
+        None,
+        worldbody_geoms,
+        body_geoms,
+        step_body_transforms[0] if show_mujoco_geometry else None,
     )
-    if show_mujoco_geometry:
-        _output_rendering.add_mujoco_geometry(
-            plotter,
-            worldbody_geoms,
-            body_geoms,
-            step_body_transforms[0],
-            reflect_T_act,
-        )
     if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
@@ -1511,37 +1504,22 @@ def animate(
                 c_max,
             )
 
-        # Add this time step's geometry.
-        _output_rendering.add_frame_geometry(
+        # Add this time step's scene, which includes the pre-computed image surface
+        # plane when one is defined.
+        _add_scene(
             plotter,
             panel_surfaces,
             wake_ring_vortex_surfaces,
             coloring,
             reflect_T_act,
             window_scale,
+            None,
+            image_surface_mesh,
+            image_surface_texture,
+            worldbody_geoms,
+            body_geoms,
+            step_body_transforms[current_step] if show_mujoco_geometry else None,
         )
-
-        # If showing MuJoCo geometry, add it at this time step's pose.
-        if show_mujoco_geometry:
-            _output_rendering.add_mujoco_geometry(
-                plotter,
-                worldbody_geoms,
-                body_geoms,
-                step_body_transforms[current_step],
-                reflect_T_act,
-            )
-
-        # If an image surface is defined, add the pre-computed image surface plane.
-        if reflect_T_act is not None:
-            assert image_surface_mesh is not None
-            plotter.add_mesh(
-                image_surface_mesh,
-                texture=image_surface_texture,
-                opacity=_IMAGE_SURFACE_OPACITY,
-                smooth_shading=True,
-                lighting=False,
-                render=False,
-            )
 
         # If the frame is translucent, settle the scalar bar layout before it is
         # displayed, leaving the second of its two passes to the render below.

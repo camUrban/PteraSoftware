@@ -146,6 +146,170 @@ def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
             actor.prop.opacity = opacity
 
 
+def _create_plotter(window_width: int, window_height: int) -> pv.Plotter:
+    """Creates a Plotter with a parallel projection, multisample anti-aliasing, and the
+    background color.
+
+    The background color is set before anything realizes the window, so that the window
+    appears in its final color rather than flashing white first.
+
+    :param window_width: The width, in pixels, of the render window.
+    :param window_height: The height, in pixels, of the render window.
+    :return: The new Plotter.
+    """
+    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
+    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
+    return plotter
+
+
+def _add_draw_scene(
+    plotter: pv.Plotter,
+    panel_surfaces: pv.PolyData,
+    wake_ring_vortex_surfaces: pv.PolyData | None,
+    coloring: _output_rendering.ScalarColoring | None,
+    reflect_T_act: np.ndarray | None,
+    window_scale: float,
+    streamline_surfaces: pv.PolyData | None,
+    image_surface_mesh: pv.PolyData | None,
+    image_surface_texture: pv.Texture | None,
+    worldbody_geoms: list[_mujoco_model.RenderGeom],
+    body_geoms: list[_mujoco_model.RenderGeom],
+    T_pas_BP1_CgP1_to_E_Eo: np.ndarray | None,
+) -> None:
+    """Adds every actor in draw's scene to a Plotter.
+
+    The actors are added in a fixed order: the wake and the Panels, the streamlines, the
+    image surface plane, and then the MuJoCo geometry. The meshes arrive already mapped
+    into whichever axes they are being rendered in. This function does not touch the
+    camera.
+
+    :param plotter: The Plotter to add the scene to.
+    :param panel_surfaces: The PolyData representation of the Panel surfaces.
+    :param wake_ring_vortex_surfaces: The PolyData representation of the wake ring
+        vortex surfaces, or None to omit the wake.
+    :param coloring: The scalar coloring to apply to the Panels, or None to color them
+        uniformly.
+    :param reflect_T_act: A (4,4) ndarray of floats representing the active
+        transformation (in whichever axes the meshes are rendered in) that reflects
+        geometry across the image surface, or None when no image surface is defined, in
+        which case no reflected geometry is added.
+    :param window_scale: The factor by which to scale the line widths and font sizes, as
+        returned by _output_rendering.get_window_scale.
+    :param streamline_surfaces: The PolyData representation of the streamlines, or None
+        to omit them.
+    :param image_surface_mesh: The image surface plane's mesh, or None to omit it. It
+        must not be None when reflect_T_act is not None.
+    :param image_surface_texture: The image surface plane's Texture, or None when
+        image_surface_mesh is None.
+    :param worldbody_geoms: The RenderGeoms attached to the worldbody.
+    :param body_geoms: The RenderGeoms attached to the body.
+    :param T_pas_BP1_CgP1_to_E_Eo: A (4,4) ndarray of floats representing the passive
+        transformation from the first Airplane's body axes, relative to the first
+        Airplane's CG, to Earth axes, relative to the Earth origin, or None to omit the
+        MuJoCo geometry.
+    :return: None
+    """
+    # Add the wake, the Panels, and, if an image surface is defined, their reflections.
+    _output_rendering.add_frame_geometry(
+        plotter,
+        panel_surfaces,
+        wake_ring_vortex_surfaces,
+        coloring,
+        reflect_T_act,
+        window_scale,
+    )
+
+    # If showing streamlines, plot them.
+    if streamline_surfaces is not None:
+        plotter.add_mesh(
+            streamline_surfaces,
+            show_edges=True,
+            color=_STREAMLINE_COLOR,
+            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+            smooth_shading=False,
+            lighting=False,
+            render=False,
+        )
+
+        # If an image surface is defined, add the reflected streamlines, muted toward
+        # gray so that they read as a reflection rather than as more streamlines.
+        if reflect_T_act is not None:
+            plotter.add_mesh(
+                _output_rendering.transform_mesh(streamline_surfaces, reflect_T_act),
+                show_edges=True,
+                color=_output_rendering.mute_color(
+                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
+                ),
+                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+                smooth_shading=False,
+                lighting=False,
+                render=False,
+            )
+
+    # If an image surface is defined, add its plane.
+    if image_surface_mesh is not None:
+        plotter.add_mesh(
+            image_surface_mesh,
+            texture=image_surface_texture,
+            opacity=_IMAGE_SURFACE_OPACITY,
+            smooth_shading=True,
+            lighting=False,
+            render=False,
+        )
+
+    # If showing MuJoCo geometry, add it at the drawn time step's pose.
+    if T_pas_BP1_CgP1_to_E_Eo is not None:
+        _output_rendering.add_mujoco_geometry(
+            plotter,
+            worldbody_geoms,
+            body_geoms,
+            T_pas_BP1_CgP1_to_E_Eo,
+            reflect_T_act,
+        )
+
+
+def _get_draw_geometry_meshes(
+    panel_surfaces: pv.PolyData,
+    wake_ring_vortex_surfaces: pv.PolyData | None,
+    streamline_surfaces: pv.PolyData | None,
+    reflect_T_act: np.ndarray | None,
+) -> list[pv.PolyData]:
+    """Returns the meshes of draw's geometry, which are the wake, the Panels, and the
+    streamlines, along with their reflections when an image surface is defined.
+
+    Empty meshes are left out, since PyVista cannot add them to a Plotter, so the
+    returned meshes' bounds match the bounds of the actors draw adds for its geometry.
+
+    :param panel_surfaces: The PolyData representation of the Panel surfaces.
+    :param wake_ring_vortex_surfaces: The PolyData representation of the wake ring
+        vortex surfaces, or None when the wake is omitted.
+    :param streamline_surfaces: The PolyData representation of the streamlines, or None
+        when they are omitted.
+    :param reflect_T_act: A (4,4) ndarray of floats representing the active
+        transformation (in whichever axes the meshes are rendered in) that reflects
+        geometry across the image surface, or None when no image surface is defined, in
+        which case no reflected meshes are returned.
+    :return: A list of the non empty geometry meshes.
+    """
+    geometry_meshes = [panel_surfaces]
+    if wake_ring_vortex_surfaces is not None:
+        geometry_meshes.append(wake_ring_vortex_surfaces)
+    if streamline_surfaces is not None:
+        geometry_meshes.append(streamline_surfaces)
+    if reflect_T_act is not None:
+        geometry_meshes += [
+            _output_rendering.transform_mesh(geometry_mesh, reflect_T_act)
+            for geometry_mesh in geometry_meshes
+        ]
+    return [
+        geometry_mesh for geometry_mesh in geometry_meshes if geometry_mesh.n_points > 0
+    ]
+
+
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -308,16 +472,9 @@ def draw(
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-    # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
-    plotter.enable_parallel_projection()  # type: ignore[call-arg]
-    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
-
-    # Set the background color before the check below realizes the window, so that the
-    # window appears in its final color rather than flashing white first.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
+    # Create the Plotter. Its background color is set before the check below realizes
+    # the window.
+    plotter = _create_plotter(window_width, window_height)
 
     # A window manager will not grant an on-screen render window the whole display, and
     # VTK silently shrinks one that asks for it, so a request that would be shrunk is
@@ -395,17 +552,18 @@ def draw(
             panel_surfaces, T_pas_GP1_CgP1_to_E_Eo
         )
 
-    T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
-    image_surface_mesh = None
+    reflect_T_act = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+    image_surface_mesh: pv.PolyData | None = None
+    image_surface_texture: pv.Texture | None = None
 
     # For free flight, the active reflection is represented in geometry axes, but the
     # geometry has been mapped into Earth axes. Re-expressing the reflection in Earth
     # axes (a change of basis by the same passive transformation) lets the
     # reflected-geometry code below operate entirely in Earth axes.
-    if T_pas_GP1_CgP1_to_E_Eo is not None and T_reflect is not None:
-        T_reflect = (
+    if T_pas_GP1_CgP1_to_E_Eo is not None and reflect_T_act is not None:
+        reflect_T_act = (
             T_pas_GP1_CgP1_to_E_Eo
-            @ T_reflect
+            @ reflect_T_act
             @ _transformations.invert_T_pas(T_pas_GP1_CgP1_to_E_Eo)
         )
 
@@ -428,23 +586,12 @@ def draw(
             c_max=c_max,
         )
 
-    # Add the wake, the Panels, and, if an image surface is defined, their reflections.
-    # The image surface plane is added later, after the geometry bounds are captured.
-    _output_rendering.add_frame_geometry(
-        plotter,
-        panel_surfaces,
-        wake_ring_vortex_surfaces,
-        coloring,
-        T_reflect,
-        window_scale,
-    )
-
-    # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
-    # actors are added later, between the camera's framing fit and its clipping fit, so
-    # the body geoms can join the framing bounds while the worldbody geoms join only the
-    # clipping range.
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects, along with
+    # the drawn time step's body axes to Earth axes transformation. The worldbody geoms
+    # are left out of the camera's framing fit below, while the body geoms join it.
     worldbody_geoms: list[_mujoco_model.RenderGeom] = []
     body_geoms: list[_mujoco_model.RenderGeom] = []
+    T_pas_BP1_CgP1_to_E_Eo: np.ndarray | None = None
     if show_mujoco_geometry:
         assert isinstance(
             solver,
@@ -453,52 +600,37 @@ def draw(
         worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
             solver
         )
+        if worldbody_geoms or body_geoms:
+            T_pas_BP1_CgP1_to_E_Eo = (
+                _output_rendering.get_free_flight_body_transformation(
+                    draw_operating_point
+                )
+            )
 
-    # If showing streamlines, plot them.
+    # If showing streamlines, get their surfaces, mapping them into Earth axes for free
+    # flight. They stay None otherwise, which omits them from the scene.
+    streamline_surfaces: pv.PolyData | None = None
     if show_streamlines:
         streamline_surfaces = _output_rendering.get_streamline_surfaces(
             solver.gridStreamlinePoints_GP1_CgP1
         )
-
-        # For free flight, map the streamlines into Earth axes.
         if T_pas_GP1_CgP1_to_E_Eo is not None:
             streamline_surfaces = _output_rendering.transform_mesh(
                 streamline_surfaces, T_pas_GP1_CgP1_to_E_Eo
             )
 
-        plotter.add_mesh(
-            streamline_surfaces,
-            show_edges=True,
-            color=_STREAMLINE_COLOR,
-            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-            smooth_shading=False,
-            lighting=False,
-            render=False,
-        )
+    # Find the bounds of the geometry. They are found from the meshes rather than from a
+    # Plotter's actors, so the image surface plane they size is known before any actor
+    # is added. The scene meshes start as the geometry meshes and gain the image surface
+    # plane when one is defined, which gives the free flight camera its framing bounds.
+    geometry_meshes = _get_draw_geometry_meshes(
+        panel_surfaces, wake_ring_vortex_surfaces, streamline_surfaces, reflect_T_act
+    )
+    geometry_bounds = pv.MultiBlock(geometry_meshes).bounds
+    scene_meshes = list(geometry_meshes)
 
-        # If an image surface is defined, add the reflected streamlines, muted toward
-        # gray so that they read as a reflection rather than as more streamlines.
-        if T_reflect is not None:
-            plotter.add_mesh(
-                _output_rendering.transform_mesh(streamline_surfaces, T_reflect),
-                show_edges=True,
-                color=_output_rendering.mute_color(
-                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
-                ),
-                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-                smooth_shading=False,
-                lighting=False,
-                render=False,
-            )
-
-    # If an image surface is defined, save the geometry bounds (which now include the
-    # reflected geometry but not the image surface plane), add the image surface plane,
-    # then fit the camera to the saved bounds so the view is not dominated by the much
-    # larger image surface plane. When an image surface is present, cpos is not passed
-    # to show() because that would trigger an auto-fit to all actors (including the
-    # image surface).
-    if T_reflect is not None:
-        geometry_bounds = plotter.bounds
+    # If an image surface is defined, build its plane.
+    if reflect_T_act is not None:
         if T_pas_GP1_CgP1_to_E_Eo is not None:
             # The image surface helper builds the plane from geometry-axis quantities,
             # so it needs geometry-axis bounds. Build the plane there, then map it into
@@ -520,23 +652,34 @@ def draw(
             )
             assert image_surface_result is not None
             image_surface_mesh, image_surface_texture = image_surface_result
-        plotter.add_mesh(
-            image_surface_mesh,
-            texture=image_surface_texture,
-            opacity=_IMAGE_SURFACE_OPACITY,
-            smooth_shading=True,
-            lighting=False,
-            render=False,
-        )
+        scene_meshes.append(image_surface_mesh)
 
-        # For the standard body-fixed rendering, fit the camera to the geometry bounds
-        # so the much larger image surface plane does not dominate the view. Free flight
-        # uses its own Earth-axes camera, computed below.
-        if T_pas_GP1_CgP1_to_E_Eo is None:
-            plotter.camera.position = (-1, -1, 1)
-            plotter.camera.focal_point = (0, 0, 0)
-            plotter.camera.up = (0, 0, 1)
-            plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
+    # Add the scene's actors.
+    _add_draw_scene(
+        plotter,
+        panel_surfaces,
+        wake_ring_vortex_surfaces,
+        coloring,
+        reflect_T_act,
+        window_scale,
+        streamline_surfaces,
+        image_surface_mesh,
+        image_surface_texture,
+        worldbody_geoms,
+        body_geoms,
+        T_pas_BP1_CgP1_to_E_Eo,
+    )
+
+    # For the standard body-fixed rendering with an image surface, fit the camera to the
+    # geometry bounds so the view is not dominated by the much larger image surface
+    # plane. When an image surface is present, cpos is not passed to show() because that
+    # would trigger an auto-fit to all actors (including the image surface). Free flight
+    # uses its own Earth-axes camera, computed below.
+    if reflect_T_act is not None and T_pas_GP1_CgP1_to_E_Eo is None:
+        plotter.camera.position = (-1, -1, 1)
+        plotter.camera.focal_point = (0, 0, 0)
+        plotter.camera.up = (0, 0, 1)
+        plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
 
     # Choose the camera position. Free flight frames the body in Earth axes with
     # physical up as Earth -z. The standard rendering views geometry axes from (-1, -1,
@@ -560,29 +703,28 @@ def draw(
         )
         plotter.camera.up = _freeFlightViewUp_E
 
-        if worldbody_geoms or body_geoms:
-            # Fit the camera to explicit framing bounds: every actor already present,
-            # plus the body geoms posed at the drawn time step, plus their reflections
-            # when an image surface is defined. The fit re-centers the focal point on
-            # those bounds and keeps the view direction and up set above.
-            T_pas_BP1_CgP1_to_E_Eo = (
-                _output_rendering.get_free_flight_body_transformation(
-                    draw_operating_point
-                )
-            )
+        if T_pas_BP1_CgP1_to_E_Eo is not None:
+            # Fit the camera to explicit framing bounds: the geometry and the image
+            # surface plane, plus the body geoms posed at the drawn time step, plus
+            # their reflections when an image surface is defined. The worldbody geoms
+            # stay out of the fit, so a worldbody geom that is much larger than the
+            # body, like a ground plane, cannot dominate it. The fit re-centers the
+            # focal point on those bounds and keeps the view direction and up set above.
             posed_body_geom_meshes = [
                 _output_rendering.transform_mesh(
                     render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
                 )
                 for render_geom in body_geoms
             ]
-            if T_reflect is not None:
+            if reflect_T_act is not None:
                 posed_body_geom_meshes += [
-                    _output_rendering.transform_mesh(posed_body_geom_mesh, T_reflect)
+                    _output_rendering.transform_mesh(
+                        posed_body_geom_mesh, reflect_T_act
+                    )
                     for posed_body_geom_mesh in posed_body_geom_meshes
                 ]
             all_bounds = np.array(
-                [plotter.bounds]
+                [pv.MultiBlock(scene_meshes).bounds]
                 + [
                     posed_body_geom_mesh.bounds
                     for posed_body_geom_mesh in posed_body_geom_meshes
@@ -594,18 +736,8 @@ def draw(
             framing_bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
             plotter.reset_camera(bounds=tuple(framing_bounds))  # type: ignore[call-arg]
 
-            # Add the geom actors only now, so the worldbody geoms stay out of the
-            # framing fit and a worldbody geom that is much larger than the body, like a
-            # ground plane, cannot dominate it. Then re-fit only the clipping range to
-            # all actors, which keeps the fitted framing while ensuring the worldbody
-            # geoms are not cut off.
-            _output_rendering.add_mujoco_geometry(
-                plotter,
-                worldbody_geoms,
-                body_geoms,
-                T_pas_BP1_CgP1_to_E_Eo,
-                T_reflect,
-            )
+            # Re-fit only the clipping range to all actors, which keeps the fitted
+            # framing while ensuring the worldbody geoms are not cut off.
             plotter.reset_camera_clipping_range()
         else:
             plotter.reset_camera()  # type: ignore[call-arg]
@@ -619,7 +751,7 @@ def draw(
     # rgba has an alpha below one. Settle the scalar bar layout before such a drawing is
     # displayed. This is the first of the two passes it takes, and show below is the
     # second, so the labels are in place by the time the user sees anything.
-    scene_is_translucent = T_reflect is not None or any(
+    scene_is_translucent = reflect_T_act is not None or any(
         float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
     )
     if scene_is_translucent:
@@ -932,7 +1064,7 @@ def animate(
     (
         image_surface_mesh,
         image_surface_texture,
-        T_reflect,
+        reflect_T_act,
         image_surface_geometry_bounds,
     ) = _output_rendering.get_animation_image_surface(
         unsteady_solver,
@@ -943,7 +1075,7 @@ def animate(
     )
     animate_text_color = (
         _output_rendering.TEXT_COLOR_SURFACE
-        if T_reflect is not None
+        if reflect_T_act is not None
         else _output_rendering.TEXT_COLOR
     )
 
@@ -1088,7 +1220,7 @@ def animate(
         first_panel_surfaces,
         None,
         first_frame_coloring,
-        T_reflect,
+        reflect_T_act,
         window_scale,
     )
     if last_step != 0:
@@ -1097,7 +1229,7 @@ def animate(
 
     if show_mujoco_geometry:
         first_mujoco_actors = _output_rendering.add_mujoco_geometry(
-            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
+            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], reflect_T_act
         )
         if last_step != 0:
             _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
@@ -1145,7 +1277,7 @@ def animate(
             last_panel_surfaces,
             last_wake_surfaces,
             last_coloring,
-            T_reflect,
+            reflect_T_act,
             window_scale,
         )
         _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
@@ -1157,7 +1289,7 @@ def animate(
                 [],
                 body_geoms,
                 step_body_transforms[last_step],
-                T_reflect,
+                reflect_T_act,
             )
             _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
             preview_actors.extend(last_mujoco_actors)
@@ -1167,7 +1299,7 @@ def animate(
     # is not dominated by the much larger image surface plane. When an image surface is
     # present, cpos is not passed to show() because that would trigger an auto-fit to
     # all actors (including the image surface).
-    if T_reflect is not None:
+    if reflect_T_act is not None:
         assert image_surface_mesh is not None
 
         # Add the image surface plane.
@@ -1215,7 +1347,7 @@ def animate(
     # matches the animation that follows it. This is the first of the two passes the
     # layout takes to settle, and show below is the second, so the labels are in place
     # by the time the user sees anything.
-    scene_is_translucent = T_reflect is not None or any(
+    scene_is_translucent = reflect_T_act is not None or any(
         float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
     )
     if scene_is_translucent or last_step != 0:
@@ -1268,7 +1400,7 @@ def animate(
         first_frame_panel_surfaces,
         first_frame_wake_surfaces,
         first_frame_coloring,
-        T_reflect,
+        reflect_T_act,
         window_scale,
     )
     if show_mujoco_geometry:
@@ -1277,7 +1409,7 @@ def animate(
             worldbody_geoms,
             body_geoms,
             step_body_transforms[0],
-            T_reflect,
+            reflect_T_act,
         )
     if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
@@ -1385,7 +1517,7 @@ def animate(
             panel_surfaces,
             wake_ring_vortex_surfaces,
             coloring,
-            T_reflect,
+            reflect_T_act,
             window_scale,
         )
 
@@ -1396,11 +1528,11 @@ def animate(
                 worldbody_geoms,
                 body_geoms,
                 step_body_transforms[current_step],
-                T_reflect,
+                reflect_T_act,
             )
 
         # If an image surface is defined, add the pre-computed image surface plane.
-        if T_reflect is not None:
+        if reflect_T_act is not None:
             assert image_surface_mesh is not None
             plotter.add_mesh(
                 image_surface_mesh,

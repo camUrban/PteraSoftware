@@ -38,7 +38,6 @@ import matplotlib.patches
 import matplotlib.path
 import matplotlib.typing
 import numpy as np
-import scipy.optimize
 import scipy.sparse
 import scipy.sparse.csgraph
 import scipy.spatial
@@ -2009,19 +2008,16 @@ def _find_cycle(
     return None
 
 
-def _get_cheapest_drops(
+def _get_greedy_drops(
     item_ids: list[int], weights: dict[tuple[int, int], float]
 ) -> set[tuple[int, int]]:
-    """Finds the set of constraints among some items whose removal leaves no cycle and
-    whose total weight is smallest.
+    """Finds a set of constraints among some items whose removal leaves no cycle, by
+    dropping the lightest droppable constraint of each cycle in turn.
 
-    It is solved exactly, as an integer program in which each constraint of finite
-    weight is either dropped or kept, and every cycle must lose at least one of its
-    constraints. Listing every cycle up front would take too long, so the cycles are
-    added as they are found: each time, the cycles that the cheapest drops so far leave
-    are collected, and the program is solved again with them, until none are left. Where
-    the cycles first found share no droppable constraints, dropping each one's cheapest
-    is already exact, so the program isn't solved at all.
+    Each cycle found has its lightest constraint of finite weight removed, and the
+    search runs again, until no cycle is left. This needn't find the set of drops whose
+    total weight is smallest, which would take an integer program whose solves grow with
+    the number of cycles, but it only ever drops a constraint that is in a cycle.
 
     :param item_ids: The indices of the items.
     :param weights: A dict mapping each constraint among the items, as a tuple of the
@@ -2030,89 +2026,34 @@ def _get_cheapest_drops(
     :return: The dropped constraints, each a tuple of the index of the item painted
         first and the index of the item painted later.
     """
-    finite = [pair for pair, weight in weights.items() if np.isfinite(weight)]
-    finite_ids = {pair: pair_id for pair_id, pair in enumerate(finite)}
-
-    # Every drop costs a little more than its weight, so a constraint of zero weight is
-    # only dropped where that breaks a cycle.
-    costs = np.array([weights[pair] for pair in finite], dtype=float) + 1.0e-9
-
-    rows: list[list[int]] = []
+    successors: dict[int, set[int]] = {}
+    for first_id, later_id in weights:
+        successors.setdefault(first_id, set()).add(later_id)
     dropped: set[tuple[int, int]] = set()
+    states = {item_id: 0 for item_id in item_ids}
     while True:
-        # Collect the cycles the drops so far leave. Each cycle found has its cheapest
-        # constraint removed from a working copy, so the next search finds another.
-        successors: dict[int, set[int]] = {}
-        for first_id, later_id in weights:
-            if (first_id, later_id) not in dropped:
-                successors.setdefault(first_id, set()).add(later_id)
-        new_rows: list[list[int]] = []
-        greedy_drops: set[tuple[int, int]] = set()
-        states = {item_id: 0 for item_id in item_ids}
-        while True:
-            cycle = _find_cycle(successors, item_ids, states)
-            if cycle is None:
-                break
-            row = [finite_ids[pair] for pair in cycle if pair in finite_ids]
-            if not row:
-                raise RuntimeError(
-                    "The constraints on the paint order form a cycle that can't be "
-                    "broken."
-                )
-            new_rows.append(row)
-            first_id, later_id = finite[min(row, key=lambda pair_id: costs[pair_id])]
-            successors[first_id].discard(later_id)
-            greedy_drops.add((first_id, later_id))
-        if not new_rows:
+        cycle = _find_cycle(successors, item_ids, states)
+        if cycle is None:
             return dropped
-
-        # On the first pass, if no two of the cycles found share a droppable constraint,
-        # dropping each one's cheapest is exact, and the integer program isn't needed.
-        # Any set of drops that breaks every cycle must take a separate constraint from
-        # each of them, so it costs at least as much, and dropping those breaks every
-        # cycle, since the search found no more.
-        if not rows and sum(len(row) for row in new_rows) == len(
-            {pair_id for row in new_rows for pair_id in row}
-        ):
-            return greedy_drops
-        rows += new_rows
-
-        # Each cycle holds few of the component's constraints, so the matrix is built
-        # sparse, which saves the solver from finding its nonzero entries itself.
-        matrix = scipy.sparse.csr_array(
-            (
-                np.ones(sum(len(row) for row in rows), dtype=float),
-                (
-                    np.repeat(np.arange(len(rows)), [len(row) for row in rows]),
-                    np.concatenate(rows),
-                ),
-            ),
-            shape=(len(rows), len(finite)),
-        )
-        result = scipy.optimize.milp(
-            costs,
-            integrality=np.ones(len(finite), dtype=int),
-            bounds=scipy.optimize.Bounds(0.0, 1.0),
-            constraints=scipy.optimize.LinearConstraint(matrix, 1.0, np.inf),
-        )
-        if result.x is None:
+        droppable = [pair for pair in cycle if np.isfinite(weights[pair])]
+        if not droppable:
             raise RuntimeError(
-                "The constraints on the paint order couldn't be freed of their cycles: "
-                + result.message
+                "The constraints on the paint order form a cycle that can't be broken."
             )
-        dropped = {finite[pair_id] for pair_id in np.flatnonzero(result.x > 0.5)}
+        first_id, later_id = min(droppable, key=lambda pair: weights[pair])
+        successors[first_id].discard(later_id)
+        dropped.add((first_id, later_id))
 
 
 def _break_cycles(
     num_items: int,
     constraints: list[tuple[int, int, float, float | None, float | None]],
 ) -> list[tuple[int, int, float, float | None, float | None]]:
-    """Drops the set of constraints whose total weight is smallest among those whose
-    removal leaves no cycle.
+    """Drops constraints until none of the rest form a cycle.
 
     Constraints between the same two items are dropped together, at their summed weight.
     A cycle lies within one strongly connected component of the constraints, so each
-    component is freed of its cycles on its own, by _get_cheapest_drops.
+    component is freed of its cycles on its own, by _get_greedy_drops.
 
     :param num_items: The number of items.
     :param constraints: The constraints, each a tuple of the index of the item painted
@@ -2153,7 +2094,7 @@ def _break_cycles(
 
     dropped: set[tuple[int, int]] = set()
     for component in sorted(component_weights):
-        dropped |= _get_cheapest_drops(
+        dropped |= _get_greedy_drops(
             component_item_ids[component], component_weights[component]
         )
     return [
@@ -2598,8 +2539,8 @@ def _order_items(
     deep one. Where the constraints form a cycle, each piece of a stroke in it is split
     midway between the places it touches the others, wherever two of those places are at
     least its width apart, and the sort is retried, for up to _SPLIT_ROUNDS rounds. Any
-    cycles that survive are broken by dropping the set of constraints with the smallest
-    total weight whose removal breaks them all, as _break_cycles finds.
+    cycles that survive are broken by dropping the lightest constraint of each in turn,
+    as _break_cycles does.
 
     Finally, abutting fills of the same color are painted together wherever that keeps
     the order possible, as _merge_abutting_fills finds, so they are written as one

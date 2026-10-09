@@ -3261,24 +3261,24 @@ class AnimationWriter:
             fewest.
         :return: None
         """
-        self._path = path
-        self._frame_rate = frame_rate
-        self._quality = quality
+        self.path = path
+        self.frame_rate = frame_rate
+        self.quality = quality
 
         # The queue carries the captured frames to the encoding thread, and None marks
         # the end of the animation.
-        self._queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
+        self.queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
             maxsize=ANIMATION_WRITER_QUEUE_DEPTH
         )
 
         # An exception the encoding thread raises is held here until close re-raises it
         # on the calling thread.
-        self._error: Exception | None = None
+        self.error: Exception | None = None
 
-        self._thread = threading.Thread(
+        self.thread = threading.Thread(
             target=self.encode, name="animation-writer", daemon=True
         )
-        self._thread.start()
+        self.thread.start()
 
     def add_frame(self, image: webp.Image.Image) -> None:
         """Hands a captured frame to the writer.
@@ -3289,7 +3289,7 @@ class AnimationWriter:
         :param image: The frame as an Image with a transparent background.
         :return: None
         """
-        self._queue.put(image)
+        self.queue.put(image)
 
     def close(self) -> None:
         """Finishes the animation and writes it to its file.
@@ -3299,10 +3299,10 @@ class AnimationWriter:
 
         :return: None
         """
-        self._queue.put(None)
-        self._thread.join()
-        if self._error is not None:
-            raise self._error
+        self.queue.put(None)
+        self.thread.join()
+        if self.error is not None:
+            raise self.error
 
     def encode(self) -> None:
         """Encodes the frames from the queue into the WebP file, on the background
@@ -3317,13 +3317,13 @@ class AnimationWriter:
         ended = False
         try:
             config = webp.WebPConfig.new(
-                lossless=False, quality=self._quality, method=WEBP_METHOD
+                lossless=False, quality=self.quality, method=WEBP_METHOD
             )
             encoder = None
             frame_size: tuple[int, int] | None = None
             num_frames = 0
             while True:
-                image = self._queue.get()
+                image = self.queue.get()
                 if image is None:
                     ended = True
                     break
@@ -3352,20 +3352,20 @@ class AnimationWriter:
                 # rather than lasting a fixed duration, which plays a fractional frame
                 # rate back to within a small fraction of a percent.
                 encoder.encode_frame(
-                    picture, round((num_frames * 1000) / self._frame_rate), config
+                    picture, round((num_frames * 1000) / self.frame_rate), config
                 )
                 num_frames += 1
 
             if encoder is None:
                 raise ValueError("An animation must have at least one frame.")
 
-            animation = encoder.assemble(round((num_frames * 1000) / self._frame_rate))
-            with open(self._path, "wb") as animation_file:
+            animation = encoder.assemble(round((num_frames * 1000) / self.frame_rate))
+            with open(self.path, "wb") as animation_file:
                 animation_file.write(animation.buffer())
         except Exception as error:
-            self._error = error
+            self.error = error
             while not ended:
-                ended = self._queue.get() is None
+                ended = self.queue.get() is None
 
 
 def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:

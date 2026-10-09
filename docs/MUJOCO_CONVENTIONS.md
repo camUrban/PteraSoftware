@@ -10,7 +10,7 @@ A body with a freejoint is a six degree of freedom floating body. MuJoCo describ
 
 ### Position (`qpos[0:3]`)
 
-`qpos[0:3]` is the position of the first `Airplane`'s CG (in Earth axes, relative to the Earth origin), in meters. No transformation is needed.
+`qpos[0:3]` is the position of the first `Airplane`'s CG (in Earth axes, relative to the Earth origin), in meters. `MuJoCoModel` sets it from the initial `CgP1_E_Eo`. No transformation is needed.
 
 ```python
 position_E_Eo = qpos[0:3]

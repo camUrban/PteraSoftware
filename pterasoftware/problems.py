@@ -778,6 +778,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         self._mujoco_model = _mujoco_model.MuJoCoModel(
             name=initial_airplane.name,
             mass=self._mass,
+            CgP1_E_Eo=initial_operating_point.CgP1_E_Eo,
             omegas_BP1__E=initial_operating_point.omegas_BP1__E,
             T_pas_BP1_CgP1_to_E_CgP1=initial_operating_point.T_pas_BP1_CgP1_to_E_CgP1,
             vCg_E__E=-1

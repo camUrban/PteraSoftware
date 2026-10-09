@@ -44,6 +44,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="integrator_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -112,6 +113,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="extra_xml_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -146,6 +148,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="assets_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -186,6 +189,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="sym_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -915,6 +919,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="infinite_plane_airplane",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -938,6 +943,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="heightfield_airplane",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),

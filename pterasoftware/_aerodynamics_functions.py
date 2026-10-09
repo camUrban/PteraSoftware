@@ -12,7 +12,7 @@ from numba import njit, prange
 
 from . import _logging
 
-_logger = _logging.get_logger("_aerodynamics_functions")
+logger = _logging.get_logger("_aerodynamics_functions")
 
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
@@ -160,13 +160,13 @@ def report_thread_settings() -> None:
             "tbb cannot be loaded, so having tbb installed does not rule this out."
         )
 
-    _logger.debug(_logging.indent() + f"Numba threading layer: {threading_layer}")
-    _logger.debug(
+    logger.debug(_logging.indent() + f"Numba threading layer: {threading_layer}")
+    logger.debug(
         _logging.indent()
         + f"Numba thread pool width: {numba.config.NUMBA_NUM_THREADS}, thread mask: "
         + f"{external_cap}, ceiling: {ceiling} (three quarters of the pool)"
     )
-    _logger.debug(
+    logger.debug(
         _logging.indent()
         + f"Kernel launches will use at most {kernel_cap} threads, and fewer when a "
         + "launch's work is below the grain"

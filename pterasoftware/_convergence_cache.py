@@ -12,7 +12,7 @@ import numpy as np
 
 from . import _logging
 
-_logger = _logging.get_logger("_convergence_cache")
+logger = _logging.get_logger("_convergence_cache")
 
 # The schema version of the JSON solve cache. It is bumped when the on-disk structure of
 # the cache file changes, for example how the load coefficients are stored or the
@@ -74,12 +74,12 @@ def load_solve_cache(
         with open(cache_path) as cache_file:
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring unreadable solve cache at %s, so rebuilding it",
             cache_path,
         )
-        _logger.warning(_logging.indent() + "The error was: %s", error)
+        logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
@@ -87,7 +87,7 @@ def load_solve_cache(
 
     entries = data.get("entries", {})
     if not isinstance(entries, dict):
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring solve cache at %s with a malformed entries section, so "
             "rebuilding it",
@@ -104,7 +104,7 @@ def load_solve_cache(
             for key, entry in entries.items()
         }
     except (KeyError, TypeError, ValueError):
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring solve cache at %s with a malformed entries section, so "
             "rebuilding it",
@@ -403,12 +403,12 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
         with open(cache_path) as cache_file:
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring unreadable memo cache at %s, so resolving each mesh",
             cache_path,
         )
-        _logger.warning(_logging.indent() + "The error was: %s", error)
+        logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
@@ -416,7 +416,7 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
 
     memos = data.get("memos", {})
     if not isinstance(memos, dict):
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring cache at %s with a malformed memo section, so resolving "
             "each mesh",
@@ -427,7 +427,7 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     try:
         return {key: float(value) for key, value in memos.items()}
     except (TypeError, ValueError):
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "Ignoring cache at %s with a malformed memo section, so resolving "
             "each mesh",

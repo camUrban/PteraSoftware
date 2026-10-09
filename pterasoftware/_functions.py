@@ -28,7 +28,7 @@ if TYPE_CHECKING:
         unsteady_ring_vortex_lattice_method,
     )
 
-_logger = _logging.get_logger("_functions")
+logger = _logging.get_logger("_functions")
 
 _SINGULARITY_NAMES: tuple[str, ...] = (
     "degenerate filament",
@@ -233,7 +233,7 @@ def calculate_streamlines(
     unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
 
     log_unexpected_singularity_counts(
-        _logger,
+        logger,
         logging.WARNING,
         "calculate_streamlines",
         unexpected_bound_singularity_counts,

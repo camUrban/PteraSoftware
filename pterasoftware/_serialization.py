@@ -62,7 +62,7 @@ from .unsteady_ring_vortex_lattice_method import (
     UnsteadyRingVortexLatticeMethodSolver,
 )
 
-_logger = _logging.get_logger("_serialization")
+logger = _logging.get_logger("_serialization")
 
 # Maps serializable callable names to their function objects and vice versa.
 _CALLABLE_NAME_TO_FUNC = {
@@ -356,7 +356,7 @@ def save(path: str | Path, obj: object) -> None:
             f"classes can be saved via save()."
         )
 
-    _logger.info(_logging.indent() + "Saving %s to %s", class_name, path)
+    logger.info(_logging.indent() + "Saving %s to %s", class_name, path)
 
     num_chunks = max(
         (
@@ -390,7 +390,7 @@ def save(path: str | Path, obj: object) -> None:
             del payload
 
     file_size = path.stat().st_size
-    _logger.info(
+    logger.info(
         _logging.indent() + "Saved %s to %s (%d bytes)",
         type(obj).__name__,
         path,
@@ -462,7 +462,7 @@ def load(
                     f'callables values must be callable, but the value for "{key}" is '
                     f"{type(func).__name__}."
                 )
-    _logger.info(_logging.indent() + "Loading from %s", path)
+    logger.info(_logging.indent() + "Loading from %s", path)
 
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
@@ -596,7 +596,7 @@ def load(
             + "."
         )
 
-    _logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
+    logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
     return obj
 
 
@@ -804,7 +804,7 @@ def _check_callables_against_markers(
             this_hash is not None and this_hash != rebound_hash
             for this_hash in recorded
         ):
-            _logger.warning(
+            logger.warning(
                 _logging.indent()
                 + "The function supplied for %s does not match the source the file "
                 "recorded for it, so the file was saved with a different definition",
@@ -907,7 +907,7 @@ def _get_provenance() -> dict[str, str | bool | None]:
         subprocess.CalledProcessError,
         UnicodeDecodeError,
     ):  # pragma: no cover
-        _logger.debug(
+        logger.debug(
             _logging.indent()
             + "The package git state could not be read, so the provenance fields "
             "will be null"
@@ -928,7 +928,7 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
     :return: None
     """
     if data.get("_dirty"):  # pragma: no branch
-        _logger.warning(
+        logger.warning(
             _logging.indent()
             + "The file was saved with uncommitted changes, so the hash may not "
             "fully represent the code state"
@@ -959,7 +959,7 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
                 .strip()
             )
             if file_commit != current_commit:  # pragma: no cover
-                _logger.warning(
+                logger.warning(
                     _logging.indent()
                     + "The file was saved at commit %s, but the current HEAD is %s",
                     file_commit[:12],
@@ -975,7 +975,7 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
                 .strip()
             )
             if len(current_status) > 0:  # pragma: no branch
-                _logger.warning(
+                logger.warning(
                     _logging.indent()
                     + "The current working tree has uncommitted changes"
                 )
@@ -1034,7 +1034,7 @@ def _object_to_dict(
     if memoized is not None:
         return {"_type": "ref", "id": memoized[0]}
 
-    _logger.debug(_logging.indent() + "Serializing %s", class_name)
+    logger.debug(_logging.indent() + "Serializing %s", class_name)
 
     # The MuJoCoModel's native model and data objects cannot be serialized, so they are
     # rebuilt from the XML string and the assets dict on deserialization.
@@ -1105,7 +1105,7 @@ def _object_from_dict(
     if table is None:
         table = {}
 
-    _logger.debug(_logging.indent() + "Deserializing %s", type_tag)
+    logger.debug(_logging.indent() + "Deserializing %s", type_tag)
 
     obj: object = object.__new__(cls)
     table[data["_id"]] = obj

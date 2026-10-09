@@ -31,7 +31,7 @@ from . import (
 )
 from .movements import free_flight_movement as free_flight_movement_mod
 
-_logger = _logging.get_logger("output")
+logger = _logging.get_logger("output")
 
 # Define the Plotter's appearance. The streamline line width is in pixels and is tuned
 # for _output_rendering.REFERENCE_WINDOW_SIZE, so it is scaled wherever it is used, as
@@ -2596,7 +2596,7 @@ def log_results(
             for i, val in enumerate(col4)
         ]
 
-        _logger.info(_logging.indent() + f'Airplane "{airplane.name}":')
+        logger.info(_logging.indent() + f'Airplane "{airplane.name}":')
 
         # Display the Reynolds number for steady solvers.
         if solver_type == "steady":
@@ -2608,11 +2608,11 @@ def log_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            _logger.info(_logging.indent(1) + f"Reynolds Number: {re:#.3G}")
+            logger.info(_logging.indent(1) + f"Reynolds Number: {re:#.3G}")
 
         for i in range(len(col1)):
             if i % 3 == 0:
-                _logger.info(titles[i // 3])
+                logger.info(titles[i // 3])
 
             if i < 12:
                 # The geometry axes rows have no named load columns.
@@ -2623,7 +2623,7 @@ def log_results(
                     _logging.indent(2)
                     + f"{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[j]:<{col3_space}}{col4[j]}"
                 )
-            _logger.info(s)
+            logger.info(s)
 
     # For a free flight solver, also log the first Airplane's initial and final
     # six-degree-of-freedom state. This is logged once, since the state describes the
@@ -2640,7 +2640,7 @@ def log_results(
 
         final_time = solver.delta_time * (len(operating_points) - 1)
 
-        _logger.info(
+        logger.info(
             _logging.indent() + "The First Airplane's Free Flight State History:"
         )
 
@@ -2713,21 +2713,21 @@ def log_results(
                 for value, unit in zip(state_component_values, state_component_units)
             ]
 
-            _logger.info(
+            logger.info(
                 _logging.indent(1) + f"{state_label} (at t = {state_time:#.3G} s):"
             )
 
             for i in range(len(state_component_labels)):
                 if i == 0:
-                    _logger.info(state_group_header_position)
+                    logger.info(state_group_header_position)
                 elif i == 3:
-                    _logger.info(state_group_header_orientation)
+                    logger.info(state_group_header_orientation)
                 elif i == 6:
-                    _logger.info(state_group_header_velocity)
+                    logger.info(state_group_header_velocity)
                 elif i == 9:
-                    _logger.info(state_group_header_angular_velocity)
+                    logger.info(state_group_header_angular_velocity)
 
-                _logger.info(
+                logger.info(
                     _logging.indent(3)
                     + f"{state_component_labels[i]:<{state_component_space}}"
                     f"{state_component_values[i]}"
@@ -2741,11 +2741,11 @@ def log_results(
             aerodynamic_angle_space = (
                 max(len(alpha_label), len(beta_label)) + padding_spaces
             )
-            _logger.info(
+            logger.info(
                 _logging.indent(2) + f"{alpha_label:<{aerodynamic_angle_space}}"
                 f"{this_operating_point.alpha:#10.3G} deg"
             )
-            _logger.info(
+            logger.info(
                 _logging.indent(2) + f"{beta_label:<{aerodynamic_angle_space}}"
                 f"{this_operating_point.beta:#10.3G} deg"
             )

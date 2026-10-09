@@ -24,7 +24,7 @@ from . import (
     unsteady_ring_vortex_lattice_method,
 )
 
-_logger = _logging.get_logger("convergence")
+logger = _logging.get_logger("convergence")
 
 # The labels of the six load coefficients that convergence is checked against, in the
 # order they are stored: the three force coefficients (in wind axes) followed by the
@@ -213,16 +213,16 @@ def analyze_steady_convergence(
             )
 
     run_start_time = time.time()
-    _logger.info(_logging.indent() + "Beginning convergence analysis")
+    logger.info(_logging.indent() + "Beginning convergence analysis")
 
     # Report which load coefficients this analysis requires to converge. The swept
     # parameters are reported by the loops below as they are reached, but the mask is
     # otherwise invisible, which leaves a log ambiguous as to whether a case converged
     # against all six coefficients or a subset.
-    _logger.info(_logging.indent(1) + "Converging:")
+    logger.info(_logging.indent(1) + "Converging:")
     for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
         if masked_in:
-            _logger.info(_logging.indent(2) + label)
+            logger.info(_logging.indent(2) + label)
 
     ref_airplanes = ref_problem.airplanes
 
@@ -315,18 +315,18 @@ def analyze_steady_convergence(
 
     # Begin iterating through the outer loop of Panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-        _logger.info(
+        logger.info(
             _logging.indent(1) + "Panel aspect ratio: " + str(panel_aspect_ratio)
         )
 
         # Begin iterating through the inner loop of number of chordwise Panels.
         for chord_id, num_chordwise_panels in enumerate(num_chordwise_panels_list):
-            _logger.info(
+            logger.info(
                 _logging.indent(2) + "Chordwise Panels: " + str(num_chordwise_panels)
             )
 
             iteration += 1
-            _logger.info(
+            logger.info(
                 _logging.indent(3)
                 + "Iteration number: "
                 + str(iteration)
@@ -392,7 +392,7 @@ def analyze_steady_convergence(
                         steady_problem=this_problem,
                     )
 
-                _logger.info(_logging.indent(3) + "Starting simulation")
+                logger.info(_logging.indent(3) + "Starting simulation")
 
                 # Run the steady solver. Skip the streamline trace since it does not
                 # affect convergence metrics. The solver's log messages nest one level
@@ -433,13 +433,13 @@ def analyze_steady_convergence(
             iter_times[ar_id, chord_id] = this_iter_time
 
             if cached:
-                _logger.info(
+                logger.info(
                     _logging.indent(3)
                     + "Cache hit: was solved in "
                     + _functions.format_duration(this_iter_time)
                 )
             else:
-                _logger.info(
+                logger.info(
                     _logging.indent(3)
                     + "Simulation completed in "
                     + _functions.format_duration(this_iter_time)
@@ -470,7 +470,7 @@ def analyze_steady_convergence(
                     3,
                 )
             else:
-                _logger.info(
+                logger.info(
                     _logging.indent(3) + "Panel aspect ratio convergence: not checked"
                 )
 
@@ -492,7 +492,7 @@ def analyze_steady_convergence(
                     3,
                 )
             else:
-                _logger.info(
+                logger.info(
                     _logging.indent(3)
                     + "Number of chordwise Panels convergence: not checked"
                 )
@@ -532,44 +532,44 @@ def analyze_steady_convergence(
                 )
 
                 if single_ar or single_chord:
-                    _logger.info(
+                    logger.info(
                         _logging.indent() + "The analysis found a semi-converged case:"
                     )
                     if single_ar:
-                        _logger.warning(
+                        logger.warning(
                             _logging.indent()
                             + "Panel aspect ratio convergence was not checked"
                         )
                     if single_chord:
-                        _logger.warning(
+                        logger.warning(
                             _logging.indent()
                             + "Chordwise panels convergence was not checked"
                         )
                 else:
-                    _logger.info(
+                    logger.info(
                         _logging.indent() + "The analysis found a converged case:"
                     )
 
-                _logger.info(
+                logger.info(
                     _logging.indent(1)
                     + "Panel aspect ratio: "
                     + str(converged_aspect_ratio)
                 )
-                _logger.info(
+                logger.info(
                     _logging.indent(1)
                     + "Chordwise Panels: "
                     + str(converged_chordwise_panels)
                 )
-                _logger.info(
+                logger.info(
                     _logging.indent(1)
                     + "Simulation time: "
                     + _functions.format_duration(converged_iter_time)
                 )
-                _logger.info(_logging.indent(1) + "Spanwise Panels:")
+                logger.info(_logging.indent(1) + "Spanwise Panels:")
                 for airplane_id, airplane in enumerate(ref_airplanes):
-                    _logger.info(_logging.indent(2) + airplane.name + ":")
+                    logger.info(_logging.indent(2) + airplane.name + ":")
                     for wing_id, wing in enumerate(airplane.wings):
-                        _logger.info(_logging.indent(3) + wing.name + ":")
+                        logger.info(_logging.indent(3) + wing.name + ":")
 
                         # An edge-defined Wing is refined by its number of
                         # WingCrossSections rather than its number of spanwise Panels,
@@ -581,7 +581,7 @@ def analyze_steady_convergence(
                                 airplane_id,
                                 wing_id,
                             )
-                            _logger.info(
+                            logger.info(
                                 _logging.indent(4)
                                 + "WingCrossSections: "
                                 + str(
@@ -613,7 +613,7 @@ def analyze_steady_convergence(
                             else:
                                 # Last WingCrossSection.
                                 num_spanwise_panels = None
-                            _logger.info(
+                            logger.info(
                                 _logging.indent(4)
                                 + "WingCrossSection "
                                 + str(wing_cross_section_id + 1)
@@ -631,7 +631,7 @@ def analyze_steady_convergence(
                     | None
                 ) = None
                 if resolve_converged_solver:
-                    _logger.info(
+                    logger.info(
                         _logging.indent()
                         + "Recreating and running the converged solver"
                     )
@@ -658,7 +658,7 @@ def analyze_steady_convergence(
                             )
                         converged_solver.run(calculate_streamlines=True)
 
-                _logger.info(
+                logger.info(
                     _logging.indent()
                     + "Convergence analysis completed in "
                     + _functions.format_duration(time.time() - run_start_time)
@@ -673,11 +673,11 @@ def analyze_steady_convergence(
     # If all iterations have been checked and none of them resulted in both convergence
     # parameters passing, then indicate that no converged case was found and return
     # values of None for the converged parameters.
-    _logger.info(
+    logger.info(
         _logging.indent()
         + "The analysis did not find a converged case within the bounds"
     )
-    _logger.info(
+    logger.info(
         _logging.indent()
         + "Convergence analysis completed in "
         + _functions.format_duration(time.time() - run_start_time)
@@ -986,16 +986,16 @@ def analyze_unsteady_convergence(
         )
 
     run_start_time = time.time()
-    _logger.info(_logging.indent() + "Beginning convergence analysis")
+    logger.info(_logging.indent() + "Beginning convergence analysis")
 
     # Report which load coefficients this analysis requires to converge. The swept
     # parameters are reported by the loops below as they are reached, but the mask is
     # otherwise invisible, which leaves a log ambiguous as to whether a case converged
     # against all six coefficients or a subset.
-    _logger.info(_logging.indent(1) + "Converging:")
+    logger.info(_logging.indent(1) + "Converging:")
     for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
         if masked_in:
-            _logger.info(_logging.indent(2) + label)
+            logger.info(_logging.indent(2) + label)
 
     ref_airplane_movements = ref_movement.airplane_movements
     ref_base_airplanes = tuple(
@@ -1127,20 +1127,20 @@ def analyze_unsteady_convergence(
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
-            _logger.info(_logging.indent(1) + "Wake type: prescribed")
+            logger.info(_logging.indent(1) + "Wake type: prescribed")
         else:
-            _logger.info(_logging.indent(1) + "Wake type: free")
+            logger.info(_logging.indent(1) + "Wake type: free")
 
         # Begin iterating through the second loop of wake lengths.
         for length_id, wake_length in enumerate(wake_lengths_list):
             if static:
-                _logger.info(_logging.indent(2) + "Chord lengths: " + str(wake_length))
+                logger.info(_logging.indent(2) + "Chord lengths: " + str(wake_length))
             else:
-                _logger.info(_logging.indent(2) + "Cycles: " + str(wake_length))
+                logger.info(_logging.indent(2) + "Cycles: " + str(wake_length))
 
             # Begin iterating through the third loop of Panel aspect ratios.
             for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-                _logger.info(
+                logger.info(
                     _logging.indent(3)
                     + "Panel aspect ratio: "
                     + str(panel_aspect_ratio)
@@ -1151,14 +1151,14 @@ def analyze_unsteady_convergence(
                 for chord_id, num_chordwise_panels in enumerate(
                     num_chordwise_panels_list
                 ):
-                    _logger.info(
+                    logger.info(
                         _logging.indent(4)
                         + "Chordwise Panels: "
                         + str(num_chordwise_panels)
                     )
 
                     iteration += 1
-                    _logger.info(
+                    logger.info(
                         _logging.indent(5)
                         + "Iteration number: "
                         + str(iteration)
@@ -1227,7 +1227,7 @@ def analyze_unsteady_convergence(
                             unsteady_problem=this_problem
                         )
 
-                        _logger.info(_logging.indent(5) + "Starting simulation")
+                        logger.info(_logging.indent(5) + "Starting simulation")
 
                         # The solver's log messages nest one level under this
                         # iteration's messages.
@@ -1291,13 +1291,13 @@ def analyze_unsteady_convergence(
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     if cached:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5)
                             + "Cache hit: was solved in "
                             + _functions.format_duration(this_iter_time)
                         )
                     else:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5)
                             + "Simulation completed in "
                             + _functions.format_duration(this_iter_time)
@@ -1332,7 +1332,7 @@ def analyze_unsteady_convergence(
                             5,
                         )
                     else:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5) + "Wake type convergence: not checked"
                         )
 
@@ -1358,7 +1358,7 @@ def analyze_unsteady_convergence(
                             5,
                         )
                     else:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5) + "Wake length convergence: not checked"
                         )
 
@@ -1382,7 +1382,7 @@ def analyze_unsteady_convergence(
                             5,
                         )
                     else:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5)
                             + "Panel aspect ratio convergence: not checked"
                         )
@@ -1407,7 +1407,7 @@ def analyze_unsteady_convergence(
                             5,
                         )
                     else:
-                        _logger.info(
+                        logger.info(
                             _logging.indent(5)
                             + "Number of chordwise Panels convergence: not checked"
                         )
@@ -1469,80 +1469,80 @@ def analyze_unsteady_convergence(
                         )
 
                         if single_wake or single_length or single_ar or single_chord:
-                            _logger.info(
+                            logger.info(
                                 _logging.indent()
                                 + "The analysis found a semi-converged case:"
                             )
                             if single_wake:
-                                _logger.warning(
+                                logger.warning(
                                     _logging.indent()
                                     + "Wake type convergence not checked"
                                 )
                             if single_length:
-                                _logger.warning(
+                                logger.warning(
                                     _logging.indent()
                                     + "Wake length convergence not checked"
                                 )
                             if single_ar:
-                                _logger.warning(
+                                logger.warning(
                                     _logging.indent()
                                     + "Panel aspect ratio convergence not checked"
                                 )
                             if single_chord:
-                                _logger.warning(
+                                logger.warning(
                                     _logging.indent()
                                     + "Chordwise Panels convergence not checked"
                                 )
                         else:
-                            _logger.info(
+                            logger.info(
                                 _logging.indent()
                                 + "The analysis found a converged case:"
                             )
 
                         if converged_wake:
-                            _logger.info(_logging.indent(1) + "Wake type: prescribed")
+                            logger.info(_logging.indent(1) + "Wake type: prescribed")
                         else:
-                            _logger.info(_logging.indent(1) + "Wake type: free")
+                            logger.info(_logging.indent(1) + "Wake type: free")
 
                         if static:
-                            _logger.info(
+                            logger.info(
                                 _logging.indent(1)
                                 + "Chord lengths: "
                                 + str(converged_wake_length)
                             )
                         else:
-                            _logger.info(
+                            logger.info(
                                 _logging.indent(1)
                                 + "Cycles: "
                                 + str(converged_wake_length)
                             )
 
-                        _logger.info(
+                        logger.info(
                             _logging.indent(1)
                             + "Panel aspect ratio: "
                             + str(converged_aspect_ratio)
                         )
-                        _logger.info(
+                        logger.info(
                             _logging.indent(1)
                             + "Chordwise Panels: "
                             + str(converged_chordwise_panels)
                         )
-                        _logger.info(
+                        logger.info(
                             _logging.indent(1)
                             + "Simulation completed in "
                             + _functions.format_duration(converged_iter_time)
                         )
-                        _logger.info(_logging.indent(1) + "Spanwise Panels:")
+                        logger.info(_logging.indent(1) + "Spanwise Panels:")
                         for airplane_movement_id, airplane_movement in enumerate(
                             ref_airplane_movements
                         ):
                             base_airplane = airplane_movement.base_airplane
-                            _logger.info(_logging.indent(2) + base_airplane.name + ":")
+                            logger.info(_logging.indent(2) + base_airplane.name + ":")
                             for wing_movement_id, wing_movement in enumerate(
                                 airplane_movement.wing_movements
                             ):
                                 base_wing = wing_movement.base_wing
-                                _logger.info(_logging.indent(3) + base_wing.name + ":")
+                                logger.info(_logging.indent(3) + base_wing.name + ":")
 
                                 # An edge-defined Wing is refined by its number of
                                 # WingCrossSections rather than its number of spanwise
@@ -1554,7 +1554,7 @@ def analyze_unsteady_convergence(
                                         airplane_movement_id,
                                         wing_movement_id,
                                     )
-                                    _logger.info(
+                                    logger.info(
                                         _logging.indent(4)
                                         + "WingCrossSections: "
                                         + str(
@@ -1593,7 +1593,7 @@ def analyze_unsteady_convergence(
                                     else:
                                         # Last WingCrossSection.
                                         num_spanwise_panels = None
-                                    _logger.info(
+                                    logger.info(
                                         _logging.indent(4)
                                         + "WingCrossSection "
                                         + str(wing_cross_section_movement_id + 1)
@@ -1611,7 +1611,7 @@ def analyze_unsteady_convergence(
                             | None
                         ) = None
                         if resolve_converged_solver:
-                            _logger.info(
+                            logger.info(
                                 _logging.indent()
                                 + "Recreating and running the converged solver"
                             )
@@ -1642,7 +1642,7 @@ def analyze_unsteady_convergence(
                                     force_method=force_method,
                                 )
 
-                        _logger.info(
+                        logger.info(
                             _logging.indent()
                             + "Convergence analysis completed in "
                             + _functions.format_duration(time.time() - run_start_time)
@@ -1659,11 +1659,11 @@ def analyze_unsteady_convergence(
     # If all iterations have been checked and none of them resulted in all convergence
     # parameters passing, then indicate that no converged solution was found and return
     # values of None for the converged parameters.
-    _logger.info(
+    logger.info(
         _logging.indent()
         + "The analysis did not find a converged case within the bounds"
     )
-    _logger.info(
+    logger.info(
         _logging.indent()
         + "Convergence analysis completed in "
         + _functions.format_duration(time.time() - run_start_time)
@@ -1868,12 +1868,12 @@ def _log_coefficient_metrics(
         level. It must be a non negative int.
     :return: None
     """
-    _logger.info(_logging.indent(levels) + header)
+    logger.info(_logging.indent(levels) + header)
     for label, metric, masked_in in zip(
         _COEFFICIENT_LABELS, coefficient_metrics, coefficient_mask
     ):
         if masked_in:
-            _logger.info(
+            logger.info(
                 _logging.indent(levels + 1) + label + ": " + f"{metric:#.4G}" + "%"
             )
 

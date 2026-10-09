@@ -39,7 +39,7 @@ if TYPE_CHECKING:
         FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     )
 
-_logger = _logging.get_logger("problems")
+logger = _logging.get_logger("problems")
 
 # These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
 # injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
@@ -1332,7 +1332,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
                     _SUBITERATION_DIVERGENCE_TOLERANCE,
                 )
 
-            _logger.debug(
+            logger.debug(
                 _logging.indent()
                 + "Free flight step %d, sub-iteration %d: weighted residual norm "
                 "%#.3G, relaxation factor %#.3G",
@@ -1359,14 +1359,14 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             previous_residual = residual
 
         if not converged:
-            _logger.warning(
+            logger.warning(
                 _logging.indent()
                 + "Free flight sub-iteration at step %d reached the %d-iteration "
                 "cap without converging",
                 step,
                 self.k_max,
             )
-            _logger.warning(
+            logger.warning(
                 _logging.indent()
                 + "Accepting the capped iterate with weighted residual norm %#.3G",
                 residual_norm,

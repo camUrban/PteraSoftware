@@ -7,7 +7,7 @@ from typing import cast
 from . import _logging, problems
 from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
-_logger = _logging.get_logger("_coupled_unsteady_ring_vortex_lattice_method")
+logger = _logging.get_logger("_coupled_unsteady_ring_vortex_lattice_method")
 
 
 class CoupledUnsteadyRingVortexLatticeMethodSolver(
@@ -50,7 +50,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         return cast(problems.CoupledUnsteadyProblem, self.unsteady_problem)
 
     def _initialize_step_vortices(self, step: int) -> None:
-        _logger.debug(
+        logger.debug(
             _logging.indent() + f"Initializing step {step}'s bound ring vortices"
         )
         self._initialize_panel_vortices_at(step)

@@ -9,7 +9,7 @@ import numpy as np
 
 from . import _logging, geometry, movements, problems
 
-_logger = _logging.get_logger("_convergence_meshing")
+logger = _logging.get_logger("_convergence_meshing")
 
 
 def build_steady_problem(
@@ -614,7 +614,7 @@ def build_unsteady_problem(
     if delta_time_key not in delta_time_cache:
         delta_time_cache[delta_time_key] = this_movement.delta_time
     else:
-        _logger.info(
+        logger.info(
             _logging.indent()
             + "Cached delta_time: "
             + f"{this_movement.delta_time:#.3G}"
@@ -755,7 +755,7 @@ def _get_wing_section_movement_num_spanwise_panels(
             ref_wing_at_time_step.wing_cross_sections[ref_tip_wing_cross_section_id]
         )
 
-        _logger.debug(
+        logger.debug(
             _logging.indent()
             + "Calculating the number of spanwise Panels for time step "
             f"{time_step_id+1}/{num_time_steps}"
@@ -773,7 +773,7 @@ def _get_wing_section_movement_num_spanwise_panels(
 
         these_num_spanwise_panels[time_step_id] = num_spanwise_panels_at_step
 
-        _logger.debug(
+        logger.debug(
             _logging.indent()
             + f"Number of spanwise Panels: {num_spanwise_panels_at_step}"
         )
@@ -1126,10 +1126,10 @@ def _resolve_num_wing_cross_sections(
         wing_id,
     )
 
-    _logger.debug(_logging.indent() + f"{airplane_name}'s {wing_name}:")
+    logger.debug(_logging.indent() + f"{airplane_name}'s {wing_name}:")
 
     if num_wing_cross_sections_key in num_wing_cross_sections_cache:
-        _logger.debug(
+        logger.debug(
             _logging.indent(1) + "Getting the cached number of WingCrossSections"
         )
         this_num_wing_cross_sections = num_wing_cross_sections_cache[
@@ -1168,10 +1168,8 @@ def _resolve_num_wing_cross_sections(
         if last_cache_val != np.inf:
             starting_num_wing_cross_sections = int(last_cache_val)
 
-        _logger.debug(
-            _logging.indent(1) + "Calculating the number of WingCrossSections"
-        )
-        _logger.debug(
+        logger.debug(_logging.indent(1) + "Calculating the number of WingCrossSections")
+        logger.debug(
             _logging.indent(1)
             + f"Starting the search at {starting_num_wing_cross_sections}"
         )
@@ -1186,7 +1184,7 @@ def _resolve_num_wing_cross_sections(
             this_num_wing_cross_sections
         )
 
-    _logger.debug(
+    logger.debug(
         _logging.indent(1)
         + f"Number of WingCrossSections: {this_num_wing_cross_sections}"
     )
@@ -1243,13 +1241,13 @@ def _resolve_num_spanwise_panels(
         wing_cross_section_id,
     )
 
-    _logger.debug(
+    logger.debug(
         _logging.indent() + f"{airplane_name}'s {wing_name}, "
         f"WingCrossSection #{wing_cross_section_id + 1}:"
     )
 
     if num_spanwise_panels_key in num_spanwise_panels_cache:
-        _logger.debug(
+        logger.debug(
             _logging.indent(1) + "Getting the cached number of spanwise Panels"
         )
         this_num_spanwise_panels = num_spanwise_panels_cache[num_spanwise_panels_key]
@@ -1288,8 +1286,8 @@ def _resolve_num_spanwise_panels(
         if last_cache_val != np.inf:
             starting_num_spanwise_panels = int(last_cache_val)
 
-        _logger.debug(_logging.indent(1) + "Calculating the number of spanwise Panels")
-        _logger.debug(
+        logger.debug(_logging.indent(1) + "Calculating the number of spanwise Panels")
+        logger.debug(
             _logging.indent(1)
             + f"Starting the search at {starting_num_spanwise_panels}"
         )
@@ -1302,7 +1300,7 @@ def _resolve_num_spanwise_panels(
 
         num_spanwise_panels_cache[num_spanwise_panels_key] = this_num_spanwise_panels
 
-    _logger.debug(
+    logger.debug(
         _logging.indent(1) + f"Number of spanwise Panels: {this_num_spanwise_panels}"
     )
 

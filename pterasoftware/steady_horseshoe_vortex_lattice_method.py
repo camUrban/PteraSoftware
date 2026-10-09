@@ -24,7 +24,7 @@ from . import (
     problems,
 )
 
-_logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
+logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
 
 
 # TEST: Consider adding unit tests for this function.
@@ -166,24 +166,24 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         with _functions.solve_loop_thread_limits(self.num_panels):
             # Compute the horseshoe vortex geometries and collapse them, along with each
             # Panel's per Panel scalars, into 1D ndarrays of attributes.
-            _logger.debug(_logging.indent() + "Collapsing the geometry")
+            logger.debug(_logging.indent() + "Collapsing the geometry")
             self._collapse_geometry()
 
             # Find the matrix of Wing-Wing influence coefficients associated with this
             # SteadyProblem's geometry.
-            _logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
+            logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
             self._calculate_wing_wing_influences()
 
             # Find the normal velocity (in the first Airplane's geometry axes, observed
             # from the Earth frame) at every collocation point due solely to the
             # freestream.
-            _logger.debug(
+            logger.debug(
                 _logging.indent() + "Calculating the freestream Wing influences"
             )
             _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
             # Solve for each Panel's horseshoe vortex's strength.
-            _logger.debug(
+            logger.debug(
                 _logging.indent() + "Calculating the horseshoe vortex strengths"
             )
             self._calculate_vortex_strengths()
@@ -191,16 +191,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             # Solve for the forces (in the first Airplane's geometry axes) and moments
             # (in the first Airplane's geometry axes, relative to the first Airplane's
             # CG) on each Panel.
-            _logger.debug(_logging.indent() + "Calculating the forces and moments")
+            logger.debug(_logging.indent() + "Calculating the forces and moments")
             self._calculate_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges, if requested.
         if calculate_streamlines:
-            _logger.debug(_logging.indent() + "Calculating streamlines")
+            logger.debug(_logging.indent() + "Calculating streamlines")
             _functions.calculate_streamlines(self)
 
-        _logger.info(
+        logger.info(
             _logging.indent()
             + "Solver completed in "
             + _functions.format_duration(time.time() - run_start_time)
@@ -551,7 +551,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         unexpected_singularity_counts = np.copy(singularity_counts)
 
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.ERROR,
             "_calculate_wing_wing_influences",
             unexpected_singularity_counts,
@@ -685,7 +685,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.ERROR,
             "_calculate_loads (bound)",
             bound_singularity_counts,

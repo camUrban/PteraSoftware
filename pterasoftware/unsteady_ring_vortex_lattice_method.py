@@ -26,7 +26,7 @@ from . import (
     problems,
 )
 
-_logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
+logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
 
 # TODO: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads and
@@ -531,7 +531,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_airplanes = current_problem.airplanes
                 self.current_operating_point = current_problem.operating_point
                 self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
-                _logger.debug(
+                logger.debug(
                     _logging.indent()
                     + "Beginning time step "
                     + str(self._current_step)
@@ -550,9 +550,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self._update_next_step_hook(step)
 
                 # Shed ring vortices into the wake.
-                _logger.debug(
-                    _logging.indent() + "Shedding ring vortices into the wake"
-                )
+                logger.debug(_logging.indent() + "Shedding ring vortices into the wake")
                 self._populate_next_airplanes_wake()
 
                 # Snapshot this step's solved bound ring vortex strengths so the next
@@ -568,7 +566,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # approximate, relative computing time.
                 bar.update(n=float(approx_times[step + 1]))
 
-            _logger.debug(
+            logger.debug(
                 _logging.indent() + "Calculating averaged or final forces and moments"
             )
             self._finalize_loads()
@@ -576,10 +574,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges, if requested.
         if calculate_streamlines:
-            _logger.debug(_logging.indent() + "Calculating streamlines")
+            logger.debug(_logging.indent() + "Calculating streamlines")
             _functions.calculate_streamlines(self)
 
-        _logger.info(
+        logger.info(
             _logging.indent()
             + "Solver completed in "
             + _functions.format_duration(time.time() - run_start_time)
@@ -913,7 +911,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
         # Collapse the geometry matrices into 1D ndarrays of attributes.
-        _logger.debug(_logging.indent() + "Collapsing the geometry")
+        logger.debug(_logging.indent() + "Collapsing the geometry")
         self._collapse_geometry()
 
         # Collapse the Katz-method-specific geometry data if needed.
@@ -922,29 +920,29 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Find the matrix of Wing Wing influence coefficients associated with the
         # Airplanes' geometries at this time step.
-        _logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
+        logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
         self._calculate_wing_wing_influences()
 
         # Find the normal velocity (in the first Airplane's geometry axes, observed from
         # the Earth frame) at every collocation point due solely to the freestream.
-        _logger.debug(_logging.indent() + "Calculating the freestream Wing influences")
+        logger.debug(_logging.indent() + "Calculating the freestream Wing influences")
         self._calculate_freestream_wing_influences()
 
         # Find the normal velocity (in the first Airplane's geometry axes, observed from
         # the Earth frame) at every collocation point due solely to the wake ring
         # vortices.
-        _logger.debug(_logging.indent() + "Calculating the wake Wing influences")
+        logger.debug(_logging.indent() + "Calculating the wake Wing influences")
         self._calculate_wake_wing_influences()
 
         # Solve for each bound ring vortex's strength.
-        _logger.debug(_logging.indent() + "Calculating bound ring vortex strengths")
+        logger.debug(_logging.indent() + "Calculating bound ring vortex strengths")
         self._calculate_vortex_strengths()
 
         # Solve for the forces (in the first Airplane's geometry axes) and moments (in
         # the first Airplane's geometry axes, relative to the first Airplane's CG) on
         # each Panel.
         if self._current_step >= self.first_results_step:
-            _logger.debug(_logging.indent() + "Calculating forces and moments")
+            logger.debug(_logging.indent() + "Calculating forces and moments")
             self._calculate_loads()
 
     def initialize_step_geometry(self, step: int) -> None:
@@ -994,7 +992,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         if step == 0:
-            _logger.debug(
+            logger.debug(
                 _logging.indent() + "Initializing all Airplanes' bound ring vortices"
             )
             self._initialize_panel_vortices()
@@ -1280,7 +1278,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         unexpected_singularity_counts = np.copy(singularity_counts)
 
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.ERROR,
             "_calculate_wing_wing_influences",
             unexpected_singularity_counts,
@@ -1486,7 +1484,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             unexpected_singularity_counts = np.copy(singularity_counts)
 
             _functions.log_unexpected_singularity_counts(
-                _logger,
+                logger,
                 logging.INFO,
                 "_calculate_wake_wing_influences",
                 unexpected_singularity_counts,
@@ -1907,13 +1905,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.ERROR,
             "_calculate_loads (bound)",
             bound_singularity_counts,
         )
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.INFO,
             "_calculate_loads (wake)",
             wake_singularity_counts,
@@ -2247,13 +2245,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
         unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.ERROR,
             "_calculate_loads (bound)",
             unexpected_bound_singularity_counts,
         )
         _functions.log_unexpected_singularity_counts(
-            _logger,
+            logger,
             logging.INFO,
             "_calculate_loads (wake)",
             unexpected_wake_singularity_counts,
@@ -3056,13 +3054,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
             unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
 
             _functions.log_unexpected_singularity_counts(
-                _logger,
+                logger,
                 logging.DEBUG,
                 "_populate_next_airplanes_wake_vortex_points (bound)",
                 unexpected_bound_singularity_counts,
             )
             _functions.log_unexpected_singularity_counts(
-                _logger,
+                logger,
                 logging.DEBUG,
                 "_populate_next_airplanes_wake_vortex_points (wake)",
                 unexpected_wake_singularity_counts,

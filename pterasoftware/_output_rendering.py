@@ -37,7 +37,7 @@ if TYPE_CHECKING:
         unsteady_ring_vortex_lattice_method,
     )
 
-_logger = _logging.get_logger("output")
+logger = _logging.get_logger("output")
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
 # maps live in the _colormaps module. The edge line widths are in pixels, so they are
@@ -377,7 +377,7 @@ def resolve_playback(
     if save and keep_every > 1 and not movement.static:
         frames_per_period = movement.min_period / (keep_every * delta_time)
         if frames_per_period < _MIN_FRAMES_PER_PERIOD:
-            _logger.warning(
+            logger.warning(
                 _logging.indent() + f"The animation saves {frames_per_period:.1f} "
                 f"frames per cycle of its fastest motion, whose period is "
                 f"{movement.min_period} seconds. Below {_MIN_FRAMES_PER_PERIOD} frames "

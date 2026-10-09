@@ -16,7 +16,7 @@ from . import operating_point as operating_point_mod
 if TYPE_CHECKING:
     from . import problems
 
-_logger = _logging.get_logger("core")
+logger = _logging.get_logger("core")
 
 
 def lcm(a: float, b: float) -> float:
@@ -2885,7 +2885,7 @@ class CoreUnsteadyProblem:
         )
 
         if step < 0 and num_created_steps < self._num_steps:
-            _logger.warning(
+            logger.warning(
                 _logging.indent()
                 + "step=%d is time step %d, since the problem hasn't been solved",
                 step,

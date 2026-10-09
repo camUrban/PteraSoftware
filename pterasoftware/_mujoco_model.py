@@ -11,7 +11,7 @@ import pyvista as pv
 
 from . import _logging, _transformations
 
-_logger = _logging.get_logger("_mujoco_model")
+logger = _logging.get_logger("_mujoco_model")
 
 
 class MuJoCoState(TypedDict):
@@ -483,7 +483,7 @@ class MuJoCoModel:
                     self._model, mujoco.mjtObj.mjOBJ_GEOM, geom_id
                 )
                 geom_label = f'"{geom_name}"' if geom_name else f"with ID {geom_id}"
-                _logger.warning(
+                logger.warning(
                     _logging.indent()
                     + "Not drawing the MuJoCo geom %s because it is %s, which this "
                     "renderer does not support. The skipped shape still participates "

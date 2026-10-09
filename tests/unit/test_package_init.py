@@ -306,7 +306,7 @@ class TestTypeCheckingImportSync(unittest.TestCase):
                     continue
                 if statement.module == "pterasoftware":
                     for alias in statement.names:
-                        cls.type_checking_modules.add(alias.name)
+                        cls.type_checking_modules.add(alias.asname or alias.name)
                 else:
                     for alias in statement.names:
                         cls.type_checking_callables[alias.name] = (

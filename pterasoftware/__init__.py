@@ -10,7 +10,8 @@ import pterasoftware._problems
 
 # Static imports of every lazily loaded name, visible only to type checkers. Without
 # these, any name resolved through __getattr__ is typed as Any, so every use of the lazy
-# modules and callables through the package namespace goes unchecked.
+# modules and callables through the package namespace goes unchecked. Each deprecated
+# module name is typed as the internal module that now defines its public names.
 if TYPE_CHECKING:
     from pterasoftware import (
         _aeroelastic_unsteady_ring_vortex_lattice_method as aeroelastic_unsteady_ring_vortex_lattice_method,
@@ -37,12 +38,18 @@ if TYPE_CHECKING:
     from pterasoftware._logging import set_up_logging
     from pterasoftware._serialization import load, save
 
-# Lazy imports configuration: modules loaded on first access.
+# Lazy imports configuration: modules loaded on first access. Each is a deprecated
+# module at an old public module path, which forwards that module's public names to
+# their new locations.
 _LAZY_MODULES = {
     "aeroelastic_unsteady_ring_vortex_lattice_method": "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method",
     "convergence": "pterasoftware.convergence",
     "free_flight_unsteady_ring_vortex_lattice_method": "pterasoftware.free_flight_unsteady_ring_vortex_lattice_method",
+    "geometry": "pterasoftware.geometry",
+    "movements": "pterasoftware.movements",
+    "operating_point": "pterasoftware.operating_point",
     "output": "pterasoftware.output",
+    "problems": "pterasoftware.problems",
     "steady_horseshoe_vortex_lattice_method": "pterasoftware.steady_horseshoe_vortex_lattice_method",
     "steady_ring_vortex_lattice_method": "pterasoftware.steady_ring_vortex_lattice_method",
     "trim": "pterasoftware.trim",

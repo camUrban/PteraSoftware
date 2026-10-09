@@ -44,9 +44,9 @@ _WING_CHANGED_PARAMETERS = frozenset({"wing_cross_sections", "num_chordwise_pane
 
 # A Wing never stores explode_into_strips, recording only its effect on spanwise_mesh,
 # so a copy could not carry it even if a build tried. Omitting it is safe only because
-# both analysis functions in convergence.py reject a Wing whose spanwise mesh is neither
-# trapezoidal nor edge-defined, which leaves False as the only value a Wing reaching a
-# build can have been built with.
+# both analysis functions in _convergence.py reject a Wing whose spanwise mesh is
+# neither trapezoidal nor edge-defined, which leaves False as the only value a Wing
+# reaching a build can have been built with.
 _WING_OMITTED_PARAMETERS = frozenset({"explode_into_strips"})
 
 # A build shares each reference WingCrossSection's Airfoil rather than rebuilding one,

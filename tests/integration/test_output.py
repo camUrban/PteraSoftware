@@ -1,7 +1,7 @@
 """This module is a testing case for the output module.
 
 Most of the tests in this case do not currently test against an expected result.
-Instead, they test that the functions in output.py don't throw any errors.
+Instead, they test that the functions in _output.py don't throw any errors.
 """
 
 import contextlib
@@ -20,7 +20,7 @@ import pyvista as pv
 import webp
 
 import pterasoftware as ps
-from pterasoftware import _output_rendering
+from pterasoftware import _output, _output_rendering
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -769,7 +769,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         with (
             patch.object(pv, "OFF_SCREEN", False),
-            patch.object(ps.output, "create_plotter", create_shrinking_plotter),
+            patch.object(_output, "create_plotter", create_shrinking_plotter),
         ):
             with self.assertRaises(ValueError) as context:
                 ps.output.draw(
@@ -795,7 +795,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         :return: None
         """
-        original_create_plotter = ps.output.create_plotter
+        original_create_plotter = _output.create_plotter
         requested_sizes: list[tuple[int, int]] = []
         shrinking_plotters: list[_ShrinkingPlotter] = []
 
@@ -822,7 +822,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         with (
             patch.object(pv, "OFF_SCREEN", False),
-            patch.object(ps.output, "create_plotter", create_first_shrinking_plotter),
+            patch.object(_output, "create_plotter", create_first_shrinking_plotter),
         ):
             ps.output.draw(
                 solver=self.unsteady_solver,

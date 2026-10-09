@@ -6,8 +6,8 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, geometry
-from .. import operating_point as operating_point_mod
+from .. import _core, _geometry
+from .. import _operating_point as operating_point_mod
 from . import aeroelastic_airplane_movement as aeroelastic_airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
@@ -128,7 +128,7 @@ class AeroelasticMovement(_core.CoreMovement):
         airplane_movement_index: int,
         step: int,
         deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
-    ) -> geometry.airplane.Airplane:
+    ) -> _geometry.airplane.Airplane:
         """Creates the Airplane at a single time step for a given
         AeroelasticAirplaneMovement, applying deformation from the solver's structural
         response.

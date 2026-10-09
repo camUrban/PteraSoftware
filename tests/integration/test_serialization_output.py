@@ -1,7 +1,7 @@
 """This module tests that output functions accept deserialized solver objects.
 
 These tests do not verify specific output values. They verify that the output functions
-in output.py accept solver objects that have been serialized and deserialized via save
+in _output.py accept solver objects that have been serialized and deserialized via save
 and load without throwing any errors.
 """
 

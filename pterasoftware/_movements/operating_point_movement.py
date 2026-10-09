@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .. import _core
-from .. import operating_point as operating_point_mod
+from .. import _operating_point as operating_point_mod
 
 
 class OperatingPointMovement(_core.CoreOperatingPointMovement):

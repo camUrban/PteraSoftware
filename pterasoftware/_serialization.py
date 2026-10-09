@@ -18,49 +18,47 @@ from typing import Any
 import numpy as np
 
 from . import _logging, _parameter_validation
-from ._mujoco_model import MuJoCoModel
-from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
-from ._panel import Panel
-from .aeroelastic_unsteady_ring_vortex_lattice_method import (
+from ._aeroelastic_unsteady_ring_vortex_lattice_method import (
     AeroelasticUnsteadyRingVortexLatticeMethodSolver,
 )
-from .free_flight_unsteady_ring_vortex_lattice_method import (
+from ._free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
-from .geometry.airfoil import Airfoil
-from .geometry.airplane import Airplane
-from .geometry.wing import Wing
-from .geometry.wing_cross_section import WingCrossSection
-from .movements.aeroelastic_airplane_movement import AeroelasticAirplaneMovement
-from .movements.aeroelastic_movement import AeroelasticMovement
-from .movements.aeroelastic_wing_cross_section_movement import (
+from ._geometry.airfoil import Airfoil
+from ._geometry.airplane import Airplane
+from ._geometry.wing import Wing
+from ._geometry.wing_cross_section import WingCrossSection
+from ._movements.aeroelastic_airplane_movement import AeroelasticAirplaneMovement
+from ._movements.aeroelastic_movement import AeroelasticMovement
+from ._movements.aeroelastic_wing_cross_section_movement import (
     AeroelasticWingCrossSectionMovement,
 )
-from .movements.aeroelastic_wing_movement import AeroelasticWingMovement
-from .movements.airplane_movement import AirplaneMovement
-from .movements.free_flight_movement import FreeFlightMovement
-from .movements.free_flight_operating_point_movement import (
+from ._movements.aeroelastic_wing_movement import AeroelasticWingMovement
+from ._movements.airplane_movement import AirplaneMovement
+from ._movements.free_flight_movement import FreeFlightMovement
+from ._movements.free_flight_operating_point_movement import (
     FreeFlightOperatingPointMovement,
 )
-from .movements.movement import Movement
-from .movements.operating_point_movement import OperatingPointMovement
-from .movements.wing_cross_section_movement import WingCrossSectionMovement
-from .movements.wing_movement import WingMovement
-from .operating_point import OperatingPoint
-from .problems import (
+from ._movements.movement import Movement
+from ._movements.operating_point_movement import OperatingPointMovement
+from ._movements.wing_cross_section_movement import WingCrossSectionMovement
+from ._movements.wing_movement import WingMovement
+from ._mujoco_model import MuJoCoModel
+from ._operating_point import OperatingPoint
+from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
+from ._panel import Panel
+from ._problems import (
     AeroelasticUnsteadyProblem,
     CoupledUnsteadyProblem,
     FreeFlightUnsteadyProblem,
     SteadyProblem,
     UnsteadyProblem,
 )
-from .steady_horseshoe_vortex_lattice_method import (
+from ._steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
-from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
-from .unsteady_ring_vortex_lattice_method import (
-    UnsteadyRingVortexLatticeMethodSolver,
-)
+from ._steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
+from ._unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 logger = _logging.get_logger("_serialization")
 

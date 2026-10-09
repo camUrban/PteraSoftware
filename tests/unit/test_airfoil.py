@@ -663,7 +663,7 @@ class TestAirfoil(unittest.TestCase):
     def test_all_database_airfoils_load(self) -> None:
         """Test that all airfoils in the database load without errors."""
         # Get all airfoil names from the database.
-        airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
+        airfoils_dir = importlib.resources.files("pterasoftware._geometry").joinpath(
             "_airfoils"
         )
         airfoil_names = []

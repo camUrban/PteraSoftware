@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 import pterasoftware as ps
-from pterasoftware.free_flight_unsteady_ring_vortex_lattice_method import (
+from pterasoftware._free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
 from tests.unit.fixtures import (

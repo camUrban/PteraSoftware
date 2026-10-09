@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _core, geometry
+from .. import _core, _geometry
 
 
 class WingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
@@ -16,7 +16,7 @@ class WingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
 
     def __init__(
         self,
-        base_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+        base_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
         ampLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp: np.ndarray | Sequence[str | Callable[[float], float]] = (

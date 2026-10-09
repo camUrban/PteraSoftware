@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _core, geometry
+from .. import _core, _geometry
 from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
 
@@ -25,7 +25,7 @@ class WingMovement(_core.CoreWingMovement):
 
     def __init__(
         self,
-        base_wing: geometry.wing.Wing,
+        base_wing: _geometry.wing.Wing,
         wing_cross_section_movements: list[
             wing_cross_section_movement_mod.WingCrossSectionMovement
         ],

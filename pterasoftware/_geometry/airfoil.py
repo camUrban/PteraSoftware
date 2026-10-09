@@ -879,9 +879,9 @@ class Airfoil:
         try:
 
             # Get the path to the _airfoils data directory.
-            airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
-                "_airfoils"
-            )
+            airfoils_dir = importlib.resources.files(
+                "pterasoftware._geometry"
+            ).joinpath("_airfoils")
 
             # Find the file with a case-insensitive match. This is necessary because
             # some filesystems (e.g., Linux) are case-sensitive while others (e.g.,

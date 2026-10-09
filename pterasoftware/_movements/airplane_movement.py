@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, geometry
+from .. import _core, _geometry
 from . import wing_movement as wing_movement_mod
 
 
@@ -18,7 +18,7 @@ class AirplaneMovement(_core.CoreAirplaneMovement):
 
     def __init__(
         self,
-        base_airplane: geometry.airplane.Airplane,
+        base_airplane: _geometry.airplane.Airplane,
         wing_movements: list[wing_movement_mod.WingMovement],
         ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),

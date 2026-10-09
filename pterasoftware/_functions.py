@@ -23,9 +23,9 @@ from . import (
 
 if TYPE_CHECKING:
     from . import (
-        steady_horseshoe_vortex_lattice_method,
-        steady_ring_vortex_lattice_method,
-        unsteady_ring_vortex_lattice_method,
+        _steady_horseshoe_vortex_lattice_method,
+        _steady_ring_vortex_lattice_method,
+        _unsteady_ring_vortex_lattice_method,
     )
 
 logger = _logging.get_logger("_functions")
@@ -170,9 +170,9 @@ def numba_centroid_of_quadrilateral(
 
 def calculate_streamlines(
     solver: (
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     num_steps: int = 25,
     delta_time: float = 0.02,
@@ -242,9 +242,9 @@ def calculate_streamlines(
 
 def process_solver_loads(
     solver: (
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_GP1: np.ndarray,
     stackPanelMoments_GP1_CgP1: np.ndarray,
@@ -271,16 +271,16 @@ def process_solver_loads(
     # Local imports for isinstance() checks (avoids loading all solvers at module
     # level).
     from . import (
-        steady_horseshoe_vortex_lattice_method,
-        steady_ring_vortex_lattice_method,
-        unsteady_ring_vortex_lattice_method,
+        _steady_horseshoe_vortex_lattice_method,
+        _steady_ring_vortex_lattice_method,
+        _unsteady_ring_vortex_lattice_method,
     )
 
     if isinstance(
         solver,
         (
-            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
-            steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+            _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+            _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
         ),
     ):
         assert solver.airplanes is not None
@@ -289,7 +289,7 @@ def process_solver_loads(
         this_operating_point = solver.operating_point
     elif isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         assert solver.current_airplanes is not None
         these_airplanes = solver.current_airplanes
@@ -441,8 +441,8 @@ def process_solver_loads(
 
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
-        steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
     panel: _panel.Panel,
@@ -565,8 +565,8 @@ def update_ring_vortex_solvers_panel_attributes(
 
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
     ),
 ) -> None:
     """Finds and sets the vector of freestream Wing influence coefficients associated

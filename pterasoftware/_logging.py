@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextvars
 import logging
+import re
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -19,6 +20,10 @@ PACKAGE_LOGGER_NAME = "pterasoftware"
 # Without one, records at WARNING and above from an unconfigured package would fall
 # through to Python's handler of last resort, which prints them bare to stderr.
 logging.getLogger(PACKAGE_LOGGER_NAME).addHandler(logging.NullHandler())
+
+# Matches a module logger definition's get_logger call and captures the literal logger
+# name it passes.
+LOGGER_DEFINITION_PATTERN = re.compile(r'_logging\.get_logger\("([\w.]+)"\)')
 
 # The current log-message nesting level. Each level indents messages formatted with
 # indent() by two spaces.
@@ -102,26 +107,22 @@ def max_module_logger_display_name_length() -> int:
     package.
 
     A logger's display name is its name with the package prefix stripped (see
-    PackageLogFormatter). Loggers are named after their modules via get_logger, so the
-    package's module file names determine every display name it can create. The modules
-    are found by walking the package's source tree rather than by importing them, which
-    keeps this compatible with the package's lazy imports and free of import side
-    effects. Only modules that create a logger contribute to the width, and a module is
-    detected as creating one by its source containing the "_logging.get_logger(" call
-    form, which every module logger definition uses.
+    PackageLogFormatter). Each module names its logger with a literal string passed to
+    get_logger, and that literal need not match the module's file path, so the display
+    names are read from the literals themselves. The modules are found by walking the
+    package's source tree rather than by importing them, which keeps this compatible
+    with the package's lazy imports and free of import side effects. Each literal is
+    found in the "_logging.get_logger(...)" call form, which every module logger
+    definition uses.
 
     :return: The length of the longest possible module logger display name.
     """
     package_dir = Path(__file__).parent
     name_lengths = [len(PACKAGE_LOGGER_NAME)]
     for module_path in package_dir.rglob("*.py"):
-        relative_path = module_path.relative_to(package_dir)
-        if relative_path.name == "__init__.py":
-            continue
-        if "_logging.get_logger(" not in module_path.read_text():
-            continue
-        display_name = ".".join((*relative_path.parts[:-1], relative_path.stem))
-        name_lengths.append(len(display_name))
+        for logger_name in LOGGER_DEFINITION_PATTERN.findall(module_path.read_text()):
+            display_name = logger_name.removeprefix(f"{PACKAGE_LOGGER_NAME}.")
+            name_lengths.append(len(display_name))
     return max(name_lengths)
 
 

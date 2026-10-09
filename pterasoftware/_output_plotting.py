@@ -16,8 +16,9 @@ import matplotlib.pyplot as plt
 import matplotlib.text
 import numpy as np
 
-from . import _fonts, _output_rendering, _transformations
-from . import operating_point as operating_point_mod
+from . import _fonts
+from . import _operating_point as operating_point_mod
+from . import _output_rendering, _transformations
 
 # Define the file formats the results plots can be saved in.
 VALID_FILE_FORMATS = ("png", "svg", "pdf")

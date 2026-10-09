@@ -14,14 +14,14 @@ import pyvista as pv
 from . import (
     _aerodynamics_functions,
     _functions,
+    _geometry,
     _logging,
+    _operating_point,
     _output_rendering,
     _panel,
     _parameter_validation,
+    _problems,
     _transformations,
-    geometry,
-    operating_point,
-    problems,
 )
 
 logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
@@ -69,18 +69,18 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "_ran",
     )
 
-    def __init__(self, steady_problem: problems.SteadyProblem) -> None:
+    def __init__(self, steady_problem: _problems.SteadyProblem) -> None:
         """The initialization method.
 
         :param steady_problem: The SteadyProblem to be solved.
         :return: None
         """
-        if not isinstance(steady_problem, problems.SteadyProblem):
+        if not isinstance(steady_problem, _problems.SteadyProblem):
             raise TypeError("steady_problem must be a SteadyProblem.")
-        self._steady_problem: problems.SteadyProblem = steady_problem
+        self._steady_problem: _problems.SteadyProblem = steady_problem
 
         self.airplanes = self._steady_problem.airplanes
-        self.operating_point: operating_point.OperatingPoint = (
+        self.operating_point: _operating_point.OperatingPoint = (
             self._steady_problem.operating_point
         )
         if np.any(self.operating_point.omegas_BP1__E != 0.0):
@@ -94,7 +94,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Calculate the total number of Panels for all of this SteadyProblem's
         # Airplanes.
         self.num_panels = 0
-        airplane: geometry.airplane.Airplane
+        airplane: _geometry.airplane.Airplane
         for airplane in self.airplanes:
             self.num_panels += airplane.num_panels
 
@@ -407,9 +407,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         global_panel_position = 0
 
         # Iterate through each Airplane's Wings.
-        airplane: geometry.airplane.Airplane
+        airplane: _geometry.airplane.Airplane
         for airplane in self.airplanes:
-            wing: geometry.wing.Wing
+            wing: _geometry.wing.Wing
             for wing in airplane.wings:
                 _span = wing.span
                 assert _span is not None

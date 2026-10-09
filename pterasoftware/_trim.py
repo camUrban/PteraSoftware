@@ -14,16 +14,16 @@ import scipy.optimize as sp_opt
 from . import (
     _functions,
     _logging,
-    _parameter_validation,
-    _transformations,
-    movements,
+    _movements,
 )
-from . import operating_point as operating_point_mod
+from . import _operating_point as operating_point_mod
 from . import (
-    problems,
-    steady_horseshoe_vortex_lattice_method,
-    steady_ring_vortex_lattice_method,
-    unsteady_ring_vortex_lattice_method,
+    _parameter_validation,
+    _problems,
+    _steady_horseshoe_vortex_lattice_method,
+    _steady_ring_vortex_lattice_method,
+    _transformations,
+    _unsteady_ring_vortex_lattice_method,
 )
 
 logger = _logging.get_logger("trim")
@@ -38,7 +38,7 @@ SEED = 42
 # TODO: It would be awesome if we could incorporate control surface deflections into the
 #  steady trim analysis.
 def analyze_steady_trim(
-    problem: problems.SteadyProblem,
+    problem: _problems.SteadyProblem,
     solver_type: str,
     boundsVCg__E: tuple[float | int, float | int],
     alpha_bounds: tuple[float | int, float | int],
@@ -113,7 +113,7 @@ def analyze_steady_trim(
         return a tuple of four Nones.
     """
     # Validate the problem parameter.
-    if not isinstance(problem, problems.SteadyProblem):
+    if not isinstance(problem, _problems.SteadyProblem):
         raise TypeError("problem must be a SteadyProblem.")
     if len(problem.airplanes) != 1:
         raise ValueError(
@@ -312,7 +312,7 @@ def analyze_steady_trim(
 
         # Create a new SteadyProblem with the trial operating point and copied
         # airplanes.
-        trial_problem = problems.SteadyProblem(
+        trial_problem = _problems.SteadyProblem(
             airplanes=trial_airplanes,
             operating_point=trial_operating_point,
         )
@@ -343,16 +343,16 @@ def analyze_steady_trim(
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         solver: (
-            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-            | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+            _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+            | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         )
         if solver_type == "steady horseshoe vortex lattice method":
-            solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+            solver = _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                 steady_problem=trial_problem
             )
         else:
             solver = (
-                steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
                     steady_problem=trial_problem
                 )
             )
@@ -515,7 +515,7 @@ def analyze_steady_trim(
 #  the unsteady trim analysis. Incorporating control surface deflection would also be
 #  great but less important.
 def analyze_unsteady_trim(
-    problem: problems.UnsteadyProblem,
+    problem: _problems.UnsteadyProblem,
     boundsVCg__E: tuple[float | int, float | int],
     alpha_bounds: tuple[float | int, float | int],
     beta_bounds: tuple[float | int, float | int],
@@ -607,7 +607,7 @@ def analyze_unsteady_trim(
         return a tuple of four Nones.
     """
     # Validate the problem parameter.
-    if not isinstance(problem, problems.UnsteadyProblem):
+    if not isinstance(problem, _problems.UnsteadyProblem):
         raise TypeError(
             "problem must be a standard UnsteadyProblem, not a "
             "FreeFlightUnsteadyProblem or an AeroelasticUnsteadyProblem."
@@ -857,7 +857,7 @@ def analyze_unsteady_trim(
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         this_operating_point_movement = (
-            movements.operating_point_movement.OperatingPointMovement(
+            _movements.operating_point_movement.OperatingPointMovement(
                 base_operating_point=trial_operating_point,
                 ampVCg__E=reference_operating_point_movement.ampVCg__E,
                 periodVCg__E=reference_operating_point_movement.periodVCg__E,
@@ -866,7 +866,7 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_movement = movements.movement.Movement(
+        this_movement = _movements.movement.Movement(
             airplane_movements=[problem.movement.airplane_movements[0]],
             operating_point_movement=this_operating_point_movement,
             num_cycles=problem.movement.num_cycles,
@@ -875,12 +875,12 @@ def analyze_unsteady_trim(
             max_wake_cycles=problem.movement.max_wake_cycles,
         )
 
-        this_problem = problems.UnsteadyProblem(
+        this_problem = _problems.UnsteadyProblem(
             movement=this_movement, only_final_results=True
         )
 
         this_solver = (
-            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                 unsteady_problem=this_problem
             )
         )

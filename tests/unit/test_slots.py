@@ -849,7 +849,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
         CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
+        self.assertIsInstance(self.problem, ps._problems.CoupledUnsteadyProblem)
 
     def test_property_access(self) -> None:
         """Test that FreeFlightUnsteadyProblem-specific properties are accessible."""
@@ -2068,7 +2068,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
         CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
+        self.assertIsInstance(self.problem, ps._problems.CoupledUnsteadyProblem)
 
     def test_config_property_access(self) -> None:
         """Test that the immutable structural config properties are accessible."""

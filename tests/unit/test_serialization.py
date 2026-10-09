@@ -15,12 +15,48 @@ from unittest import mock
 import numpy as np
 import numpy.testing as npt
 
+from pterasoftware._aeroelastic_unsteady_ring_vortex_lattice_method import (
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+)
+from pterasoftware._free_flight_unsteady_ring_vortex_lattice_method import (
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+)
+from pterasoftware._geometry.airfoil import Airfoil
+from pterasoftware._geometry.airplane import Airplane
+from pterasoftware._geometry.wing import Wing
+from pterasoftware._geometry.wing_cross_section import WingCrossSection
+from pterasoftware._movements.aeroelastic_airplane_movement import (
+    AeroelasticAirplaneMovement,
+)
+from pterasoftware._movements.aeroelastic_movement import AeroelasticMovement
+from pterasoftware._movements.aeroelastic_wing_cross_section_movement import (
+    AeroelasticWingCrossSectionMovement,
+)
+from pterasoftware._movements.aeroelastic_wing_movement import AeroelasticWingMovement
+from pterasoftware._movements.airplane_movement import AirplaneMovement
+from pterasoftware._movements.free_flight_movement import FreeFlightMovement
+from pterasoftware._movements.free_flight_operating_point_movement import (
+    FreeFlightOperatingPointMovement,
+)
+from pterasoftware._movements.movement import Movement
+from pterasoftware._movements.operating_point_movement import OperatingPointMovement
+from pterasoftware._movements.wing_cross_section_movement import (
+    WingCrossSectionMovement,
+)
+from pterasoftware._movements.wing_movement import WingMovement
 from pterasoftware._mujoco_model import MuJoCoModel
+from pterasoftware._operating_point import OperatingPoint
 from pterasoftware._oscillation import (
     oscillating_lin_at_time,
     oscillating_sin_at_time,
 )
 from pterasoftware._panel import Panel
+from pterasoftware._problems import (
+    AeroelasticUnsteadyProblem,
+    FreeFlightUnsteadyProblem,
+    SteadyProblem,
+    UnsteadyProblem,
+)
 from pterasoftware._serialization import (
     FORMAT_VERSION,
     UnboundCallable,
@@ -34,49 +70,13 @@ from pterasoftware._serialization import (
     save,
     serialize_value,
 )
-from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
-    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
-)
-from pterasoftware.free_flight_unsteady_ring_vortex_lattice_method import (
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver,
-)
-from pterasoftware.geometry.airfoil import Airfoil
-from pterasoftware.geometry.airplane import Airplane
-from pterasoftware.geometry.wing import Wing
-from pterasoftware.geometry.wing_cross_section import WingCrossSection
-from pterasoftware.movements.aeroelastic_airplane_movement import (
-    AeroelasticAirplaneMovement,
-)
-from pterasoftware.movements.aeroelastic_movement import AeroelasticMovement
-from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
-    AeroelasticWingCrossSectionMovement,
-)
-from pterasoftware.movements.aeroelastic_wing_movement import AeroelasticWingMovement
-from pterasoftware.movements.airplane_movement import AirplaneMovement
-from pterasoftware.movements.free_flight_movement import FreeFlightMovement
-from pterasoftware.movements.free_flight_operating_point_movement import (
-    FreeFlightOperatingPointMovement,
-)
-from pterasoftware.movements.movement import Movement
-from pterasoftware.movements.operating_point_movement import OperatingPointMovement
-from pterasoftware.movements.wing_cross_section_movement import (
-    WingCrossSectionMovement,
-)
-from pterasoftware.movements.wing_movement import WingMovement
-from pterasoftware.operating_point import OperatingPoint
-from pterasoftware.problems import (
-    AeroelasticUnsteadyProblem,
-    FreeFlightUnsteadyProblem,
-    SteadyProblem,
-    UnsteadyProblem,
-)
-from pterasoftware.steady_horseshoe_vortex_lattice_method import (
+from pterasoftware._steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
-from pterasoftware.steady_ring_vortex_lattice_method import (
+from pterasoftware._steady_ring_vortex_lattice_method import (
     SteadyRingVortexLatticeMethodSolver,
 )
-from pterasoftware.unsteady_ring_vortex_lattice_method import (
+from pterasoftware._unsteady_ring_vortex_lattice_method import (
     UnsteadyRingVortexLatticeMethodSolver,
 )
 from tests.unit.fixtures import (

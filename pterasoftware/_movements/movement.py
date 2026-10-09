@@ -9,9 +9,9 @@ from typing import cast
 import numpy as np
 import scipy.optimize as sp_opt
 
-from .. import _core, _logging, _panel, _parameter_validation, geometry
-from .. import operating_point as operating_point_mod
-from .. import problems
+from .. import _core, _geometry, _logging
+from .. import _operating_point as operating_point_mod
+from .. import _panel, _parameter_validation, _problems
 from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
@@ -389,7 +389,7 @@ class Movement(_core.CoreMovement):
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
-        airplanes_temp: list[list[geometry.airplane.Airplane]] = []
+        airplanes_temp: list[list[_geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
                 airplane_movement.generate_airplanes(
@@ -425,7 +425,7 @@ class Movement(_core.CoreMovement):
                         )
 
         # Store as tuple of tuples to prevent external mutation.
-        self._airplanes: tuple[tuple[geometry.airplane.Airplane, ...], ...] = tuple(
+        self._airplanes: tuple[tuple[_geometry.airplane.Airplane, ...], ...] = tuple(
             tuple(airplane_list) for airplane_list in airplanes_temp
         )
 
@@ -476,7 +476,7 @@ class Movement(_core.CoreMovement):
         return self._max_wake_cycles
 
     @property
-    def airplanes(self) -> tuple[tuple[geometry.airplane.Airplane, ...], ...]:
+    def airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
         return self._airplanes
 
     @property
@@ -561,7 +561,7 @@ def compute_wake_area_mismatch(
 
     # UnsteadyProblem populates panel.*_GP1_CgP1 attributes on every Airplane snapshot,
     # which is the frame the solver's bound ring vortex construction reads.
-    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+    temp_problem = _problems.UnsteadyProblem(movement=temp_movement)
 
     if num_steps < 2:
         return 0.0
@@ -789,7 +789,7 @@ def compute_wake_area_mismatches_cached_non_static(
         delta_time=high_res_dt,
         num_steps=high_res_num_steps,
     )
-    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+    temp_problem = _problems.UnsteadyProblem(movement=temp_movement)
 
     first_problem = temp_problem.steady_problems[0]
 
@@ -1290,7 +1290,7 @@ def optimize_delta_time_non_static(
     return optimized_delta_time
 
 
-def mean_trailing_edge_panel_chord(wing: geometry.wing.Wing) -> float:
+def mean_trailing_edge_panel_chord(wing: _geometry.wing.Wing) -> float:
     """Finds the mean chordwise length of a Wing's trailing edge Panels.
 
     This is the target chord length for the wake ring vortices the Wing sheds. The
@@ -1406,7 +1406,7 @@ def analytically_optimize_delta_time(
         num_steps=preliminary_num_steps + 1,
     )
 
-    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+    temp_problem = _problems.UnsteadyProblem(movement=temp_movement)
 
     # Step 3: For each Airplane and Wing, measure the average wake displacement of
     # trailing edge Panels across all time steps. All coordinates are in the first

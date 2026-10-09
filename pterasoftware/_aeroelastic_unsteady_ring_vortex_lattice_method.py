@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import _functions, problems
+from . import _functions, _problems
 from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -49,7 +49,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
     def __init__(
         self,
-        aeroelastic_unsteady_problem: problems.AeroelasticUnsteadyProblem,
+        aeroelastic_unsteady_problem: _problems.AeroelasticUnsteadyProblem,
     ) -> None:
         """Initialize the solver for an AeroelasticUnsteadyProblem.
 
@@ -61,7 +61,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         :return: None
         """
         if not isinstance(
-            aeroelastic_unsteady_problem, problems.AeroelasticUnsteadyProblem
+            aeroelastic_unsteady_problem, _problems.AeroelasticUnsteadyProblem
         ):
             raise TypeError(
                 "aeroelastic_unsteady_problem must be an " "AeroelasticUnsteadyProblem."
@@ -69,7 +69,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         super().__init__(aeroelastic_unsteady_problem)
 
-        first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
+        first_steady_problem: _problems.SteadyProblem = self._get_steady_problem_at(0)
 
         # Initialize SLEP (strip leading edge point) information. The SLEP is the
         # leading edge point of the strip's outboard bounding WingCrossSection, the same
@@ -111,7 +111,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         self._stackSlep_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
     @property
-    def _aeroelastic_unsteady_problem(self) -> problems.AeroelasticUnsteadyProblem:
+    def _aeroelastic_unsteady_problem(self) -> _problems.AeroelasticUnsteadyProblem:
         """The solver's AeroelasticUnsteadyProblem, narrowed from the inherited
         unsteady_problem.
 
@@ -121,7 +121,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         :return: This solver's AeroelasticUnsteadyProblem.
         """
-        return cast(problems.AeroelasticUnsteadyProblem, self.unsteady_problem)
+        return cast(_problems.AeroelasticUnsteadyProblem, self.unsteady_problem)
 
     def _reinitialize_step_arrays_hook(self) -> None:
         """Reinitialize SLEP arrays at the start of each time step.

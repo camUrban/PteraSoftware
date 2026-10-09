@@ -46,7 +46,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIsInstance(
             self.problem,
-            ps.problems.CoupledUnsteadyProblem,
+            ps._problems.CoupledUnsteadyProblem,
         )
         self.assertIsInstance(
             self.problem.movement,

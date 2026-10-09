@@ -5,7 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pterasoftware as ps
-from pterasoftware.movements.movement import mean_trailing_edge_panel_chord
+from pterasoftware._movements.movement import mean_trailing_edge_panel_chord
 from tests.unit.fixtures import (
     airplane_movement_fixtures,
     geometry_fixtures,
@@ -796,10 +796,10 @@ class TestMovement(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement.analytically_optimize_delta_time"
+                "pterasoftware._movements.movement.analytically_optimize_delta_time"
             ) as mock_analytical,
             patch(
-                "pterasoftware.movements.movement.optimize_delta_time"
+                "pterasoftware._movements.movement.optimize_delta_time"
             ) as mock_iterative,
         ):
             mock_analytical.return_value = fake_analytical_delta_time
@@ -934,7 +934,7 @@ class TestMovement(unittest.TestCase):
         fake_optimized_delta_time = 0.0123456789
 
         with patch(
-            "pterasoftware.movements.movement.analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
@@ -973,7 +973,7 @@ class TestMovement(unittest.TestCase):
         fake_optimized_delta_time = 10.0
 
         with patch(
-            "pterasoftware.movements.movement.analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
@@ -1010,7 +1010,7 @@ class TestMovement(unittest.TestCase):
         fake_optimized_delta_time = 10.0
 
         with patch(
-            "pterasoftware.movements.movement.analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
@@ -1415,9 +1415,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
 
     def test_returns_positive_float(self) -> None:
         """Test that analytically_optimize_delta_time returns a positive float."""
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1440,9 +1438,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
     def test_returns_initial_for_static_movement(self) -> None:
         """Test that analytically_optimize_delta_time returns initial_delta_time for
         static Movement."""
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1468,9 +1464,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         The result should be within a reasonable range of the initial estimate (within
         two orders of magnitude).
         """
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1498,7 +1492,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 
     def test_returns_non_negative_value(self) -> None:
         """Test that compute_wake_area_mismatch returns a non-negative value."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1528,7 +1522,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
     def test_returns_zero_for_static_single_step(self) -> None:
         """Test that compute_wake_area_mismatch returns 0.0 when no comparisons are
         made."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1552,7 +1546,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 
     def test_does_not_mutate_original_movements(self) -> None:
         """Test that compute_wake_area_mismatch does not mutate original objects."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1585,7 +1579,7 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
 
     def test_returns_positive_float(self) -> None:
         """Test that optimize_delta_time_static returns a positive float."""
-        from pterasoftware.movements.movement import optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1609,7 +1603,7 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
     def test_early_termination_with_acceptable_initial(self) -> None:
         """Test that optimize_delta_time_static terminates early if initial mismatch is
         below cutoff."""
-        from pterasoftware.movements.movement import optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1639,7 +1633,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
     def test_returns_positive_float(self) -> None:
         """Test that optimize_delta_time_non_static returns a positive float."""
         from pterasoftware._core import lcm_multiple
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             analytically_optimize_delta_time,
             optimize_delta_time_non_static,
         )
@@ -1680,7 +1674,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
     def test_result_divides_lcm_period_evenly(self) -> None:
         """Test that optimize_delta_time_non_static result divides LCM period evenly."""
         from pterasoftware._core import lcm_multiple
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             analytically_optimize_delta_time,
             optimize_delta_time_non_static,
         )
@@ -1727,7 +1721,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
     def test_returns_positive_float_within_bounds(self) -> None:
         """Test that optimize_delta_time returns a positive float within expected
         bounds."""
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             analytically_optimize_delta_time,
             optimize_delta_time,
         )
@@ -1775,7 +1769,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
     def test_works_with_static_movement(self) -> None:
         """Test that optimize_delta_time works with static AirplaneMovement."""
-        from pterasoftware.movements.movement import optimize_delta_time
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1798,7 +1792,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
     def test_dispatches_to_static_for_static_movement(self) -> None:
         """Test that optimize_delta_time dispatches to optimize_delta_time_static for
         static movements."""
-        from pterasoftware.movements.movement import optimize_delta_time
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1811,7 +1805,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         # Mock optimize_delta_time_static to verify it's called.
         with patch(
-            "pterasoftware.movements.movement.optimize_delta_time_static"
+            "pterasoftware._movements.movement.optimize_delta_time_static"
         ) as mock_static:
             mock_static.return_value = 0.012
             optimized_delta_time = optimize_delta_time(
@@ -1827,7 +1821,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
     def test_dispatches_to_non_static_for_non_static_movement(self) -> None:
         """Test that optimize_delta_time dispatches to optimize_delta_time_non_static
         for non static movements."""
-        from pterasoftware.movements.movement import optimize_delta_time
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1840,7 +1834,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         # Mock optimize_delta_time_non_static to verify it's called.
         with patch(
-            "pterasoftware.movements.movement.optimize_delta_time_non_static"
+            "pterasoftware._movements.movement.optimize_delta_time_non_static"
         ) as mock_non_static:
             mock_non_static.return_value = 0.05
             optimized_delta_time = optimize_delta_time(
@@ -2094,9 +2088,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
 
     def test_with_multiple_airplanes(self) -> None:
         """Test analytically_optimize_delta_time works with multiple Airplanes."""
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create two AirplaneMovements with different motion.
         airplane_movements = [
@@ -2121,9 +2113,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
     def test_with_multiple_wings_per_airplane(self) -> None:
         """Test analytically_optimize_delta_time works with multiple Wings per
         Airplane."""
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create an Airplane with multiple Wings, with Cg_GP1_CgP1 at the origin. Use
         # simple tapered Wings.
@@ -2187,9 +2177,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         less than 20."""
         import logging
 
-        from pterasoftware.movements.movement import (
-            analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create an AirplaneMovement with very fast motion (a short period) and few
         # chordwise Panels. This should result in fewer than 20 steps per min period.
@@ -2258,7 +2246,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
 
     def test_with_multiple_airplanes(self) -> None:
         """Test compute_wake_area_mismatch works with multiple Airplanes."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
@@ -2288,7 +2276,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
 
     def test_with_multiple_wings_per_airplane(self) -> None:
         """Test compute_wake_area_mismatch works with multiple Wings per Airplane."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         # Create a multi wing Airplane with Cg_GP1_CgP1 at origin.
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
@@ -2354,7 +2342,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
     def test_with_non_static_movement_multiple_steps(self) -> None:
         """Test compute_wake_area_mismatch computes correctly over multiple time steps
         for non static movement."""
-        from pterasoftware.movements.movement import compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -2384,7 +2372,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
     def test_returns_dict_with_all_candidate_keys(self) -> None:
         """Test that the result dict has exactly the input candidates as keys, with non-
         negative float values."""
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             compute_wake_area_mismatches_cached_non_static,
         )
 
@@ -2414,7 +2402,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
 
     def test_does_not_mutate_original_movements(self) -> None:
         """Test that the cached helper does not mutate the original objects."""
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             compute_wake_area_mismatches_cached_non_static,
         )
 
@@ -2450,7 +2438,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         Under that condition the cached result must equal the uncached result
         at the same delta_time to within floating-point round-off.
         """
-        from pterasoftware.movements.movement import (
+        from pterasoftware._movements.movement import (
             compute_wake_area_mismatch,
             compute_wake_area_mismatches_cached_non_static,
         )
@@ -2493,9 +2481,7 @@ class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
         least one step pair is needed for a comparison."""
         import numpy as np
 
-        from pterasoftware.movements.movement import (
-            evaluate_cached_wake_area_mismatch,
-        )
+        from pterasoftware._movements.movement import evaluate_cached_wake_area_mismatch
 
         # The function returns early before touching cache_per_wing or v_inf_high_res,
         # so minimal placeholder inputs are sufficient.
@@ -2524,7 +2510,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         """
         import logging
 
-        from pterasoftware.movements.movement import optimize_delta_time_non_static
+        from pterasoftware._movements.movement import optimize_delta_time_non_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -2553,7 +2539,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement.compute_wake_area_mismatches_cached_non_static",
+                "pterasoftware._movements.movement.compute_wake_area_mismatches_cached_non_static",
                 side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
@@ -2587,7 +2573,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         """
         import logging
 
-        from pterasoftware.movements.movement import optimize_delta_time_non_static
+        from pterasoftware._movements.movement import optimize_delta_time_non_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -2616,7 +2602,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement.compute_wake_area_mismatches_cached_non_static",
+                "pterasoftware._movements.movement.compute_wake_area_mismatches_cached_non_static",
                 side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
@@ -2659,7 +2645,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         import scipy.optimize as sp_opt
 
-        from pterasoftware.movements.movement import optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -2678,7 +2664,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement.compute_wake_area_mismatch",
+                "pterasoftware._movements.movement.compute_wake_area_mismatch",
                 return_value=0.5,  # Any value above cutoff.
             ),
             patch.object(
@@ -2717,7 +2703,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         import scipy.optimize as sp_opt
 
-        from pterasoftware.movements.movement import optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -2736,7 +2722,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement.compute_wake_area_mismatch",
+                "pterasoftware._movements.movement.compute_wake_area_mismatch",
                 return_value=0.5,  # Any value above cutoff.
             ),
             patch.object(

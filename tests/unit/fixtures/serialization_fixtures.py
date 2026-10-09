@@ -5,21 +5,21 @@ from collections.abc import Callable
 
 import numpy as np
 
-from pterasoftware._panel import Panel
-from pterasoftware._serialization import UnboundCallable
-from pterasoftware.geometry.airfoil import Airfoil
-from pterasoftware.geometry.airplane import Airplane
-from pterasoftware.geometry.wing import Wing
-from pterasoftware.geometry.wing_cross_section import WingCrossSection
-from pterasoftware.movements.airplane_movement import AirplaneMovement
-from pterasoftware.movements.movement import Movement
-from pterasoftware.movements.operating_point_movement import OperatingPointMovement
-from pterasoftware.movements.wing_cross_section_movement import (
+from pterasoftware._geometry.airfoil import Airfoil
+from pterasoftware._geometry.airplane import Airplane
+from pterasoftware._geometry.wing import Wing
+from pterasoftware._geometry.wing_cross_section import WingCrossSection
+from pterasoftware._movements.airplane_movement import AirplaneMovement
+from pterasoftware._movements.movement import Movement
+from pterasoftware._movements.operating_point_movement import OperatingPointMovement
+from pterasoftware._movements.wing_cross_section_movement import (
     WingCrossSectionMovement,
 )
-from pterasoftware.movements.wing_movement import WingMovement
-from pterasoftware.operating_point import OperatingPoint
-from pterasoftware.problems import SteadyProblem, UnsteadyProblem
+from pterasoftware._movements.wing_movement import WingMovement
+from pterasoftware._operating_point import OperatingPoint
+from pterasoftware._panel import Panel
+from pterasoftware._problems import SteadyProblem, UnsteadyProblem
+from pterasoftware._serialization import UnboundCallable
 
 
 def make_basic_panel_fixture() -> Panel:

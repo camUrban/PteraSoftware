@@ -16,14 +16,14 @@ from . import (
     _aerodynamics_functions,
     _core,
     _functions,
+    _geometry,
     _logging,
+    _operating_point,
     _output_rendering,
     _panel,
     _parameter_validation,
+    _problems,
     _transformations,
-    geometry,
-    operating_point,
-    problems,
 )
 
 logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
@@ -136,7 +136,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # allowing subclasses to pass their own CoreUnsteadyProblem variants via
         # super().
         if type(self) is UnsteadyRingVortexLatticeMethodSolver and not isinstance(
-            unsteady_problem, problems.UnsteadyProblem
+            unsteady_problem, _problems.UnsteadyProblem
         ):
             raise TypeError("unsteady_problem must be an UnsteadyProblem.")
         if not self._models_body_rates:
@@ -160,10 +160,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._prescribed_wake: bool | None = None
         self._force_method: str | None = None
 
-        first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
+        first_steady_problem: _problems.SteadyProblem = self._get_steady_problem_at(0)
 
-        self.current_airplanes: tuple[geometry.airplane.Airplane, ...] = ()
-        self.current_operating_point: operating_point.OperatingPoint = (
+        self.current_airplanes: tuple[_geometry.airplane.Airplane, ...] = ()
+        self.current_operating_point: _operating_point.OperatingPoint = (
             first_steady_problem.operating_point
         )
         self.num_airplanes: int = len(first_steady_problem.airplanes)
@@ -364,7 +364,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._ran: bool = False
 
     @property
-    def steady_problems(self) -> tuple[problems.SteadyProblem, ...]:
+    def steady_problems(self) -> tuple[_problems.SteadyProblem, ...]:
         """The SteadyProblems for this solver's UnsteadyProblem.
 
         This read-only view always reflects the live state of the underlying
@@ -525,7 +525,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # upfront init for all steps on step 0 and is a no-op thereafter.
                 # Coupled subclasses override this hook to init one step at a time.
                 self._initialize_step_vortices(step)
-                current_problem: problems.SteadyProblem = self._get_steady_problem_at(
+                current_problem: _problems.SteadyProblem = self._get_steady_problem_at(
                     self._current_step
                 )
                 self.current_airplanes = current_problem.airplanes
@@ -970,7 +970,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Set the current step and related state.
         self._current_step = step
-        current_problem: problems.SteadyProblem = self._get_steady_problem_at(step)
+        current_problem: _problems.SteadyProblem = self._get_steady_problem_at(step)
         self.current_airplanes = current_problem.airplanes
         self.current_operating_point = current_problem.operating_point
         self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
@@ -2781,7 +2781,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             wake_singularity_counts = np.zeros(3, dtype=np.int64)
 
             # Get the next time step's Airplanes.
-            next_problem: problems.SteadyProblem = self._get_steady_problem_at(
+            next_problem: _problems.SteadyProblem = self._get_steady_problem_at(
                 self._current_step + 1
             )
             next_airplanes = next_problem.airplanes
@@ -3318,7 +3318,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         for results_step, step in enumerate(
             range(self._first_averaging_step, self.num_steps)
         ):
-            this_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(
+            this_steady_problem: _problems.SteadyProblem = self._get_steady_problem_at(
                 step
             )
             for airplane_id, airplane in enumerate(this_steady_problem.airplanes):
@@ -3348,7 +3348,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
                     )
 
-    def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
+    def _get_steady_problem_at(self, step: int) -> _problems.SteadyProblem:
         """Gets the SteadyProblem at a given time step.
 
         Dynamic dispatch is used with _CoreUnsteadyProblems to provide different ways of
@@ -3361,7 +3361,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         return self.steady_problems[step]
 
-    def _operating_point_at(self, step: int) -> operating_point.OperatingPoint:
+    def _operating_point_at(self, step: int) -> _operating_point.OperatingPoint:
         """Gets the OperatingPoint to use for a given time step's geometry and wake.
 
         By default this is the OperatingPoint of the SteadyProblem at that step. It is a

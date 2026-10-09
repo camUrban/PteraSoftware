@@ -22,7 +22,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
         self.initial_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        self.problem = ps.problems.CoupledUnsteadyProblem(
+        self.problem = ps._problems.CoupledUnsteadyProblem(
             movement=self.movement,
             initial_airplanes=[self.initial_airplane],
             initial_operating_point=self.initial_operating_point,
@@ -30,7 +30,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
     def test_initialization_valid_parameters(self) -> None:
         """Test CoupledUnsteadyProblem initialization with valid parameters."""
-        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
+        self.assertIsInstance(self.problem, ps._problems.CoupledUnsteadyProblem)
         self.assertIsInstance(self.problem, ps._core.CoreUnsteadyProblem)
 
     def test_step_zero_seeded_from_initial_inputs(self) -> None:

@@ -10,11 +10,12 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from . import _logging, _oscillation, _parameter_validation, _transformations, geometry
-from . import operating_point as operating_point_mod
+from . import _geometry, _logging
+from . import _operating_point as operating_point_mod
+from . import _oscillation, _parameter_validation, _transformations
 
 if TYPE_CHECKING:
-    from . import problems
+    from . import _problems
 
 logger = _logging.get_logger("core")
 
@@ -281,7 +282,7 @@ class CoreWingCrossSectionMovement:
 
     def __init__(
         self,
-        base_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+        base_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
         ampLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp: np.ndarray | Sequence[str | Callable[[float], float]] = (
@@ -338,7 +339,7 @@ class CoreWingCrossSectionMovement:
         # read only.
         if not isinstance(
             base_wing_cross_section,
-            geometry.wing_cross_section.WingCrossSection,
+            _geometry.wing_cross_section.WingCrossSection,
         ):
             raise TypeError("base_wing_cross_section must be a WingCrossSection.")
         self._base_wing_cross_section = base_wing_cross_section
@@ -533,7 +534,7 @@ class CoreWingCrossSectionMovement:
     @property
     def base_wing_cross_section(
         self,
-    ) -> geometry.wing_cross_section.WingCrossSection:
+    ) -> _geometry.wing_cross_section.WingCrossSection:
         return self._base_wing_cross_section
 
     @property
@@ -615,7 +616,7 @@ class CoreWingCrossSectionMovement:
     # --- Other methods ---
     def generate_wing_cross_section_at_time_step(
         self, step: int, delta_time: float | int
-    ) -> geometry.wing_cross_section.WingCrossSection:
+    ) -> _geometry.wing_cross_section.WingCrossSection:
         """Creates the WingCrossSection at a single time step.
 
         :param step: The time step index. Must be a non negative int.
@@ -705,7 +706,7 @@ class CoreWingCrossSectionMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        return geometry.wing_cross_section.WingCrossSection(
+        return _geometry.wing_cross_section.WingCrossSection(
             airfoil=self._base_wing_cross_section.airfoil,
             num_spanwise_panels=self._base_wing_cross_section.num_spanwise_panels,
             chord=self._base_wing_cross_section.chord,
@@ -727,7 +728,7 @@ class CoreWingCrossSectionMovement:
         self,
         num_steps: int,
         delta_time: float | int,
-    ) -> list[geometry.wing_cross_section.WingCrossSection]:
+    ) -> list[_geometry.wing_cross_section.WingCrossSection]:
         """Creates the WingCrossSection at each time step, and returns them in a list.
 
         :param num_steps: The number of time steps in this movement. It must be a
@@ -785,7 +786,7 @@ class CoreWingMovement:
 
     def __init__(
         self,
-        base_wing: geometry.wing.Wing,
+        base_wing: _geometry.wing.Wing,
         wing_cross_section_movements: Sequence[CoreWingCrossSectionMovement],
         ampLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
@@ -849,7 +850,7 @@ class CoreWingMovement:
         """
         # Validate and store immutable attributes. Set those that are numpy arrays to be
         # read only.
-        if not isinstance(base_wing, geometry.wing.Wing):
+        if not isinstance(base_wing, _geometry.wing.Wing):
             raise TypeError("base_wing must be a Wing.")
         self._base_wing = base_wing
 
@@ -1090,7 +1091,7 @@ class CoreWingMovement:
 
     # --- Immutable: read only properties ---
     @property
-    def base_wing(self) -> geometry.wing.Wing:
+    def base_wing(self) -> _geometry.wing.Wing:
         return self._base_wing
 
     @property
@@ -1196,7 +1197,7 @@ class CoreWingMovement:
     # --- Other methods ---
     def generate_wing_at_time_step(
         self, step: int, delta_time: float | int
-    ) -> geometry.wing.Wing:
+    ) -> _geometry.wing.Wing:
         """Creates the Wing at a single time step.
 
         :param step: The time step index. Must be a non negative int.
@@ -1314,7 +1315,7 @@ class CoreWingMovement:
             # Apply the position adjustment to the leading edge root.
             thisLer_Gs_Cgs = thisLer_Gs_Cgs + offsetRotationPointAdjustment_Gs
 
-        return geometry.wing.Wing(
+        return _geometry.wing.Wing(
             wing_cross_sections=these_wing_cross_sections,
             name=self._base_wing.name,
             Ler_Gs_Cgs=thisLer_Gs_Cgs,
@@ -1329,7 +1330,7 @@ class CoreWingMovement:
 
     def generate_wings(
         self, num_steps: int, delta_time: float | int
-    ) -> list[geometry.wing.Wing]:
+    ) -> list[_geometry.wing.Wing]:
         """Creates the Wing at each time step, and returns them in a list.
 
         :param num_steps: The number of time steps in this movement. It must be a
@@ -1380,7 +1381,7 @@ class CoreAirplaneMovement:
 
     def __init__(
         self,
-        base_airplane: geometry.airplane.Airplane,
+        base_airplane: _geometry.airplane.Airplane,
         wing_movements: Sequence[CoreWingMovement],
         ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (
@@ -1415,7 +1416,7 @@ class CoreAirplaneMovement:
         """
         # Validate and store immutable attributes. Set those that are numpy arrays to be
         # read only.
-        if not isinstance(base_airplane, geometry.airplane.Airplane):
+        if not isinstance(base_airplane, _geometry.airplane.Airplane):
             raise TypeError("base_airplane must be an Airplane.")
         self._base_airplane = base_airplane
 
@@ -1549,7 +1550,7 @@ class CoreAirplaneMovement:
 
     # --- Immutable: read only properties ---
     @property
-    def base_airplane(self) -> geometry.airplane.Airplane:
+    def base_airplane(self) -> _geometry.airplane.Airplane:
         return self._base_airplane
 
     @property
@@ -1623,7 +1624,7 @@ class CoreAirplaneMovement:
     # --- Other methods ---
     def generate_airplane_at_time_step(
         self, step: int, delta_time: float | int
-    ) -> geometry.airplane.Airplane:
+    ) -> _geometry.airplane.Airplane:
         """Creates the Airplane at a single time step.
 
         :param step: The time step index. Must be a non negative int.
@@ -1680,7 +1681,7 @@ class CoreAirplaneMovement:
         # The reference dimensions are inherited from the base Airplane rather than
         # recomputed from this time step's Wings, so every time step's load coefficients
         # share one normalization.
-        return geometry.airplane.Airplane(
+        return _geometry.airplane.Airplane(
             wings=these_wings,
             name=self._base_airplane.name,
             Cg_GP1_CgP1=thisCg_GP1_CgP1,
@@ -1692,7 +1693,7 @@ class CoreAirplaneMovement:
 
     def generate_airplanes(
         self, num_steps: int, delta_time: float | int
-    ) -> list[geometry.airplane.Airplane]:
+    ) -> list[_geometry.airplane.Airplane]:
         """Creates the Airplane at each time step, and returns them in a list.
 
         For static geometry (no periodic motion), this method optimizes performance by
@@ -1730,7 +1731,7 @@ class CoreAirplaneMovement:
 
     def _generate_airplanes_static(
         self, num_steps: int, delta_time: float
-    ) -> list[geometry.airplane.Airplane]:
+    ) -> list[_geometry.airplane.Airplane]:
         """Generates Airplanes for static geometry using deepcopy optimization.
 
         Creates the first Airplane with full mesh generation, then uses deepcopy for
@@ -1794,7 +1795,7 @@ class CoreAirplaneMovement:
 
     def _generate_airplanes_variable(
         self, num_steps: int, delta_time: float
-    ) -> list[geometry.airplane.Airplane]:
+    ) -> list[_geometry.airplane.Airplane]:
         """Generates Airplanes for variable (periodic) geometry.
 
         Uses a conservative optimization approach that validates periodicity before
@@ -1907,7 +1908,7 @@ class CoreAirplaneMovement:
 
     def _generate_airplanes_variable_standard(
         self, num_steps: int, delta_time: float
-    ) -> list[geometry.airplane.Airplane]:
+    ) -> list[_geometry.airplane.Airplane]:
         """Generates Airplanes for variable geometry using standard approach.
 
         Creates new Airplanes for each time step without optimization.
@@ -2451,7 +2452,7 @@ class CoreUnsteadyProblem:
         )
 
     @property
-    def steady_problems(self) -> tuple[problems.SteadyProblem, ...]:
+    def steady_problems(self) -> tuple[_problems.SteadyProblem, ...]:
         # This stub lets the UnsteadyRingVortexLatticeMethodSolver access movement and
         # steady_problems on any CoreUnsteadyProblem without knowing the concrete
         # subclass.

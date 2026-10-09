@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _oscillation, geometry
+from .. import _core, _geometry, _oscillation
 from . import aeroelastic_wing_movement as aeroelastic_wing_movement_mod
 from . import wing_movement as wing_movement_mod
 
@@ -27,7 +27,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
 
     def __init__(
         self,
-        base_airplane: geometry.airplane.Airplane,
+        base_airplane: _geometry.airplane.Airplane,
         wing_movements: list[
             aeroelastic_wing_movement_mod.AeroelasticWingMovement
             | wing_movement_mod.WingMovement
@@ -167,7 +167,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         step: int,
         delta_time: float | int,
         deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
-    ) -> geometry.airplane.Airplane:
+    ) -> _geometry.airplane.Airplane:
         """Creates the Airplane at a single time step, optionally applying structural
         deformation to each Wing.
 
@@ -256,7 +256,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         # The reference dimensions are inherited from the base Airplane rather than
         # recomputed from this time step's deformed Wings, so every time step's load
         # coefficients share one normalization.
-        return geometry.airplane.Airplane(
+        return _geometry.airplane.Airplane(
             wings=these_wings,
             name=self._base_airplane.name,
             Cg_GP1_CgP1=thisCg_GP1_CgP1,

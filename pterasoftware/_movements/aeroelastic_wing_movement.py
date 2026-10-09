@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _oscillation, _transformations, geometry
+from .. import _core, _geometry, _oscillation, _transformations
 from . import (
     aeroelastic_wing_cross_section_movement as aeroelastic_wing_cross_section_movement_mod,
 )
@@ -46,7 +46,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
     def __init__(
         self,
-        base_wing: geometry.wing.Wing,
+        base_wing: _geometry.wing.Wing,
         wing_cross_section_movements: list[
             aeroelastic_wing_cross_section_movement_mod.AeroelasticWingCrossSectionMovement
         ],
@@ -302,7 +302,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         step: int,
         delta_time: float | int,
         deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
-    ) -> geometry.wing.Wing:
+    ) -> _geometry.wing.Wing:
         """Creates the Wing at a single time step, optionally applying structural
         deformation to each WingCrossSection.
 
@@ -442,7 +442,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
             thisLer_Gs_Cgs = thisLer_Gs_Cgs + offsetRotationPointAdjustment_Gs
 
-        return geometry.wing.Wing(
+        return _geometry.wing.Wing(
             wing_cross_sections=these_wing_cross_sections,
             name=self._base_wing.name,
             Ler_Gs_Cgs=thisLer_Gs_Cgs,

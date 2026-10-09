@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import cast
 
-from . import _logging, problems
-from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
+from . import _logging, _problems
+from ._unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 logger = _logging.get_logger("_coupled_unsteady_ring_vortex_lattice_method")
 
@@ -27,18 +27,18 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
     __slots__ = ()
 
-    def __init__(self, unsteady_problem: problems.CoupledUnsteadyProblem) -> None:
+    def __init__(self, unsteady_problem: _problems.CoupledUnsteadyProblem) -> None:
         """The initialization method.
 
         :param unsteady_problem: The CoupledUnsteadyProblem to be solved.
         :return: None
         """
-        if not isinstance(unsteady_problem, problems.CoupledUnsteadyProblem):
+        if not isinstance(unsteady_problem, _problems.CoupledUnsteadyProblem):
             raise TypeError("unsteady_problem must be a CoupledUnsteadyProblem.")
         super().__init__(unsteady_problem)
 
     @property
-    def _coupled_unsteady_problem(self) -> problems.CoupledUnsteadyProblem:
+    def _coupled_unsteady_problem(self) -> _problems.CoupledUnsteadyProblem:
         """Type narrowed view of the inherited unsteady_problem attribute.
 
         The parent stores unsteady_problem as a CoreUnsteadyProblem (widened to let
@@ -47,7 +47,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
         :return: The unsteady_problem narrowed to CoupledUnsteadyProblem.
         """
-        return cast(problems.CoupledUnsteadyProblem, self.unsteady_problem)
+        return cast(_problems.CoupledUnsteadyProblem, self.unsteady_problem)
 
     def _initialize_step_vortices(self, step: int) -> None:
         logger.debug(
@@ -60,5 +60,5 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         if step < self.num_steps - 1:
             self._initialize_panel_vortices_at(step + 1)
 
-    def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
+    def _get_steady_problem_at(self, step: int) -> _problems.SteadyProblem:
         return self._coupled_unsteady_problem.get_steady_problem(step)

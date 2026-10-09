@@ -562,7 +562,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 ]
 
         with patch(
-            "pterasoftware.trim.unsteady_ring_vortex_lattice_method."
+            "pterasoftware._trim._unsteady_ring_vortex_lattice_method."
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):
@@ -613,7 +613,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 ]
 
         with patch(
-            "pterasoftware.trim.unsteady_ring_vortex_lattice_method."
+            "pterasoftware._trim._unsteady_ring_vortex_lattice_method."
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):
@@ -667,7 +667,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 ]
 
         with patch(
-            "pterasoftware.trim.unsteady_ring_vortex_lattice_method."
+            "pterasoftware._trim._unsteady_ring_vortex_lattice_method."
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):

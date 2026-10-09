@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .. import _core
-from .. import operating_point as operating_point_mod
+from .. import _operating_point as operating_point_mod
 
 
 class FreeFlightOperatingPointMovement(_core.CoreOperatingPointMovement):

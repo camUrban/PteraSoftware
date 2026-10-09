@@ -3,24 +3,36 @@
 from typing import TYPE_CHECKING, Any
 
 # Eager imports: core modules always needed to define simulations.
-import pterasoftware.geometry
-import pterasoftware.movements
-import pterasoftware.operating_point
-import pterasoftware.problems
+import pterasoftware._geometry
+import pterasoftware._movements
+import pterasoftware._operating_point
+import pterasoftware._problems
 
 # Static imports of every lazily loaded name, visible only to type checkers. Without
 # these, any name resolved through __getattr__ is typed as Any, so every use of the lazy
 # modules and callables through the package namespace goes unchecked.
 if TYPE_CHECKING:
     from pterasoftware import (
-        aeroelastic_unsteady_ring_vortex_lattice_method,
-        convergence,
-        free_flight_unsteady_ring_vortex_lattice_method,
-        output,
-        steady_horseshoe_vortex_lattice_method,
-        steady_ring_vortex_lattice_method,
-        trim,
-        unsteady_ring_vortex_lattice_method,
+        _aeroelastic_unsteady_ring_vortex_lattice_method as aeroelastic_unsteady_ring_vortex_lattice_method,
+    )
+    from pterasoftware import _convergence as convergence
+    from pterasoftware import (
+        _free_flight_unsteady_ring_vortex_lattice_method as free_flight_unsteady_ring_vortex_lattice_method,
+    )
+    from pterasoftware import _geometry as geometry
+    from pterasoftware import _movements as movements
+    from pterasoftware import _operating_point as operating_point
+    from pterasoftware import _output as output
+    from pterasoftware import _problems as problems
+    from pterasoftware import (
+        _steady_horseshoe_vortex_lattice_method as steady_horseshoe_vortex_lattice_method,
+    )
+    from pterasoftware import (
+        _steady_ring_vortex_lattice_method as steady_ring_vortex_lattice_method,
+    )
+    from pterasoftware import _trim as trim
+    from pterasoftware import (
+        _unsteady_ring_vortex_lattice_method as unsteady_ring_vortex_lattice_method,
     )
     from pterasoftware._logging import set_up_logging
     from pterasoftware._serialization import load, save

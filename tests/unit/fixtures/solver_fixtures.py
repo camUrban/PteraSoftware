@@ -1,13 +1,13 @@
 """This module contains functions to create solver objects for use in unit tests."""
 
 import pterasoftware as ps
+from pterasoftware._aeroelastic_unsteady_ring_vortex_lattice_method import (
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+)
 from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
-from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
-    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
-)
-from pterasoftware.free_flight_unsteady_ring_vortex_lattice_method import (
+from pterasoftware._free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
 

@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _core, _oscillation, geometry
+from .. import _core, _geometry, _oscillation
 
 
 class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
@@ -24,7 +24,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
 
     def __init__(
         self,
-        base_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+        base_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
         ampLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp: np.ndarray | Sequence[str | Callable[[float], float]] = (
@@ -151,7 +151,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
         step: int,
         delta_time: float | int,
         deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
-    ) -> geometry.wing_cross_section.WingCrossSection:
+    ) -> _geometry.wing_cross_section.WingCrossSection:
         """Creates the WingCrossSection at a single time step, optionally applying
         structural deformation.
 
@@ -261,7 +261,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
                 theseAngles_Wcsp_to_Wcs_ixyz + deformationAngles_Wcsp_to_Wcs_ixyz
             )
 
-        return geometry.wing_cross_section.WingCrossSection(
+        return _geometry.wing_cross_section.WingCrossSection(
             airfoil=self._base_wing_cross_section.airfoil,
             num_spanwise_panels=self._base_wing_cross_section.num_spanwise_panels,
             chord=self._base_wing_cross_section.chord,

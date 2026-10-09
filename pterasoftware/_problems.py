@@ -15,27 +15,25 @@ from scipy.integrate import solve_ivp
 from . import (
     _core,
     _fixed_point_relaxation,
+    _geometry,
     _logging,
+    _movements,
     _mujoco_model,
-    _output_rendering,
-    _parameter_validation,
-    _transformations,
-    geometry,
-    movements,
 )
-from . import operating_point as operating_point_mod
-from .movements import aeroelastic_movement as aeroelastic_movement_mod
-from .movements import aeroelastic_wing_movement as aeroelastic_wing_movement_mod
-from .movements import free_flight_movement
+from . import _operating_point as operating_point_mod
+from . import _output_rendering, _parameter_validation, _transformations
+from ._movements import aeroelastic_movement as aeroelastic_movement_mod
+from ._movements import aeroelastic_wing_movement as aeroelastic_wing_movement_mod
+from ._movements import free_flight_movement
 
 if TYPE_CHECKING:
+    from ._aeroelastic_unsteady_ring_vortex_lattice_method import (
+        AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+    )
     from ._coupled_unsteady_ring_vortex_lattice_method import (
         CoupledUnsteadyRingVortexLatticeMethodSolver,
     )
-    from .aeroelastic_unsteady_ring_vortex_lattice_method import (
-        AeroelasticUnsteadyRingVortexLatticeMethodSolver,
-    )
-    from .free_flight_unsteady_ring_vortex_lattice_method import (
+    from ._free_flight_unsteady_ring_vortex_lattice_method import (
         FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     )
 
@@ -86,7 +84,7 @@ class SteadyProblem:
 
     def __init__(
         self,
-        airplanes: list[geometry.airplane.Airplane],
+        airplanes: list[_geometry.airplane.Airplane],
         operating_point: operating_point_mod.OperatingPoint,
     ) -> None:
         """The initialization method.
@@ -101,10 +99,10 @@ class SteadyProblem:
         if len(airplanes) < 1:
             raise ValueError("airplanes must have at least one element.")
         for airplane in airplanes:
-            if not isinstance(airplane, geometry.airplane.Airplane):
+            if not isinstance(airplane, _geometry.airplane.Airplane):
                 raise TypeError("Every element in airplanes must be an Airplane.")
         # Store as tuple to prevent external mutation via .append(), .pop(), etc.
-        self._airplanes: tuple[geometry.airplane.Airplane, ...] = tuple(airplanes)
+        self._airplanes: tuple[_geometry.airplane.Airplane, ...] = tuple(airplanes)
 
         if not isinstance(operating_point, operating_point_mod.OperatingPoint):
             raise TypeError("operating_point must be an OperatingPoint.")
@@ -145,7 +143,7 @@ class SteadyProblem:
 
     # --- Immutable: read only properties ---
     @property
-    def airplanes(self) -> tuple[geometry.airplane.Airplane, ...]:
+    def airplanes(self) -> tuple[_geometry.airplane.Airplane, ...]:
         return self._airplanes
 
     @property
@@ -347,7 +345,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
 
     def __init__(
         self,
-        movement: movements.movement.Movement,
+        movement: _movements.movement.Movement,
         only_final_results: bool | np.bool = False,
     ) -> None:
         """The initialization method.
@@ -364,7 +362,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         """
         # Validate and store the Movement before calling super().__init__() because the
         # Movement provides the parameters that the core class needs.
-        if not isinstance(movement, movements.movement.Movement):
+        if not isinstance(movement, _movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
         self._movement = movement
 
@@ -403,7 +401,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
 
     # --- Immutable: read only properties ---
     @property
-    def movement(self) -> movements.movement.Movement:
+    def movement(self) -> _movements.movement.Movement:
         return self._movement
 
     @property
@@ -427,7 +425,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     def __init__(
         self,
         movement: _core.CoreMovement,
-        initial_airplanes: list[geometry.airplane.Airplane],
+        initial_airplanes: list[_geometry.airplane.Airplane],
         initial_operating_point: operating_point_mod.OperatingPoint,
     ) -> None:
         """The initialization method.
@@ -526,14 +524,14 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
 
     def __init__(
         self,
-        movement: movements.free_flight_movement.FreeFlightMovement,
+        movement: _movements.free_flight_movement.FreeFlightMovement,
         mass: float | int,
         I_BP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         external_loads_fn: (
             Callable[
                 [
                     operating_point_mod.OperatingPoint,
-                    geometry.airplane.Airplane,
+                    _geometry.airplane.Airplane,
                 ],
                 tuple[np.ndarray, np.ndarray],
             ]
@@ -829,7 +827,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         Callable[
             [
                 operating_point_mod.OperatingPoint,
-                geometry.airplane.Airplane,
+                _geometry.airplane.Airplane,
             ],
             tuple[np.ndarray, np.ndarray],
         ]
@@ -887,7 +885,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
     def _assemble_interval_loads(
         self,
         operating_point: operating_point_mod.OperatingPoint,
-        airplane: geometry.airplane.Airplane,
+        airplane: _geometry.airplane.Airplane,
         step: int,
     ) -> tuple[np.ndarray, np.ndarray] | None:
         """Assembles the Earth-axes interval load to apply over the next time step.
@@ -1240,7 +1238,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
     def _advance_strongly_coupled(
         self,
         solver: FreeFlightUnsteadyRingVortexLatticeMethodSolver,
-        current_airplane: geometry.airplane.Airplane,
+        current_airplane: _geometry.airplane.Airplane,
         current_operating_point: operating_point_mod.OperatingPoint,
         step: int,
     ) -> None:
@@ -1561,7 +1559,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def step_discards(self) -> int:
         return self._step_discards
 
-    def _initialize_per_wing_state(self, airplane: geometry.airplane.Airplane) -> None:
+    def _initialize_per_wing_state(self, airplane: _geometry.airplane.Airplane) -> None:
         """Allocate per-wing time series lists sized to the Airplane's geometry.
 
         Called once from __init__ after the initial Airplane is generated. Iterates over
@@ -1605,7 +1603,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             np.zeros(num_wing_cross_sections, dtype=float)
         )
 
-    def _calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
+    def _calculate_mass_matrix(self, wing: _geometry.wing.Wing) -> np.ndarray:
         """Generate the mass distribution matrix for all of a Wing's Panels.
 
         Distributes the total spanwise mass (wing_density) across Panel areas to form a
@@ -1899,7 +1897,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def _calculate_spring_moments(
         self,
         num_spanwise_panels: int,
-        wing: geometry.wing.Wing,
+        wing: _geometry.wing.Wing,
         mass_matrix: np.ndarray,
         aeroMoments_GP1_Slep: np.ndarray,
         step: int,
@@ -1994,7 +1992,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
     @staticmethod
     def _calculate_strip_inertias(
-        wing: geometry.wing.Wing,
+        wing: _geometry.wing.Wing,
         num_spanwise_panels: int,
         mass_matrix: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray]:

@@ -18,18 +18,18 @@ import webp
 from tqdm import tqdm
 
 from . import (
+    _free_flight_unsteady_ring_vortex_lattice_method,
     _logging,
     _mujoco_model,
     _output_plotting,
     _output_rendering,
     _parameter_validation,
+    _steady_horseshoe_vortex_lattice_method,
+    _steady_ring_vortex_lattice_method,
     _transformations,
-    free_flight_unsteady_ring_vortex_lattice_method,
-    steady_horseshoe_vortex_lattice_method,
-    steady_ring_vortex_lattice_method,
-    unsteady_ring_vortex_lattice_method,
+    _unsteady_ring_vortex_lattice_method,
 )
-from .movements import free_flight_movement as free_flight_movement_mod
+from ._movements import free_flight_movement as free_flight_movement_mod
 
 logger = _logging.get_logger("output")
 
@@ -386,9 +386,9 @@ def get_draw_geometry_meshes(
 
 def draw(
     solver: (
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool = False,
@@ -468,9 +468,9 @@ def draw(
     if not isinstance(
         solver,
         (
-            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
-            steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
-            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+            _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+            _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
         ),
     ):
         raise TypeError(
@@ -512,7 +512,7 @@ def draw(
     )
     if show_wake_vortices and not isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise ValueError(
             "show_wake_vortices can only be True when drawing an "
@@ -528,7 +528,7 @@ def draw(
     )
     if show_mujoco_geometry and not isinstance(
         solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     ):
         raise ValueError(
             "show_mujoco_geometry can only be True when drawing a "
@@ -564,7 +564,7 @@ def draw(
     # for the standard body-fixed rendering in geometry axes.
     is_free_flight = isinstance(
         solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     )
     T_pas_GP1_CgP1_to_E_Eo: np.ndarray | None = None
 
@@ -574,7 +574,7 @@ def draw(
     wake_ring_vortex_surfaces: pv.PolyData | None = None
     if isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         draw_step = solver.num_steps - 1
 
@@ -650,7 +650,7 @@ def draw(
     if show_mujoco_geometry:
         assert isinstance(
             solver,
-            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+            _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
         )
         worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
             solver
@@ -878,7 +878,7 @@ def draw(
 
 
 def animate(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool = False,
     show_mujoco_geometry: bool | np.bool = False,
@@ -956,7 +956,7 @@ def animate(
     """
     if not isinstance(
         unsteady_solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
             "unsteady_solver must be an UnsteadyRingVortexLatticeMethodSolver."
@@ -992,7 +992,7 @@ def animate(
     )
     if show_mujoco_geometry and not isinstance(
         unsteady_solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     ):
         raise ValueError(
             "show_mujoco_geometry can only be True when animating a "
@@ -1035,7 +1035,7 @@ def animate(
     # for the standard body-fixed rendering in geometry axes.
     is_free_flight = isinstance(
         unsteady_solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     )
     step_transforms: list[np.ndarray] = []
     if is_free_flight:
@@ -1055,7 +1055,7 @@ def animate(
     if show_mujoco_geometry:
         assert isinstance(
             unsteady_solver,
-            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+            _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
         )
         worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
             unsteady_solver
@@ -1642,7 +1642,7 @@ def animate(
 
 
 def plot_results_versus_time(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool | np.bool = True,
     figure_size_in: Sequence[int | float] = (6.4, 4.8),
     save: bool | np.bool = False,
@@ -1739,7 +1739,7 @@ def plot_results_versus_time(
     """
     if not isinstance(
         unsteady_solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
             "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
@@ -2053,7 +2053,7 @@ def plot_results_versus_time(
     # describes the first Airplane, the single rigid body the dynamics integrate.
     if isinstance(
         unsteady_solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     ):
         # Narrow the movement to a FreeFlightMovement so its operating point history is
         # typed. The solver type guarantees this, so the assert documents the invariant.
@@ -2246,9 +2246,9 @@ def plot_results_versus_time(
 
 def log_results(
     solver: (
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
 ) -> None:
     """Logs a solver's load and load coefficients.
@@ -2274,15 +2274,15 @@ def log_results(
     if isinstance(
         solver,
         (
-            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
-            steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+            _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+            _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
         ),
     ):
         these_airplanes = solver.airplanes
         solver_type = "steady"
     elif isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         these_airplanes = solver.current_airplanes
         if solver.unsteady_problem.movement.static:
@@ -2427,7 +2427,7 @@ def log_results(
             case "static geometry unsteady":
                 assert isinstance(
                     solver,
-                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                    _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
                 unsteady_problem = solver.unsteady_problem
@@ -2472,7 +2472,7 @@ def log_results(
             case "variable geometry unsteady":
                 assert isinstance(
                     solver,
-                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                    _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
                 unsteady_problem = solver.unsteady_problem
@@ -2601,8 +2601,8 @@ def log_results(
             assert isinstance(
                 solver,
                 (
-                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
-                    steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+                    _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+                    _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
@@ -2628,7 +2628,7 @@ def log_results(
     # first Airplane, the single rigid body the dynamics integrate.
     if isinstance(
         solver,
-        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
     ):
         # Narrow the movement to a FreeFlightMovement so its operating point history is
         # typed. The solver type guarantees this, so the assert documents the invariant.

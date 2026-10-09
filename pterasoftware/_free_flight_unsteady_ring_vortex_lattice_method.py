@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import geometry, operating_point, problems
+from . import _geometry, _operating_point, _problems
 from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -60,7 +60,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
     def __init__(
         self,
-        free_flight_unsteady_problem: problems.FreeFlightUnsteadyProblem,
+        free_flight_unsteady_problem: _problems.FreeFlightUnsteadyProblem,
     ) -> None:
         """The initialization method.
 
@@ -68,7 +68,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         :return: None
         """
         if not isinstance(
-            free_flight_unsteady_problem, problems.FreeFlightUnsteadyProblem
+            free_flight_unsteady_problem, _problems.FreeFlightUnsteadyProblem
         ):
             raise TypeError(
                 "free_flight_unsteady_problem must be a FreeFlightUnsteadyProblem."
@@ -86,8 +86,10 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         # because it calls _get_steady_problem_at, which this solver's override consults
         # for the substep state.
         self._substep_next_step: int | None = None
-        self._substep_next_steady_problem: problems.SteadyProblem | None = None
-        self._substep_next_operating_point: operating_point.OperatingPoint | None = None
+        self._substep_next_steady_problem: _problems.SteadyProblem | None = None
+        self._substep_next_operating_point: _operating_point.OperatingPoint | None = (
+            None
+        )
         self._substepStackVIndGridWrvp_GP1__E: list[list[np.ndarray]] | None = None
         self._substep_gamma_n: np.ndarray | None = None
         self._substep_gamma_n_minus_1: np.ndarray | None = None
@@ -95,7 +97,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         super().__init__(free_flight_unsteady_problem)
 
     @property
-    def _free_flight_unsteady_problem(self) -> problems.FreeFlightUnsteadyProblem:
+    def _free_flight_unsteady_problem(self) -> _problems.FreeFlightUnsteadyProblem:
         """The solver's FreeFlightUnsteadyProblem, narrowed from the inherited
         unsteady_problem.
 
@@ -105,9 +107,9 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
         :return: This solver's FreeFlightUnsteadyProblem.
         """
-        return cast(problems.FreeFlightUnsteadyProblem, self.unsteady_problem)
+        return cast(_problems.FreeFlightUnsteadyProblem, self.unsteady_problem)
 
-    def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
+    def _get_steady_problem_at(self, step: int) -> _problems.SteadyProblem:
         """Gets the SteadyProblem at a given time step.
 
         During a strongly coupled sub-iteration, returns the transient next-step
@@ -126,7 +128,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             return self._substep_next_steady_problem
         return super()._get_steady_problem_at(step)
 
-    def _operating_point_at(self, step: int) -> operating_point.OperatingPoint:
+    def _operating_point_at(self, step: int) -> _operating_point.OperatingPoint:
         """Gets the OperatingPoint to use for a given time step's geometry and wake.
 
         During a strongly coupled sub-iteration, returns the current trial
@@ -179,7 +181,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         omegas_GP1__E = next_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
-    def freeze_substep(self, next_steady_problem: problems.SteadyProblem) -> None:
+    def freeze_substep(self, next_steady_problem: _problems.SteadyProblem) -> None:
         """Freezes the data the sub-iteration reuses across its trials.
 
         Called once at the start of a strongly coupled free-flight step solve, before
@@ -224,9 +226,9 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
     def evaluate_trial_aero_loads(
         self,
-        trial_operating_point: operating_point.OperatingPoint,
+        trial_operating_point: _operating_point.OperatingPoint,
         step: int,
-    ) -> geometry.airplane.Airplane:
+    ) -> _geometry.airplane.Airplane:
         """Evaluates the aerodynamic loads at a trial body state for the next time step.
 
         Called once per sub-iteration with the trial OperatingPoint for the next step.

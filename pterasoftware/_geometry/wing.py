@@ -12,8 +12,8 @@ import pyvista as pv
 import scipy.interpolate as sp_interp
 
 from .. import _output_rendering, _panel, _parameter_validation, _transformations
-from . import _meshing
 from . import airfoil as airfoil_mod
+from . import meshing
 from . import wing_cross_section as wing_cross_section_mod
 
 
@@ -1545,7 +1545,7 @@ class Wing:
         )
 
         # Generate the Wing's mesh, which populates the Panels attribute.
-        _meshing.mesh_wing(self)
+        meshing.mesh_wing(self)
 
     def diagram(
         self,

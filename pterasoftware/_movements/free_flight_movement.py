@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from .. import _core, _parameter_validation, geometry
+from .. import _core, _geometry, _parameter_validation
 from . import airplane_movement as airplane_movement_mod
 from . import (
     free_flight_operating_point_movement as free_flight_operating_point_movement_mod,
@@ -118,7 +118,7 @@ class FreeFlightMovement(_core.CoreMovement):
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
-        airplanes_temp: list[list[geometry.airplane.Airplane]] = []
+        airplanes_temp: list[list[_geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
                 airplane_movement.generate_airplanes(
@@ -155,7 +155,7 @@ class FreeFlightMovement(_core.CoreMovement):
                         )
 
         # Store as tuple of tuples to prevent external mutation.
-        self._airplanes: tuple[tuple[geometry.airplane.Airplane, ...], ...] = tuple(
+        self._airplanes: tuple[tuple[_geometry.airplane.Airplane, ...], ...] = tuple(
             tuple(airplane_list) for airplane_list in airplanes_temp
         )
 
@@ -188,5 +188,5 @@ class FreeFlightMovement(_core.CoreMovement):
         return self._free_num_steps
 
     @property
-    def airplanes(self) -> tuple[tuple[geometry.airplane.Airplane, ...], ...]:
+    def airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
         return self._airplanes

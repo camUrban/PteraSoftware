@@ -13,15 +13,15 @@ from . import (
     _convergence_cache,
     _convergence_meshing,
     _functions,
+    _geometry,
     _logging,
+    _movements,
     _parameter_validation,
+    _problems,
     _serialization,
-    geometry,
-    movements,
-    problems,
-    steady_horseshoe_vortex_lattice_method,
-    steady_ring_vortex_lattice_method,
-    unsteady_ring_vortex_lattice_method,
+    _steady_horseshoe_vortex_lattice_method,
+    _steady_ring_vortex_lattice_method,
+    _unsteady_ring_vortex_lattice_method,
 )
 
 logger = _logging.get_logger("convergence")
@@ -40,7 +40,7 @@ COEFFICIENT_LABELS = (
 
 
 def analyze_steady_convergence(
-    ref_problem: problems.SteadyProblem,
+    ref_problem: _problems.SteadyProblem,
     solver_type: str,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
@@ -53,8 +53,8 @@ def analyze_steady_convergence(
     tuple[
         int,
         int,
-        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | None,
     ]
     | tuple[None, None, None]
@@ -162,7 +162,7 @@ def analyze_steady_convergence(
         a set of converged parameters, it returns (None, None, None).
     """
     # Validate the ref_problem parameter.
-    if not isinstance(ref_problem, problems.SteadyProblem):
+    if not isinstance(ref_problem, _problems.SteadyProblem):
         raise TypeError("ref_problem must be a SteadyProblem.")
 
     # Validate the solver_type parameter.
@@ -348,7 +348,7 @@ def analyze_steady_convergence(
             # needs the meshed problem. When any memo is missing, the build runs even on
             # a solve hit so the counts are recorded for the convergence report and for
             # seeding finer meshes' searches.
-            this_problem: problems.SteadyProblem | None = None
+            this_problem: _problems.SteadyProblem | None = None
             if not (
                 cached
                 and _convergence_meshing.memos_complete(
@@ -380,15 +380,15 @@ def analyze_steady_convergence(
 
                 # Create this iteration's steady solver based on the type specified.
                 this_solver: (
-                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-                    | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+                    _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                    | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
                 )
                 if solver_type == "steady horseshoe vortex lattice method":
-                    this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                    this_solver = _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                         steady_problem=this_problem,
                     )
                 else:
-                    this_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                    this_solver = _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
                         steady_problem=this_problem,
                     )
 
@@ -624,8 +624,8 @@ def analyze_steady_convergence(
                 # than this iteration's, so the converged solver is rebuilt rather than
                 # reusing this iteration's finer solver.
                 converged_solver: (
-                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-                    | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+                    _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                    | _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
                     | None
                 ) = None
                 if resolve_converged_solver:
@@ -647,11 +647,11 @@ def analyze_steady_convergence(
                             num_wing_cross_sections_cache,
                         )
                         if solver_type == "steady horseshoe vortex lattice method":
-                            converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                            converged_solver = _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                                 steady_problem=converged_problem,
                             )
                         else:
-                            converged_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                            converged_solver = _steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
                                 steady_problem=converged_problem,
                             )
                         converged_solver.run(calculate_streamlines=True)
@@ -684,7 +684,7 @@ def analyze_steady_convergence(
 
 
 def analyze_unsteady_convergence(
-    ref_problem: problems.UnsteadyProblem,
+    ref_problem: _problems.UnsteadyProblem,
     prescribed_wake: bool | np.bool = True,
     free_wake: bool | np.bool = True,
     num_cycles_bounds: tuple[int, int] | None = None,
@@ -704,7 +704,7 @@ def analyze_unsteady_convergence(
         int,
         int,
         int,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
         | None,
     ]
     | tuple[None, None, None, None, None]
@@ -868,7 +868,7 @@ def analyze_unsteady_convergence(
         None, None, None).
     """
     # Validate the ref_problem parameter.
-    if not isinstance(ref_problem, problems.UnsteadyProblem):
+    if not isinstance(ref_problem, _problems.UnsteadyProblem):
         raise TypeError(
             "ref_problem must be a standard UnsteadyProblem, not a "
             "FreeFlightUnsteadyProblem or an AeroelasticUnsteadyProblem."
@@ -883,7 +883,7 @@ def analyze_unsteady_convergence(
         raise ValueError("At least one of prescribed_wake or free_wake must be True.")
 
     # Validate the wake length bounds parameters.
-    ref_movement: movements.movement.Movement = ref_problem.movement
+    ref_movement: _movements.movement.Movement = ref_problem.movement
     static = ref_movement.static
 
     # Reject a reference Movement that truncates its wake. This analysis sweeps the
@@ -1187,7 +1187,7 @@ def analyze_unsteady_convergence(
                     # is missing, the build runs even on a solve hit so the values are
                     # recorded for the convergence report and for seeding finer meshes'
                     # searches.
-                    this_problem: problems.UnsteadyProblem | None = None
+                    this_problem: _problems.UnsteadyProblem | None = None
                     if not (
                         cached
                         and _convergence_meshing.memos_complete(
@@ -1221,7 +1221,7 @@ def analyze_unsteady_convergence(
 
                         # Create and run this iteration's
                         # UnsteadyRingVortexLatticeMethodSolver.
-                        this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                        this_solver = _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                             unsteady_problem=this_problem
                         )
 
@@ -1605,7 +1605,7 @@ def analyze_unsteady_convergence(
                         # solver is rebuilt rather than reusing this iteration's finer
                         # solver.
                         converged_solver: (
-                            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+                            _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
                             | None
                         ) = None
                         if resolve_converged_solver:
@@ -1630,7 +1630,7 @@ def analyze_unsteady_convergence(
                                         delta_time_cache,
                                     )
                                 )
-                                converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                                converged_solver = _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                                     unsteady_problem=converged_problem
                                 )
                                 converged_solver.run(
@@ -1724,7 +1724,7 @@ def validate_num_chordwise_panels_bounds(
 
 
 def reject_unrefinable_wings(
-    ref_airplanes: tuple[geometry.airplane.Airplane, ...],
+    ref_airplanes: tuple[_geometry.airplane.Airplane, ...],
     analyze_function_name: str,
 ) -> None:
     """Raises if any Wing in the reference Airplanes cannot be refined.

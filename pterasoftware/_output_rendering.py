@@ -20,21 +20,14 @@ import numpy as np
 import pyvista as pv
 import webp
 
-from . import (
-    _colormaps,
-    _fonts,
-    _logging,
-    _mujoco_model,
-    _transformations,
-    geometry,
-)
-from . import operating_point as operating_point_mod
-from . import problems
+from . import _colormaps, _fonts, _geometry, _logging, _mujoco_model
+from . import _operating_point as operating_point_mod
+from . import _problems, _transformations
 
 if TYPE_CHECKING:
     from . import (
-        free_flight_unsteady_ring_vortex_lattice_method,
-        unsteady_ring_vortex_lattice_method,
+        _free_flight_unsteady_ring_vortex_lattice_method,
+        _unsteady_ring_vortex_lattice_method,
     )
 
 logger = _logging.get_logger("output")
@@ -301,7 +294,7 @@ class Playback(NamedTuple):
 
 
 def resolve_playback(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     speed: float | None,
     save: bool,
 ) -> Playback:
@@ -1488,7 +1481,7 @@ def add_arrow_tips(
 
 
 def get_wing_cross_section_airfoil_lines(
-    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Returns the points on a WingCrossSection's Airfoil's outline and mean camber line
     (in wing cross section axes, relative to the leading point).
@@ -1557,7 +1550,7 @@ def get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do: np.ndarray) -> np.ndar
 
 def add_airfoil(
     plotter: pv.Plotter,
-    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
     T_pas_Wcs_Lp_to_D_Do: np.ndarray,
     show_mcl: bool = True,
 ) -> None:
@@ -1631,7 +1624,7 @@ def add_airfoil_lines(
 
 def add_airfoils(
     plotter: pv.Plotter,
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
     show_mcls: bool = True,
 ) -> None:
@@ -1661,7 +1654,7 @@ def add_airfoils(
 
 def add_panels(
     plotter: pv.Plotter,
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
 ) -> None:
     """Adds a Wing's Panels to a Plotter as a wireframe.
@@ -1704,7 +1697,7 @@ def add_panels(
 
 
 def get_collocation_points(
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     id_suffix: str,
     T_pas_G_Cg_to_D_Do: np.ndarray,
 ) -> tuple[list[str], list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
@@ -1788,7 +1781,7 @@ def get_collocation_points(
 
 def add_steady_problem(
     plotter: pv.Plotter,
-    steady_problem: problems.SteadyProblem,
+    steady_problem: _problems.SteadyProblem,
     show_airplane_axes_and_points: bool,
     show_wing_axes_and_points: bool,
     show_wing_cross_section_axes_and_points: bool,
@@ -2561,7 +2554,7 @@ def round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
 
 
 def get_panel_surfaces(
-    airplanes: tuple[geometry.airplane.Airplane, ...],
+    airplanes: tuple[_geometry.airplane.Airplane, ...],
 ) -> pv.PolyData:
     """Returns a PolyData representation of the Wings' Panels' surfaces associated with
     all the Airplanes in a tuple of Airplanes.
@@ -2725,8 +2718,8 @@ def get_image_surface_mesh_and_texture(
 
 
 def get_animation_image_surface(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    step_airplanes: list[tuple[geometry.airplane.Airplane, ...]],
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    step_airplanes: list[tuple[_geometry.airplane.Airplane, ...]],
     step_transforms: list[np.ndarray],
     is_free_flight: bool,
     show_wake_vortices: bool,
@@ -2889,7 +2882,7 @@ def get_free_flight_body_transformation(
 
 
 def get_mujoco_render_geometry(
-    free_flight_solver: free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    free_flight_solver: _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 ) -> tuple[list[_mujoco_model.RenderGeom], list[_mujoco_model.RenderGeom]]:
     """Returns a free flight solver's MuJoCo render geometry, split into worldbody geoms
     and body geoms.
@@ -2908,7 +2901,7 @@ def get_mujoco_render_geometry(
     # validates that the problem is a FreeFlightUnsteadyProblem, so the cast narrows
     # without a runtime check.
     free_flight_unsteady_problem = cast(
-        problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
+        _problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
     )
     extracted_render_geoms = (
         free_flight_unsteady_problem._mujoco_model.get_render_geometry()
@@ -3093,7 +3086,7 @@ def mute_colormap(
 
 
 def get_wake_ring_vortex_surfaces(
-    solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
 ) -> pv.PolyData:
     """Returns the PolyData representation of the surfaces of an
@@ -3128,7 +3121,7 @@ def get_wake_ring_vortex_surfaces(
 
 
 def get_scalars(
-    airplanes: tuple[geometry.airplane.Airplane, ...],
+    airplanes: tuple[_geometry.airplane.Airplane, ...],
     scalar_type: str,
     qInf__E: float,
 ) -> np.ndarray:

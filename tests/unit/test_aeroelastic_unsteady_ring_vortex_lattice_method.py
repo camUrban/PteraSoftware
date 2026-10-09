@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 
 import pterasoftware as ps
-from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
+from pterasoftware._aeroelastic_unsteady_ring_vortex_lattice_method import (
     AeroelasticUnsteadyRingVortexLatticeMethodSolver,
 )
 from tests.unit.fixtures import problem_fixtures, solver_fixtures

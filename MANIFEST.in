@@ -1,6 +1,6 @@
 include pterasoftware/py.typed
 graft pterasoftware/_colormap_data
 graft pterasoftware/_font_data
-graft pterasoftware/geometry/_airfoils
+graft pterasoftware/_geometry/_airfoils
 global-exclude __pycache__/*
 global-exclude *.pyc

@@ -181,6 +181,12 @@ class TestMuJoCoModelInit(unittest.TestCase):
         state = model.get_state()
         npt.assert_allclose(state["omegas_BP1__E"], [0.0, 0.0, 10.0], atol=1e-10)
 
+    def test_non_zero_initial_position(self) -> None:
+        """Test that non zero initial position is stored correctly."""
+        model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
+        state = model.get_state()
+        npt.assert_allclose(state["position_E_Eo"], [1.0, -2.0, 3.0], atol=1e-14)
+
     def test_symmetrizes_inertia_matrix(self) -> None:
         """Test that an asymmetric inertia matrix is symmetrized."""
         I_asymmetric = np.array(

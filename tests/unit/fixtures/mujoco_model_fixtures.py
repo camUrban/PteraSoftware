@@ -34,7 +34,7 @@ def make_basic_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
 
 def make_rotated_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
     """This method makes a fixture that is a MuJoCoModel with a 90 degree rotation about
-    the z axis and non zero initial angular velocity.
+    the z axis, a non zero initial position, and non zero initial angular velocity.
 
     :return rotated_mujoco_model_fixture: MuJoCoModel This is the MuJoCoModel with
         rotated initial orientation.
@@ -47,7 +47,7 @@ def make_rotated_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
     rotated_mujoco_model_fixture = _mujoco_model.MuJoCoModel(
         name="rotated_airplane",
         mass=2.0,
-        CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
+        CgP1_E_Eo=np.array((1.0, -2.0, 3.0)),
         omegas_BP1__E=np.array((0.0, 0.0, 10.0)),
         T_pas_BP1_CgP1_to_E_CgP1=T_pas,
         vCg_E__E=np.array((0.0, 5.0, -1.0)),

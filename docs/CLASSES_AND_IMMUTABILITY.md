@@ -59,9 +59,9 @@ A constructor parameter is not always retained as an attribute. Some parameters 
 
 5. **`__slots__` on every class**: All classes in the package define `__slots__`, which eliminates per-instance `__dict__` overhead and prevents accidental dynamic attribute assignment. This catches typos like `self.num_panles = 5` at runtime with an `AttributeError` instead of silently creating a new attribute.
 
-6. **Only the owning class writes a property's backing slot**: Any module in the package may read an internal name, but only the class that owns a non-deprecated property writes, rebinds, or mutates that property's backing slot. The sole exception is `_serialization`, which may initialize backing slots on a fresh instance allocated with `object.__new__` during deserialization; it does not mutate a constructed instance. A leading underscore marks a name as outside the public API. It says nothing about who may write it, so this contract is what protects the categories above.
+6. **Only the owning class writes a property's backing slot**: Any module in the package may read an internal name, but only the class that owns a non-deprecated property writes, rebinds, or mutates that property's backing slot. The sole exception is `_serialization`, which may initialize backing slots on a fresh instance allocated with `object.__new__` during deserialization. It does not mutate a constructed instance. A leading underscore marks a name as outside the public API. It says nothing about who may write it, so this contract is what protects the categories above.
 
-7. **Only the owning class changes an array's `writeable` flag**: Code outside the owning class never sets `flags.writeable` on an array it reads, in either direction.
+7. **Only the owning class changes an array's `writeable` flag**: Code outside the owning class never sets `flags.writeable` on an array it reads, in either direction. The sole exception is `_serialization`, which restores the saved `writeable` flag on each array it rebuilds during deserialization, before the array is attached to any instance. It never changes the flag on an array that a constructed instance already holds.
 
 These contracts are enforced by the runtime guards described in this document (set once setters, read-only properties, read-only arrays, and tuples), by unit tests, and by review, not by static analysis of names.
 

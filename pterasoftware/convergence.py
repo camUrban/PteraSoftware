@@ -29,7 +29,7 @@ logger = _logging.get_logger("convergence")
 # The labels of the six load coefficients that convergence is checked against, in the
 # order they are stored: the three force coefficients (in wind axes) followed by the
 # three moment coefficients (in wind axes, relative to each Airplane's CG).
-_COEFFICIENT_LABELS = (
+COEFFICIENT_LABELS = (
     "cFX_W",
     "cFY_W",
     "cFZ_W",
@@ -176,10 +176,10 @@ def analyze_steady_convergence(
         )
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
+    validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
+    validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the rtol parameter.
     rtol = _parameter_validation.number_in_range_return_float(
@@ -192,7 +192,7 @@ def analyze_steady_convergence(
     )
 
     # Validate the coefficient_mask parameter.
-    coefficient_mask_array = _validate_coefficient_mask(coefficient_mask)
+    coefficient_mask_array = validate_coefficient_mask(coefficient_mask)
 
     # Validate the resolve_converged_solver parameter.
     resolve_converged_solver = _parameter_validation.boolLike_return_bool(
@@ -220,7 +220,7 @@ def analyze_steady_convergence(
     # otherwise invisible, which leaves a log ambiguous as to whether a case converged
     # against all six coefficients or a subset.
     logger.info(_logging.indent(1) + "Converging:")
-    for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
+    for label, masked_in in zip(COEFFICIENT_LABELS, coefficient_mask_array):
         if masked_in:
             logger.info(_logging.indent(2) + label)
 
@@ -231,7 +231,7 @@ def analyze_steady_convergence(
     # Wing copies, which omit explode_into_strips and so would silently un-explode an
     # exploded Wing. Relaxing this guard to admit an exploded Wing means teaching those
     # copies to carry the parameter.
-    _reject_unrefinable_wings(ref_airplanes, "analyze_steady_convergence")
+    reject_unrefinable_wings(ref_airplanes, "analyze_steady_convergence")
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
     # Panels to test.
@@ -455,7 +455,7 @@ def analyze_steady_convergence(
             # If this isn't the first Panel aspect ratio, check convergence in the Panel
             # aspect ratio direction.
             if ar_id > 0:
-                ar_converged, ar_metrics = _check_coefficient_convergence(
+                ar_converged, ar_metrics = check_coefficient_convergence(
                     these_coefficients,
                     coefficients[ar_id - 1, chord_id, :, :],
                     rtol,
@@ -463,7 +463,7 @@ def analyze_steady_convergence(
                     coefficient_mask_array,
                 )
 
-                _log_coefficient_metrics(
+                log_coefficient_metrics(
                     "Panel aspect ratio convergence:",
                     ar_metrics,
                     coefficient_mask_array,
@@ -477,7 +477,7 @@ def analyze_steady_convergence(
             # If this isn't the first number of chordwise Panels, check convergence in
             # the number of chordwise Panels direction.
             if chord_id > 0:
-                chord_converged, chord_metrics = _check_coefficient_convergence(
+                chord_converged, chord_metrics = check_coefficient_convergence(
                     these_coefficients,
                     coefficients[ar_id, chord_id - 1, :, :],
                     rtol,
@@ -485,7 +485,7 @@ def analyze_steady_convergence(
                     coefficient_mask_array,
                 )
 
-                _log_coefficient_metrics(
+                log_coefficient_metrics(
                     "Number of chordwise Panels convergence:",
                     chord_metrics,
                     coefficient_mask_array,
@@ -516,10 +516,8 @@ def analyze_steady_convergence(
             # semi-converged combination of parameters has been found and will be
             # returned.
             if ar_passed and chord_passed:
-                converged_ar_id = _converged_parameter_id(
-                    ar_id, single_ar, ar_converged
-                )
-                converged_chord_id = _converged_parameter_id(
+                converged_ar_id = converged_parameter_id(ar_id, single_ar, ar_converged)
+                converged_chord_id = converged_parameter_id(
                     chord_id, single_chord, chord_converged
                 )
 
@@ -937,10 +935,10 @@ def analyze_unsteady_convergence(
             raise ValueError("Both values in num_cycles_bounds must be positive.")
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
+    validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
+    validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the rtol parameter.
     rtol = _parameter_validation.number_in_range_return_float(
@@ -953,7 +951,7 @@ def analyze_unsteady_convergence(
     )
 
     # Validate the coefficient_mask parameter.
-    coefficient_mask_array = _validate_coefficient_mask(coefficient_mask)
+    coefficient_mask_array = validate_coefficient_mask(coefficient_mask)
 
     # Validate the show_solver_progress parameter.
     show_solver_progress = _parameter_validation.boolLike_return_bool(
@@ -993,7 +991,7 @@ def analyze_unsteady_convergence(
     # otherwise invisible, which leaves a log ambiguous as to whether a case converged
     # against all six coefficients or a subset.
     logger.info(_logging.indent(1) + "Converging:")
-    for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
+    for label, masked_in in zip(COEFFICIENT_LABELS, coefficient_mask_array):
         if masked_in:
             logger.info(_logging.indent(2) + label)
 
@@ -1008,7 +1006,7 @@ def analyze_unsteady_convergence(
     # Wing copies, which omit explode_into_strips and so would silently un-explode an
     # exploded Wing. Relaxing this guard to admit an exploded Wing means teaching those
     # copies to carry the parameter.
-    _reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
+    reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
 
     # Create the list of wake states to iterate over.
     wake_list = []
@@ -1315,7 +1313,7 @@ def analyze_unsteady_convergence(
                     # If this isn't the first wake state, check convergence in the wake
                     # state direction.
                     if wake_id > 0:
-                        wake_converged, wake_metrics = _check_coefficient_convergence(
+                        wake_converged, wake_metrics = check_coefficient_convergence(
                             these_final_coefficients,
                             final_coefficients[
                                 wake_id - 1, length_id, ar_id, chord_id, :, :
@@ -1325,7 +1323,7 @@ def analyze_unsteady_convergence(
                             coefficient_mask_array,
                         )
 
-                        _log_coefficient_metrics(
+                        log_coefficient_metrics(
                             "Wake type convergence:",
                             wake_metrics,
                             coefficient_mask_array,
@@ -1340,7 +1338,7 @@ def analyze_unsteady_convergence(
                     # length direction.
                     if length_id > 0:
                         length_converged, length_metrics = (
-                            _check_coefficient_convergence(
+                            check_coefficient_convergence(
                                 these_final_coefficients,
                                 final_coefficients[
                                     wake_id, length_id - 1, ar_id, chord_id, :, :
@@ -1351,7 +1349,7 @@ def analyze_unsteady_convergence(
                             )
                         )
 
-                        _log_coefficient_metrics(
+                        log_coefficient_metrics(
                             "Wake length convergence:",
                             length_metrics,
                             coefficient_mask_array,
@@ -1365,7 +1363,7 @@ def analyze_unsteady_convergence(
                     # If this isn't the first Panel aspect ratio, check convergence in
                     # the Panel aspect ratio direction.
                     if ar_id > 0:
-                        ar_converged, ar_metrics = _check_coefficient_convergence(
+                        ar_converged, ar_metrics = check_coefficient_convergence(
                             these_final_coefficients,
                             final_coefficients[
                                 wake_id, length_id, ar_id - 1, chord_id, :, :
@@ -1375,7 +1373,7 @@ def analyze_unsteady_convergence(
                             coefficient_mask_array,
                         )
 
-                        _log_coefficient_metrics(
+                        log_coefficient_metrics(
                             "Panel aspect ratio convergence:",
                             ar_metrics,
                             coefficient_mask_array,
@@ -1390,7 +1388,7 @@ def analyze_unsteady_convergence(
                     # If this isn't the first number of chordwise Panels, check
                     # convergence in the number of chordwise Panels direction.
                     if chord_id > 0:
-                        chord_converged, chord_metrics = _check_coefficient_convergence(
+                        chord_converged, chord_metrics = check_coefficient_convergence(
                             these_final_coefficients,
                             final_coefficients[
                                 wake_id, length_id, ar_id, chord_id - 1, :, :
@@ -1400,7 +1398,7 @@ def analyze_unsteady_convergence(
                             coefficient_mask_array,
                         )
 
-                        _log_coefficient_metrics(
+                        log_coefficient_metrics(
                             "Number of chordwise Panels convergence:",
                             chord_metrics,
                             coefficient_mask_array,
@@ -1438,16 +1436,16 @@ def analyze_unsteady_convergence(
                     # or semi-converged combination of parameters has been found and
                     # will be returned.
                     if wake_passed and length_passed and ar_passed and chord_passed:
-                        converged_wake_id = _converged_parameter_id(
+                        converged_wake_id = converged_parameter_id(
                             wake_id, single_wake, wake_converged
                         )
-                        converged_length_id = _converged_parameter_id(
+                        converged_length_id = converged_parameter_id(
                             length_id, single_length, length_converged
                         )
-                        converged_ar_id = _converged_parameter_id(
+                        converged_ar_id = converged_parameter_id(
                             ar_id, single_ar, ar_converged
                         )
-                        converged_chord_id = _converged_parameter_id(
+                        converged_chord_id = converged_parameter_id(
                             chord_id, single_chord, chord_converged
                         )
 
@@ -1671,7 +1669,7 @@ def analyze_unsteady_convergence(
     return None, None, None, None, None
 
 
-def _validate_panel_aspect_ratio_bounds(
+def validate_panel_aspect_ratio_bounds(
     panel_aspect_ratio_bounds: tuple[int, int],
 ) -> None:
     """Validates the panel_aspect_ratio_bounds parameter shared by the convergence
@@ -1698,7 +1696,7 @@ def _validate_panel_aspect_ratio_bounds(
         raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
 
 
-def _validate_num_chordwise_panels_bounds(
+def validate_num_chordwise_panels_bounds(
     num_chordwise_panels_bounds: tuple[int, int],
 ) -> None:
     """Validates the num_chordwise_panels_bounds parameter shared by the convergence
@@ -1725,7 +1723,7 @@ def _validate_num_chordwise_panels_bounds(
         raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
 
 
-def _reject_unrefinable_wings(
+def reject_unrefinable_wings(
     ref_airplanes: tuple[geometry.airplane.Airplane, ...],
     analyze_function_name: str,
 ) -> None:
@@ -1757,7 +1755,7 @@ def _reject_unrefinable_wings(
                 )
 
 
-def _validate_coefficient_mask(
+def validate_coefficient_mask(
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None,
 ) -> np.ndarray:
     """Validates the coefficient_mask parameter shared by the convergence analysis
@@ -1781,7 +1779,7 @@ def _validate_coefficient_mask(
     return np.array(coefficient_mask, dtype=bool)
 
 
-def _check_coefficient_convergence(
+def check_coefficient_convergence(
     these_coefficients: np.ndarray,
     coarser_coefficients: np.ndarray,
     rtol: float,
@@ -1846,7 +1844,7 @@ def _check_coefficient_convergence(
     return all_converged, coefficient_metrics
 
 
-def _log_coefficient_metrics(
+def log_coefficient_metrics(
     header: str,
     coefficient_metrics: np.ndarray,
     coefficient_mask: np.ndarray,
@@ -1861,7 +1859,7 @@ def _log_coefficient_metrics(
     :param header: The message introducing the direction, for example "Panel aspect
         ratio convergence:".
     :param coefficient_metrics: A (6,) ndarray of floats of each load coefficient's
-        convergence metric (percentage), as returned by _check_coefficient_convergence.
+        convergence metric (percentage), as returned by check_coefficient_convergence.
     :param coefficient_mask: A (6,) ndarray of bools that determines which of the six
         load coefficients must converge.
     :param levels: The number of levels to indent the header beyond the current nesting
@@ -1870,7 +1868,7 @@ def _log_coefficient_metrics(
     """
     logger.info(_logging.indent(levels) + header)
     for label, metric, masked_in in zip(
-        _COEFFICIENT_LABELS, coefficient_metrics, coefficient_mask
+        COEFFICIENT_LABELS, coefficient_metrics, coefficient_mask
     ):
         if masked_in:
             logger.info(
@@ -1878,7 +1876,7 @@ def _log_coefficient_metrics(
             )
 
 
-def _converged_parameter_id(
+def converged_parameter_id(
     this_id: int,
     single: bool,
     converged: bool,

@@ -23,13 +23,13 @@ logger = _logging.get_logger("movements.movement")
 # in time: a coarse chordwise discretization or a slow motion can produce a delta_time
 # too large to sample the motion adequately. The estimate is clamped to this temporal
 # resolution to guard against that.
-_MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
+MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
 
 # Oversampling factor for the non static cached path. The high resolution Movement is
-# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
+# built with NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
 # more snapshot) so the maximum and half maximum candidates have integer strides and
 # other candidates stay within roughly half a high resolution step of the nominal time.
-_NON_STATIC_CACHE_OVERSAMPLE: int = 2
+NON_STATIC_CACHE_OVERSAMPLE: int = 2
 
 
 class Movement(_core.CoreMovement):
@@ -191,7 +191,7 @@ class Movement(_core.CoreMovement):
                     _num_spanwise = wing.num_spanwise_panels
                     assert _num_spanwise is not None
                     total_weighted_chord += (
-                        _mean_trailing_edge_panel_chord(wing) * _num_spanwise
+                        mean_trailing_edge_panel_chord(wing) * _num_spanwise
                     )
                     total_num_spanwise += _num_spanwise
             fast_estimate = (
@@ -202,24 +202,24 @@ class Movement(_core.CoreMovement):
 
             # Run analytical optimization to get a better delta_time that accounts for
             # both freestream and geometry motion velocities.
-            delta_time = _analytically_optimize_delta_time(
+            delta_time = analytically_optimize_delta_time(
                 airplane_movements=list(airplane_movements),
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=fast_estimate,
             )
 
             # Clamp the estimate so that there are at least
-            # _MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which the wake
+            # MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which the wake
             # sizing criterion alone does not guarantee.
             if _lcm_period > 0.0:
                 delta_time = min(
-                    delta_time, _lcm_period / _MIN_TIME_STEPS_PER_LCM_PERIOD
+                    delta_time, _lcm_period / MIN_TIME_STEPS_PER_LCM_PERIOD
                 )
 
         # Run iterative optimization if requested, using the analytical result as the
         # initial guess.
         if _should_iteratively_optimize_delta_time:
-            delta_time = _optimize_delta_time(
+            delta_time = optimize_delta_time(
                 airplane_movements=list(airplane_movements),
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=delta_time,
@@ -484,7 +484,7 @@ class Movement(_core.CoreMovement):
         return self._operating_points
 
 
-def _compute_wake_area_mismatch(
+def compute_wake_area_mismatch(
     delta_time: float,
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
@@ -741,7 +741,7 @@ def _compute_wake_area_mismatch(
     return total_mismatch / num_comparisons
 
 
-def _compute_wake_area_mismatches_cached_non_static(
+def compute_wake_area_mismatches_cached_non_static(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     lcm_period: float,
@@ -750,11 +750,11 @@ def _compute_wake_area_mismatches_cached_non_static(
     """Computes wake area mismatch for many integer num_steps candidates from one shared
     high resolution Movement.
 
-    Builds a single Movement with M = _NON_STATIC_CACHE_OVERSAMPLE *
+    Builds a single Movement with M = NON_STATIC_CACHE_OVERSAMPLE *
     max(num_steps_candidates) snapshots covering one LCM period of motion. For each
     candidate N, the snapshots needed at delta_time = lcm_period / N are looked up via
     linear interpolation between adjacent high resolution samples, then the same closed
-    form bound and wake area formulas as _compute_wake_area_mismatch are applied. The
+    form bound and wake area formulas as compute_wake_area_mismatch are applied. The
     Movement and UnsteadyProblem cost is paid once per optimizer call rather than once
     per candidate, which collapses the dominant per evaluation cost into a single up
     front build.
@@ -774,7 +774,7 @@ def _compute_wake_area_mismatches_cached_non_static(
     :return: A dict mapping each candidate num_steps value to its computed mismatch.
     """
     max_candidate = max(num_steps_candidates)
-    high_res_num_intervals = _NON_STATIC_CACHE_OVERSAMPLE * max_candidate
+    high_res_num_intervals = NON_STATIC_CACHE_OVERSAMPLE * max_candidate
     high_res_dt = lcm_period / high_res_num_intervals
     # The Movement covers high_res_num_intervals + 1 snapshots so that one full LCM
     # period worth of intervals can be sampled.
@@ -843,7 +843,7 @@ def _compute_wake_area_mismatches_cached_non_static(
 
     results: dict[int, float] = {}
     for num_steps in num_steps_candidates:
-        results[num_steps] = _evaluate_cached_wake_area_mismatch(
+        results[num_steps] = evaluate_cached_wake_area_mismatch(
             cache_per_wing=cache_per_wing,
             v_inf_high_res=v_inf_high_res,
             lcm_period=lcm_period,
@@ -853,7 +853,7 @@ def _compute_wake_area_mismatches_cached_non_static(
     return results
 
 
-def _evaluate_cached_wake_area_mismatch(
+def evaluate_cached_wake_area_mismatch(
     cache_per_wing: list[dict],
     v_inf_high_res: np.ndarray,
     lcm_period: float,
@@ -871,10 +871,10 @@ def _evaluate_cached_wake_area_mismatch(
     UnsteadyProblem build. When the fractional index is an integer (e.g. for candidates
     that divide high_res_num_intervals exactly) the interpolation reduces to a direct
     lookup. The resulting per panel positions feed the same closed form bound and wake
-    area formulas as _compute_wake_area_mismatch.
+    area formulas as compute_wake_area_mismatch.
 
     :param cache_per_wing: A list of per (airplane, wing) caches produced by
-        _compute_wake_area_mismatches_cached_non_static. Each entry is a dict with keys
+        compute_wake_area_mismatches_cached_non_static. Each entry is a dict with keys
         "Flpp", "Frpp", "Blpp", "Brpp" mapping to (high_res_num_intervals + 1,
         num_spanwise_panels, 3) ndarrays of trailing edge panel corner positions in the
         first Airplane's geometry axes (GP1_CgP1).
@@ -1036,7 +1036,7 @@ def _evaluate_cached_wake_area_mismatch(
     return total_mismatch / num_comparisons
 
 
-def _optimize_delta_time(
+def optimize_delta_time(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     initial_delta_time: float,
@@ -1058,7 +1058,7 @@ def _optimize_delta_time(
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
     :param initial_delta_time: The initial estimate, typically the result of
-        _analytically_optimize_delta_time. It must be a positive float. Its units are in
+        analytically_optimize_delta_time. It must be a positive float. Its units are in
         seconds.
     :param mismatch_cutoff: A positive float for the optimization's convergence
         threshold. Only used for static Movements. When the average area mismatch (which
@@ -1079,7 +1079,7 @@ def _optimize_delta_time(
 
     if not non_zero_periods:
         # Static case: use scipy continuous optimization.
-        return _optimize_delta_time_static(
+        return optimize_delta_time_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1088,7 +1088,7 @@ def _optimize_delta_time(
     else:
         # Non static case: brute force search over integer num_steps_per_lcm_cycle.
         lcm_period = _core.lcm_multiple(non_zero_periods)
-        return _optimize_delta_time_non_static(
+        return optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1096,7 +1096,7 @@ def _optimize_delta_time(
         )
 
 
-def _optimize_delta_time_static(
+def optimize_delta_time_static(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     initial_delta_time: float,
@@ -1120,7 +1120,7 @@ def _optimize_delta_time_static(
     upper_bound = initial_delta_time * 2.0
 
     # Check initial estimate first before running optimizer.
-    initial_mismatch = _compute_wake_area_mismatch(
+    initial_mismatch = compute_wake_area_mismatch(
         initial_delta_time, airplane_movements, operating_point_movement
     )
 
@@ -1143,7 +1143,7 @@ def _optimize_delta_time_static(
 
     def objective(dt: float) -> float:
         nonlocal best_delta_time, best_mismatch
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             dt, airplane_movements, operating_point_movement
         )
 
@@ -1201,7 +1201,7 @@ def _optimize_delta_time_static(
     return optimized_delta_time
 
 
-def _optimize_delta_time_non_static(
+def optimize_delta_time_non_static(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     initial_delta_time: float,
@@ -1243,7 +1243,7 @@ def _optimize_delta_time_non_static(
     # linearly interpolating the cached panel corners. This collapses the per candidate
     # Movement and UnsteadyProblem cost into a single up front build for the entire
     # bracket.
-    cached_mismatches = _compute_wake_area_mismatches_cached_non_static(
+    cached_mismatches = compute_wake_area_mismatches_cached_non_static(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         lcm_period=lcm_period,
@@ -1290,7 +1290,7 @@ def _optimize_delta_time_non_static(
     return optimized_delta_time
 
 
-def _mean_trailing_edge_panel_chord(wing: geometry.wing.Wing) -> float:
+def mean_trailing_edge_panel_chord(wing: geometry.wing.Wing) -> float:
     """Finds the mean chordwise length of a Wing's trailing edge Panels.
 
     This is the target chord length for the wake ring vortices the Wing sheds. The
@@ -1320,7 +1320,7 @@ def _mean_trailing_edge_panel_chord(wing: geometry.wing.Wing) -> float:
     return total_te_panel_chord / num_spanwise
 
 
-def _analytically_optimize_delta_time(
+def analytically_optimize_delta_time(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     initial_delta_time: float,
@@ -1329,7 +1329,7 @@ def _analytically_optimize_delta_time(
 
     Estimates the delta_time that produces wake ring vortices with roughly the same
     chord length as the bound trailing edge ring vortices, accounting for both
-    freestream and geometry motion velocities. This is faster than _optimize_delta_time
+    freestream and geometry motion velocities. This is faster than optimize_delta_time
     but may be slightly less accurate.
 
     The algorithm works by: (1) computing a very small preliminary delta_time as the
@@ -1427,7 +1427,7 @@ def _analytically_optimize_delta_time(
             num_spanwise = _panels.shape[1]
 
             # The target chord length for this Wing's wake ring vortices.
-            mean_te_panel_chord = _mean_trailing_edge_panel_chord(wing)
+            mean_te_panel_chord = mean_trailing_edge_panel_chord(wing)
 
             # Accumulate displacement distance across all trailing edge Panels across
             # all consecutive time step pairs.

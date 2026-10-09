@@ -22,11 +22,11 @@ from . import wing_cross_section as wing_cross_section_mod
 # default reference dimensions. A strip is edge-on when its projected area is at most
 # this fraction of the magnitude of its vector area, and two triangles overlap when
 # their intersection area exceeds this fraction of the smaller triangle's area.
-_PLANFORM_RELATIVE_TOLERANCE = 1e-9
+PLANFORM_RELATIVE_TOLERANCE = 1e-9
 
 # The number of evenly spaced points at which the planform samples an edge_defined
 # Wing's edge curves between each neighboring pair of stored points.
-_NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS = 32
+NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS = 32
 
 
 class Airplane:
@@ -223,7 +223,7 @@ class Airplane:
         # them to the passed dimension after checking that it is valid.
         if s_ref is None or c_ref is None or b_ref is None:
             default_s_ref, default_c_ref, default_b_ref = (
-                _get_planform_reference_dimensions(first_wings)
+                get_planform_reference_dimensions(first_wings)
             )
         if s_ref is None:
             self._s_ref = default_s_ref
@@ -1484,7 +1484,7 @@ class Airplane:
             return [wing, reflected_wing]
 
 
-def _get_planform_reference_dimensions(
+def get_planform_reference_dimensions(
     first_wings: list[wing_mod.Wing],
 ) -> tuple[float, float, float]:
     """Calculates the default reference area, reference chord, and reference span from
@@ -1511,7 +1511,7 @@ def _get_planform_reference_dimensions(
     # (N, 2, 3) ndarray of N stations, ordered from root to tip, where each station
     # holds a leading point and then a trailing point. The list is indexed first by
     # half, and then by strip.
-    listGridStripPoints_G_Cg = [_get_wing_strip_points(wing) for wing in first_wings]
+    listGridStripPoints_G_Cg = [get_wing_strip_points(wing) for wing in first_wings]
     if first_wing.symmetry_type == 4:
         assert first_wing.symmetryPoint_G_Cg is not None
         assert first_wing.symmetryNormal_G is not None
@@ -1584,7 +1584,7 @@ def _get_planform_reference_dimensions(
     if (
         geometry_projected_area < wing_projected_area / np.sqrt(2.0)
         or geometry_projected_area
-        <= _PLANFORM_RELATIVE_TOLERANCE * vector_area_magnitude
+        <= PLANFORM_RELATIVE_TOLERANCE * vector_area_magnitude
     ):
         raise ValueError(
             "The default reference dimensions come from the reference planform (defined "
@@ -1600,7 +1600,7 @@ def _get_planform_reference_dimensions(
     # of its vector area. Edge-on strips play no further part, except in setting the
     # reference span.
     signed_areas = stackVectorAreas_G[:, 2]
-    is_not_edge_on = np.abs(signed_areas) > _PLANFORM_RELATIVE_TOLERANCE * (
+    is_not_edge_on = np.abs(signed_areas) > PLANFORM_RELATIVE_TOLERANCE * (
         np.linalg.norm(stackVectorAreas_G, axis=1)
     )
 
@@ -1637,7 +1637,7 @@ def _get_planform_reference_dimensions(
             firstHalfMaximumY_G_Cg - firstHalfMinimumY_G_Cg,
             secondHalfMaximumY_G_Cg - secondHalfMinimumY_G_Cg,
         )
-        if half_overlap > _PLANFORM_RELATIVE_TOLERANCE * half_extent:
+        if half_overlap > PLANFORM_RELATIVE_TOLERANCE * half_extent:
             raise ValueError(
                 ill_formed_message.format(
                     "its two halves overlap along the geometry axes' y axis"
@@ -1649,7 +1649,7 @@ def _get_planform_reference_dimensions(
     listStackTrianglePointsXY_G_Cg = []
     triangle_strip_ids: list[int] = []
     for strip_id in np.flatnonzero(is_not_edge_on):
-        stackStripTrianglePointsXY_G_Cg = _triangulate_strip(
+        stackStripTrianglePointsXY_G_Cg = triangulate_strip(
             listAllGridStripPoints_G_Cg[strip_id][:, :, :2],
             float(signed_areas[strip_id]),
         )
@@ -1664,7 +1664,7 @@ def _get_planform_reference_dimensions(
     stackTrianglePointsXY_G_Cg = np.concatenate(listStackTrianglePointsXY_G_Cg)
 
     # Check that no two strips' interiors overlap.
-    if _triangles_overlap(
+    if triangles_overlap(
         stackTrianglePointsXY_G_Cg, np.array(triangle_strip_ids, dtype=int)
     ):
         raise ValueError(ill_formed_message.format("two of its parts overlap"))
@@ -1672,12 +1672,12 @@ def _get_planform_reference_dimensions(
     # Find the reference dimensions.
     b_ref = float(np.max(stripMaximumsY_G_Cg) - np.min(stripMinimumsY_G_Cg))
     s_ref = float(np.sum(np.abs(signed_areas[is_not_edge_on])))
-    c_ref = _get_chord_squared_integral(stackTrianglePointsXY_G_Cg) / s_ref
+    c_ref = get_chord_squared_integral(stackTrianglePointsXY_G_Cg) / s_ref
 
     return s_ref, c_ref, b_ref
 
 
-def _get_wing_strip_points(wing: wing_mod.Wing) -> list[np.ndarray]:
+def get_wing_strip_points(wing: wing_mod.Wing) -> list[np.ndarray]:
     """Returns the strips that make up one meshed Wing's planform (in geometry axes,
     relative to the CG).
 
@@ -1710,7 +1710,7 @@ def _get_wing_strip_points(wing: wing_mod.Wing) -> list[np.ndarray]:
         # Sample both curves at the same y values, so that the strip's stations each
         # hold a leading point and a trailing point at the same y component.
         listSampleYs_Wn_Ler = [
-            np.linspace(start_y, end_y, _NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS + 2)
+            np.linspace(start_y, end_y, NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS + 2)
             for edgePoints_Wn_Ler in (
                 leadingEdgePoints_Wn_Ler,
                 trailingEdgePoints_Wn_Ler,
@@ -1759,7 +1759,7 @@ def _get_wing_strip_points(wing: wing_mod.Wing) -> list[np.ndarray]:
     ]
 
 
-def _triangulate_strip(
+def triangulate_strip(
     gridStripPointsXY_G_Cg: np.ndarray, signed_area: float
 ) -> np.ndarray | None:
     """Splits a projected strip into triangles whose projected areas all share the
@@ -1804,13 +1804,13 @@ def _triangulate_strip(
     gridCandidateTrianglePointsXY_G_Cg = gridQuadrilateralPointsXY_G_Cg[
         :, triangle_corner_ids
     ]
-    candidate_areas = _get_signed_triangle_areas(
+    candidate_areas = get_signed_triangle_areas(
         gridCandidateTrianglePointsXY_G_Cg.reshape(-1, 3, 2)
     ).reshape(-1, 2, 2)
 
     # A diagonal is valid for a quadrilateral if neither of its triangles has a non
     # negligible area with the opposite sign to the strip's.
-    tolerance = _PLANFORM_RELATIVE_TOLERANCE * abs(signed_area)
+    tolerance = PLANFORM_RELATIVE_TOLERANCE * abs(signed_area)
     sign = np.sign(signed_area)
     is_valid = np.all(sign * candidate_areas >= -tolerance, axis=2)
     if not np.all(np.any(is_valid, axis=1)):
@@ -1830,7 +1830,7 @@ def _triangulate_strip(
     return stackTrianglePointsXY_G_Cg
 
 
-def _get_signed_triangle_areas(stackTrianglePointsXY_G_Cg: np.ndarray) -> np.ndarray:
+def get_signed_triangle_areas(stackTrianglePointsXY_G_Cg: np.ndarray) -> np.ndarray:
     """Returns the signed areas of projected triangles.
 
     :param stackTrianglePointsXY_G_Cg: A (K, 3, 2) ndarray of floats holding the K
@@ -1849,7 +1849,7 @@ def _get_signed_triangle_areas(stackTrianglePointsXY_G_Cg: np.ndarray) -> np.nda
     return signed_areas
 
 
-def _triangles_overlap(
+def triangles_overlap(
     stackTrianglePointsXY_G_Cg: np.ndarray, strip_ids: np.ndarray
 ) -> bool:
     """Checks whether the interiors of any two triangles from different strips overlap.
@@ -1882,7 +1882,7 @@ def _triangles_overlap(
     stackMinimumsXY_G_Cg = stackMinimumsXY_G_Cg[order]
     stackMaximumsXY_G_Cg = stackMaximumsXY_G_Cg[order]
     strip_ids = strip_ids[order]
-    areas = _get_signed_triangle_areas(stackTrianglePointsXY_G_Cg)
+    areas = get_signed_triangle_areas(stackTrianglePointsXY_G_Cg)
     end_ids = np.searchsorted(
         stackMinimumsXY_G_Cg[:, 1], stackMaximumsXY_G_Cg[:, 1], side="left"
     )
@@ -1901,18 +1901,18 @@ def _triangles_overlap(
             )
         ]
         for other_id in candidate_ids:
-            intersection_area = _get_triangle_intersection_area(
+            intersection_area = get_triangle_intersection_area(
                 stackTrianglePointsXY_G_Cg[triangle_id],
                 stackTrianglePointsXY_G_Cg[other_id],
             )
-            if intersection_area > _PLANFORM_RELATIVE_TOLERANCE * min(
+            if intersection_area > PLANFORM_RELATIVE_TOLERANCE * min(
                 areas[triangle_id], areas[other_id]
             ):
                 return True
     return False
 
 
-def _get_triangle_intersection_area(
+def get_triangle_intersection_area(
     trianglePointsXY_G_Cg: np.ndarray, clipTrianglePointsXY_G_Cg: np.ndarray
 ) -> float:
     """Returns the area of the intersection of two projected triangles whose points are
@@ -1984,7 +1984,7 @@ def _get_triangle_intersection_area(
     )
 
 
-def _get_chord_squared_integral(stackTrianglePointsXY_G_Cg: np.ndarray) -> float:
+def get_chord_squared_integral(stackTrianglePointsXY_G_Cg: np.ndarray) -> float:
     """Returns the integral of the square of the projected chord along the geometry
     axes' y axis, for a set of non overlapping projected triangles.
 
@@ -2008,7 +2008,7 @@ def _get_chord_squared_integral(stackTrianglePointsXY_G_Cg: np.ndarray) -> float
     highPointsY_G_Cg = sortedPointsY_G_Cg[:, 2]
     middle_lengths = (
         2.0
-        * np.abs(_get_signed_triangle_areas(stackTrianglePointsXY_G_Cg))
+        * np.abs(get_signed_triangle_areas(stackTrianglePointsXY_G_Cg))
         / (highPointsY_G_Cg - lowPointsY_G_Cg)
     )
 

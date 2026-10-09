@@ -44,24 +44,24 @@ logger = _logging.get_logger("problems")
 # These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
 # injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
 # generated model XML at the matching location.
-_EXTRA_XML_INJECTION_POINTS = frozenset(
+EXTRA_XML_INJECTION_POINTS = frozenset(
     {"default", "asset", "visual", "worldbody", "body"}
 )
 
 # These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
 # Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
 # XML's option element.
-_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
+MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
 
 # These are the strongly coupled free-flight sub-iteration tunables. The relative and
 # absolute tolerances form the mixed convergence test on the nondimensionalized state
 # residual. The divergence tolerance guards the Aitken relaxation factor against a
 # collapsing denominator. The initial relaxation factor under-relaxes the first update
 # before the Aitken formula takes over.
-_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
-_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
-_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
-_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
+SUBITERATION_RELATIVE_TOLERANCE = 1e-6
+SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
+SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
+SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
 
 # These are tolerances for the torsional spring-damper ODE integration in
 # _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
@@ -71,8 +71,8 @@ _SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
 # bounds both state components, the torsional angle (radians) and its time derivative
 # (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
 # makes the ODE stiff and the strict tolerances expensive).
-_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
-_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
+SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
+SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
 
 class SteadyProblem:
@@ -707,10 +707,10 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         # MuJoCoModel sets the validated name in the generated model XML's option
         # element, so the choice survives saving and loading.
         integrator = _parameter_validation.str_return_str(integrator, "integrator")
-        if integrator not in _MUJOCO_INTEGRATORS:
+        if integrator not in MUJOCO_INTEGRATORS:
             raise ValueError(
                 f'integrator "{integrator}" is not a supported MuJoCo integrator; '
-                f"expected one of {sorted(_MUJOCO_INTEGRATORS)}."
+                f"expected one of {sorted(MUJOCO_INTEGRATORS)}."
             )
 
         # Validate the extra_xml injection-point dict (it must be a dict, or None, whose
@@ -724,10 +724,10 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
                 raise TypeError("extra_xml must be a dict or None.")
             validated_extra_xml: dict[str, str] = {}
             for key, value in extra_xml.items():
-                if key not in _EXTRA_XML_INJECTION_POINTS:
+                if key not in EXTRA_XML_INJECTION_POINTS:
                     raise ValueError(
                         f'extra_xml key "{key}" is not a permitted injection point; '
-                        f"expected one of {sorted(_EXTRA_XML_INJECTION_POINTS)}."
+                        f"expected one of {sorted(EXTRA_XML_INJECTION_POINTS)}."
                     )
                 validated_extra_xml[key] = _parameter_validation.str_return_str(
                     value, f'extra_xml["{key}"]'
@@ -1292,7 +1292,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         )
         trial_x = self._state_to_vector(self._advance_body(snapshot_interval_loads))
 
-        relaxation_factor = _SUBITERATION_INITIAL_RELAXATION_FACTOR
+        relaxation_factor = SUBITERATION_INITIAL_RELAXATION_FACTOR
         previous_residual: np.ndarray | None = None
         residual_norm = 0.0
         converged = False
@@ -1328,8 +1328,8 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
                     residual,
                     previous_residual,
                     relaxation_factor,
-                    _SUBITERATION_INITIAL_RELAXATION_FACTOR,
-                    _SUBITERATION_DIVERGENCE_TOLERANCE,
+                    SUBITERATION_INITIAL_RELAXATION_FACTOR,
+                    SUBITERATION_DIVERGENCE_TOLERANCE,
                 )
 
             logger.debug(
@@ -1346,8 +1346,8 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
                 weights,
                 residual,
                 increment,
-                _SUBITERATION_RELATIVE_TOLERANCE,
-                _SUBITERATION_ABSOLUTE_TOLERANCE,
+                SUBITERATION_RELATIVE_TOLERANCE,
+                SUBITERATION_ABSOLUTE_TOLERANCE,
             ):
                 converged = True
                 break
@@ -2256,8 +2256,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             (t[0], t[-1]),
             np.array([theta0_rad, theta_derivative0_rad], dtype=float),
             t_eval=t,
-            rtol=_SPRING_ODE_RELATIVE_TOLERANCE,
-            atol=_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD,
+            rtol=SPRING_ODE_RELATIVE_TOLERANCE,
+            atol=SPRING_ODE_ABSOLUTE_TOLERANCE_RAD,
         )
 
         final_theta_rad = float(sol.y[0][-1])

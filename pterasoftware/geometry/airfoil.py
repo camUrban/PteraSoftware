@@ -22,7 +22,7 @@ from .. import (
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
 # annotated as Any so the deprecated parameter can carry it as a default while keeping
 # an outline-shaped type hint at the call sites mypy sees.
-_UNSET: Any = object()
+UNSET: Any = object()
 
 
 class Airfoil:
@@ -51,7 +51,7 @@ class Airfoil:
         outline_A_Lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
         resample: bool | np.bool = True,
         n_points_per_side: int = 400,
-        outline_A_lp: Any = _UNSET,
+        outline_A_lp: Any = UNSET,
     ) -> None:
         """The initialization method.
 
@@ -98,7 +98,7 @@ class Airfoil:
         :return: None
         """
         # Coverage ignores this branch because the outline_A_lp parameter is deprecated.
-        if outline_A_lp is not _UNSET:  # pragma: no cover
+        if outline_A_lp is not UNSET:  # pragma: no cover
             warnings.warn(
                 "The outline_A_lp parameter is deprecated and will be removed in "
                 "v6.0.0. Use outline_A_Lp instead.",

@@ -1258,7 +1258,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     ) -> tuple[float, float, float]:
         """Process a Wing's symmetry and return its planform reference dimensions."""
         first_wings = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
-        return ps.geometry.airplane._get_planform_reference_dimensions(first_wings)
+        return ps.geometry.airplane.get_planform_reference_dimensions(first_wings)
 
     def test_type_5_includes_gap_between_halves(self) -> None:
         """Test that a type 5 Wing's reference dimensions include both halves and the

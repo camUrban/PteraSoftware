@@ -1048,7 +1048,7 @@ class Wing:
         for i in range(len(self.wing_cross_sections)):
             T = _transformations.compose_T_pas(
                 *(
-                    _assert_T_not_none(wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+                    assert_T_not_none(wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
                     for wing_cross_section in self.wing_cross_sections[: i + 1]
                 )
             )
@@ -2190,7 +2190,7 @@ class Wing:
         return new_cross_sections
 
 
-def _assert_T_not_none(T: np.ndarray | None) -> np.ndarray:
+def assert_T_not_none(T: np.ndarray | None) -> np.ndarray:
     """Assert that a transformation matrix is not None and return it.
 
     :param T: None, or a (4,4) ndarray of floats representing the transformation matrix.

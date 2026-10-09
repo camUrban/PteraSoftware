@@ -14,8 +14,8 @@ from ._coupled_unsteady_ring_vortex_lattice_method import (
 # Body and geometry axes differ by a 180-degree rotation about y, so transforming a free
 # vector (such as an angular velocity) from the first Airplane's body axes to its
 # geometry axes negates the x and z components.
-_BP1_TO_GP1_FLIP = np.array([-1.0, 1.0, -1.0], dtype=float)
-_BP1_TO_GP1_FLIP.flags.writeable = False
+BP1_TO_GP1_FLIP = np.array([-1.0, 1.0, -1.0], dtype=float)
+BP1_TO_GP1_FLIP.flags.writeable = False
 
 
 class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
@@ -157,7 +157,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        omegas_GP1__E = self.current_operating_point.omegas_BP1__E * _BP1_TO_GP1_FLIP
+        omegas_GP1__E = self.current_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
@@ -176,7 +176,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             frame). Its units are in radians per second.
         """
         next_operating_point = self._operating_point_at(self._current_step + 1)
-        omegas_GP1__E = next_operating_point.omegas_BP1__E * _BP1_TO_GP1_FLIP
+        omegas_GP1__E = next_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
     def freeze_substep(self, next_steady_problem: problems.SteadyProblem) -> None:

@@ -208,7 +208,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # optimization into a test failure.
             with mock.patch.object(
                 ps.movements.movement,
-                "_optimize_delta_time",
+                "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."
                 ),
@@ -276,7 +276,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # any optimization into a test failure.
             with mock.patch.object(
                 ps.movements.movement,
-                "_optimize_delta_time",
+                "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."
                 ),

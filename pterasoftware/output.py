@@ -36,11 +36,11 @@ logger = _logging.get_logger("output")
 # Define the Plotter's appearance. The streamline line width is in pixels and is tuned
 # for _output_rendering.REFERENCE_WINDOW_SIZE, so it is scaled wherever it is used, as
 # the font sizes in _output_rendering are.
-_STREAMLINE_COLOR = "orchid"
-_STREAMLINE_LINE_WIDTH = 2.0
-_IMAGE_SURFACE_OPACITY = 0.5
-_ANIMATE_PREVIEW_FIRST_OPACITY = 0.10
-_ANIMATE_PREVIEW_LAST_OPACITY = 0.35
+STREAMLINE_COLOR = "orchid"
+STREAMLINE_LINE_WIDTH = 2.0
+IMAGE_SURFACE_OPACITY = 0.5
+ANIMATE_PREVIEW_FIRST_OPACITY = 0.10
+ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
@@ -49,18 +49,18 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # testing, so the visualizations pin it rather than take the default. It is not fully
 # reproducible either, since a pixel along an edge can still differ by one intensity
 # level between runs.
-_MULTI_SAMPLES = 4
+MULTI_SAMPLES = 4
 
 # Define the colors of the series in the results plots, which are named colors from
 # Matplotlib's xkcd color survey table.
-_ALPHA_COLOR = "xkcd:peacock blue"
-_BETA_COLOR = "xkcd:sea"
-_LINEAR_X_COLOR = "xkcd:dark sea green"
-_LINEAR_Y_COLOR = "xkcd:nasty green"
-_LINEAR_Z_COLOR = "xkcd:squash"
-_ANGULAR_X_COLOR = "xkcd:pumpkin"
-_ANGULAR_Y_COLOR = "xkcd:dark coral"
-_ANGULAR_Z_COLOR = "xkcd:red violet"
+ALPHA_COLOR = "xkcd:peacock blue"
+BETA_COLOR = "xkcd:sea"
+LINEAR_X_COLOR = "xkcd:dark sea green"
+LINEAR_Y_COLOR = "xkcd:nasty green"
+LINEAR_Z_COLOR = "xkcd:squash"
+ANGULAR_X_COLOR = "xkcd:pumpkin"
+ANGULAR_Y_COLOR = "xkcd:dark coral"
+ANGULAR_Z_COLOR = "xkcd:red violet"
 
 # Define the text that the results outputs share. Every figure's legend labels,
 # subtitle, and y axis label are named once here because the other two outputs restate
@@ -68,14 +68,14 @@ _ANGULAR_Z_COLOR = "xkcd:red violet"
 # quantity from the legend label, its axes, point, and frame from the subtitle, and its
 # unit from the y axis label, while a logged group header pairs a quantity with the same
 # subtitle. Naming them once is what keeps the three describing a quantity the same way.
-_FORCE_LABELS = ["Induced Drag", "Crosswind Force", "Lift"]
-_FORCE_COEFFICIENT_LABELS = [
+FORCE_LABELS = ["Induced Drag", "Crosswind Force", "Lift"]
+FORCE_COEFFICIENT_LABELS = [
     "Induced Drag Coefficient",
     "Crosswind Force Coefficient",
     "Lift Coefficient",
 ]
-_MOMENT_LABELS = ["Rolling Moment", "Pitching Moment", "Yawing Moment"]
-_MOMENT_COEFFICIENT_LABELS = [
+MOMENT_LABELS = ["Rolling Moment", "Pitching Moment", "Yawing Moment"]
+MOMENT_COEFFICIENT_LABELS = [
     "Rolling Moment Coefficient",
     "Pitching Moment Coefficient",
     "Yawing Moment Coefficient",
@@ -84,60 +84,60 @@ _MOMENT_COEFFICIENT_LABELS = [
 # The position and velocity figures label their series by component alone, since their
 # titles name the quantity. A CSV column has no title, so it takes the quantity from the
 # y axis label instead.
-_COMPONENT_LABELS = ["X Component", "Y Component", "Z Component"]
-_ORIENTATION_LABELS = ["Roll Angle", "Pitch Angle", "Yaw Angle"]
-_ANGULAR_VELOCITY_LABELS = ["Roll Rate", "Pitch Rate", "Yaw Rate"]
-_AERODYNAMIC_ANGLE_LABELS = ["Angle of Attack", "Sideslip Angle"]
+COMPONENT_LABELS = ["X Component", "Y Component", "Z Component"]
+ORIENTATION_LABELS = ["Roll Angle", "Pitch Angle", "Yaw Angle"]
+ANGULAR_VELOCITY_LABELS = ["Roll Rate", "Pitch Rate", "Yaw Rate"]
+AERODYNAMIC_ANGLE_LABELS = ["Angle of Attack", "Sideslip Angle"]
 
-_WIND_AXES_SUBTITLE = "(in Wind Axes)"
-_WIND_AXES_CG_SUBTITLE = "(in Wind Axes, Relative to the CG)"
+WIND_AXES_SUBTITLE = "(in Wind Axes)"
+WIND_AXES_CG_SUBTITLE = "(in Wind Axes, Relative to the CG)"
 
 # The logged results report the loads in each Airplane's own geometry axes as well,
 # which no figure plots.
-_GEOMETRY_AXES_SUBTITLE = "(in Geometry Axes)"
-_GEOMETRY_AXES_CG_SUBTITLE = "(in Geometry Axes, Relative to the CG)"
-_POSITION_SUBTITLE = (
+GEOMETRY_AXES_SUBTITLE = "(in Geometry Axes)"
+GEOMETRY_AXES_CG_SUBTITLE = "(in Geometry Axes, Relative to the CG)"
+POSITION_SUBTITLE = (
     "(of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin)"
 )
-_VELOCITY_SUBTITLE = (
+VELOCITY_SUBTITLE = (
     "(of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame)"
 )
-_ORIENTATION_SUBTITLE = (
+ORIENTATION_SUBTITLE = (
     "(of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic "
     "zy'x\" Sequence)"
 )
-_ANGULAR_VELOCITY_SUBTITLE = (
+ANGULAR_VELOCITY_SUBTITLE = (
     "(in the First Airplane's Body Axes, Observed from the Earth Frame)"
 )
-_AERODYNAMIC_ANGLE_SUBTITLE = ""
+AERODYNAMIC_ANGLE_SUBTITLE = ""
 
-_FORCE_Y_LABEL = "Force (N)"
-_FORCE_COEFFICIENT_Y_LABEL = "Force Coefficient"
-_MOMENT_Y_LABEL = "Moment (N m)"
-_MOMENT_COEFFICIENT_Y_LABEL = "Moment Coefficient"
-_POSITION_Y_LABEL = "Position (m)"
-_VELOCITY_Y_LABEL = "Velocity (m/s)"
-_ORIENTATION_Y_LABEL = "Orientation (deg)"
-_ANGULAR_VELOCITY_Y_LABEL = "Angular Velocity (deg/s)"
-_AERODYNAMIC_ANGLE_Y_LABEL = "Angle (deg)"
+FORCE_Y_LABEL = "Force (N)"
+FORCE_COEFFICIENT_Y_LABEL = "Force Coefficient"
+MOMENT_Y_LABEL = "Moment (N m)"
+MOMENT_COEFFICIENT_Y_LABEL = "Moment Coefficient"
+POSITION_Y_LABEL = "Position (m)"
+VELOCITY_Y_LABEL = "Velocity (m/s)"
+ORIENTATION_Y_LABEL = "Orientation (deg)"
+ANGULAR_VELOCITY_Y_LABEL = "Angular Velocity (deg/s)"
+AERODYNAMIC_ANGLE_Y_LABEL = "Angle (deg)"
 
 # Define the camera's view-up direction for free flight visualizations. Earth axes have
 # +z pointing down, so physical up is the -z direction. The free flight visualizations
 # render geometry in Earth axes (so the body flies through the scene in its true pose)
 # and use this view-up so that down appears downward on screen. This is a rendering
 # setting, not an axis system.
-_freeFlightViewUp_E = np.array([0.0, 0.0, -1.0], dtype=float)
+freeFlightViewUp_E = np.array([0.0, 0.0, -1.0], dtype=float)
 
 # Define the camera's view direction for free flight visualizations, given as the offset
 # from the focal point to the camera position (in Earth axes). This views the scene
 # obliquely from the South, West, and above (Earth -x, -y, and -z).
-_freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
-_freeFlightViewDirection_E = _freeFlightViewDirection_E / np.linalg.norm(
-    _freeFlightViewDirection_E
+freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
+freeFlightViewDirection_E = freeFlightViewDirection_E / np.linalg.norm(
+    freeFlightViewDirection_E
 )
 
 
-def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
+def set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
     """Sets the opacity of temporary animation-preview actors.
 
     :param actors: The actors whose opacity should be changed.
@@ -149,7 +149,7 @@ def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
             actor.prop.opacity = opacity
 
 
-def _create_plotter(
+def create_plotter(
     window_width: int, window_height: int, off_screen: bool
 ) -> pv.Plotter:
     """Creates a Plotter with a parallel projection, multisample anti-aliasing, and the
@@ -169,14 +169,14 @@ def _create_plotter(
         lighting=None,
     )
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
-    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
+    plotter.enable_anti_aliasing("msaa", multi_samples=MULTI_SAMPLES)
     plotter.set_background(  # type: ignore[call-arg]
         color=_output_rendering.PLOTTER_BACKGROUND_COLOR
     )
     return plotter
 
 
-def _create_preview_plotter(
+def create_preview_plotter(
     window_width: int, window_height: int
 ) -> tuple[pv.Plotter, float]:
     """Creates the Plotter whose window shows a drawing or an animation's preview,
@@ -198,7 +198,7 @@ def _create_preview_plotter(
         and line widths in its window, as returned by _output_rendering.get_window_scale
         for the window's size.
     """
-    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
+    plotter = create_plotter(window_width, window_height, pv.OFF_SCREEN)
     if pv.OFF_SCREEN:
         return plotter, _output_rendering.get_window_scale(window_width, window_height)
 
@@ -220,7 +220,7 @@ def _create_preview_plotter(
     plotter.close()
     fitted_width = max(1, int(window_width * fit))
     fitted_height = max(1, int(window_height * fit))
-    plotter = _create_plotter(fitted_width, fitted_height, False)
+    plotter = create_plotter(fitted_width, fitted_height, False)
     render_window = plotter.ren_win
     assert render_window is not None
     render_window.Render()
@@ -239,7 +239,7 @@ def _create_preview_plotter(
     return plotter, _output_rendering.get_window_scale(fitted_width, fitted_height)
 
 
-def _add_scene(
+def add_scene(
     plotter: pv.Plotter,
     panel_surfaces: pv.PolyData,
     wake_ring_vortex_surfaces: pv.PolyData | None,
@@ -302,8 +302,8 @@ def _add_scene(
         plotter.add_mesh(
             streamline_surfaces,
             show_edges=True,
-            color=_STREAMLINE_COLOR,
-            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+            color=STREAMLINE_COLOR,
+            line_width=STREAMLINE_LINE_WIDTH * window_scale,
             smooth_shading=False,
             lighting=False,
             render=False,
@@ -316,9 +316,9 @@ def _add_scene(
                 _output_rendering.transform_mesh(streamline_surfaces, reflect_T_act),
                 show_edges=True,
                 color=_output_rendering.mute_color(
-                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
+                    STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
                 ),
-                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+                line_width=STREAMLINE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
                 lighting=False,
                 render=False,
@@ -329,7 +329,7 @@ def _add_scene(
         plotter.add_mesh(
             image_surface_mesh,
             texture=image_surface_texture,
-            opacity=_IMAGE_SURFACE_OPACITY,
+            opacity=IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
             lighting=False,
             render=False,
@@ -346,7 +346,7 @@ def _add_scene(
         )
 
 
-def _get_draw_geometry_meshes(
+def get_draw_geometry_meshes(
     panel_surfaces: pv.PolyData,
     wake_ring_vortex_surfaces: pv.PolyData | None,
     streamline_surfaces: pv.PolyData | None,
@@ -554,7 +554,7 @@ def draw(
     # Create the Plotter whose window shows the drawing, along with the scale of its
     # text and line widths. Those differ from the saved WebP's when the requested window
     # does not fit on screen and is scaled down.
-    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
+    plotter, preview_window_scale = create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
@@ -678,7 +678,7 @@ def draw(
     # Plotter's actors, so the image surface plane they size is known before any actor
     # is added. The scene meshes start as the geometry meshes and gain the image surface
     # plane when one is defined, which gives the free flight camera its framing bounds.
-    geometry_meshes = _get_draw_geometry_meshes(
+    geometry_meshes = get_draw_geometry_meshes(
         panel_surfaces, wake_ring_vortex_surfaces, streamline_surfaces, reflect_T_act
     )
     geometry_bounds = pv.MultiBlock(geometry_meshes).bounds
@@ -710,7 +710,7 @@ def draw(
         scene_meshes.append(image_surface_mesh)
 
     # Add the scene's actors.
-    _add_scene(
+    add_scene(
         plotter,
         panel_surfaces,
         wake_ring_vortex_surfaces,
@@ -754,9 +754,9 @@ def draw(
         )
         plotter.camera.focal_point = tuple(center_E_Eo)
         plotter.camera.position = tuple(
-            center_E_Eo + 3.0 * airplane_diagonal * _freeFlightViewDirection_E
+            center_E_Eo + 3.0 * airplane_diagonal * freeFlightViewDirection_E
         )
-        plotter.camera.up = _freeFlightViewUp_E
+        plotter.camera.up = freeFlightViewUp_E
 
         if T_pas_BP1_CgP1_to_E_Eo is not None:
             # Fit the camera to explicit framing bounds: the geometry and the image
@@ -843,8 +843,8 @@ def draw(
     # not its scene is translucent, since an opaque scene's layout is already settled
     # and the extra pass leaves it unchanged.
     if save:
-        save_plotter = _create_plotter(window_width, window_height, True)
-        _add_scene(
+        save_plotter = create_plotter(window_width, window_height, True)
+        add_scene(
             save_plotter,
             panel_surfaces,
             wake_ring_vortex_surfaces,
@@ -1074,7 +1074,7 @@ def animate(
     # Create the Plotter whose window shows the preview, along with the scale of its
     # text and line widths. Those differ from the saved WebP's when the requested window
     # does not fit on screen and is scaled down.
-    plotter, preview_window_scale = _create_preview_plotter(window_width, window_height)
+    plotter, preview_window_scale = create_preview_plotter(window_width, window_height)
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # Initialize values to hold the color map choice and its limits.
@@ -1175,12 +1175,12 @@ def animate(
         padding = max(2.0 * airplane_diagonal, 0.5 * trajectory_extent)
         camera_distance = trajectory_extent + padding
         cameraPosition_E_Eo = (
-            trajectoryMidpoint_E_Eo + camera_distance * _freeFlightViewDirection_E
+            trajectoryMidpoint_E_Eo + camera_distance * freeFlightViewDirection_E
         )
         free_flight_cpos = [
             tuple(cameraPosition_E_Eo),
             tuple(trajectoryMidpoint_E_Eo),
-            _freeFlightViewUp_E,
+            freeFlightViewUp_E,
         ]
 
         # Collect the geometry that frames the trajectory: the body at both ends, plus
@@ -1228,8 +1228,8 @@ def animate(
             _output_rendering.get_free_flight_fit_parallel_scale(
                 framing_meshes,
                 trajectoryMidpoint_E_Eo,
-                _freeFlightViewDirection_E,
-                _freeFlightViewUp_E,
+                freeFlightViewDirection_E,
+                freeFlightViewUp_E,
             )
         )
 
@@ -1275,14 +1275,14 @@ def animate(
         preview_window_scale,
     )
     if last_step != 0:
-        _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+        set_preview_opacity(first_preview_actors, ANIMATE_PREVIEW_FIRST_OPACITY)
 
     if show_mujoco_geometry:
         first_mujoco_actors = _output_rendering.add_mujoco_geometry(
             plotter, worldbody_geoms, body_geoms, step_body_transforms[0], reflect_T_act
         )
         if last_step != 0:
-            _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+            set_preview_opacity(first_mujoco_actors, ANIMATE_PREVIEW_FIRST_OPACITY)
 
     if last_step != 0:
         last_panel_surfaces = _output_rendering.get_panel_surfaces(
@@ -1329,7 +1329,7 @@ def animate(
             reflect_T_act,
             preview_window_scale,
         )
-        _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+        set_preview_opacity(last_preview_actors, ANIMATE_PREVIEW_LAST_OPACITY)
 
         if show_mujoco_geometry:
             last_mujoco_actors = _output_rendering.add_mujoco_geometry(
@@ -1339,7 +1339,7 @@ def animate(
                 step_body_transforms[last_step],
                 reflect_T_act,
             )
-            _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+            set_preview_opacity(last_mujoco_actors, ANIMATE_PREVIEW_LAST_OPACITY)
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
@@ -1353,7 +1353,7 @@ def animate(
         plotter.add_mesh(
             image_surface_mesh,
             texture=image_surface_texture,
-            opacity=_IMAGE_SURFACE_OPACITY,
+            opacity=IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
             lighting=False,
             render=False,
@@ -1435,7 +1435,7 @@ def animate(
     # and keep its scale. Saving or not, the first frame then starts from a Plotter
     # without any of the preview, so it is built in full, with the image surface plane.
     if save:
-        frame_plotter = _create_plotter(window_width, window_height, True)
+        frame_plotter = create_plotter(window_width, window_height, True)
         frame_window_scale = window_scale
         frame_plotter.camera.DeepCopy(plotter.camera)
         frame_plotter.renderer.camera_set = True
@@ -1463,7 +1463,7 @@ def animate(
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
-    _add_scene(
+    add_scene(
         frame_plotter,
         first_frame_panel_surfaces,
         None,
@@ -1593,7 +1593,7 @@ def animate(
 
         # Add this time step's scene, which includes the pre-computed image surface
         # plane when one is defined.
-        _add_scene(
+        add_scene(
             frame_plotter,
             panel_surfaces,
             wake_ring_vortex_surfaces,
@@ -1928,11 +1928,11 @@ def plot_results_versus_time(
                 namedForces_W[airplane_id, 1],
                 namedForces_W[airplane_id, 2],
             ],
-            _FORCE_LABELS,
-            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
+            FORCE_LABELS,
+            [LINEAR_X_COLOR, LINEAR_Y_COLOR, LINEAR_Z_COLOR],
             airplane_name + " Forces",
-            _WIND_AXES_SUBTITLE,
-            _FORCE_Y_LABEL,
+            WIND_AXES_SUBTITLE,
+            FORCE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_forces." + file_format),
@@ -1949,11 +1949,11 @@ def plot_results_versus_time(
                 namedForceCoefficients_W[airplane_id, 1],
                 namedForceCoefficients_W[airplane_id, 2],
             ],
-            _FORCE_COEFFICIENT_LABELS,
-            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
+            FORCE_COEFFICIENT_LABELS,
+            [LINEAR_X_COLOR, LINEAR_Y_COLOR, LINEAR_Z_COLOR],
             airplane_name + " Force Coefficients",
-            _WIND_AXES_SUBTITLE,
-            _FORCE_COEFFICIENT_Y_LABEL,
+            WIND_AXES_SUBTITLE,
+            FORCE_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_force_coefficients." + file_format),
@@ -1970,11 +1970,11 @@ def plot_results_versus_time(
                 namedMoments_W_Cg[airplane_id, 1],
                 namedMoments_W_Cg[airplane_id, 2],
             ],
-            _MOMENT_LABELS,
-            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
+            MOMENT_LABELS,
+            [ANGULAR_X_COLOR, ANGULAR_Y_COLOR, ANGULAR_Z_COLOR],
             airplane_name + " Moments",
-            _WIND_AXES_CG_SUBTITLE,
-            _MOMENT_Y_LABEL,
+            WIND_AXES_CG_SUBTITLE,
+            MOMENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_moments." + file_format),
@@ -1991,11 +1991,11 @@ def plot_results_versus_time(
                 namedMomentCoefficients_W_Cg[airplane_id, 1],
                 namedMomentCoefficients_W_Cg[airplane_id, 2],
             ],
-            _MOMENT_COEFFICIENT_LABELS,
-            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
+            MOMENT_COEFFICIENT_LABELS,
+            [ANGULAR_X_COLOR, ANGULAR_Y_COLOR, ANGULAR_Z_COLOR],
             airplane_name + " Moment Coefficients",
-            _WIND_AXES_CG_SUBTITLE,
-            _MOMENT_COEFFICIENT_Y_LABEL,
+            WIND_AXES_CG_SUBTITLE,
+            MOMENT_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_moment_coefficients." + file_format),
@@ -2016,20 +2016,20 @@ def plot_results_versus_time(
             _output_plotting.write_time_history_csv(
                 times,
                 _output_plotting.csv_headers(
-                    _FORCE_LABELS, _WIND_AXES_SUBTITLE, _FORCE_Y_LABEL
+                    FORCE_LABELS, WIND_AXES_SUBTITLE, FORCE_Y_LABEL
                 )
                 + _output_plotting.csv_headers(
-                    _FORCE_COEFFICIENT_LABELS,
-                    _WIND_AXES_SUBTITLE,
-                    _FORCE_COEFFICIENT_Y_LABEL,
+                    FORCE_COEFFICIENT_LABELS,
+                    WIND_AXES_SUBTITLE,
+                    FORCE_COEFFICIENT_Y_LABEL,
                 )
                 + _output_plotting.csv_headers(
-                    _MOMENT_LABELS, _WIND_AXES_CG_SUBTITLE, _MOMENT_Y_LABEL
+                    MOMENT_LABELS, WIND_AXES_CG_SUBTITLE, MOMENT_Y_LABEL
                 )
                 + _output_plotting.csv_headers(
-                    _MOMENT_COEFFICIENT_LABELS,
-                    _WIND_AXES_CG_SUBTITLE,
-                    _MOMENT_COEFFICIENT_Y_LABEL,
+                    MOMENT_COEFFICIENT_LABELS,
+                    WIND_AXES_CG_SUBTITLE,
+                    MOMENT_COEFFICIENT_Y_LABEL,
                 ),
                 [
                     namedForces_W[airplane_id, 0],
@@ -2103,11 +2103,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
-            _COMPONENT_LABELS,
-            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
+            COMPONENT_LABELS,
+            [LINEAR_X_COLOR, LINEAR_Y_COLOR, LINEAR_Z_COLOR],
             airplane_name + " Position",
-            _POSITION_SUBTITLE,
-            _POSITION_Y_LABEL,
+            POSITION_SUBTITLE,
+            POSITION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_position." + file_format),
@@ -2120,11 +2120,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
-            _COMPONENT_LABELS,
-            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
+            COMPONENT_LABELS,
+            [LINEAR_X_COLOR, LINEAR_Y_COLOR, LINEAR_Z_COLOR],
             airplane_name + " Velocity",
-            _VELOCITY_SUBTITLE,
-            _VELOCITY_Y_LABEL,
+            VELOCITY_SUBTITLE,
+            VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_velocity." + file_format),
@@ -2141,11 +2141,11 @@ def plot_results_versus_time(
                 angles_E_to_BP1_izyx[1],
                 angles_E_to_BP1_izyx[2],
             ],
-            _ORIENTATION_LABELS,
-            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
+            ORIENTATION_LABELS,
+            [ANGULAR_X_COLOR, ANGULAR_Y_COLOR, ANGULAR_Z_COLOR],
             airplane_name + " Orientation",
-            _ORIENTATION_SUBTITLE,
-            _ORIENTATION_Y_LABEL,
+            ORIENTATION_SUBTITLE,
+            ORIENTATION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_orientation." + file_format),
@@ -2158,11 +2158,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [omegas_BP1__E[0], omegas_BP1__E[1], omegas_BP1__E[2]],
-            _ANGULAR_VELOCITY_LABELS,
-            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
+            ANGULAR_VELOCITY_LABELS,
+            [ANGULAR_X_COLOR, ANGULAR_Y_COLOR, ANGULAR_Z_COLOR],
             airplane_name + " Angular Velocity",
-            _ANGULAR_VELOCITY_SUBTITLE,
-            _ANGULAR_VELOCITY_Y_LABEL,
+            ANGULAR_VELOCITY_SUBTITLE,
+            ANGULAR_VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_angular_velocity." + file_format),
@@ -2175,11 +2175,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [alphas, betas],
-            _AERODYNAMIC_ANGLE_LABELS,
-            [_ALPHA_COLOR, _BETA_COLOR],
+            AERODYNAMIC_ANGLE_LABELS,
+            [ALPHA_COLOR, BETA_COLOR],
             airplane_name + " Aerodynamic Angles",
-            _AERODYNAMIC_ANGLE_SUBTITLE,
-            _AERODYNAMIC_ANGLE_Y_LABEL,
+            AERODYNAMIC_ANGLE_SUBTITLE,
+            AERODYNAMIC_ANGLE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_aerodynamic_angles." + file_format),
@@ -2199,23 +2199,23 @@ def plot_results_versus_time(
             _output_plotting.write_time_history_csv(
                 state_times,
                 _output_plotting.csv_headers(
-                    _COMPONENT_LABELS, _POSITION_SUBTITLE, _POSITION_Y_LABEL
+                    COMPONENT_LABELS, POSITION_SUBTITLE, POSITION_Y_LABEL
                 )
                 + _output_plotting.csv_headers(
-                    _COMPONENT_LABELS, _VELOCITY_SUBTITLE, _VELOCITY_Y_LABEL
+                    COMPONENT_LABELS, VELOCITY_SUBTITLE, VELOCITY_Y_LABEL
                 )
                 + _output_plotting.csv_headers(
-                    _ORIENTATION_LABELS, _ORIENTATION_SUBTITLE, _ORIENTATION_Y_LABEL
+                    ORIENTATION_LABELS, ORIENTATION_SUBTITLE, ORIENTATION_Y_LABEL
                 )
                 + _output_plotting.csv_headers(
-                    _ANGULAR_VELOCITY_LABELS,
-                    _ANGULAR_VELOCITY_SUBTITLE,
-                    _ANGULAR_VELOCITY_Y_LABEL,
+                    ANGULAR_VELOCITY_LABELS,
+                    ANGULAR_VELOCITY_SUBTITLE,
+                    ANGULAR_VELOCITY_Y_LABEL,
                 )
                 + _output_plotting.csv_headers(
-                    _AERODYNAMIC_ANGLE_LABELS,
-                    _AERODYNAMIC_ANGLE_SUBTITLE,
-                    _AERODYNAMIC_ANGLE_Y_LABEL,
+                    AERODYNAMIC_ANGLE_LABELS,
+                    AERODYNAMIC_ANGLE_SUBTITLE,
+                    AERODYNAMIC_ANGLE_Y_LABEL,
                 ),
                 [
                     positions_E_Eo[0],
@@ -2336,10 +2336,10 @@ def log_results(
     # lift are wind axes concepts with no geometry axes counterparts. All four load
     # groups are named the way the figures that plot them are.
     col3 = (
-        _FORCE_LABELS
-        + _MOMENT_LABELS
-        + _FORCE_COEFFICIENT_LABELS
-        + _MOMENT_COEFFICIENT_LABELS
+        FORCE_LABELS
+        + MOMENT_LABELS
+        + FORCE_COEFFICIENT_LABELS
+        + MOMENT_COEFFICIENT_LABELS
     )
     col3 = [label + ":" for label in col3]
     col3_space = max(len(elem) for elem in col3) + padding_spaces
@@ -2528,24 +2528,22 @@ def log_results(
         # One title per three-row group, in the order the groups are logged: the loads
         # in this Airplane's own geometry axes, then the loads in wind axes.
         titles = [
-            _logging.indent(1) + title_prefix + f"Forces {_GEOMETRY_AXES_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Forces {GEOMETRY_AXES_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Moments {GEOMETRY_AXES_CG_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + f"Moments {_GEOMETRY_AXES_CG_SUBTITLE}:",
+            + f"Force Coefficients {GEOMETRY_AXES_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + f"Force Coefficients {_GEOMETRY_AXES_SUBTITLE}:",
+            + f"Moment Coefficients {GEOMETRY_AXES_CG_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Forces {WIND_AXES_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Moments {WIND_AXES_CG_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + f"Moment Coefficients {_GEOMETRY_AXES_CG_SUBTITLE}:",
-            _logging.indent(1) + title_prefix + f"Forces {_WIND_AXES_SUBTITLE}:",
-            _logging.indent(1) + title_prefix + f"Moments {_WIND_AXES_CG_SUBTITLE}:",
+            + f"Force Coefficients {WIND_AXES_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + f"Force Coefficients {_WIND_AXES_SUBTITLE}:",
-            _logging.indent(1)
-            + title_prefix
-            + f"Moment Coefficients {_WIND_AXES_CG_SUBTITLE}:",
+            + f"Moment Coefficients {WIND_AXES_CG_SUBTITLE}:",
         ]
 
         col2 = [
@@ -2670,16 +2668,16 @@ def log_results(
         )
 
         state_group_header_position = (
-            _logging.indent(2) + f"Position {_POSITION_SUBTITLE}:"
+            _logging.indent(2) + f"Position {POSITION_SUBTITLE}:"
         )
         state_group_header_orientation = (
-            _logging.indent(2) + f"Orientation {_ORIENTATION_SUBTITLE}:"
+            _logging.indent(2) + f"Orientation {ORIENTATION_SUBTITLE}:"
         )
         state_group_header_velocity = (
-            _logging.indent(2) + f"Velocity {_VELOCITY_SUBTITLE}:"
+            _logging.indent(2) + f"Velocity {VELOCITY_SUBTITLE}:"
         )
         state_group_header_angular_velocity = (
-            _logging.indent(2) + f"Angular Velocity {_ANGULAR_VELOCITY_SUBTITLE}:"
+            _logging.indent(2) + f"Angular Velocity {ANGULAR_VELOCITY_SUBTITLE}:"
         )
 
         # Log the initial state (at time step 0) and the final state.

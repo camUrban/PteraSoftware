@@ -15,14 +15,12 @@ from tests.unit.fixtures import (
 
 
 class TestConvergedParameterId(unittest.TestCase):
-    """This class contains methods for testing convergence._converged_parameter_id."""
+    """This class contains methods for testing convergence.converged_parameter_id."""
 
     def test_single_returns_this_id(self) -> None:
         """Test that a single tested value returns this iteration's own index."""
         self.assertEqual(
-            convergence._converged_parameter_id(
-                this_id=0, single=True, converged=False
-            ),
+            convergence.converged_parameter_id(this_id=0, single=True, converged=False),
             0,
         )
 
@@ -30,16 +28,14 @@ class TestConvergedParameterId(unittest.TestCase):
         """Test that a single tested value returns this iteration's own index even when
         the converged flag is set."""
         self.assertEqual(
-            convergence._converged_parameter_id(this_id=3, single=True, converged=True),
+            convergence.converged_parameter_id(this_id=3, single=True, converged=True),
             3,
         )
 
     def test_converged_returns_coarser_id(self) -> None:
         """Test that a converged iteration returns the incrementally coarser index."""
         self.assertEqual(
-            convergence._converged_parameter_id(
-                this_id=4, single=False, converged=True
-            ),
+            convergence.converged_parameter_id(this_id=4, single=False, converged=True),
             3,
         )
 
@@ -47,7 +43,7 @@ class TestConvergedParameterId(unittest.TestCase):
         """Test that an iteration that passed without converging returns this
         iteration's own index."""
         self.assertEqual(
-            convergence._converged_parameter_id(
+            convergence.converged_parameter_id(
                 this_id=5, single=False, converged=False
             ),
             5,
@@ -57,32 +53,29 @@ class TestConvergedParameterId(unittest.TestCase):
         """Test that the coarser index tracks this iteration's index rather than a fixed
         value."""
         self.assertEqual(
-            convergence._converged_parameter_id(
-                this_id=7, single=False, converged=True
-            ),
+            convergence.converged_parameter_id(this_id=7, single=False, converged=True),
             6,
         )
 
     def test_returns_int(self) -> None:
         """Test that the converged index is returned as an int."""
-        result = convergence._converged_parameter_id(
+        result = convergence.converged_parameter_id(
             this_id=2, single=False, converged=True
         )
         self.assertIsInstance(result, int)
 
 
 class TestValidateCoefficientMask(unittest.TestCase):
-    """This class contains methods for testing
-    convergence._validate_coefficient_mask."""
+    """This class contains methods for testing convergence.validate_coefficient_mask."""
 
     def test_none_returns_all_true(self) -> None:
         """Test that None returns a (6,) mask of all True."""
-        result = convergence._validate_coefficient_mask(None)
+        result = convergence.validate_coefficient_mask(None)
         self.assertTrue(np.array_equal(result, np.ones(6, dtype=bool)))
 
     def test_tuple_is_returned_as_bool_array(self) -> None:
         """Test that a valid tuple is returned as an equivalent (6,) bool ndarray."""
-        result = convergence._validate_coefficient_mask(
+        result = convergence.validate_coefficient_mask(
             (True, False, True, False, True, False)
         )
         self.assertTrue(
@@ -92,31 +85,31 @@ class TestValidateCoefficientMask(unittest.TestCase):
     def test_non_tuple_raises_type_error(self) -> None:
         """Test that a non-tuple, non-None mask raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_coefficient_mask([True] * 6)  # type: ignore[arg-type]
+            convergence.validate_coefficient_mask([True] * 6)  # type: ignore[arg-type]
 
     def test_wrong_length_raises_value_error(self) -> None:
         """Test that a mask without exactly six elements raises a ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_coefficient_mask(
+            convergence.validate_coefficient_mask(
                 (True, True, True)  # type: ignore[arg-type]
             )
 
     def test_non_bool_element_raises_type_error(self) -> None:
         """Test that a mask with a non-bool element raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_coefficient_mask(
+            convergence.validate_coefficient_mask(
                 (True, 1, True, True, True, True)  # type: ignore[arg-type]
             )
 
     def test_all_false_raises_value_error(self) -> None:
         """Test that a mask with no True element raises a ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_coefficient_mask((False,) * 6)
+            convergence.validate_coefficient_mask((False,) * 6)
 
 
 class TestCheckCoefficientConvergence(unittest.TestCase):
     """This class contains methods for testing
-    convergence._check_coefficient_convergence."""
+    convergence.check_coefficient_convergence."""
 
     def setUp(self) -> None:
         """Set up a full mask and the tolerances used across the tests.
@@ -130,7 +123,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
     def test_identical_coefficients_converge(self) -> None:
         """Test that identical coefficients converge with perfect metrics."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
-        converged, metrics = convergence._check_coefficient_convergence(
+        converged, metrics = convergence.check_coefficient_convergence(
             these, these.copy(), self.rtol, self.atol, self.mask
         )
         self.assertTrue(converged)
@@ -143,7 +136,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         coarser = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         these = coarser.copy()
         these[0, 2] = 2.5
-        converged, metrics = convergence._check_coefficient_convergence(
+        converged, metrics = convergence.check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertFalse(converged)
@@ -157,7 +150,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         these = coarser.copy()
         these[0, 2] = 2.5
         mask = np.array([True, True, False, True, True, True], dtype=bool)
-        converged, metrics = convergence._check_coefficient_convergence(
+        converged, metrics = convergence.check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, mask
         )
         self.assertTrue(converged)
@@ -169,7 +162,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         these = np.zeros((1, 6), dtype=float)
         coarser = np.zeros((1, 6), dtype=float)
         coarser[0, 0] = 0.5 * self.atol
-        converged, _ = convergence._check_coefficient_convergence(
+        converged, _ = convergence.check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertTrue(converged)
@@ -185,7 +178,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         )
         these = coarser.copy()
         these[1, 0] = 2.0
-        converged, metrics = convergence._check_coefficient_convergence(
+        converged, metrics = convergence.check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertFalse(converged)
@@ -194,7 +187,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
     def test_returns_bool_and_metrics_array(self) -> None:
         """Test that the result is a bool and a (6,) ndarray of floats."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
-        converged, metrics = convergence._check_coefficient_convergence(
+        converged, metrics = convergence.check_coefficient_convergence(
             these, these.copy(), self.rtol, self.atol, self.mask
         )
         self.assertIsInstance(converged, bool)
@@ -205,90 +198,90 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
 class TestValidatePanelAspectRatioBounds(unittest.TestCase):
     """This class contains methods for testing
-    convergence._validate_panel_aspect_ratio_bounds."""
+    convergence.validate_panel_aspect_ratio_bounds."""
 
     def test_valid_descending_bounds_pass(self) -> None:
         """Test that a valid descending tuple of ints is accepted without raising."""
         # A valid descending tuple of ints does not raise.
-        convergence._validate_panel_aspect_ratio_bounds((4, 1))
+        convergence.validate_panel_aspect_ratio_bounds((4, 1))
 
     def test_equal_bounds_pass(self) -> None:
         """Test that equal bounds, a single Panel aspect ratio, are accepted without
         raising."""
         # Equal bounds, a single Panel aspect ratio, do not raise.
-        convergence._validate_panel_aspect_ratio_bounds((2, 2))
+        convergence.validate_panel_aspect_ratio_bounds((2, 2))
 
     def test_non_tuple_raises_type_error(self) -> None:
         """Test that a non-tuple of bounds raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_panel_aspect_ratio_bounds([4, 1])  # type: ignore[arg-type]
+            convergence.validate_panel_aspect_ratio_bounds([4, 1])  # type: ignore[arg-type]
 
     def test_wrong_length_raises_type_error(self) -> None:
         """Test that a tuple without exactly two elements raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_panel_aspect_ratio_bounds((4, 2, 1))  # type: ignore[arg-type]
+            convergence.validate_panel_aspect_ratio_bounds((4, 2, 1))  # type: ignore[arg-type]
 
     def test_non_int_element_raises_type_error(self) -> None:
         """Test that a tuple with a non-int element raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_panel_aspect_ratio_bounds((4.0, 1.0))  # type: ignore[arg-type]
+            convergence.validate_panel_aspect_ratio_bounds((4.0, 1.0))  # type: ignore[arg-type]
 
     def test_ascending_bounds_raise_value_error(self) -> None:
         """Test that a tuple whose first value is less than its second raises a
         ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_panel_aspect_ratio_bounds((1, 4))
+            convergence.validate_panel_aspect_ratio_bounds((1, 4))
 
     def test_non_positive_second_value_raises_value_error(self) -> None:
         """Test that a second value at or below zero raises a ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_panel_aspect_ratio_bounds((4, 0))
+            convergence.validate_panel_aspect_ratio_bounds((4, 0))
 
 
 class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
     """This class contains methods for testing
-    convergence._validate_num_chordwise_panels_bounds."""
+    convergence.validate_num_chordwise_panels_bounds."""
 
     def test_valid_ascending_bounds_pass(self) -> None:
         """Test that a valid ascending tuple of ints is accepted without raising."""
         # A valid ascending tuple of ints does not raise.
-        convergence._validate_num_chordwise_panels_bounds((3, 12))
+        convergence.validate_num_chordwise_panels_bounds((3, 12))
 
     def test_equal_bounds_pass(self) -> None:
         """Test that equal bounds, a single number of chordwise Panels, are accepted
         without raising."""
         # Equal bounds, a single number of chordwise Panels, do not raise.
-        convergence._validate_num_chordwise_panels_bounds((5, 5))
+        convergence.validate_num_chordwise_panels_bounds((5, 5))
 
     def test_non_tuple_raises_type_error(self) -> None:
         """Test that a non-tuple of bounds raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_num_chordwise_panels_bounds([3, 12])  # type: ignore[arg-type]
+            convergence.validate_num_chordwise_panels_bounds([3, 12])  # type: ignore[arg-type]
 
     def test_wrong_length_raises_type_error(self) -> None:
         """Test that a tuple without exactly two elements raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_num_chordwise_panels_bounds((3, 6, 12))  # type: ignore[arg-type]
+            convergence.validate_num_chordwise_panels_bounds((3, 6, 12))  # type: ignore[arg-type]
 
     def test_non_int_element_raises_type_error(self) -> None:
         """Test that a tuple with a non-int element raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_num_chordwise_panels_bounds((3.0, 12.0))  # type: ignore[arg-type]
+            convergence.validate_num_chordwise_panels_bounds((3.0, 12.0))  # type: ignore[arg-type]
 
     def test_descending_bounds_raise_value_error(self) -> None:
         """Test that a tuple whose second value is less than its first raises a
         ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_num_chordwise_panels_bounds((12, 3))
+            convergence.validate_num_chordwise_panels_bounds((12, 3))
 
     def test_non_positive_first_value_raises_value_error(self) -> None:
         """Test that a first value at or below zero raises a ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_num_chordwise_panels_bounds((0, 12))
+            convergence.validate_num_chordwise_panels_bounds((0, 12))
 
 
 class TestRejectUnrefinableWings(unittest.TestCase):
-    """This class contains methods for testing convergence._reject_unrefinable_wings."""
+    """This class contains methods for testing convergence.reject_unrefinable_wings."""
 
     @staticmethod
     def _make_edge_defined_airplane() -> ps.geometry.airplane.Airplane:
@@ -357,14 +350,14 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         """Test that a trapezoidal Wing, built from WingCrossSections, is accepted."""
         trapezoidal_airplane = geometry_fixtures.make_first_airplane_fixture()
         # A trapezoidal Wing does not raise.
-        convergence._reject_unrefinable_wings(
+        convergence.reject_unrefinable_wings(
             (trapezoidal_airplane,), "analyze_steady_convergence"
         )
 
     def test_edge_defined_wing_is_accepted(self) -> None:
         """Test that an edge-defined Wing, built from edge curves, is accepted."""
         # An edge-defined Wing does not raise.
-        convergence._reject_unrefinable_wings(
+        convergence.reject_unrefinable_wings(
             (self._make_edge_defined_airplane(),), "analyze_steady_convergence"
         )
 
@@ -372,7 +365,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         """Test that an exploded Wing, which carries no edge curves, raises a
         ValueError."""
         with self.assertRaises(ValueError):
-            convergence._reject_unrefinable_wings(
+            convergence.reject_unrefinable_wings(
                 (self._make_exploded_airplane(),), "analyze_steady_convergence"
             )
 
@@ -380,11 +373,11 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         """Test that the error message names the offending Wing and the calling
         function."""
         with self.assertRaisesRegex(ValueError, "Exploded Wing"):
-            convergence._reject_unrefinable_wings(
+            convergence.reject_unrefinable_wings(
                 (self._make_exploded_airplane(),), "analyze_steady_convergence"
             )
         with self.assertRaisesRegex(ValueError, "analyze_steady_convergence"):
-            convergence._reject_unrefinable_wings(
+            convergence.reject_unrefinable_wings(
                 (self._make_exploded_airplane(),), "analyze_steady_convergence"
             )
 
@@ -393,7 +386,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         raises."""
         trapezoidal_airplane = geometry_fixtures.make_first_airplane_fixture()
         with self.assertRaises(ValueError):
-            convergence._reject_unrefinable_wings(
+            convergence.reject_unrefinable_wings(
                 (trapezoidal_airplane, self._make_exploded_airplane()),
                 "analyze_unsteady_convergence",
             )
@@ -401,7 +394,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
     def test_empty_airplanes_is_accepted(self) -> None:
         """Test that an empty tuple of Airplanes is vacuously accepted."""
         # An empty tuple of Airplanes does not raise.
-        convergence._reject_unrefinable_wings((), "analyze_steady_convergence")
+        convergence.reject_unrefinable_wings((), "analyze_steady_convergence")
 
 
 class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):

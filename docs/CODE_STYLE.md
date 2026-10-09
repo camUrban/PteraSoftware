@@ -48,6 +48,16 @@ pre-commit run --all-files mypy
 - Import Ptera Software using the following pattern: `import pterasoftware as ps`
 - By default, place import statements at the top of the file and avoid imports inside functions or methods. The only exceptions are intentional lazy-import patterns (for example, using `importlib.import_module` inside `__getattr__` for lazy loading) and cases where there is no other way to avoid circular imports.
 
+## Internal Names and Access
+
+- A leading underscore marks a name as outside the public API. It does not mark a name as off limits to the rest of the package.
+- Any module in `pterasoftware/`, and any test, may import, read, call, and write any internal name, subject to the contracts in [Classes and Immutability](CLASSES_AND_IMMUTABILITY.md). Those contracts, not the underscore, decide who may write a value. Do not add `# noinspection PyProtectedMember` pragmas or registration patterns to reach an internal name.
+- Code outside the package (`examples/`, the notebooks in `tutorials/`, `validation/`, `scripts/`, and the README) uses only Ptera Software's public names. The `private-access` pre-commit hook enforces this. Run it with:
+
+```shell
+pre-commit run --all-files private-access
+```
+
 ## Miscellaneous Guidelines
 
 - Use `np.deg2rad` and `np.rad2deg` for angle conversions instead of `np.radians` and `np.degrees` or manual conversions.

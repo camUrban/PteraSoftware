@@ -14,20 +14,20 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_trim.log"))
 
 # Create an Airplane. We must specify a weight (in Newtons) for the Airplane. We will
 # later find a trim condition where the weight is exactly balanced by lift.
-trim_airplane = ps.geometry.airplane.Airplane(
+trim_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=5,
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -41,18 +41,18 @@ trim_airplane = ps.geometry.airplane.Airplane(
             symmetryPoint_G_Cg=(0, 0, 0),
             num_chordwise_panels=5,
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=5,
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -72,33 +72,33 @@ trim_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create an AirplaneMovement for this example's Airplane.
-trim_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+trim_airplane_movement = ps.AirplaneMovement(
     base_airplane=trim_airplane,
     wing_movements=[
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trim_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trim_airplane.wings[0].wing_cross_sections[
                         0
                     ]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trim_airplane.wings[0].wing_cross_sections[
                         1
                     ]
                 ),
             ],
         ),
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trim_airplane.wings[1],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trim_airplane.wings[1].wing_cross_sections[
                         0
                     ]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trim_airplane.wings[1].wing_cross_sections[
                         1
                     ]
@@ -111,25 +111,23 @@ trim_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 # Create an OperatingPoint. We must specify a gravitational acceleration, because the
 # trim analysis places the Airplane's weight along its direction. Only the direction
 # matters here, as the Airplane carries a weight rather than a mass.
-trim_operating_point = ps.operating_point.OperatingPoint(
+trim_operating_point = ps.OperatingPoint(
     externalFX_W=7.5,
     g_E=(0.0, 0.0, 9.80665),
 )
 
 # Create an OperatingPointMovement using default values.
-trim_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=trim_operating_point
-    )
+trim_operating_point_movement = ps.OperatingPointMovement(
+    base_operating_point=trim_operating_point
 )
 
-trim_movement = ps.movements.movement.Movement(
+trim_movement = ps.Movement(
     airplane_movements=[trim_airplane_movement],
     operating_point_movement=trim_operating_point_movement,
     num_chords=5,
 )
 
-trim_problem = ps.problems.UnsteadyProblem(
+trim_problem = ps.UnsteadyProblem(
     movement=trim_movement,
     only_final_results=True,
 )
@@ -137,7 +135,7 @@ trim_problem = ps.problems.UnsteadyProblem(
 # Call the analyze_unsteady_trim function to search for a trim condition (thrust
 # balances drag, weight balances lift, and all moments are close to zero) within a
 # certain set of bounds.
-trim_conditions = ps.trim.analyze_unsteady_trim(
+trim_conditions = ps.analyze_unsteady_trim(
     problem=trim_problem,
     boundsVCg__E=(5, 15),
     alpha_bounds=(-10, 10),

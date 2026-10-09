@@ -14,7 +14,7 @@ from tests.unit.fixtures import movement_fixtures, problem_fixtures
 class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     """A class with functions to test analyze_unsteady_trim."""
 
-    problem: ps.problems.UnsteadyProblem
+    problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -25,7 +25,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test problem parameter validation."""
         bad_problem: Any = "not a problem"
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=bad_problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -38,7 +38,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         problem = problem_fixtures.make_multi_airplane_unsteady_problem_fixture()
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -50,7 +50,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test boundsVCg__E parameter validation."""
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=bad_str,
                 alpha_bounds=(-20.0, 20.0),
@@ -60,7 +60,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=bad_short_tuple,
                 alpha_bounds=(-20.0, 20.0),
@@ -70,7 +70,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=bad_element_tuple,
                 alpha_bounds=(-20.0, 20.0),
@@ -79,7 +79,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(10.0, 1.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -88,7 +88,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(0.0, 10.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -100,7 +100,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test alpha_bounds parameter validation."""
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_str,
@@ -110,7 +110,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_short_tuple,
@@ -120,7 +120,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_element_tuple,
@@ -129,7 +129,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(10.0, -10.0),
@@ -141,7 +141,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         for bad_alpha_bounds in [(-180.0, 20.0), (-20.0, 180.001)]:
             with self.subTest(alpha_bounds=bad_alpha_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
-                    ps.trim.analyze_unsteady_trim(
+                    ps.analyze_unsteady_trim(
                         problem=self.problem,
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=bad_alpha_bounds,
@@ -153,7 +153,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test beta_bounds parameter validation."""
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -163,7 +163,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -173,7 +173,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -182,7 +182,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -195,7 +195,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         for bad_beta_bounds in [(-90.0, 20.0), (-20.0, 90.0), (-180.0, 180.0)]:
             with self.subTest(beta_bounds=bad_beta_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
-                    ps.trim.analyze_unsteady_trim(
+                    ps.analyze_unsteady_trim(
                         problem=self.problem,
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=(-20.0, 20.0),
@@ -207,7 +207,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test boundsExternalFX_W parameter validation."""
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -217,7 +217,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -227,7 +227,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -236,7 +236,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -247,7 +247,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def test_objective_cut_off_validation(self) -> None:
         """Test objective_cut_off parameter validation."""
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -257,7 +257,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -270,7 +270,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test num_calls parameter validation."""
         bad_num_calls: Any = 1.5
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -280,7 +280,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -290,7 +290,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -303,7 +303,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test force_method parameter validation."""
         bad_type: Any = 42
         with self.assertRaises(TypeError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -313,7 +313,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -331,7 +331,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.subTest(parameter="vCg__E"):
             with self.assertRaises(ValueError):
-                ps.trim.analyze_unsteady_trim(
+                ps.analyze_unsteady_trim(
                     problem=self.problem,
                     boundsVCg__E=(
                         base_operating_point.vCg__E + 1.0,
@@ -344,7 +344,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.subTest(parameter="alpha"):
             with self.assertRaises(ValueError):
-                ps.trim.analyze_unsteady_trim(
+                ps.analyze_unsteady_trim(
                     problem=self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(
@@ -357,7 +357,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.subTest(parameter="beta"):
             with self.assertRaises(ValueError):
-                ps.trim.analyze_unsteady_trim(
+                ps.analyze_unsteady_trim(
                     problem=self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(-20.0, 20.0),
@@ -370,7 +370,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.subTest(parameter="externalFX_W"):
             with self.assertRaises(ValueError):
-                ps.trim.analyze_unsteady_trim(
+                ps.analyze_unsteady_trim(
                     problem=self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(-20.0, 20.0),
@@ -386,12 +386,12 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         movement = (
             movement_fixtures.make_non_static_movement_with_explicit_num_steps_fixture()
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
 
         with self.assertRaisesRegex(
             ValueError, "must define its duration with num_cycles or num_chords"
         ):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -402,19 +402,19 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def test_requires_unresolved_wake_length(self) -> None:
         """Test that trim requires a step-size-independent wake length."""
         reference_movement = self.problem.movement
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=reference_movement.operating_point_movement,
             delta_time=reference_movement.delta_time,
             num_cycles=reference_movement.num_cycles,
             max_wake_rows=2,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
 
         with self.assertRaisesRegex(
             ValueError, "must define its maximum wake length with max_wake_chords"
         ):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -425,25 +425,23 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def test_requires_speed_bounds_above_movement_amplitude(self) -> None:
         """Test that each trial's oscillating speed remains positive."""
         reference_movement = self.problem.movement
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=(
-                    reference_movement.operating_point_movement.base_operating_point
-                ),
-                ampVCg__E=1.0,
-                periodVCg__E=2.0,
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=(
+                reference_movement.operating_point_movement.base_operating_point
+            ),
+            ampVCg__E=1.0,
+            periodVCg__E=2.0,
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
             num_cycles=2,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
 
         with self.assertRaisesRegex(ValueError, "must be greater than.*ampVCg__E"):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -455,7 +453,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test that a zero base g_E is rejected, since the trim analysis places the
         Airplane's weight along g_E's direction."""
         with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -468,22 +466,20 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         since the trials resolve their own attitudes to level flight and would otherwise
         silently discard it."""
         reference_movement = movement_fixtures.make_static_movement_fixture()
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=ps.operating_point.OperatingPoint(
-                    angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
-                )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=ps.OperatingPoint(
+                angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
             )
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=operating_point_movement,
             num_chords=reference_movement.num_chords,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
 
         with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -504,24 +500,22 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         then returns the initial guess, and anything else returns Nones.
         """
         reference_movement = movement_fixtures.make_static_movement_fixture()
-        base_operating_point = ps.operating_point.OperatingPoint(
+        base_operating_point = ps.OperatingPoint(
             vCg__E=10.0,
             alpha=5.0,
             beta=3.0,
             externalFX_W=7.0,
             g_E=(1.0, -2.0, 4.0),
         )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=base_operating_point
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=operating_point_movement,
             num_chords=reference_movement.num_chords,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
         base_airplane = movement.airplane_movements[0].base_airplane
         self.assertGreater(base_airplane.weight, 0.0)
         trial_T_pas_E_CgP1_to_W_CgP1s: list[np.ndarray] = []
@@ -531,7 +525,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             and whose loads exactly cancel the external thrust and the weight placed
             along g_E."""
 
-            def __init__(self, unsteady_problem: ps.problems.UnsteadyProblem) -> None:
+            def __init__(self, unsteady_problem: ps.UnsteadyProblem) -> None:
                 self.unsteady_problem = unsteady_problem
 
             def run(self, **_: Any) -> None:
@@ -566,7 +560,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):
-            trim_conditions = ps.trim.analyze_unsteady_trim(
+            trim_conditions = ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -584,24 +578,20 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def test_static_trial_uses_final_load_coefficients(self) -> None:
         """Test that a static trial uses its final-time-step loads."""
         reference_movement = movement_fixtures.make_static_movement_fixture()
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=ps.operating_point.OperatingPoint(
-                    g_E=(0.0, 0.0, 9.80665)
-                )
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=ps.OperatingPoint(g_E=(0.0, 0.0, 9.80665))
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=operating_point_movement,
             num_chords=reference_movement.num_chords,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
+        problem = ps.UnsteadyProblem(movement=movement)
 
         class SolverStub:
             """A solver stub that populates only static-movement loads."""
 
-            def __init__(self, unsteady_problem: ps.problems.UnsteadyProblem) -> None:
+            def __init__(self, unsteady_problem: ps.UnsteadyProblem) -> None:
                 self.unsteady_problem = unsteady_problem
 
             def run(self, **_: Any) -> None:
@@ -617,7 +607,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -630,31 +620,27 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def test_trial_preserves_movement_parameters(self) -> None:
         """Test that trim trials preserve unresolved movement parameters."""
         reference_movement = self.problem.movement
-        reference_operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=ps.operating_point.OperatingPoint(
-                    g_E=(0.0, 0.0, 9.80665)
-                ),
-                ampVCg__E=1.0,
-                periodVCg__E=2.0,
-                spacingVCg__E="uniform",
-                phaseVCg__E=45.0,
-            )
+        reference_operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=ps.OperatingPoint(g_E=(0.0, 0.0, 9.80665)),
+            ampVCg__E=1.0,
+            periodVCg__E=2.0,
+            spacingVCg__E="uniform",
+            phaseVCg__E=45.0,
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=list(reference_movement.airplane_movements),
             operating_point_movement=reference_operating_point_movement,
             delta_time=0.1,
             num_cycles=2,
             max_wake_cycles=1,
         )
-        problem = ps.problems.UnsteadyProblem(movement=movement)
-        trial_movements: list[ps.movements.movement.Movement] = []
+        problem = ps.UnsteadyProblem(movement=movement)
+        trial_movements: list[ps.Movement] = []
 
         class SolverStub:
             """A solver stub that records the generated trial Movement."""
 
-            def __init__(self, unsteady_problem: ps.problems.UnsteadyProblem) -> None:
+            def __init__(self, unsteady_problem: ps.UnsteadyProblem) -> None:
                 self.unsteady_problem = unsteady_problem
                 trial_movements.append(unsteady_problem.movement)
 
@@ -671,7 +657,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             "UnsteadyRingVortexLatticeMethodSolver",
             SolverStub,
         ):
-            ps.trim.analyze_unsteady_trim(
+            ps.analyze_unsteady_trim(
                 problem=problem,
                 boundsVCg__E=(2.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),

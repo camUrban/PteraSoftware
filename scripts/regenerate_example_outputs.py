@@ -71,8 +71,8 @@ from unittest.mock import patch
 import matplotlib.pyplot as plt
 import pterasoftware as ps
 
-ORIGINAL_DRAW = ps.output.draw
-ORIGINAL_ANIMATE = ps.output.animate
+ORIGINAL_DRAW = ps.draw
+ORIGINAL_ANIMATE = ps.animate
 
 
 def _draw_testing(*args, **kwargs):
@@ -86,8 +86,8 @@ def _animate_testing(*args, **kwargs):
 
 
 with (
-    patch.object(ps.output, "draw", _draw_testing),
-    patch.object(ps.output, "animate", _animate_testing),
+    patch.object(ps, "draw", _draw_testing),
+    patch.object(ps, "animate", _animate_testing),
     patch.object(plt, "show", lambda *_args, **_kwargs: None),
 ):
     runpy.run_path(sys.argv[1], run_name="__main__")
@@ -97,7 +97,7 @@ with (
 def _extract_output_kwargs(
     script_path: Path,
 ) -> tuple[dict[str, object] | None, dict[str, object] | None]:
-    """Extracts the keyword arguments from ps.output.draw and ps.output.animate calls.
+    """Extracts the keyword arguments from ps.draw and ps.animate calls.
 
     Parses the example script's AST and returns the keyword arguments (excluding the
     managed kwargs solver, unsteady_solver, save, quality, and testing) for each call.
@@ -120,10 +120,8 @@ def _extract_output_kwargs(
         func = node.func
         if not (
             isinstance(func, ast.Attribute)
-            and isinstance(func.value, ast.Attribute)
-            and func.value.attr == "output"
-            and isinstance(func.value.value, ast.Name)
-            and func.value.value.id == "ps"
+            and isinstance(func.value, ast.Name)
+            and func.value.id == "ps"
         ):
             continue
 
@@ -213,7 +211,7 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
             output_subdir, draw_kwargs, _DEFAULT_DRAW_PATH
         )
         renderers[draw_destination] = (
-            ps.output.draw,
+            ps.draw,
             {**draw_kwargs, "solver": loaded_solver},
         )
     if animate_kwargs is not None:
@@ -221,7 +219,7 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
             output_subdir, animate_kwargs, _DEFAULT_ANIMATE_PATH
         )
         renderers[animate_destination] = (
-            ps.output.animate,
+            ps.animate,
             {**animate_kwargs, "unsteady_solver": loaded_solver},
         )
 
@@ -295,9 +293,9 @@ def _run_example(script_path: Path, output_subdir: Path) -> bool:
     subdirectory.
 
     Each example runs in its own process so memory is fully reclaimed between examples.
-    The subprocess patches ps.output.draw and ps.output.animate to force testing=True so
-    PyVista windows close automatically, and patches plt.show to prevent blocking. The
-    working directory is set to the output subdirectory so all saved files land there.
+    The subprocess patches ps.draw and ps.animate to force testing=True so PyVista
+    windows close automatically, and patches plt.show to prevent blocking. The working
+    directory is set to the output subdirectory so all saved files land there.
 
     :param script_path: The path to the example script to run.
     :param output_subdir: The directory in which to collect the script's outputs.

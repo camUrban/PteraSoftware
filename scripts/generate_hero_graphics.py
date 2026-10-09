@@ -56,18 +56,16 @@ _ANIMATE_KWARGS: dict[str, Any] = {
 _OFF_SCREEN_WINDOW_CLASSES = ("vtkEGLRenderWindow", "vtkOSOpenGLRenderWindow")
 
 
-def _create_and_solve_hero() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-):
+def _create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Creates and solves the hero simulation.
 
     :return: The solved hero solver.
     """
-    hero_airplane = ps.geometry.airplane.Airplane(
+    hero_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         num_spanwise_panels=12,
                         chord=1.75,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -76,14 +74,14 @@ def _create_and_solve_hero() -> (
                         control_surface_hinge_point=0.75,
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=400,
                         ),
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         num_spanwise_panels=None,
                         chord=1.25,
                         Lp_Wcsp_Lpp=(0.75, 7.0, 0.5),
@@ -92,7 +90,7 @@ def _create_and_solve_hero() -> (
                         control_surface_hinge_point=0.75,
                         control_surface_deflection=0.0,
                         spanwise_spacing=None,
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -119,61 +117,53 @@ def _create_and_solve_hero() -> (
         b_ref=None,
     )
 
-    main_wing_root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=hero_airplane.wings[0].wing_cross_sections[0],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    main_wing_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=hero_airplane.wings[0].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
-    main_wing_tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=hero_airplane.wings[0].wing_cross_sections[1],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    main_wing_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=hero_airplane.wings[0].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 
-    reflected_main_wing_root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=hero_airplane.wings[1].wing_cross_sections[0],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    reflected_main_wing_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=hero_airplane.wings[1].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
-    reflected_main_wing_tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=hero_airplane.wings[1].wing_cross_sections[1],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    reflected_main_wing_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=hero_airplane.wings[1].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 
-    main_wing_movement = ps.movements.wing_movement.WingMovement(
+    main_wing_movement = ps.WingMovement(
         base_wing=hero_airplane.wings[0],
         wing_cross_section_movements=[
             main_wing_root_wing_cross_section_movement,
@@ -188,7 +178,7 @@ def _create_and_solve_hero() -> (
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
         phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
-    reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
+    reflected_main_wing_movement = ps.WingMovement(
         base_wing=hero_airplane.wings[1],
         wing_cross_section_movements=[
             reflected_main_wing_root_wing_cross_section_movement,
@@ -204,7 +194,7 @@ def _create_and_solve_hero() -> (
         phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
 
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=hero_airplane,
         wing_movements=[main_wing_movement, reflected_main_wing_movement],
         ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -213,7 +203,7 @@ def _create_and_solve_hero() -> (
         phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
     )
 
-    hero_operating_point = ps.operating_point.OperatingPoint(
+    hero_operating_point = ps.OperatingPoint(
         rho=1.225,
         vCg__E=10.0,
         alpha=30.0,
@@ -225,15 +215,13 @@ def _create_and_solve_hero() -> (
         nu=15.06e-6,
     )
 
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=hero_operating_point,
-            periodVCg__E=0.0,
-            spacingVCg__E="sine",
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=hero_operating_point,
+        periodVCg__E=0.0,
+        spacingVCg__E="sine",
     )
 
-    movement = ps.movements.movement.Movement(
+    movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         delta_time=None,
@@ -242,14 +230,12 @@ def _create_and_solve_hero() -> (
         num_steps=None,
     )
 
-    hero_problem = ps.problems.UnsteadyProblem(
+    hero_problem = ps.UnsteadyProblem(
         movement=movement,
     )
 
-    hero_solver = (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-            unsteady_problem=hero_problem,
-        )
+    hero_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=hero_problem,
     )
 
     hero_solver.run(
@@ -269,8 +255,8 @@ def _render_within_size_ceiling(
     is larger than the size ceiling, never going below the quality floor.
 
     :param webp_path: The path to write the WebP file to.
-    :param render_func: The output function that renders the file, either ps.output.draw
-        or ps.output.animate.
+    :param render_func: The output function that renders the file, either ps.draw or
+        ps.animate.
     :param render_kwargs: The keyword arguments to pass to render_func, other than save,
         path, and quality.
     :return: None
@@ -335,11 +321,11 @@ def main() -> int:
     hero_solver = _create_and_solve_hero()
 
     _render_within_size_ceiling(
-        _STATIC_PATH, ps.output.draw, {"solver": hero_solver, **_DRAW_KWARGS}
+        _STATIC_PATH, ps.draw, {"solver": hero_solver, **_DRAW_KWARGS}
     )
     _render_within_size_ceiling(
         _ANIMATED_PATH,
-        ps.output.animate,
+        ps.animate,
         {"unsteady_solver": hero_solver, **_ANIMATE_KWARGS},
     )
     return 0

@@ -30,20 +30,20 @@ Then run a simulation. The following snippet defines a simple rectangular wing, 
 ```python
 import pterasoftware as ps
 
-airplane = ps.geometry.airplane.Airplane(
+airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="asymmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -58,21 +58,21 @@ airplane = ps.geometry.airplane.Airplane(
     ],
 )
 
-operating_point = ps.operating_point.OperatingPoint()
+operating_point = ps.OperatingPoint()
 
-problem = ps.problems.SteadyProblem(
+problem = ps.SteadyProblem(
     airplanes=[airplane], operating_point=operating_point
 )
 
 solver = (
-    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+    ps.SteadyHorseshoeVortexLatticeMethodSolver(
         steady_problem=problem
     )
 )
 
 solver.run()
 
-ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
+ps.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ```
 
 ## Features
@@ -106,7 +106,7 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * Loaded objects are fully compatible with all output and visualization functions.
 8. Features for Flapping-Wing Vehicle Design
     * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
-    * For example, use the functions in the `trim` module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
+    * For example, use `ps.analyze_steady_trim` and `ps.analyze_unsteady_trim` to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
 9. Aeroelastic Module for Flapping Flight (Beta)
     * This feature enables co-simulation of structural wing deformation and standard Ptera Software UVLM calculations.
     * Currently the feature offers a simple torsional spring model for each `WingCrossSection`.

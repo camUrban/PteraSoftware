@@ -33,7 +33,7 @@ def make_aeroelastic_unsteady_ring_solver_fixture() -> (
 
 
 def make_steady_horseshoe_solver_fixture() -> (
-    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+    ps.SteadyHorseshoeVortexLatticeMethodSolver
 ):
     """This method makes a fixture that is a SteadyHorseshoeVortexLatticeMethodSolver
     for general testing.
@@ -43,16 +43,12 @@ def make_steady_horseshoe_solver_fixture() -> (
     """
     steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
 
-    solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-        steady_problem
-    )
+    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem)
 
     return solver
 
 
-def make_steady_ring_solver_fixture() -> (
-    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-):
+def make_steady_ring_solver_fixture() -> ps.SteadyRingVortexLatticeMethodSolver:
     """This method makes a fixture that is a SteadyRingVortexLatticeMethodSolver for
     general testing.
 
@@ -61,16 +57,12 @@ def make_steady_ring_solver_fixture() -> (
     """
     steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
 
-    solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-        steady_problem
-    )
+    solver = ps.SteadyRingVortexLatticeMethodSolver(steady_problem)
 
     return solver
 
 
-def make_unsteady_ring_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-):
+def make_unsteady_ring_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """This method makes a fixture that is an UnsteadyRingVortexLatticeMethodSolver for
     general testing.
 
@@ -79,11 +71,7 @@ def make_unsteady_ring_solver_fixture() -> (
     """
     unsteady_problem = problem_fixtures.make_basic_unsteady_problem_fixture()
 
-    solver = (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-            unsteady_problem
-        )
-    )
+    solver = ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem)
 
     return solver
 

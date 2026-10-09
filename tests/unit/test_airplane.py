@@ -39,33 +39,31 @@ class TestAirplane(unittest.TestCase):
         """Test that wings parameter validation works correctly."""
         # Test empty list raises error
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[])
+            ps.Airplane(wings=[])
 
         # Test non-list raises error
         bad_wings: Any = "not a list"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=bad_wings)
+            ps.Airplane(wings=bad_wings)
 
         # Test non-Wing objects raise error
         non_wing_list: Any = ["not a wing"]
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=non_wing_list)
+            ps.Airplane(wings=non_wing_list)
 
         # Test mixed valid and invalid Wings
         mixed_wing_list: Any = [self.test_wing_type_1, "invalid"]
         with self.assertRaises(TypeError):
-            ps.geometry.airplane.Airplane(wings=mixed_wing_list)
+            ps.Airplane(wings=mixed_wing_list)
 
     def test_name_parameter_validation(self) -> None:
         """Test name parameter validation."""
         # Test a valid string name. Create a fresh fixture since Wings can only be
         # processed once.
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
-        airplane = ps.geometry.airplane.Airplane(
-            wings=[test_wing], name="Valid Test Name"
-        )
+        airplane = ps.Airplane(wings=[test_wing], name="Valid Test Name")
         self.assertEqual(airplane.name, "Valid Test Name")
 
         # Test invalid name types
@@ -73,13 +71,13 @@ class TestAirplane(unittest.TestCase):
         bad_name: Any = 123
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[test_wing], name=bad_name)
+            ps.Airplane(wings=[test_wing], name=bad_name)
 
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         none_name: Any = None
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[test_wing], name=none_name)
+            ps.Airplane(wings=[test_wing], name=none_name)
 
     def test_Cg_GP1_CgP1_parameter_validation(self) -> None:
         """Test Cg_GP1_CgP1 parameter validation."""
@@ -95,9 +93,7 @@ class TestAirplane(unittest.TestCase):
             with self.subTest(position=position):
                 # Create fresh fixture since Wings can only be processed once
                 test_wing = geometry_fixtures.make_type_1_wing_fixture()
-                airplane = ps.geometry.airplane.Airplane(
-                    wings=[test_wing], Cg_GP1_CgP1=position
-                )
+                airplane = ps.Airplane(wings=[test_wing], Cg_GP1_CgP1=position)
                 npt.assert_array_equal(airplane.Cg_GP1_CgP1, position)
 
         # Test invalid positions
@@ -114,9 +110,7 @@ class TestAirplane(unittest.TestCase):
                 test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.airplane.Airplane(
-                        wings=[test_wing], Cg_GP1_CgP1=invalid_position
-                    )
+                    ps.Airplane(wings=[test_wing], Cg_GP1_CgP1=invalid_position)
 
     def test_weight_parameter_validation(self) -> None:
         """Test weight parameter validation."""
@@ -127,9 +121,7 @@ class TestAirplane(unittest.TestCase):
             with self.subTest(weight=weight):
                 # Create fresh fixture since Wings can only be processed once
                 test_wing = geometry_fixtures.make_type_1_wing_fixture()
-                airplane = ps.geometry.airplane.Airplane(
-                    wings=[test_wing], weight=weight
-                )
+                airplane = ps.Airplane(wings=[test_wing], weight=weight)
                 self.assertEqual(airplane.weight, weight)
 
         # Test invalid weights (negative)
@@ -140,9 +132,7 @@ class TestAirplane(unittest.TestCase):
                 # Create fresh fixture since Wings can only be processed once
                 test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 with self.assertRaises(ValueError):
-                    ps.geometry.airplane.Airplane(
-                        wings=[test_wing], weight=invalid_weight
-                    )
+                    ps.Airplane(wings=[test_wing], weight=invalid_weight)
 
         # Test invalid weight types. Create fresh fixture since Wings can only be
         # processed once.
@@ -150,14 +140,14 @@ class TestAirplane(unittest.TestCase):
         bad_weight: Any = "heavy"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[test_wing], weight=bad_weight)
+            ps.Airplane(wings=[test_wing], weight=bad_weight)
 
     def test_reference_dimensions_default_behavior(self) -> None:
         """Test reference dimensions default to the projected reference planform's
         dimensions."""
         # Create Airplane with no explicit reference dimensions. Its first Wing is a 2.0
         # meter by 1.0 meter rectangle in the geometry axes' xy plane.
-        airplane = ps.geometry.airplane.Airplane(
+        airplane = ps.Airplane(
             wings=[geometry_fixtures.make_simple_rectangular_wing_fixture()]
         )
 
@@ -176,17 +166,17 @@ class TestAirplane(unittest.TestCase):
         # only be processed once.
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=-1.0)
+            ps.Airplane(wings=[test_wing], s_ref=-1.0)
 
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[test_wing], c_ref=0.0)
+            ps.Airplane(wings=[test_wing], c_ref=0.0)
 
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         bad_b_ref: Any = "large"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[test_wing], b_ref=bad_b_ref)
+            ps.Airplane(wings=[test_wing], b_ref=bad_b_ref)
 
     def test_s_ref_none_with_vertical_first_wing_raises(self) -> None:
         """Test that s_ref=None raises ValueError when the first Wing is vertical."""
@@ -194,7 +184,7 @@ class TestAirplane(unittest.TestCase):
             (90.0, 0.0, 0.0)
         )
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[test_wing], c_ref=1.0, b_ref=2.0)
+            ps.Airplane(wings=[test_wing], c_ref=1.0, b_ref=2.0)
 
     def test_c_ref_none_with_vertical_first_wing_raises(self) -> None:
         """Test that c_ref=None raises ValueError when the first Wing is vertical."""
@@ -202,7 +192,7 @@ class TestAirplane(unittest.TestCase):
             (90.0, 0.0, 0.0)
         )
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, b_ref=2.0)
+            ps.Airplane(wings=[test_wing], s_ref=2.0, b_ref=2.0)
 
     def test_b_ref_none_with_vertical_first_wing_raises(self) -> None:
         """Test that b_ref=None raises ValueError when the first Wing is vertical."""
@@ -210,7 +200,7 @@ class TestAirplane(unittest.TestCase):
             (90.0, 0.0, 0.0)
         )
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
+            ps.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
 
     def test_num_panels_calculation(self) -> None:
         """Test that num_panels is calculated correctly from all Wings."""
@@ -266,8 +256,8 @@ class TestAirplane(unittest.TestCase):
 
         # Should have multiple Wings
         self.assertEqual(len(airplane.wings), 2)
-        self.assertIsInstance(airplane.wings[0], ps.geometry.wing.Wing)
-        self.assertIsInstance(airplane.wings[1], ps.geometry.wing.Wing)
+        self.assertIsInstance(airplane.wings[0], ps.Wing)
+        self.assertIsInstance(airplane.wings[1], ps.Wing)
 
         # Wings should have different names
         self.assertNotEqual(airplane.wings[0].name, airplane.wings[1].name)
@@ -293,7 +283,7 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_1(self) -> None:
         """Test process_wing_symmetry with type 1 Wing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -303,7 +293,7 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_2(self) -> None:
         """Test process_wing_symmetry with type 2 Wing."""
         wing = geometry_fixtures.make_type_2_wing_fixture()
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -313,7 +303,7 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_3(self) -> None:
         """Test process_wing_symmetry with type 3 Wing."""
         wing = geometry_fixtures.make_type_3_wing_fixture()
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -323,7 +313,7 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_4(self) -> None:
         """Test process_wing_symmetry with type 4 Wing."""
         wing = geometry_fixtures.make_type_4_wing_fixture()
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -333,7 +323,7 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_5(self) -> None:
         """Test process_wing_symmetry with type 5 Wing."""
         wing = geometry_fixtures.make_type_5_wing_fixture()
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return list with two Wings
         self.assertIsInstance(result, list)
@@ -360,11 +350,11 @@ class TestAirplane(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leading = np.column_stack((ys, ys, zeros))
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=3,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             symmetric=True,
             symmetryNormal_G=[0.0, 0.707, 0.707],
             symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
@@ -373,7 +363,7 @@ class TestAirplane(unittest.TestCase):
             tip_trim_fraction=0.2,
         )
 
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         original_wing = result[0]
         reflected_wing = result[1]
@@ -402,7 +392,7 @@ class TestAirplane(unittest.TestCase):
 
     def test_process_wing_symmetry_type_5_exploded(self) -> None:
         """Test that a type 5 exploded Wing's reflection is also exploded."""
-        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        root_wing_cross_section = ps.WingCrossSection(
             airfoil=geometry_fixtures.make_test_airfoil_fixture(),
             num_spanwise_panels=4,
             chord=2.0,
@@ -414,7 +404,7 @@ class TestAirplane(unittest.TestCase):
         tip_wing_cross_section = (
             geometry_fixtures.make_tip_wing_cross_section_with_control_surface_fixture()
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             symmetric=True,
             symmetryNormal_G=[0.0, 0.707, 0.707],
@@ -422,7 +412,7 @@ class TestAirplane(unittest.TestCase):
             explode_into_strips=True,
         )
 
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         original_wing = result[0]
         reflected_wing = result[1]
@@ -461,12 +451,12 @@ class TestAirplane(unittest.TestCase):
             geometry_fixtures.make_basic_wing_cross_section_fixture(),
         ]
         with self.assertRaises(ValueError):
-            wing_type_1 = ps.geometry.wing.Wing(
+            wing_type_1 = ps.Wing(
                 wing_cross_sections=wing_cross_sections,
                 symmetric=False,
                 mirror_only=False,
             )
-            ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_1)
+            ps.Airplane.process_wing_symmetry(wing_type_1)
 
         # Type 2: should fail with control surfaces. Create fresh fixtures since
         # WingCrossSections can only be validated once.
@@ -476,14 +466,14 @@ class TestAirplane(unittest.TestCase):
             geometry_fixtures.make_basic_wing_cross_section_fixture(),
         ]
         with self.assertRaises(ValueError):
-            wing_type_2 = ps.geometry.wing.Wing(
+            wing_type_2 = ps.Wing(
                 wing_cross_sections=wing_cross_sections,
                 symmetric=False,
                 mirror_only=True,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
                 symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
             )
-            ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_2)
+            ps.Airplane.process_wing_symmetry(wing_type_2)
 
     def test_process_wing_symmetry_control_surface_validation_types_4_5(self) -> None:
         """Test control surface validation for symmetry types 4, 5."""
@@ -496,14 +486,14 @@ class TestAirplane(unittest.TestCase):
 
         # Type 4: should fail without control surfaces
         with self.assertRaises(ValueError):
-            wing_type_4 = ps.geometry.wing.Wing(
+            wing_type_4 = ps.Wing(
                 wing_cross_sections=wing_cross_sections,
                 symmetric=True,
                 mirror_only=False,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
                 symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
             )
-            ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_4)
+            ps.Airplane.process_wing_symmetry(wing_type_4)
 
     def test_process_wing_symmetry_type_5_control_surface_deflections(self) -> None:
         """Test type 5 Wing processing with different control surface deflections."""
@@ -519,7 +509,7 @@ class TestAirplane(unittest.TestCase):
         # Create type 5 Wing with asymmetric control surfaces
         wing_cross_sections = [root_wing_cross_section, tip_wing_cross_section]
 
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=wing_cross_sections,
             symmetric=True,
             mirror_only=False,
@@ -527,7 +517,7 @@ class TestAirplane(unittest.TestCase):
             symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
         )
 
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
 
         # Should return two Wings
         self.assertEqual(len(result), 2)
@@ -558,7 +548,7 @@ class TestAirplane(unittest.TestCase):
         tip_wing_cross_section = (
             geometry_fixtures.make_tip_wing_cross_section_with_control_surface_fixture()
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             Ler_Gs_Cgs=[1.0, 0.0, 0.5],
             angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -570,7 +560,7 @@ class TestAirplane(unittest.TestCase):
             chordwise_spacing="cosine",
         )
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+            ps.Airplane.process_wing_symmetry(wing)
 
     def test_process_wing_symmetry_type_4_asymmetric_tip_allowed(self) -> None:
         """A type 4 Wing may carry an asymmetric control surface on an off-plane cross
@@ -586,7 +576,7 @@ class TestAirplane(unittest.TestCase):
         tip_wing_cross_section = (
             geometry_fixtures.make_asymmetric_control_surface_wing_cross_section_fixture()
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             Ler_Gs_Cgs=[1.0, 0.0, 0.5],
             angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -597,7 +587,7 @@ class TestAirplane(unittest.TestCase):
             num_chordwise_panels=8,
             chordwise_spacing="cosine",
         )
-        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane.process_wing_symmetry(wing)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].symmetry_type, 4)
 
@@ -610,9 +600,7 @@ class TestAirplane(unittest.TestCase):
             geometry_fixtures.make_type_4_wing_fixture(),
         ]
 
-        airplane = ps.geometry.airplane.Airplane(
-            wings=wings, name="Mixed Wing Type Airplane"
-        )
+        airplane = ps.Airplane(wings=wings, name="Mixed Wing Type Airplane")
 
         # Should have at least the original number of Wings (type 5 could add more)
         self.assertGreaterEqual(len(airplane.wings), 3)
@@ -637,7 +625,7 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.geometry.airplane.Airplane)
+        self.assertIsInstance(copied, ps.Airplane)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_airplane_parameters(self) -> None:
@@ -903,7 +891,7 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         new_position = [5.0, 2.0, -1.0]
         copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
 
-        self.assertIsInstance(copied, ps.geometry.airplane.Airplane)
+        self.assertIsInstance(copied, ps.Airplane)
         self.assertIsNot(original, copied)
 
     def test_deep_copy_with_Cg_GP1_CgP1_uses_new_position(self) -> None:
@@ -1114,9 +1102,7 @@ class TestAirplaneTPasGCgToGP1CgP1(unittest.TestCase):
         point."""
         position = np.array([5.0, 2.0, -1.0])
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
-        airplane = ps.geometry.airplane.Airplane(
-            wings=[test_wing], Cg_GP1_CgP1=position
-        )
+        airplane = ps.Airplane(wings=[test_wing], Cg_GP1_CgP1=position)
 
         T = airplane.T_pas_G_Cg_to_GP1_CgP1
 
@@ -1206,10 +1192,10 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
         angles_Wcsp_to_Wcs_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         control_surface_symmetry_type: str | None = None,
         is_tip: bool = False,
-    ) -> ps.geometry.wing_cross_section.WingCrossSection:
+    ) -> ps.WingCrossSection:
         """Create a WingCrossSection with the given chord, position, and orientation."""
-        return ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+        return ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca0012"),
             num_spanwise_panels=None if is_tip else 2,
             chord=chord,
             Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
@@ -1222,13 +1208,13 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
         self,
         Ler_Gs_Cgs: Sequence[float | int] = (0.0, 0.0, 0.0),
         symmetric: bool = False,
-    ) -> ps.geometry.wing.Wing:
+    ) -> ps.Wing:
         """Create a planar Wing whose half has chords of 1.0 m, 0.8 m, and 0.5 m at
         spanwise positions of 0.0 m, 1.2 m, and 2.4 m from its root, with leading points
         0.0 m, 0.35 m, and 0.8 m aft of the root's, mirrored across the geometry axes'
         xz plane if symmetric."""
         control_surface_symmetry_type = "symmetric" if symmetric else None
-        return ps.geometry.wing.Wing(
+        return ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(
                     1.0,
@@ -1255,10 +1241,10 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
 
     @staticmethod
     def _get_reference_dimensions(
-        wing: ps.geometry.wing.Wing,
+        wing: ps.Wing,
     ) -> tuple[float, float, float]:
         """Process a Wing's symmetry and return its planform reference dimensions."""
-        first_wings = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        first_wings = ps.Airplane.process_wing_symmetry(wing)
         return _geometry.airplane.get_planform_reference_dimensions(first_wings)
 
     def test_type_5_includes_gap_between_halves(self) -> None:
@@ -1287,7 +1273,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_type_2_uses_reflected_half(self) -> None:
         """Test that a type 2 Wing's reference dimensions come from its reflected
         half."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(0.5, (0.2, 2.0, 0.0), is_tip=True),
@@ -1308,10 +1294,10 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_control_surface_deflection_has_no_effect(self) -> None:
         """Test that a control surface deflection doesn't change the reference
         dimensions."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(name="naca0012"),
                     num_spanwise_panels=2,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -1348,7 +1334,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
             + tipLp_Wn_Lpp[1] * np.cos(middle_angle_rad),
             0.0,
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(
@@ -1384,7 +1370,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_vertical_winglet_contributes_nothing(self) -> None:
         """Test that a vertical winglet at the tip leaves the reference dimensions
         unchanged."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(0.8, (0.3, 2.0, 0.0), (90.0, 0.0, 0.0)),
@@ -1403,7 +1389,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_tilted_wing_is_projected(self) -> None:
         """Test that a Wing tilted about the geometry axes' x axis is projected onto the
         geometry axes' xy plane."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
@@ -1423,7 +1409,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_edge_defined_uses_untrimmed_curves(self) -> None:
         """Test that an edge_defined Wing's reference dimensions come from its untrimmed
         edge curves."""
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=[
                 [0.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0],
@@ -1431,7 +1417,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
             ],
             trailingEdgePoints_Wn_Ler=[[1.0, 0.0, 0.0], [1.0, 2.0, 0.0]],
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             tip_trim_fraction=0.2,
         )
 
@@ -1450,11 +1436,11 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
         trailingEdgePoints_Wn_Ler = np.array(
             [[1.0, 0.0, 0.0], [1.3, 1.2, 0.0], [1.4, 2.0, 0.0]]
         )
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
             trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
             num_wing_cross_sections=4,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             tip_trim_fraction=0.1,
         )
 
@@ -1475,7 +1461,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
 
     def test_vertical_wing_raises_steep_error(self) -> None:
         """Test that a vertical Wing raises the steeply inclined error."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
@@ -1489,7 +1475,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_wing_tilted_past_threshold_raises_steep_error(self) -> None:
         """Test that a Wing tilted more than 45 degrees raises the steeply inclined
         error."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
@@ -1503,7 +1489,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_type_5_vertical_halves_raise_steep_error(self) -> None:
         """Test that a type 5 Wing with vertical halves raises the steeply inclined
         error, even though the bridge strip between them is horizontal."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(
                     1.0, (0.0, 0.0, 0.0), control_surface_symmetry_type="symmetric"
@@ -1528,7 +1514,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_turned_back_strip_without_overlap_is_accepted(self) -> None:
         """Test that a Wing whose last strip turns back toward the root, but sits aft of
         the rest of the projected planform, is accepted and counted in full."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(1.0, (0.0, 1.0, 0.0), (90.0, 0.0, 0.0)),
@@ -1550,7 +1536,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
 
     def test_fold_raises_ill_formed_error(self) -> None:
         """Test that a Wing that folds back over itself raises the ill-formed error."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
                 self._make_wing_cross_section(1.0, (0.0, 1.0, 0.0), (90.0, 0.0, 0.0)),
@@ -1565,7 +1551,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_crossing_edge_curves_raise_ill_formed_error(self) -> None:
         """Test that an edge_defined Wing whose edge curves cross raises the ill-formed
         error."""
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=[
                 [0.0, 0.0, 0.0],
                 [2.0, 1.0, 0.0],
@@ -1573,7 +1559,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
             ],
             trailingEdgePoints_Wn_Ler=[[1.0, 0.0, 0.0], [1.0, 2.0, 0.0]],
             num_wing_cross_sections=2,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
         )
 
         with self.assertRaisesRegex(ValueError, "crosses over itself"):
@@ -1582,7 +1568,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_overlapping_strips_raise_ill_formed_error(self) -> None:
         """Test that a Wing that spirals past a full turn, so that its last strip
         overlaps its first, raises the ill-formed error."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[self._make_wing_cross_section(0.3, (0.0, 0.0, 0.0))]
             + [
                 self._make_wing_cross_section(0.3, (0.0, 1.0, 0.0), (0.0, 0.0, 60.0))
@@ -1597,7 +1583,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
     def test_type_5_overlapping_halves_raise_ill_formed_error(self) -> None:
         """Test that a type 5 Wing whose halves overlap along the geometry axes' y axis
         raises the ill-formed error."""
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[
                 self._make_wing_cross_section(
                     1.0, (0.0, 0.0, 0.0), control_surface_symmetry_type="symmetric"

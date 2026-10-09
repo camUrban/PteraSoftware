@@ -14,20 +14,20 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_trim.log"))
 
 # Create an Airplane. We must specify a weight (in Newtons) for the Airplane. We will
 # later find a trim condition where the weight is exactly balanced by lift.
-trim_airplane = ps.geometry.airplane.Airplane(
+trim_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -39,10 +39,10 @@ trim_airplane = ps.geometry.airplane.Airplane(
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=8,
@@ -50,8 +50,8 @@ trim_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -76,19 +76,17 @@ trim_airplane = ps.geometry.airplane.Airplane(
 # of engine. We must also specify a gravitational acceleration, because the trim
 # analysis places the Airplane's weight along its direction. Only the direction matters
 # here, as the Airplane carries a weight rather than a mass.
-trim_operating_point = ps.operating_point.OperatingPoint(
-    externalFX_W=5, g_E=(0.0, 0.0, 9.80665)
-)
+trim_operating_point = ps.OperatingPoint(externalFX_W=5, g_E=(0.0, 0.0, 9.80665))
 
 # Construct a SteadyProblem containing the Airplane and OperatingPoint
-trim_problem = ps.problems.SteadyProblem(
+trim_problem = ps.SteadyProblem(
     airplanes=[trim_airplane], operating_point=trim_operating_point
 )
 
 # Call the analyze_steady_trim function to search for a trim condition (thrust balances
 # drag, weight balances lift, and all moments are close to zero) within a certain set of
 # bounds.
-trim_conditions = ps.trim.analyze_steady_trim(
+trim_conditions = ps.analyze_steady_trim(
     problem=trim_problem,
     solver_type="steady horseshoe vortex lattice method",
     boundsVCg__E=(5, 15),

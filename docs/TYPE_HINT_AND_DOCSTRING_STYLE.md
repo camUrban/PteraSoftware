@@ -225,7 +225,7 @@ mypy cannot see attributes assigned through `cls` inside `setUpClass`, so every 
 class TestUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test UnsteadyProblems."""
 
-    basic_unsteady_problem: ps.problems.UnsteadyProblem
+    basic_unsteady_problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -244,7 +244,7 @@ def test_wings_validation(self) -> None:
     """Test that non-list wings inputs are rejected."""
     bad_wings: Any = "not a list"
     with self.assertRaises(TypeError):
-        ps.geometry.airplane.Airplane(wings=bad_wings)
+        ps.Airplane(wings=bad_wings)
 ```
 
 Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`. Annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.

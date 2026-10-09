@@ -17,12 +17,8 @@ class TestSteadyHorseshoeVortexLatticeMethodSurfaceEffect(unittest.TestCase):
     """This is a class for testing the SteadyHorseshoeVortexLatticeMethodSolver's
     surface effect implementation."""
 
-    surface_effect_solver: (
-        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-    )
-    free_air_solver: (
-        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-    )
+    surface_effect_solver: ps.SteadyHorseshoeVortexLatticeMethodSolver
+    free_air_solver: ps.SteadyHorseshoeVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:

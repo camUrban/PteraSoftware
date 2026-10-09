@@ -305,7 +305,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             core_wing_cross_section_movement.base_wing_cross_section,
-            ps.geometry.wing_cross_section.WingCrossSection,
+            ps.WingCrossSection,
         )
         npt.assert_array_equal(
             core_wing_cross_section_movement.ampLp_Wcsp_Lpp, np.array([0.4, 0.3, 0.15])
@@ -906,9 +906,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Verify all elements are WingCrossSections.
         for wing_cross_section in wing_cross_sections:
-            self.assertIsInstance(
-                wing_cross_section, ps.geometry.wing_cross_section.WingCrossSection
-            )
+            self.assertIsInstance(wing_cross_section, ps.WingCrossSection)
 
     def test_generate_wing_cross_sections_preserves_non_changing_attributes(
         self,
@@ -1244,9 +1242,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Verify that WingCrossSections are generated successfully.
         self.assertEqual(len(wing_cross_sections), 100)
         for wing_cross_section in wing_cross_sections:
-            self.assertIsInstance(
-                wing_cross_section, ps.geometry.wing_cross_section.WingCrossSection
-            )
+            self.assertIsInstance(wing_cross_section, ps.WingCrossSection)
 
     def test_custom_function_validation_invalid_start_value(self) -> None:
         """Test that custom function with invalid start value raises error."""

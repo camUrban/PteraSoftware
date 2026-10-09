@@ -17,10 +17,10 @@ from . import (
 
 
 def _make_playback_solver(
-    airplane_movement: ps.movements.airplane_movement.AirplaneMovement,
-    base_operating_point: ps.operating_point.OperatingPoint,
+    airplane_movement: ps.AirplaneMovement,
+    base_operating_point: ps.OperatingPoint,
     delta_time: float,
-) -> ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver:
+) -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Makes an unrun solver whose time step characteristics are set explicitly.
 
     The playback arithmetic reads only the solver's delta_time, its num_steps, and its
@@ -34,28 +34,20 @@ def _make_playback_solver(
     :param delta_time: The time step's length in seconds.
     :return: The unrun UnsteadyRingVortexLatticeMethodSolver.
     """
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=base_operating_point
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=base_operating_point
     )
-    movement = ps.movements.movement.Movement(
+    movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         delta_time=delta_time,
         num_steps=11,
     )
-    unsteady_problem = ps.problems.UnsteadyProblem(
-        movement=movement, only_final_results=False
-    )
-    return ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem
-    )
+    unsteady_problem = ps.UnsteadyProblem(movement=movement, only_final_results=False)
+    return ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem)
 
 
-def make_playback_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-):
+def make_playback_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Makes a fixture that is a solver whose playback arithmetic comes out even.
 
     A time step of 0.01 seconds carries 0.5 seconds of simulation per second of playback
@@ -73,7 +65,7 @@ def make_playback_solver_fixture() -> (
 
 
 def make_long_step_playback_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    ps.UnsteadyRingVortexLatticeMethodSolver
 ):
     """Makes a fixture that is a solver the maximum frame rate can play at true speed.
 
@@ -91,7 +83,7 @@ def make_long_step_playback_solver_fixture() -> (
 
 
 def make_fast_motion_playback_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    ps.UnsteadyRingVortexLatticeMethodSolver
 ):
     """Makes a fixture that is a solver whose motion aliases as soon as frames are
     dropped.
@@ -106,7 +98,7 @@ def make_fast_motion_playback_solver_fixture() -> (
     # WingCrossSections.
     base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     base_wing = base_airplane.wings[0]
-    fast_wing_movement = ps.movements.wing_movement.WingMovement(
+    fast_wing_movement = ps.WingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=[
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
@@ -125,7 +117,7 @@ def make_fast_motion_playback_solver_fixture() -> (
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
         phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
-    fast_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    fast_airplane_movement = ps.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=[fast_wing_movement],
         ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -140,9 +132,7 @@ def make_fast_motion_playback_solver_fixture() -> (
     )
 
 
-def make_static_playback_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-):
+def make_static_playback_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Makes a fixture that is a solver whose geometry never moves.
 
     A static geometry has no motion to alias, which is one of the three cases the
@@ -157,9 +147,7 @@ def make_static_playback_solver_fixture() -> (
     )
 
 
-def make_image_surface_solver_fixture() -> (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-):
+def make_image_surface_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Makes a fixture that is a solver whose OperatingPoint defines an image surface.
 
     The surface is the ground, 10.0 meters below the first Airplane's CG, so the
@@ -175,7 +163,7 @@ def make_image_surface_solver_fixture() -> (
     )
 
 
-def make_loaded_airplanes_fixture() -> tuple[ps.geometry.airplane.Airplane, ...]:
+def make_loaded_airplanes_fixture() -> tuple[ps.Airplane, ...]:
     """Makes a fixture that is a tuple of one Airplane whose Panels carry known loads.
 
     A solver sets each Panel's loads while it runs, which no unit test does, so they are
@@ -202,7 +190,7 @@ def make_loaded_airplanes_fixture() -> tuple[ps.geometry.airplane.Airplane, ...]
     return (airplane,)
 
 
-def make_placed_airplanes_fixture() -> tuple[ps.geometry.airplane.Airplane, ...]:
+def make_placed_airplanes_fixture() -> tuple[ps.Airplane, ...]:
     """Makes a fixture that is a tuple of one Airplane placed into a problem.
 
     A Panel's corner positions in the first Airplane's geometry axes are what the Panel
@@ -215,7 +203,7 @@ def make_placed_airplanes_fixture() -> tuple[ps.geometry.airplane.Airplane, ...]
     return problem_fixtures.make_basic_steady_problem_fixture().airplanes
 
 
-def make_formation_airplanes_fixture() -> tuple[ps.geometry.airplane.Airplane, ...]:
+def make_formation_airplanes_fixture() -> tuple[ps.Airplane, ...]:
     """Makes a fixture that is a tuple of two Airplanes placed into one problem.
 
     Both are placed in the first Airplane's geometry axes, which is what lets a

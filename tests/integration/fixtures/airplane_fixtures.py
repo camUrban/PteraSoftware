@@ -5,18 +5,18 @@ import numpy as np
 import pterasoftware as ps
 
 
-def make_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_steady_validation_airplane() -> ps.Airplane:
     """This function creates an Airplane to be used as a fixture for testing steady
     solvers.
 
     :return steady_validation_airplane: Airplane This is the Airplane fixture.
     """
-    steady_validation_airplane = ps.geometry.airplane.Airplane(
+    steady_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -31,8 +31,8 @@ def make_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -69,7 +69,7 @@ def make_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
     return steady_validation_airplane
 
 
-def make_exploded_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_exploded_validation_airplane() -> ps.Airplane:
     """This function creates an Airplane with an exploded Wing to be used as a fixture.
 
     The Wing is built with explode_into_strips=True, so its spanwise mesh marker is
@@ -78,20 +78,20 @@ def make_exploded_validation_airplane() -> ps.geometry.airplane.Airplane:
 
     :return exploded_validation_airplane: Airplane This is the Airplane fixture.
     """
-    exploded_validation_airplane = ps.geometry.airplane.Airplane(
+    exploded_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=1,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                         angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -110,7 +110,7 @@ def make_exploded_validation_airplane() -> ps.geometry.airplane.Airplane:
     return exploded_validation_airplane
 
 
-def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_edge_defined_validation_airplane() -> ps.Airplane:
     """This function creates an Airplane with an edge-defined Wing to be used as a
     fixture for testing the convergence functions' edge-defined refinement.
 
@@ -127,13 +127,13 @@ def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
     leadingEdgePoints_Wn_Ler = np.column_stack((0.1 * ys, ys, zeros))
     trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
 
-    edge_defined_validation_airplane = ps.geometry.airplane.Airplane(
+    edge_defined_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
                 trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
                 num_wing_cross_sections=10,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
                 name="Edge Wing",
                 symmetric=True,
                 symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -146,7 +146,7 @@ def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
     return edge_defined_validation_airplane
 
 
-def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_mixed_validation_airplane() -> ps.Airplane:
     """This function creates an Airplane holding both a trapezoidal Wing and an edge-
     defined Wing, to be used as a fixture for testing that the convergence functions
     refine each Wing by its own spanwise mesh.
@@ -163,12 +163,12 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
     leadingEdgePoints_Wn_Ler = np.column_stack((0.1 * ys, ys, zeros))
     trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
 
-    mixed_validation_airplane = ps.geometry.airplane.Airplane(
+    mixed_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=8,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -178,8 +178,8 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
                         control_surface_deflection=0.0,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
@@ -197,11 +197,11 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
                 num_chordwise_panels=8,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
                 trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
                 num_wing_cross_sections=10,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
                 name="Edge Wing",
                 Ler_Gs_Cgs=(4.0, 0.0, 0.0),
                 symmetric=True,
@@ -215,19 +215,19 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
     return mixed_validation_airplane
 
 
-def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_multiple_wing_steady_validation_airplane() -> ps.Airplane:
     """This function creates an Airplane with multiple Wings to be used as a fixture for
     testing steady solvers.
 
     :return multiple_wing_steady_validation_airplane: Airplane This is the Airplane
         fixture.
     """
-    multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
+    multiple_wing_steady_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca23012",
                             outline_A_Lp=None,
                             resample=True,
@@ -242,8 +242,8 @@ def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airp
                         control_surface_deflection=0.0,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca23012",
                             outline_A_Lp=None,
                             resample=True,
@@ -269,10 +269,10 @@ def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airp
                 num_chordwise_panels=12,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -287,8 +287,8 @@ def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airp
                         control_surface_deflection=0.0,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -325,19 +325,19 @@ def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airp
     return multiple_wing_steady_validation_airplane
 
 
-def make_symmetric_unsteady_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_symmetric_unsteady_validation_airplane() -> ps.Airplane:
     """This function creates a symmetric Airplane to be used as a fixture for testing
     unsteady solvers.
 
     :return symmetric_unsteady_validation_airplane: Airplane This is the Airplane
         fixture.
     """
-    symmetric_unsteady_validation_airplane = ps.geometry.airplane.Airplane(
+    symmetric_unsteady_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -352,8 +352,8 @@ def make_symmetric_unsteady_validation_airplane() -> ps.geometry.airplane.Airpla
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -390,21 +390,19 @@ def make_symmetric_unsteady_validation_airplane() -> ps.geometry.airplane.Airpla
     return symmetric_unsteady_validation_airplane
 
 
-def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
-    ps.geometry.airplane.Airplane
-):
+def make_symmetric_multiple_wing_unsteady_validation_airplane() -> ps.Airplane:
     """This function creates a multi-wing, symmetric Airplane to be used as a fixture
     for testing unsteady solvers.
 
     :return symmetric_multiple_wing_steady_validation_airplane: Airplane This is the
         Airplane fixture.
     """
-    symmetric_multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
+    symmetric_multiple_wing_steady_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -419,8 +417,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -446,10 +444,10 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
                 num_chordwise_panels=8,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -464,8 +462,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -491,10 +489,10 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
                 num_chordwise_panels=8,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -509,8 +507,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -547,7 +545,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
     return symmetric_multiple_wing_steady_validation_airplane
 
 
-def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
+def make_simple_glider_airplane() -> ps.Airplane:
     """This function creates the simple glider Airplane used for free flight testing.
 
     The simple glider is a three-wing aircraft (cambered main wing, symmetric horizontal
@@ -568,20 +566,20 @@ def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
 
     :return simple_glider_airplane: Airplane This is the simple glider Airplane fixture.
     """
-    simple_glider_airplane = ps.geometry.airplane.Airplane(
+    simple_glider_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca2412"),
                         num_spanwise_panels=10,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                         control_surface_symmetry_type="symmetric",
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca2412"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
@@ -599,18 +597,18 @@ def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
                 num_chordwise_panels=4,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=6,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                         control_surface_symmetry_type="symmetric",
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -628,17 +626,17 @@ def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
                 num_chordwise_panels=4,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=6,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
@@ -666,7 +664,7 @@ def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
     return simple_glider_airplane
 
 
-def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
+def make_flapping_free_flight_airplane() -> ps.Airplane:
     """This function creates the flapping-wing Airplane used for free flight testing.
 
     This is the same airframe as the flapping-wing free flight example: a cambered main
@@ -690,12 +688,12 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
     :return flapping_free_flight_airplane: Airplane This is the flapping-wing Airplane
         fixture.
     """
-    flapping_free_flight_airplane = ps.geometry.airplane.Airplane(
+    flapping_free_flight_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca2412"),
                         num_spanwise_panels=4,
                         chord=1.75,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -703,8 +701,8 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
                         control_surface_hinge_point=0.75,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca2412"),
                         num_spanwise_panels=None,
                         chord=1.5,
                         Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
@@ -724,10 +722,10 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
                 num_chordwise_panels=6,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=4,
                         chord=1.5,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -735,8 +733,8 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
                         control_surface_hinge_point=0.75,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(name="naca0012"),
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
@@ -766,19 +764,19 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
     return flapping_free_flight_airplane
 
 
-def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
+def make_surface_effect_airplane() -> ps.Airplane:
     """This function creates a simple single-wing Airplane for surface effect testing.
 
     The Airplane uses a NACA 0010 symmetric airfoil with zero twist and zero dihedral.
 
     :return surface_effect_airplane: Airplane This is the Airplane fixture.
     """
-    surface_effect_airplane = ps.geometry.airplane.Airplane(
+    surface_effect_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -793,8 +791,8 @@ def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
                         control_surface_deflection=0.0,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca0010",
                             outline_A_Lp=None,
                             resample=True,
@@ -834,7 +832,7 @@ def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
 def _make_formation_validation_airplane(
     name: str,
     Cg_GP1_CgP1: tuple[float, float, float],
-) -> ps.geometry.airplane.Airplane:
+) -> ps.Airplane:
     """This function creates one of the formation validation Airplanes.
 
     The mesh is deliberately coarse. The formation fixtures exist to test how the output
@@ -847,12 +845,12 @@ def _make_formation_validation_airplane(
         Airplane's CG). The units are in meters.
     :return formation_validation_airplane: Airplane This is the Airplane fixture.
     """
-    formation_validation_airplane = ps.geometry.airplane.Airplane(
+    formation_validation_airplane = ps.Airplane(
         wings=[
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -867,8 +865,8 @@ def _make_formation_validation_airplane(
                         control_surface_deflection=0.0,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                    ps.WingCrossSection(
+                        airfoil=ps.Airfoil(
                             name="naca2412",
                             outline_A_Lp=None,
                             resample=True,
@@ -905,7 +903,7 @@ def _make_formation_validation_airplane(
     return formation_validation_airplane
 
 
-def make_formation_lead_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_formation_lead_validation_airplane() -> ps.Airplane:
     """This function creates the lead formation validation Airplane, whose name composes
     a valid file name.
 
@@ -914,7 +912,7 @@ def make_formation_lead_validation_airplane() -> ps.geometry.airplane.Airplane:
     return _make_formation_validation_airplane("Lead Airplane", (0.0, 0.0, 0.0))
 
 
-def make_separator_named_validation_airplane() -> ps.geometry.airplane.Airplane:
+def make_separator_named_validation_airplane() -> ps.Airplane:
     """This function creates the trailing formation validation Airplane, whose name
     carries a path separator.
 

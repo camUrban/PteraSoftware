@@ -44,7 +44,7 @@ class TestWing(unittest.TestCase):
 
         for wing, wing_type in wings_to_test:
             with self.subTest(wing_type=wing_type):
-                self.assertIsInstance(wing, ps.geometry.wing.Wing)
+                self.assertIsInstance(wing, ps.Wing)
                 self.assertIsInstance(wing.wing_cross_sections, tuple)
                 self.assertEqual(len(wing.wing_cross_sections), 2)
                 self.assertIsInstance(wing.name, str)
@@ -59,22 +59,22 @@ class TestWing(unittest.TestCase):
         """Test that wing_cross_sections parameter validation works correctly."""
         # Test empty list raises error.
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(wing_cross_sections=[])
+            ps.Wing(wing_cross_sections=[])
 
         # Test non-list raises error.
         bad_wing_cross_sections: Any = "not a list"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(wing_cross_sections=bad_wing_cross_sections)
+            ps.Wing(wing_cross_sections=bad_wing_cross_sections)
 
         # Test single WingCrossSection raises error (need at least 2).
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(wing_cross_sections=[self.root_wing_cross_section])
+            ps.Wing(wing_cross_sections=[self.root_wing_cross_section])
 
         # Test non-WingCrossSection objects raise error.
         bad_wing_cross_section: Any = "not a wing_cross_section"
         with self.assertRaises(TypeError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
                     self.root_wing_cross_section,
                     bad_wing_cross_section,
@@ -90,7 +90,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=True,
@@ -104,7 +104,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=False,
                 mirror_only=False,
@@ -117,7 +117,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=False,
@@ -405,7 +405,7 @@ class TestWing(unittest.TestCase):
                 tip_wing_cross_section = (
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
-                wing = ps.geometry.wing.Wing(
+                wing = ps.Wing(
                     wing_cross_sections=[
                         root_wing_cross_section,
                         tip_wing_cross_section,
@@ -428,7 +428,7 @@ class TestWing(unittest.TestCase):
                 tip_wing_cross_section = (
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
-                wing = ps.geometry.wing.Wing(
+                wing = ps.Wing(
                     wing_cross_sections=[
                         root_wing_cross_section,
                         tip_wing_cross_section,
@@ -448,7 +448,7 @@ class TestWing(unittest.TestCase):
         bad_Ler_Gs_Cgs: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 Ler_Gs_Cgs=bad_Ler_Gs_Cgs,
             )
@@ -461,7 +461,7 @@ class TestWing(unittest.TestCase):
         bad_angles_Gs_to_Wn_ixyz: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 angles_Gs_to_Wn_ixyz=bad_angles_Gs_to_Wn_ixyz,
             )
@@ -473,7 +473,7 @@ class TestWing(unittest.TestCase):
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 num_chordwise_panels=0,
             )
@@ -484,7 +484,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 chordwise_spacing="invalid_spacing",
             )
@@ -497,7 +497,7 @@ class TestWing(unittest.TestCase):
         bad_symmetric: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=bad_symmetric,
             )
@@ -510,7 +510,7 @@ class TestWing(unittest.TestCase):
         bad_mirror_only: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 mirror_only=bad_mirror_only,
             )
@@ -523,7 +523,7 @@ class TestWing(unittest.TestCase):
         bad_explode_into_strips: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 explode_into_strips=bad_explode_into_strips,
             )
@@ -536,7 +536,7 @@ class TestWing(unittest.TestCase):
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             name="Test Wing Name",
         )
@@ -550,7 +550,7 @@ class TestWing(unittest.TestCase):
         bad_name: Any = 123
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 name=bad_name,
             )
@@ -563,7 +563,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # Create Wing with non-unit normal vector.
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             symmetric=False,
             mirror_only=True,
@@ -582,7 +582,7 @@ class TestWing(unittest.TestCase):
         """Test Wing with 3 WingCrossSections validates correctly."""
         # Test that valid 3-WingCrossSection Wing initializes correctly.
         wing = geometry_fixtures.make_three_section_wing_fixture()
-        self.assertIsInstance(wing, ps.geometry.wing.Wing)
+        self.assertIsInstance(wing, ps.Wing)
         self.assertEqual(len(wing.wing_cross_sections), 3)
 
         # Verify all WingCrossSections are validated.
@@ -593,7 +593,7 @@ class TestWing(unittest.TestCase):
         """Test Wing with 4 WingCrossSections validates correctly."""
         # Test that valid 4-WingCrossSection Wing initializes correctly.
         wing = geometry_fixtures.make_four_section_wing_fixture()
-        self.assertIsInstance(wing, ps.geometry.wing.Wing)
+        self.assertIsInstance(wing, ps.Wing)
         self.assertEqual(len(wing.wing_cross_sections), 4)
 
         # Verify all WingCrossSections are validated.
@@ -621,7 +621,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=False,
@@ -636,7 +636,7 @@ class TestWing(unittest.TestCase):
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=False,
                 mirror_only=False,
@@ -1102,7 +1102,7 @@ class TestWing(unittest.TestCase):
                 tip_wing_cross_section = (
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
-                wing = ps.geometry.wing.Wing(
+                wing = ps.Wing(
                     wing_cross_sections=[
                         root_wing_cross_section,
                         tip_wing_cross_section,
@@ -1134,7 +1134,7 @@ class TestWing(unittest.TestCase):
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
                 with self.assertRaises(ValueError):
-                    ps.geometry.wing.Wing(
+                    ps.Wing(
                         wing_cross_sections=[
                             root_wing_cross_section,
                             tip_wing_cross_section,
@@ -1160,7 +1160,7 @@ class TestWing(unittest.TestCase):
                 tip_wing_cross_section = (
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
-                wing = ps.geometry.wing.Wing(
+                wing = ps.Wing(
                     wing_cross_sections=[
                         root_wing_cross_section,
                         tip_wing_cross_section,
@@ -1188,7 +1188,7 @@ class TestWing(unittest.TestCase):
                 tip_wing_cross_section = (
                     geometry_fixtures.make_tip_wing_cross_section_fixture()
                 )
-                wing = ps.geometry.wing.Wing(
+                wing = ps.Wing(
                     wing_cross_sections=[
                         root_wing_cross_section,
                         tip_wing_cross_section,
@@ -1215,7 +1215,7 @@ class TestWingDeepCopy(unittest.TestCase):
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.geometry.wing.Wing)
+        self.assertIsInstance(copied, ps.Wing)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_wing_parameters(self) -> None:
@@ -1783,12 +1783,10 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
     parameter."""
 
     @staticmethod
-    def _make_root_wing_cross_section() -> (
-        ps.geometry.wing_cross_section.WingCrossSection
-    ):
+    def _make_root_wing_cross_section() -> ps.WingCrossSection:
         """Create a root WingCrossSection with num_spanwise_panels=3."""
-        return ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+        return ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca2412"),
             num_spanwise_panels=3,
             chord=1.0,
             Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -1797,12 +1795,10 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         )
 
     @staticmethod
-    def _make_tip_wing_cross_section() -> (
-        ps.geometry.wing_cross_section.WingCrossSection
-    ):
+    def _make_tip_wing_cross_section() -> ps.WingCrossSection:
         """Create a tip WingCrossSection with num_spanwise_panels=None."""
-        return ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+        return ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca2412"),
             num_spanwise_panels=None,
             chord=0.5,
             Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
@@ -1810,11 +1806,9 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
             spanwise_spacing=None,
         )
 
-    def _make_plain_wing(
-        self, explode_into_strips: bool = False
-    ) -> ps.geometry.wing.Wing:
+    def _make_plain_wing(self, explode_into_strips: bool = False) -> ps.Wing:
         """Create a minimal two-WingCrossSection wing."""
-        return ps.geometry.wing.Wing(
+        return ps.Wing(
             wing_cross_sections=[
                 self._make_root_wing_cross_section(),
                 self._make_tip_wing_cross_section(),
@@ -1948,8 +1942,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         uses cosine spanwise spacing, since the explosion assumes uniformly distributed
         intermediates."""
         wing = self._make_plain_wing(explode_into_strips=False)
-        cosine_root = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+        cosine_root = ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca2412"),
             num_spanwise_panels=3,
             chord=1.0,
             Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -2023,14 +2017,14 @@ class TestFromEdgePoints(unittest.TestCase):
 
     def _make_edge_wing(
         self, num_wing_cross_sections: int = 5, tip_trim_fraction: float = 0.0
-    ) -> ps.geometry.wing.Wing:
+    ) -> ps.Wing:
         """Build a from_edge_points Wing from the straight tapered edge curves."""
         leading, trailing = self._straight_edge_points()
-        return ps.geometry.wing.Wing.from_edge_points(
+        return ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=num_wing_cross_sections,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             name="Edge Wing",
             num_chordwise_panels=2,
             chordwise_spacing="uniform",
@@ -2040,7 +2034,7 @@ class TestFromEdgePoints(unittest.TestCase):
     def test_returns_wing(self) -> None:
         """Test that from_edge_points returns a Wing instance."""
         wing = self._make_edge_wing()
-        self.assertIsInstance(wing, ps.geometry.wing.Wing)
+        self.assertIsInstance(wing, ps.Wing)
 
     def test_wing_cross_section_count(self) -> None:
         """Test that from_edge_points produces num_wing_cross_sections
@@ -2174,11 +2168,11 @@ class TestFromEdgePoints(unittest.TestCase):
         """Test that a symmetric from_edge_points Wing marks every control surface
         symmetry type symmetric, as symmetry types 4 and 5 require."""
         leading, trailing = self._straight_edge_points()
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             symmetric=True,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
@@ -2194,18 +2188,18 @@ class TestFromEdgePoints(unittest.TestCase):
         path that requires a non None control surface symmetry type on every
         WingCrossSection."""
         leading, trailing = self._straight_edge_points()
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             symmetric=True,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=2,
             chordwise_spacing="uniform",
         )
-        airplane = ps.geometry.airplane.Airplane(wings=[wing], name="Edge Airplane")
+        airplane = ps.Airplane(wings=[wing], name="Edge Airplane")
         meshed_wing = airplane.wings[0]
         self.assertEqual(meshed_wing.symmetry_type, 4)
         self.assertIsNotNone(meshed_wing.panels)
@@ -2222,22 +2216,22 @@ class TestFromEdgePoints(unittest.TestCase):
         trim, since the tip chord would be zero."""
         leading, trailing = self._pointed_tip_edge_points()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_pointed_tip_accepted_with_trim(self) -> None:
         """Test that a tip trim lets a planform tapering to a point at the tip build
         with a finite tip chord."""
         leading, trailing = self._pointed_tip_edge_points()
-        wing = ps.geometry.wing.Wing.from_edge_points(
+        wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             tip_trim_fraction=0.2,
         )
         # The trimmed tip sits at y = 0.8, where the chord is 1.0 - 0.8 = 0.2.
@@ -2270,11 +2264,11 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         leading[2, 1] = leading[1, 1]
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_non_planar_points(self) -> None:
@@ -2282,11 +2276,11 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         leading[3, 2] = 0.1
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_leading_edge_not_anchored_at_origin(self) -> None:
@@ -2294,11 +2288,11 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         leading[0, 0] = 0.1
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_trailing_edge_root_without_root_chord(self) -> None:
@@ -2307,11 +2301,11 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         trailing[0, 0] = 0.0
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_mismatched_tip_y(self) -> None:
@@ -2319,33 +2313,33 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         trailing[-1, 1] = 0.9
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_too_few_points(self) -> None:
         """Test that a curve with fewer than two points is rejected."""
         _, trailing = self._straight_edge_points()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=np.array([[0.0, 0.0, 0.0]]),
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_too_few_wing_cross_sections(self) -> None:
         """Test that fewer than two WingCrossSections is rejected."""
         leading, trailing = self._straight_edge_points()
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=1,
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                airfoil=ps.Airfoil(name="naca0012"),
             )
 
     def test_rejects_non_airfoil(self) -> None:
@@ -2353,7 +2347,7 @@ class TestFromEdgePoints(unittest.TestCase):
         leading, trailing = self._straight_edge_points()
         bad_airfoil: Any = "naca0012"
         with self.assertRaises(TypeError):
-            ps.geometry.wing.Wing.from_edge_points(
+            ps.Wing.from_edge_points(
                 leadingEdgePoints_Wn_Ler=leading,
                 trailingEdgePoints_Wn_Ler=trailing,
                 num_wing_cross_sections=5,
@@ -2366,11 +2360,11 @@ class TestFromEdgePoints(unittest.TestCase):
         for bad_fraction in (-0.1, 1.0, 1.5):
             with self.subTest(tip_trim_fraction=bad_fraction):
                 with self.assertRaises(ValueError):
-                    ps.geometry.wing.Wing.from_edge_points(
+                    ps.Wing.from_edge_points(
                         leadingEdgePoints_Wn_Ler=leading,
                         trailingEdgePoints_Wn_Ler=trailing,
                         num_wing_cross_sections=5,
-                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        airfoil=ps.Airfoil(name="naca0012"),
                         tip_trim_fraction=bad_fraction,
                     )
 

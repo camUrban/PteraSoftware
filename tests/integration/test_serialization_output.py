@@ -18,9 +18,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
     deserialized SteadyRingVortexLatticeMethodSolver."""
 
     temporary_directory: tempfile.TemporaryDirectory[str]
-    loaded_solver: (
-        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
-    )
+    loaded_solver: ps.SteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -39,7 +37,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
         loaded_solver = ps.load(path)
         assert isinstance(
             loaded_solver,
-            ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+            ps.SteadyRingVortexLatticeMethodSolver,
         )
         cls.loaded_solver = loaded_solver
 
@@ -57,7 +55,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.output.draw(
+        ps.draw(
             solver=self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=False,
@@ -70,7 +68,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.output.log_results(solver=self.loaded_solver)
+        ps.log_results(solver=self.loaded_solver)
 
 
 class TestUnsteadySolverSerializationOutput(unittest.TestCase):
@@ -78,9 +76,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
     deserialized UnsteadyRingVortexLatticeMethodSolver."""
 
     temporary_directory: tempfile.TemporaryDirectory[str]
-    loaded_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    loaded_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -99,7 +95,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         loaded_solver = ps.load(path)
         assert isinstance(
             loaded_solver,
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
         )
         cls.loaded_solver = loaded_solver
 
@@ -117,7 +113,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.output.draw(
+        ps.draw(
             solver=self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=False,
@@ -131,7 +127,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.output.animate(
+        ps.animate(
             unsteady_solver=self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=True,
@@ -145,13 +141,11 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.output.plot_results_versus_time(
-            unsteady_solver=self.loaded_solver, show=False
-        )
+        ps.plot_results_versus_time(unsteady_solver=self.loaded_solver, show=False)
 
     def test_log_results_does_not_throw(self) -> None:
         """Tests that the log_results function accepts a deserialized unsteady solver.
 
         :return: None
         """
-        ps.output.log_results(solver=self.loaded_solver)
+        ps.log_results(solver=self.loaded_solver)

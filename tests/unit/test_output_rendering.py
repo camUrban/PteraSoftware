@@ -79,12 +79,8 @@ class TestGetWindowScale(unittest.TestCase):
 class TestResolvePlayback(unittest.TestCase):
     """This class contains methods for testing _output_rendering.resolve_playback."""
 
-    playback_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    long_step_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    playback_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    long_step_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -174,12 +170,8 @@ class TestResolvePlayback(unittest.TestCase):
 class TestResolvePlaybackAliasingWarning(unittest.TestCase):
     """This class contains methods for testing resolve_playback's aliasing warning."""
 
-    fast_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    static_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    fast_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    static_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1191,12 +1183,8 @@ class TestGetAnimationImageSurface(unittest.TestCase):
     """This class contains methods for testing
     _output_rendering.get_animation_image_surface."""
 
-    image_surface_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    plain_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    image_surface_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    plain_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:

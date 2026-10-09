@@ -290,7 +290,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
     """This class contains methods for testing convergence.reject_unrefinable_wings."""
 
     @staticmethod
-    def _make_edge_defined_airplane() -> ps.geometry.airplane.Airplane:
+    def _make_edge_defined_airplane() -> ps.Airplane:
         """Builds an Airplane holding a single edge-defined Wing.
 
         The Wing is built with Wing.from_edge_points, so its spanwise mesh marker is
@@ -300,13 +300,13 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leadingEdgePoints_Wn_Ler = np.column_stack((0.25 * ys, ys, zeros))
         trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
-        return ps.geometry.airplane.Airplane(
+        return ps.Airplane(
             wings=[
-                ps.geometry.wing.Wing.from_edge_points(
+                ps.Wing.from_edge_points(
                     leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
                     trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
                     num_wing_cross_sections=5,
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    airfoil=ps.Airfoil(name="naca0012"),
                     name="Edge Wing",
                     symmetric=False,
                     num_chordwise_panels=4,
@@ -316,26 +316,26 @@ class TestRejectUnrefinableWings(unittest.TestCase):
         )
 
     @staticmethod
-    def _make_exploded_airplane() -> ps.geometry.airplane.Airplane:
+    def _make_exploded_airplane() -> ps.Airplane:
         """Builds an Airplane holding a single exploded Wing named "Exploded Wing".
 
         The Wing is built with explode_into_strips=True, so its spanwise mesh marker is
         "exploded", which the convergence functions cannot refine.
         """
-        return ps.geometry.airplane.Airplane(
+        return ps.Airplane(
             wings=[
-                ps.geometry.wing.Wing(
+                ps.Wing(
                     wing_cross_sections=[
-                        ps.geometry.wing_cross_section.WingCrossSection(
-                            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        ps.WingCrossSection(
+                            airfoil=ps.Airfoil(name="naca0012"),
                             num_spanwise_panels=1,
                             chord=1.0,
                             Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                             angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                             spanwise_spacing="uniform",
                         ),
-                        ps.geometry.wing_cross_section.WingCrossSection(
-                            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        ps.WingCrossSection(
+                            airfoil=ps.Airfoil(name="naca0012"),
                             num_spanwise_panels=None,
                             chord=1.0,
                             Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -442,7 +442,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         :return: None
         """
         self.variable_problem = problem_fixtures.make_basic_unsteady_problem_fixture()
-        self.static_problem = ps.problems.UnsteadyProblem(
+        self.static_problem = ps.UnsteadyProblem(
             movement=movement_fixtures.make_static_movement_fixture()
         )
 
@@ -488,7 +488,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a variable-geometry ref_problem whose wake is truncated by
         max_wake_cycles raises a ValueError."""
         ref_movement = movement_fixtures.make_basic_movement_fixture()
-        truncated_movement = ps.movements.movement.Movement(
+        truncated_movement = ps.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
             operating_point_movement=ref_movement.operating_point_movement,
             num_cycles=1,
@@ -500,7 +500,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
                 num_cycles_bounds=(1, 2),
             )
 
@@ -508,7 +508,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a static-geometry ref_problem whose wake is truncated by
         max_wake_chords raises a ValueError."""
         ref_movement = movement_fixtures.make_static_movement_fixture()
-        truncated_movement = ps.movements.movement.Movement(
+        truncated_movement = ps.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
             operating_point_movement=ref_movement.operating_point_movement,
             num_chords=3,
@@ -520,7 +520,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
                 num_chords_bounds=(1, 2),
             )
 
@@ -528,7 +528,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a ref_problem whose wake is truncated by max_wake_rows raises a
         ValueError."""
         ref_movement = movement_fixtures.make_basic_movement_fixture()
-        truncated_movement = ps.movements.movement.Movement(
+        truncated_movement = ps.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
             operating_point_movement=ref_movement.operating_point_movement,
             num_cycles=1,
@@ -540,7 +540,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
                 num_cycles_bounds=(1, 2),
             )
 

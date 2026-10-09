@@ -24,7 +24,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         """Test that AeroelasticMovement is a subclass of CoreMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.aeroelastic_movement.AeroelasticMovement,
+                ps.AeroelasticMovement,
                 _core.CoreMovement,
             )
         )
@@ -37,7 +37,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             aeroelastic_movement,
-            ps.movements.aeroelastic_movement.AeroelasticMovement,
+            ps.AeroelasticMovement,
         )
 
     def test_rejects_non_aeroelastic_airplane_movement(self) -> None:
@@ -53,7 +53,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
 
         with self.assertRaises(TypeError):
-            ps.movements.aeroelastic_movement.AeroelasticMovement(
+            ps.AeroelasticMovement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.1,
@@ -73,7 +73,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
 
         with self.assertRaises(TypeError):
-            ps.movements.aeroelastic_movement.AeroelasticMovement(
+            ps.AeroelasticMovement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.1,
@@ -91,7 +91,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         for airplane_movement in aeroelastic_movement.airplane_movements:
             self.assertIsInstance(
                 airplane_movement,
-                ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
+                ps.AeroelasticAirplaneMovement,
             )
 
     def test_operating_point_movement_property_returns_operating_point_movement(
@@ -104,7 +104,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             aeroelastic_movement.operating_point_movement,
-            ps.movements.operating_point_movement.OperatingPointMovement,
+            ps.OperatingPointMovement,
         )
 
     def test_operating_points_property_returns_tuple(self) -> None:
@@ -122,7 +122,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         for operating_point in aeroelastic_movement.operating_points:
             self.assertIsInstance(
                 operating_point,
-                ps.operating_point.OperatingPoint,
+                ps.OperatingPoint,
             )
 
     def test_generate_airplane_at_time_step_returns_airplane(self) -> None:
@@ -135,7 +135,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             airplane,
-            ps.geometry.airplane.Airplane,
+            ps.Airplane,
         )
 
     def test_generate_airplane_at_time_step_delegates_with_internal_delta_time(

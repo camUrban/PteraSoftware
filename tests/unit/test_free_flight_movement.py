@@ -17,11 +17,9 @@ from tests.unit.fixtures import (
 class TestFreeFlightMovement(unittest.TestCase):
     """This is a class with functions to test FreeFlightMovements."""
 
-    basic_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
-    static_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
-    free_flight_movement_with_multiple_airplanes: (
-        ps.movements.free_flight_movement.FreeFlightMovement
-    )
+    basic_free_flight_movement: ps.FreeFlightMovement
+    static_free_flight_movement: ps.FreeFlightMovement
+    free_flight_movement_with_multiple_airplanes: ps.FreeFlightMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -40,7 +38,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         """Test that FreeFlightMovement is a subclass of CoreMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.free_flight_movement.FreeFlightMovement,
+                ps.FreeFlightMovement,
                 _core.CoreMovement,
             )
         )
@@ -49,7 +47,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         """Test that FreeFlightMovement instantiation returns a FreeFlightMovement."""
         self.assertIsInstance(
             self.basic_free_flight_movement,
-            ps.movements.free_flight_movement.FreeFlightMovement,
+            ps.FreeFlightMovement,
         )
 
     def test_rejects_non_airplane_movement_children(self) -> None:
@@ -61,7 +59,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         bad_airplane_movements: Any = ["not an AirplaneMovement"]
         with self.assertRaises(TypeError):
-            ps.movements.free_flight_movement.FreeFlightMovement(
+            ps.FreeFlightMovement(
                 airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.1,
@@ -75,14 +73,12 @@ class TestFreeFlightMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement: Any = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-            )
+        operating_point_movement: Any = ps.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(TypeError):
-            ps.movements.free_flight_movement.FreeFlightMovement(
+            ps.FreeFlightMovement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.1,
@@ -104,7 +100,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.free_flight_movement.FreeFlightMovement(
+                    ps.FreeFlightMovement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=0.1,
@@ -126,7 +122,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.free_flight_movement.FreeFlightMovement(
+                    ps.FreeFlightMovement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=0.1,
@@ -148,7 +144,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.free_flight_movement.FreeFlightMovement(
+                    ps.FreeFlightMovement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=invalid_value,
@@ -180,7 +176,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         for airplane_movement in airplane_movements:
             self.assertIsInstance(
                 airplane_movement,
-                ps.movements.airplane_movement.AirplaneMovement,
+                ps.AirplaneMovement,
             )
 
     def test_operating_point_movement_returns_free_flight_operating_point_movement(
@@ -190,7 +186,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         FreeFlightOperatingPointMovement."""
         self.assertIsInstance(
             self.basic_free_flight_movement.operating_point_movement,
-            ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
+            ps.FreeFlightOperatingPointMovement,
         )
 
     def test_airplanes_structure(self) -> None:
@@ -212,7 +208,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                 len(airplane_list), self.basic_free_flight_movement.num_steps
             )
             for airplane in airplane_list:
-                self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+                self.assertIsInstance(airplane, ps.Airplane)
 
     def test_airplanes_structure_with_multiple_airplanes(self) -> None:
         """Test that airplanes has one inner tuple per AirplaneMovement."""
@@ -268,7 +264,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-        free_flight_movement = ps.movements.free_flight_movement.FreeFlightMovement(
+        free_flight_movement = ps.FreeFlightMovement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -292,7 +288,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.free_flight_movement.FreeFlightMovement(
+                    ps.FreeFlightMovement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=0.1,
@@ -308,7 +304,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         # Create an Airplane with the base Wing first, so it processes symmetry. The
         # base Airplane is the first in a simulation, so its Cg_GP1_CgP1 is all zeros.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -319,7 +315,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
             )
             for wing_cross_section in processed_wing.wing_cross_sections
@@ -327,14 +323,14 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non coincident (a type 4 to type 5 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
@@ -347,7 +343,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         # delta_time of 0.25 and a period of 1.0, the second time step lands at the peak
         # of the rotation oscillation, so the symmetry plane is non coincident there.
         with self.assertRaises(ValueError) as context:
-            ps.movements.free_flight_movement.FreeFlightMovement(
+            ps.FreeFlightMovement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 delta_time=0.25,
@@ -365,7 +361,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -376,19 +372,19 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         # Create static WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
             )
             for wing_cross_section in processed_wing.wing_cross_sections
         ]
 
         # Create a static WingMovement (no rotation or translation).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
@@ -398,7 +394,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         )
 
         # Creating a FreeFlightMovement should succeed without raising an error.
-        free_flight_movement = ps.movements.free_flight_movement.FreeFlightMovement(
+        free_flight_movement = ps.FreeFlightMovement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -408,14 +404,14 @@ class TestFreeFlightMovement(unittest.TestCase):
 
         self.assertIsInstance(
             free_flight_movement,
-            ps.movements.free_flight_movement.FreeFlightMovement,
+            ps.FreeFlightMovement,
         )
 
 
 class TestFreeFlightMovementImmutability(unittest.TestCase):
     """Tests for FreeFlightMovement attribute immutability."""
 
-    basic_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
+    basic_free_flight_movement: ps.FreeFlightMovement
 
     @classmethod
     def setUpClass(cls) -> None:

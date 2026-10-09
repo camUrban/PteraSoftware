@@ -21,7 +21,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         CoreWingCrossSectionMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement,
+                ps.AeroelasticWingCrossSectionMovement,
                 _core.CoreWingCrossSectionMovement,
             )
         )
@@ -32,12 +32,14 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         base_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
-        aeroelastic_wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-            base_wing_cross_section=base_wing_cross_section,
+        aeroelastic_wing_cross_section_movement = (
+            ps.AeroelasticWingCrossSectionMovement(
+                base_wing_cross_section=base_wing_cross_section,
+            )
         )
         self.assertIsInstance(
             aeroelastic_wing_cross_section_movement,
-            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement,
+            ps.AeroelasticWingCrossSectionMovement,
         )
 
     def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
@@ -55,7 +57,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         for wing_cross_section in wing_cross_sections:
             self.assertIsInstance(
                 wing_cross_section,
-                ps.geometry.wing_cross_section.WingCrossSection,
+                ps.WingCrossSection,
             )
 
     def test_generate_wing_cross_section_at_time_step_returns_wing_cross_section(
@@ -71,7 +73,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             wing_cross_section,
-            ps.geometry.wing_cross_section.WingCrossSection,
+            ps.WingCrossSection,
         )
 
     def test_no_deformation_matches_static_base(self) -> None:

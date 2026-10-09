@@ -24,10 +24,10 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the SteadyHorseshoeVortexLatticeMethodSolver."""
 
     steady_horseshoe_vortex_lattice_method_validation_solver: (
-        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        ps.SteadyHorseshoeVortexLatticeMethodSolver
     )
     steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver: (
-        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        ps.SteadyHorseshoeVortexLatticeMethodSolver
     )
 
     @classmethod
@@ -77,7 +77,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        ps.draw(
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -121,7 +121,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        ps.draw(
             solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             scalar_type="induced drag",
             show_streamlines=True,

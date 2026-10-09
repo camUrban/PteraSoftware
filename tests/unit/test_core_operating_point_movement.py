@@ -65,7 +65,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             core_op_movement.base_operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertEqual(core_op_movement.ampVCg__E, 5.0)
         self.assertEqual(core_op_movement.periodVCg__E, 2.0)
@@ -388,7 +388,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Verify all elements are OperatingPoints.
         for op in operating_points:
-            self.assertIsInstance(op, ps.operating_point.OperatingPoint)
+            self.assertIsInstance(op, ps.OperatingPoint)
 
     def test_generate_operating_points_preserves_non_changing_attributes(self) -> None:
         """Test that generate_operating_points preserves non-changing attributes."""

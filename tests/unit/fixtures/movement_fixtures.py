@@ -5,20 +5,18 @@ import pterasoftware as ps
 from . import airplane_movement_fixtures, operating_point_fixtures
 
 
-def make_basic_aeroelastic_movement_fixture() -> (
-    ps.movements.aeroelastic_movement.AeroelasticMovement
-):
+def make_basic_aeroelastic_movement_fixture() -> ps.AeroelasticMovement:
     """This method makes a fixture that is an AeroelasticMovement for testing.
 
     :return basic_aeroelastic_movement_fixture: AeroelasticMovement This is the
         AeroelasticMovement configured for general testing.
     """
     # Create a shared airfoil for both wing cross sections.
-    airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+    airfoil = ps.Airfoil(name="naca2412")
 
     # Create the root WingCrossSection. The first WingCrossSection of a Wing must have
     # Lp_Wcsp_Lpp=(0,0,0).
-    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=1,
         chord=1.0,
@@ -28,7 +26,7 @@ def make_basic_aeroelastic_movement_fixture() -> (
     )
 
     # Create the tip WingCrossSection.
-    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=None,
         chord=0.5,
@@ -38,7 +36,7 @@ def make_basic_aeroelastic_movement_fixture() -> (
     )
 
     # Create the wing.
-    wing = ps.geometry.wing.Wing(
+    wing = ps.Wing(
         wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Test Wing",
         Ler_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -51,7 +49,7 @@ def make_basic_aeroelastic_movement_fixture() -> (
     )
 
     # Create the airplane.
-    airplane = ps.geometry.airplane.Airplane(
+    airplane = ps.Airplane(
         wings=[wing],
         name="Test Airplane",
         Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -59,16 +57,16 @@ def make_basic_aeroelastic_movement_fixture() -> (
     )
 
     # Create WingCrossSectionMovements using the airplane's WingCrossSections.
-    root_wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+    root_wing_cross_section_movement = ps.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
     )
-    tip_wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+    tip_wing_cross_section_movement = ps.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
     )
 
     # Create a WingMovement with sinusoidal flapping (non-zero period required by
     # _generate_inertial_moment_function when spacing is "sine").
-    wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+    wing_movement = ps.AeroelasticWingMovement(
         base_wing=airplane.wings[0],
         wing_cross_section_movements=[
             root_wing_cross_section_movement,
@@ -81,32 +79,28 @@ def make_basic_aeroelastic_movement_fixture() -> (
     )
 
     # Create the airplane movement.
-    airplane_movement = (
-        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
-            base_airplane=airplane,
-            wing_movements=[wing_movement],
-        )
+    airplane_movement = ps.AeroelasticAirplaneMovement(
+        base_airplane=airplane,
+        wing_movements=[wing_movement],
     )
 
     # Create the operating point movement.
-    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    op_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 
     # Create the AeroelasticMovement.
-    basic_aeroelastic_movement_fixture = (
-        ps.movements.aeroelastic_movement.AeroelasticMovement(
-            airplane_movements=[airplane_movement],
-            operating_point_movement=op_point_movement,
-            delta_time=0.1,
-            num_steps=3,
-        )
+    basic_aeroelastic_movement_fixture = ps.AeroelasticMovement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=op_point_movement,
+        delta_time=0.1,
+        num_steps=3,
     )
 
     return basic_aeroelastic_movement_fixture
 
 
-def make_static_movement_fixture() -> ps.movements.movement.Movement:
+def make_static_movement_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with all static components.
 
     :return static_movement_fixture: Movement This is the Movement with no motion.
@@ -115,12 +109,12 @@ def make_static_movement_fixture() -> ps.movements.movement.Movement:
     airplane_movements = [
         airplane_movement_fixtures.make_static_airplane_movement_fixture()
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the static Movement.
-    static_movement_fixture = ps.movements.movement.Movement(
+    static_movement_fixture = ps.Movement(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         num_chords=3,
@@ -130,7 +124,7 @@ def make_static_movement_fixture() -> ps.movements.movement.Movement:
     return static_movement_fixture
 
 
-def make_basic_movement_fixture() -> ps.movements.movement.Movement:
+def make_basic_movement_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with general-purpose values.
 
     :return basic_movement_fixture: Movement This is the Movement with general-purpose
@@ -140,12 +134,12 @@ def make_basic_movement_fixture() -> ps.movements.movement.Movement:
     airplane_movements = [
         airplane_movement_fixtures.make_basic_airplane_movement_fixture()
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the basic Movement.
-    basic_movement_fixture = ps.movements.movement.Movement(
+    basic_movement_fixture = ps.Movement(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         num_cycles=1,
@@ -155,9 +149,7 @@ def make_basic_movement_fixture() -> ps.movements.movement.Movement:
     return basic_movement_fixture
 
 
-def make_static_movement_with_explicit_num_steps_fixture() -> (
-    ps.movements.movement.Movement
-):
+def make_static_movement_with_explicit_num_steps_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with static motion and explicitly
     set num_steps.
 
@@ -168,12 +160,12 @@ def make_static_movement_with_explicit_num_steps_fixture() -> (
     airplane_movements = [
         airplane_movement_fixtures.make_static_airplane_movement_fixture()
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the Movement with explicit num_steps.
-    static_movement_with_explicit_num_steps_fixture = ps.movements.movement.Movement(
+    static_movement_with_explicit_num_steps_fixture = ps.Movement(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         num_steps=5,
@@ -183,9 +175,7 @@ def make_static_movement_with_explicit_num_steps_fixture() -> (
     return static_movement_with_explicit_num_steps_fixture
 
 
-def make_non_static_movement_with_explicit_num_steps_fixture() -> (
-    ps.movements.movement.Movement
-):
+def make_non_static_movement_with_explicit_num_steps_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with non static motion and
     explicitly set num_steps.
 
@@ -196,24 +186,22 @@ def make_non_static_movement_with_explicit_num_steps_fixture() -> (
     airplane_movements = [
         airplane_movement_fixtures.make_basic_airplane_movement_fixture()
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the Movement with explicit num_steps.
-    non_static_movement_with_explicit_num_steps_fixture = (
-        ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_steps=10,
-        )
+    non_static_movement_with_explicit_num_steps_fixture = ps.Movement(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        num_steps=10,
     )
 
     # Return the Movement fixture.
     return non_static_movement_with_explicit_num_steps_fixture
 
 
-def make_movement_with_custom_delta_time_fixture() -> ps.movements.movement.Movement:
+def make_movement_with_custom_delta_time_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with custom delta_time.
 
     :return movement_with_custom_delta_time_fixture: Movement This is the Movement with
@@ -223,12 +211,12 @@ def make_movement_with_custom_delta_time_fixture() -> ps.movements.movement.Move
     airplane_movements = [
         airplane_movement_fixtures.make_basic_airplane_movement_fixture()
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the Movement with custom delta_time.
-    movement_with_custom_delta_time_fixture = ps.movements.movement.Movement(
+    movement_with_custom_delta_time_fixture = ps.Movement(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         delta_time=0.05,
@@ -239,9 +227,7 @@ def make_movement_with_custom_delta_time_fixture() -> ps.movements.movement.Move
     return movement_with_custom_delta_time_fixture
 
 
-def make_aeroelastic_movement_with_standard_wing_fixture() -> (
-    ps.movements.aeroelastic_movement.AeroelasticMovement
-):
+def make_aeroelastic_movement_with_standard_wing_fixture() -> ps.AeroelasticMovement:
     """This method makes a fixture that is an AeroelasticMovement whose
     AeroelasticAirplaneMovement holds a standard WingMovement instead of an
     AeroelasticWingMovement.
@@ -255,11 +241,11 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
         for testing the non-aeroelastic wing code path.
     """
     # Create a shared airfoil for both wing cross sections.
-    airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+    airfoil = ps.Airfoil(name="naca2412")
 
     # Create the root WingCrossSection. The first WingCrossSection of a Wing must have
     # Lp_Wcsp_Lpp=(0,0,0).
-    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=1,
         chord=1.0,
@@ -269,7 +255,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
     # Create the tip WingCrossSection.
-    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=None,
         chord=0.5,
@@ -279,7 +265,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
     # Create the Wing.
-    wing = ps.geometry.wing.Wing(
+    wing = ps.Wing(
         wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Test Wing",
         Ler_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -292,7 +278,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
     # Create the Airplane.
-    airplane = ps.geometry.airplane.Airplane(
+    airplane = ps.Airplane(
         wings=[wing],
         name="Test Airplane",
         Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -300,19 +286,15 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
     # Use standard WingCrossSectionMovements rather than aeroelastic ones.
-    root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
-        )
+    root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
     )
-    tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
-        )
+    tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
     )
 
     # Use a standard WingMovement instead of an AeroelasticWingMovement.
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=airplane.wings[0],
         wing_cross_section_movements=[
             root_wing_cross_section_movement,
@@ -321,20 +303,18 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
     # Create the AeroelasticAirplaneMovement with a standard WingMovement child.
-    airplane_movement = (
-        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
-            base_airplane=airplane,
-            wing_movements=[wing_movement],
-        )
+    airplane_movement = ps.AeroelasticAirplaneMovement(
+        base_airplane=airplane,
+        wing_movements=[wing_movement],
     )
 
     # Create the OperatingPointMovement.
-    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    op_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 
     # Create and return the AeroelasticMovement.
-    return ps.movements.aeroelastic_movement.AeroelasticMovement(
+    return ps.AeroelasticMovement(
         airplane_movements=[airplane_movement],
         operating_point_movement=op_point_movement,
         delta_time=0.1,
@@ -342,7 +322,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> (
     )
 
 
-def make_movement_with_multiple_airplanes_fixture() -> ps.movements.movement.Movement:
+def make_movement_with_multiple_airplanes_fixture() -> ps.Movement:
     """This method makes a fixture that is a Movement with multiple AirplaneMovements.
 
     :return movement_with_multiple_airplanes_fixture: Movement This is the Movement with
@@ -353,12 +333,12 @@ def make_movement_with_multiple_airplanes_fixture() -> ps.movements.movement.Mov
         airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
     ]
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
     )
 
     # Create the Movement with multiple AirplaneMovements.
-    movement_with_multiple_airplanes_fixture = ps.movements.movement.Movement(
+    movement_with_multiple_airplanes_fixture = ps.Movement(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
         num_cycles=1,

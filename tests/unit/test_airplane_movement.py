@@ -19,7 +19,7 @@ class TestAirplaneMovement(unittest.TestCase):
         """Test that AirplaneMovement is a subclass of CoreAirplaneMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.airplane_movement.AirplaneMovement,
+                ps.AirplaneMovement,
                 _core.CoreAirplaneMovement,
             )
         )
@@ -32,13 +32,13 @@ class TestAirplaneMovement(unittest.TestCase):
                 base_airplane.wings[0]
             )
         ]
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
         self.assertIsInstance(
             airplane_movement,
-            ps.movements.airplane_movement.AirplaneMovement,
+            ps.AirplaneMovement,
         )
 
     def test_rejects_core_wing_movement_children(self) -> None:
@@ -50,7 +50,7 @@ class TestAirplaneMovement(unittest.TestCase):
             core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
         ]
         with self.assertRaises(TypeError):
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
             )
@@ -66,5 +66,5 @@ class TestAirplaneMovement(unittest.TestCase):
         for airplane in airplanes:
             self.assertIsInstance(
                 airplane,
-                ps.geometry.airplane.Airplane,
+                ps.Airplane,
             )

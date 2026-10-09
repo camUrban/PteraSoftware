@@ -87,7 +87,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_initialization_valid_parameters(self) -> None:
         """Test OperatingPoint initialization with valid parameters."""
         # Test basic OperatingPoint initialization
-        self.assertIsInstance(self.basic_op, ps.operating_point.OperatingPoint)
+        self.assertIsInstance(self.basic_op, ps.OperatingPoint)
         self.assertEqual(self.basic_op.rho, 1.225)
         self.assertEqual(self.basic_op.vCg__E, 10.0)
         self.assertEqual(self.basic_op.alpha, 5.0)
@@ -98,7 +98,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_initialization_with_defaults(self) -> None:
         """Test that default values are applied correctly."""
         # Create OperatingPoint with all defaults
-        op_default = ps.operating_point.OperatingPoint()
+        op_default = ps.OperatingPoint()
 
         # Verify default values
         self.assertEqual(op_default.rho, 1.225)
@@ -115,7 +115,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for rho in valid_rho_values:
             with self.subTest(rho=rho):
-                op = ps.operating_point.OperatingPoint(rho=rho)
+                op = ps.OperatingPoint(rho=rho)
                 self.assertEqual(op.rho, float(rho))
 
         # Test invalid values (negative, zero, non-numeric)
@@ -125,7 +125,7 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_rho=invalid_rho):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(rho=invalid_rho)
+                    ps.OperatingPoint(rho=invalid_rho)
 
     def test_vCg__E_parameter_validation(self) -> None:
         """Test vCg__E parameter validation."""
@@ -134,7 +134,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for vCg__E in valid_vCg_values:
             with self.subTest(vCg__E=vCg__E):
-                op = ps.operating_point.OperatingPoint(vCg__E=vCg__E)
+                op = ps.OperatingPoint(vCg__E=vCg__E)
                 self.assertEqual(op.vCg__E, float(vCg__E))
 
         # Test invalid values (negative, zero, non-numeric)
@@ -144,7 +144,7 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_vCg=invalid_vCg):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(vCg__E=invalid_vCg)
+                    ps.OperatingPoint(vCg__E=invalid_vCg)
 
     def test_alpha_parameter_validation(self) -> None:
         """Test alpha parameter validation."""
@@ -153,7 +153,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for alpha in valid_alpha_values:
             with self.subTest(alpha=alpha):
-                op = ps.operating_point.OperatingPoint(alpha=alpha)
+                op = ps.OperatingPoint(alpha=alpha)
                 self.assertEqual(op.alpha, float(alpha))
 
         # Test invalid values (outside range)
@@ -162,12 +162,12 @@ class TestOperatingPoint(unittest.TestCase):
         for invalid_alpha in invalid_alpha_values:
             with self.subTest(invalid_alpha=invalid_alpha):
                 with self.assertRaises(ValueError):
-                    ps.operating_point.OperatingPoint(alpha=invalid_alpha)
+                    ps.OperatingPoint(alpha=invalid_alpha)
 
         # Test non-numeric values
         bad_alpha: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(alpha=bad_alpha)
+            ps.OperatingPoint(alpha=bad_alpha)
 
     def test_beta_parameter_validation(self) -> None:
         """Test beta parameter validation."""
@@ -177,7 +177,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for beta in valid_beta_values:
             with self.subTest(beta=beta):
-                op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
+                op = ps.OperatingPoint(alpha=0.0, beta=beta)
                 self.assertEqual(op.beta, float(beta))
 
         # Test invalid values (outside range)
@@ -186,27 +186,25 @@ class TestOperatingPoint(unittest.TestCase):
         for invalid_beta in invalid_beta_values:
             with self.subTest(invalid_beta=invalid_beta):
                 with self.assertRaises(ValueError):
-                    ps.operating_point.OperatingPoint(alpha=0.0, beta=invalid_beta)
+                    ps.OperatingPoint(alpha=0.0, beta=invalid_beta)
 
         # Test non-numeric values
         bad_beta: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(beta=bad_beta)
+            ps.OperatingPoint(beta=bad_beta)
 
     def test_alpha_at_beta_boundaries(self) -> None:
         """Test that alpha must be 0.0 when the absolute value of beta is 90.0."""
         for beta in [-90.0, 90.0]:
             with self.subTest(beta=beta):
-                op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
+                op = ps.OperatingPoint(alpha=0.0, beta=beta)
                 self.assertEqual(op.alpha, 0.0)
                 self.assertEqual(op.beta, beta)
 
                 for invalid_alpha in [-179.9, -5.0, 0.1, 5.0, 90.0, 180.0]:
                     with self.subTest(invalid_alpha=invalid_alpha):
                         with self.assertRaises(ValueError):
-                            ps.operating_point.OperatingPoint(
-                                alpha=invalid_alpha, beta=beta
-                            )
+                            ps.OperatingPoint(alpha=invalid_alpha, beta=beta)
 
     def test_externalFX_W_parameter_validation(self) -> None:
         """Test externalFX_W parameter validation."""
@@ -215,7 +213,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for externalFX_W in valid_external_force_values:
             with self.subTest(externalFX_W=externalFX_W):
-                op = ps.operating_point.OperatingPoint(externalFX_W=externalFX_W)
+                op = ps.OperatingPoint(externalFX_W=externalFX_W)
                 self.assertEqual(op.externalFX_W, float(externalFX_W))
 
         # Test invalid types (string, None)
@@ -224,9 +222,7 @@ class TestOperatingPoint(unittest.TestCase):
         for invalid_external_force in invalid_external_force_values:
             with self.subTest(invalid_external_force=invalid_external_force):
                 with self.assertRaises(TypeError):
-                    ps.operating_point.OperatingPoint(
-                        externalFX_W=invalid_external_force
-                    )
+                    ps.OperatingPoint(externalFX_W=invalid_external_force)
 
     def test_nu_parameter_validation(self) -> None:
         """Test nu parameter validation."""
@@ -235,7 +231,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for nu in valid_nu_values:
             with self.subTest(nu=nu):
-                op = ps.operating_point.OperatingPoint(nu=nu)
+                op = ps.OperatingPoint(nu=nu)
                 self.assertEqual(op.nu, float(nu))
 
         # Test invalid values (negative, zero, non-numeric)
@@ -245,7 +241,7 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_nu=invalid_nu):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(nu=invalid_nu)
+                    ps.OperatingPoint(nu=invalid_nu)
 
     def test_qInf__E_calculation(self) -> None:
         """Test qInf__E calculation accuracy."""
@@ -267,8 +263,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_qInf__E_scaling_with_velocity(self) -> None:
         """Test qInf__E quadratic scaling with velocity."""
         # Create OperatingPoints with different velocities
-        op_v10 = ps.operating_point.OperatingPoint(vCg__E=10.0)
-        op_v20 = ps.operating_point.OperatingPoint(vCg__E=20.0)
+        op_v10 = ps.OperatingPoint(vCg__E=10.0)
+        op_v20 = ps.OperatingPoint(vCg__E=20.0)
 
         # Verify quadratic scaling
         ratio = op_v20.qInf__E / op_v10.qInf__E
@@ -277,8 +273,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_qInf__E_scaling_with_density(self) -> None:
         """Test qInf__E linear scaling with density."""
         # Create OperatingPoints with different densities
-        op_rho1 = ps.operating_point.OperatingPoint(rho=1.0)
-        op_rho2 = ps.operating_point.OperatingPoint(rho=2.0)
+        op_rho1 = ps.OperatingPoint(rho=1.0)
+        op_rho2 = ps.OperatingPoint(rho=2.0)
 
         # Verify linear scaling
         ratio = op_rho2.qInf__E / op_rho1.qInf__E
@@ -355,7 +351,7 @@ class TestOperatingPoint(unittest.TestCase):
         # Positive alpha means the nose points above the direction of travel, so the
         # relative wind comes from below. In the first Airplane's geometry axes (+z =
         # up), the freestream velocity vector should have a positive z component.
-        op_positive_alpha = ps.operating_point.OperatingPoint(alpha=10.0, beta=0.0)
+        op_positive_alpha = ps.OperatingPoint(alpha=10.0, beta=0.0)
         vInf_GP1__E_pos = op_positive_alpha.vInfHat_GP1__E
 
         # With positive alpha, the freestream should have a positive z component in the
@@ -367,7 +363,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         # Negative alpha means the nose points below the direction of travel, so the
         # relative wind comes from above.
-        op_negative_alpha = ps.operating_point.OperatingPoint(alpha=-10.0, beta=0.0)
+        op_negative_alpha = ps.OperatingPoint(alpha=-10.0, beta=0.0)
         vInf_GP1__E_neg = op_negative_alpha.vInfHat_GP1__E
 
         # With negative alpha, the freestream should have a negative z component in the
@@ -384,7 +380,7 @@ class TestOperatingPoint(unittest.TestCase):
         # comes from the right. In the first Airplane's geometry axes (+y = right), the
         # freestream velocity vector should have a negative y component (pointing left,
         # opposite the airplane's rightward motion).
-        op_positive_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=10.0)
+        op_positive_beta = ps.OperatingPoint(alpha=0.0, beta=10.0)
         vInf_GP1__E_pos = op_positive_beta.vInfHat_GP1__E
 
         # With positive beta, the freestream should have a negative y component in the
@@ -397,7 +393,7 @@ class TestOperatingPoint(unittest.TestCase):
         # Negative beta means the nose points to the right of the direction of travel,
         # so the airplane moves to the left of where the nose points. The relative wind
         # comes from the left.
-        op_negative_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=-10.0)
+        op_negative_beta = ps.OperatingPoint(alpha=0.0, beta=-10.0)
         vInf_GP1__E_neg = op_negative_beta.vInfHat_GP1__E
 
         # With negative beta, the freestream should have a positive y component in the
@@ -423,7 +419,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_transformation_boundary_angles(self) -> None:
         """Test transformation with boundary angle values."""
         # Test with alpha at boundary
-        op_alpha_boundary = ps.operating_point.OperatingPoint(alpha=180.0, beta=0.0)
+        op_alpha_boundary = ps.OperatingPoint(alpha=180.0, beta=0.0)
         T_alpha = op_alpha_boundary.T_pas_GP1_CgP1_to_W_CgP1
         R_alpha = T_alpha[:3, :3]
 
@@ -433,7 +429,7 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertFalse(np.any(np.isinf(T_alpha)))
 
         # Test with beta at boundary
-        op_beta_boundary = ps.operating_point.OperatingPoint(alpha=0.0, beta=90.0)
+        op_beta_boundary = ps.OperatingPoint(alpha=0.0, beta=90.0)
         T_beta = op_beta_boundary.T_pas_GP1_CgP1_to_W_CgP1
         R_beta = T_beta[:3, :3]
 
@@ -521,7 +517,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for params in test_cases:
             with self.subTest(params=params):
-                op = ps.operating_point.OperatingPoint(**params)
+                op = ps.OperatingPoint(**params)
                 vInfHat_GP1__E = op.vInf_GP1__E
 
                 # Should be 3-element vector
@@ -534,8 +530,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_multiple_operating_points_independent(self) -> None:
         """Test that multiple OperatingPoints are independent."""
         # Create two OperatingPoints with different parameters
-        op1 = ps.operating_point.OperatingPoint(alpha=10.0, vCg__E=20.0)
-        op2 = ps.operating_point.OperatingPoint(alpha=30.0, vCg__E=50.0)
+        op1 = ps.OperatingPoint(alpha=10.0, vCg__E=20.0)
+        op2 = ps.OperatingPoint(alpha=30.0, vCg__E=50.0)
 
         # Verify they have different properties
         self.assertNotEqual(op1.alpha, op2.alpha)
@@ -603,13 +599,13 @@ class TestOperatingPoint(unittest.TestCase):
 
         for params in valid_boundary_cases:
             with self.subTest(params=params):
-                op = ps.operating_point.OperatingPoint(**params)
+                op = ps.OperatingPoint(**params)
                 self.assertAlmostEqual(op.alpha, params["alpha"], places=10)
                 self.assertAlmostEqual(op.beta, params["beta"], places=10)
 
     def test_very_high_speed(self) -> None:
         """Test with very high speed."""
-        op = ps.operating_point.OperatingPoint(vCg__E=300.0)
+        op = ps.OperatingPoint(vCg__E=300.0)
 
         # Should still calculate qInf correctly
         expected_qInf = 0.5 * 1.225 * 300.0**2
@@ -622,12 +618,12 @@ class TestOperatingPoint(unittest.TestCase):
     def test_extreme_density_values(self) -> None:
         """Test with extreme but valid density values."""
         # Very low density
-        op_low = ps.operating_point.OperatingPoint(rho=0.01)
+        op_low = ps.OperatingPoint(rho=0.01)
         expected_qInf_low = 0.5 * 0.01 * 10.0**2
         self.assertAlmostEqual(op_low.qInf__E, expected_qInf_low, places=10)
 
         # Very high density
-        op_high = ps.operating_point.OperatingPoint(rho=10.0)
+        op_high = ps.OperatingPoint(rho=10.0)
         expected_qInf_high = 0.5 * 10.0 * 10.0**2
         self.assertAlmostEqual(op_high.qInf__E, expected_qInf_high, places=10)
 
@@ -712,9 +708,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_derived_properties_computed_correctly_after_caching(self) -> None:
         """Test that derived properties return correct values after caching."""
         # Create a fresh OperatingPoint
-        op = ps.operating_point.OperatingPoint(
-            rho=1.5, vCg__E=25.0, alpha=15.0, beta=5.0
-        )
+        op = ps.OperatingPoint(rho=1.5, vCg__E=25.0, alpha=15.0, beta=5.0)
 
         # Access all derived properties to populate caches
         qInf = op.qInf__E
@@ -910,7 +904,7 @@ class TestOperatingPoint(unittest.TestCase):
         to a 5 degree pitch (body izyx (0, 5, 0)) so the body flies level along Earth +x
         rather than tilting the flight path relative to Earth.
         """
-        op = ps.operating_point.OperatingPoint()
+        op = ps.OperatingPoint()
         npt.assert_allclose(op.angles_E_to_BP1_izyx, [0.0, 5.0, 0.0], atol=1e-12)
 
     def test_angles_E_to_BP1_izyx_parameter_validation_valid(self) -> None:
@@ -928,7 +922,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for angles in valid_angles_values:
             with self.subTest(angles=angles):
-                op = ps.operating_point.OperatingPoint(
+                op = ps.OperatingPoint(
                     angles_E_to_BP1_izyx=angles,
                 )
                 npt.assert_array_almost_equal(
@@ -953,7 +947,7 @@ class TestOperatingPoint(unittest.TestCase):
         for invalid_angles in invalid_angles_values:
             with self.subTest(invalid_angles=invalid_angles):
                 with self.assertRaises(ValueError):
-                    ps.operating_point.OperatingPoint(
+                    ps.OperatingPoint(
                         angles_E_to_BP1_izyx=invalid_angles,
                     )
 
@@ -972,7 +966,7 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_angles=invalid_angles):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(
+                    ps.OperatingPoint(
                         angles_E_to_BP1_izyx=invalid_angles,
                     )
 
@@ -988,7 +982,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_angles_E_to_BP1_izyx_conversion_to_float_array(self) -> None:
         """Test that angles_E_to_BP1_izyx is converted to a float array."""
         # Test with integer values.
-        op = ps.operating_point.OperatingPoint(
+        op = ps.OperatingPoint(
             angles_E_to_BP1_izyx=(10, 20, 30),
         )
         self.assertEqual(op.angles_E_to_BP1_izyx.dtype, float)
@@ -1010,7 +1004,7 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_CgP1_E_Eo_default(self) -> None:
         """Test that CgP1_E_Eo defaults to (0, 0, 0)."""
-        op = ps.operating_point.OperatingPoint()
+        op = ps.OperatingPoint()
         npt.assert_array_equal(op.CgP1_E_Eo, [0.0, 0.0, 0.0])
 
     def test_CgP1_E_Eo_parameter_validation_valid(self) -> None:
@@ -1025,7 +1019,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for cg in valid_cg_values:
             with self.subTest(cg=cg):
-                op = ps.operating_point.OperatingPoint(CgP1_E_Eo=cg)
+                op = ps.OperatingPoint(CgP1_E_Eo=cg)
                 npt.assert_array_almost_equal(op.CgP1_E_Eo, np.array(cg, dtype=float))
 
     def test_CgP1_E_Eo_parameter_validation_invalid(self) -> None:
@@ -1042,7 +1036,7 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_cg=invalid_cg):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(CgP1_E_Eo=invalid_cg)
+                    ps.OperatingPoint(CgP1_E_Eo=invalid_cg)
 
     def test_CgP1_E_Eo_shape_and_type(self) -> None:
         """Test CgP1_E_Eo shape and type."""
@@ -1055,7 +1049,7 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_CgP1_E_Eo_conversion_to_float_array(self) -> None:
         """Test that CgP1_E_Eo is converted to a float array."""
-        op = ps.operating_point.OperatingPoint(CgP1_E_Eo=(10, 20, 30))
+        op = ps.OperatingPoint(CgP1_E_Eo=(10, 20, 30))
         self.assertEqual(op.CgP1_E_Eo.dtype, float)
         npt.assert_array_equal(op.CgP1_E_Eo, [10.0, 20.0, 30.0])
 
@@ -1075,13 +1069,13 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_surface_parameters_default_to_none(self) -> None:
         """Test that surfaceNormal_E and surfacePoint_E_Eo default to None."""
-        op = ps.operating_point.OperatingPoint()
+        op = ps.OperatingPoint()
         self.assertIsNone(op.surfaceNormal_E)
         self.assertIsNone(op.surfacePoint_E_Eo)
 
     def test_surface_parameters_both_provided(self) -> None:
         """Test that providing both surface parameters succeeds."""
-        op = ps.operating_point.OperatingPoint(
+        op = ps.OperatingPoint(
             surfaceNormal_E=(0.0, 0.0, 1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
@@ -1093,14 +1087,14 @@ class TestOperatingPoint(unittest.TestCase):
         """Test that providing only one surface parameter raises ValueError."""
         # surfaceNormal_E without surfacePoint_E_Eo.
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=(0.0, 0.0, 1.0),
                 surfacePoint_E_Eo=None,
             )
 
         # surfacePoint_E_Eo without surfaceNormal_E.
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=None,
                 surfacePoint_E_Eo=(0.0, 0.0, 0.0),
             )
@@ -1108,7 +1102,7 @@ class TestOperatingPoint(unittest.TestCase):
     def test_surfaceNormal_E_is_normalized(self) -> None:
         """Test that surfaceNormal_E is normalized to a unit vector."""
         # Provide a non unit normal; it should be normalized internally.
-        op = ps.operating_point.OperatingPoint(
+        op = ps.OperatingPoint(
             surfaceNormal_E=(0.0, 0.0, 3.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
@@ -1120,14 +1114,14 @@ class TestOperatingPoint(unittest.TestCase):
         """Test surfaceNormal_E validation with invalid values."""
         # Zero vector should be rejected.
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=(0.0, 0.0, 0.0),
                 surfacePoint_E_Eo=(0.0, 0.0, 0.0),
             )
 
         # Wrong length.
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=(0.0, 1.0),
                 surfacePoint_E_Eo=(0.0, 0.0, 0.0),
             )
@@ -1135,7 +1129,7 @@ class TestOperatingPoint(unittest.TestCase):
         # Non numeric.
         bad_surfaceNormal_E: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=bad_surfaceNormal_E,
                 surfacePoint_E_Eo=(0.0, 0.0, 0.0),
             )
@@ -1144,7 +1138,7 @@ class TestOperatingPoint(unittest.TestCase):
         """Test surfacePoint_E_Eo validation with invalid values."""
         # Wrong length.
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=(0.0, 0.0, 1.0),
                 surfacePoint_E_Eo=(0.0, 0.0),
             )
@@ -1152,7 +1146,7 @@ class TestOperatingPoint(unittest.TestCase):
         # Non numeric.
         bad_surfacePoint_E_Eo: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(
+            ps.OperatingPoint(
                 surfaceNormal_E=(0.0, 0.0, 1.0),
                 surfacePoint_E_Eo=bad_surfacePoint_E_Eo,
             )
@@ -1187,7 +1181,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for normal, point in input_types:
             with self.subTest(normal_type=type(normal).__name__):
-                op = ps.operating_point.OperatingPoint(
+                op = ps.OperatingPoint(
                     surfaceNormal_E=normal,
                     surfacePoint_E_Eo=point,
                 )
@@ -1508,12 +1502,12 @@ class TestOperatingPoint(unittest.TestCase):
         The normal is a non-position vector, so it should be independent of the CG
         position.
         """
-        op_no_offset = ps.operating_point.OperatingPoint(
+        op_no_offset = ps.OperatingPoint(
             CgP1_E_Eo=(0.0, 0.0, 0.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
-        op_with_offset = ps.operating_point.OperatingPoint(
+        op_with_offset = ps.OperatingPoint(
             CgP1_E_Eo=(100.0, 200.0, -50.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
@@ -1533,13 +1527,13 @@ class TestOperatingPoint(unittest.TestCase):
         With the same surface in Earth axes, changing the CG position should change
         where the surface point is relative to the CG in GP1 axes.
         """
-        op_near = ps.operating_point.OperatingPoint(
+        op_near = ps.OperatingPoint(
             angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
             CgP1_E_Eo=(0.0, 0.0, -5.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
-        op_far = ps.operating_point.OperatingPoint(
+        op_far = ps.OperatingPoint(
             angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
             CgP1_E_Eo=(0.0, 0.0, -20.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
@@ -1734,31 +1728,31 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_g_E_default(self) -> None:
         """Test that g_E defaults to no gravitational field (the zero vector)."""
-        op = ps.operating_point.OperatingPoint()
+        op = ps.OperatingPoint()
         npt.assert_array_equal(op.g_E, [0.0, 0.0, 0.0])
 
     def test_omegas_BP1__E_default(self) -> None:
         """Test that omegas_BP1__E defaults to the zero vector."""
-        op = ps.operating_point.OperatingPoint()
+        op = ps.OperatingPoint()
         npt.assert_array_equal(op.omegas_BP1__E, [0.0, 0.0, 0.0])
 
     def test_g_E_accepts_custom_value(self) -> None:
         """Test that a non default g_E is stored as a ndarray of floats."""
-        op = ps.operating_point.OperatingPoint(g_E=(1.0, -2.0, 3.5))
+        op = ps.OperatingPoint(g_E=(1.0, -2.0, 3.5))
         self.assertIsInstance(op.g_E, np.ndarray)
         self.assertEqual(op.g_E.dtype, float)
         npt.assert_array_equal(op.g_E, [1.0, -2.0, 3.5])
 
     def test_omegas_BP1__E_accepts_custom_value(self) -> None:
         """Test that a non default omegas_BP1__E is stored as a ndarray of floats."""
-        op = ps.operating_point.OperatingPoint(omegas_BP1__E=(0.1, -0.2, 0.3))
+        op = ps.OperatingPoint(omegas_BP1__E=(0.1, -0.2, 0.3))
         self.assertIsInstance(op.omegas_BP1__E, np.ndarray)
         self.assertEqual(op.omegas_BP1__E.dtype, float)
         npt.assert_array_equal(op.omegas_BP1__E, [0.1, -0.2, 0.3])
 
     def test_g_E_accepts_zero(self) -> None:
         """Test that an all zero g_E is valid (for zero gravity simulations)."""
-        op = ps.operating_point.OperatingPoint(g_E=(0.0, 0.0, 0.0))
+        op = ps.OperatingPoint(g_E=(0.0, 0.0, 0.0))
         npt.assert_array_equal(op.g_E, [0.0, 0.0, 0.0])
 
     def test_g_E_and_omegas_BP1__E_accept_various_array_likes(self) -> None:
@@ -1773,29 +1767,29 @@ class TestOperatingPoint(unittest.TestCase):
 
         for g, omegas in array_like_pairs:
             with self.subTest(input_type=type(g).__name__):
-                op = ps.operating_point.OperatingPoint(g_E=g, omegas_BP1__E=omegas)
+                op = ps.OperatingPoint(g_E=g, omegas_BP1__E=omegas)
                 npt.assert_array_equal(op.g_E, [1.0, 2.0, 3.0])
                 npt.assert_array_equal(op.omegas_BP1__E, [0.1, 0.2, 0.3])
 
     def test_g_E_validation_invalid(self) -> None:
         """Test g_E validation with invalid values."""
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(g_E=(0.0, 0.0))
+            ps.OperatingPoint(g_E=(0.0, 0.0))
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(g_E=(0.0, 0.0, float("nan")))
+            ps.OperatingPoint(g_E=(0.0, 0.0, float("nan")))
         bad_g_E: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(g_E=bad_g_E)
+            ps.OperatingPoint(g_E=bad_g_E)
 
     def test_omegas_BP1__E_validation_invalid(self) -> None:
         """Test omegas_BP1__E validation with invalid values."""
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(omegas_BP1__E=(0.0, 0.0))
+            ps.OperatingPoint(omegas_BP1__E=(0.0, 0.0))
         with self.assertRaises(ValueError):
-            ps.operating_point.OperatingPoint(omegas_BP1__E=(0.0, 0.0, float("inf")))
+            ps.OperatingPoint(omegas_BP1__E=(0.0, 0.0, float("inf")))
         bad_omegas_BP1__E: Any = "invalid"
         with self.assertRaises(TypeError):
-            ps.operating_point.OperatingPoint(omegas_BP1__E=bad_omegas_BP1__E)
+            ps.OperatingPoint(omegas_BP1__E=bad_omegas_BP1__E)
 
     def test_g_E_immutable(self) -> None:
         """Test that g_E is read only at both the property and array level."""
@@ -1815,12 +1809,12 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_g_E_converts_integers_to_float(self) -> None:
         """Test that integer inputs for g_E are converted to floats."""
-        op = ps.operating_point.OperatingPoint(g_E=(1, -2, 3))
+        op = ps.OperatingPoint(g_E=(1, -2, 3))
         self.assertEqual(op.g_E.dtype, float)
 
     def test_omegas_BP1__E_converts_integers_to_float(self) -> None:
         """Test that integer inputs for omegas_BP1__E are converted to floats."""
-        op = ps.operating_point.OperatingPoint(omegas_BP1__E=(1, -2, 3))
+        op = ps.OperatingPoint(omegas_BP1__E=(1, -2, 3))
         self.assertEqual(op.omegas_BP1__E.dtype, float)
 
 
@@ -1836,7 +1830,7 @@ class TestOperatingPointDeepCopy(unittest.TestCase):
     def test_deepcopy_creates_new_instance(self) -> None:
         """Test that deepcopy creates a new, distinct OperatingPoint."""
         copied = copy.deepcopy(self.operating_point)
-        self.assertIsInstance(copied, ps.operating_point.OperatingPoint)
+        self.assertIsInstance(copied, ps.OperatingPoint)
         self.assertIsNot(copied, self.operating_point)
 
     def test_deepcopy_preserves_scalar_attributes(self) -> None:
@@ -1899,7 +1893,7 @@ class TestOperatingPointDeepCopy(unittest.TestCase):
 
     def test_deepcopy_surface_arrays_remain_read_only(self) -> None:
         """Test that populated surface arrays are copied read only."""
-        operating_point = ps.operating_point.OperatingPoint(
+        operating_point = ps.OperatingPoint(
             surfaceNormal_E=(0.0, 0.0, 1.0),
             surfacePoint_E_Eo=(0.0, 0.0, -1.0),
         )
@@ -1990,7 +1984,7 @@ def _stevens_R_pas_BP1_to_W(alpha: float, beta: float) -> np.ndarray:
     )
 
 
-def _vCgHat_BP1__E(op: ps.operating_point.OperatingPoint) -> np.ndarray:
+def _vCgHat_BP1__E(op: ps.OperatingPoint) -> np.ndarray:
     """Returns the unit vector along the first Airplane's CG velocity (in the first
     Airplane's body axes, observed from the Earth frame).
 
@@ -2001,7 +1995,7 @@ def _vCgHat_BP1__E(op: ps.operating_point.OperatingPoint) -> np.ndarray:
     return np.asarray(-(R_pas_GP1_to_BP1 @ op.vInfHat_GP1__E), dtype=float)
 
 
-def _xHat_BP1_in_W_via_E(op: ps.operating_point.OperatingPoint) -> np.ndarray:
+def _xHat_BP1_in_W_via_E(op: ps.OperatingPoint) -> np.ndarray:
     """Returns the first Airplane's body x axis basis direction expressed in wind axes,
     computed through Earth axes.
 
@@ -2027,13 +2021,13 @@ class TestWindAxesClaims(unittest.TestCase):
     ranges, with alpha = 0.0 in the beta = +/-90.0 columns, and checks its claim at
     every pair. The OperatingPoints are built once in setUpClass and shared."""
 
-    operating_points: list[ps.operating_point.OperatingPoint]
+    operating_points: list[ps.OperatingPoint]
 
     @classmethod
     def setUpClass(cls) -> None:
         """Build one OperatingPoint per pair in the sweep at the default attitude."""
         cls.operating_points = [
-            ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=alpha, beta=beta)
+            ps.OperatingPoint(vCg__E=10.0, alpha=alpha, beta=beta)
             for alpha, beta in _FULL_RANGE_PAIRS
         ]
 
@@ -2184,7 +2178,7 @@ class TestWindAxesClaims(unittest.TestCase):
         """Test that at beta = +/-90.0, alpha = 0.0 is accepted and every other alpha in
         the sweep is rejected."""
         for beta in [-90.0, 90.0]:
-            op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
+            op = ps.OperatingPoint(alpha=0.0, beta=beta)
             npt.assert_allclose(
                 _vCgHat_BP1__E(op), [0.0, np.sign(beta), 0.0], atol=1e-14
             )
@@ -2192,7 +2186,7 @@ class TestWindAxesClaims(unittest.TestCase):
                 if alpha == 0.0:
                     continue
                 with self.assertRaises(ValueError, msg=f"alpha={alpha}, beta={beta}"):
-                    ps.operating_point.OperatingPoint(alpha=float(alpha), beta=beta)
+                    ps.OperatingPoint(alpha=float(alpha), beta=beta)
 
     def test_default_attitude_makes_wind_axes_coincide_with_earth_axes(self) -> None:
         """Test that the default angles_E_to_BP1_izyx resolves to the attitude that
@@ -2237,7 +2231,7 @@ class TestWindAxesSignConventions(unittest.TestCase):
         cls.xHat_W = np.zeros((len(cls.cases), 3), dtype=float)
         cls.R_pas_BP1_to_W_diagonals = np.zeros((len(cls.cases), 3), dtype=float)
         for i, (alpha, beta, attitude) in enumerate(cls.cases):
-            op = ps.operating_point.OperatingPoint(
+            op = ps.OperatingPoint(
                 alpha=alpha, beta=beta, angles_E_to_BP1_izyx=attitude
             )
             cls.vInfHat_BP1__E[i] = -_vCgHat_BP1__E(op)
@@ -2370,9 +2364,7 @@ class TestWindAxesAttitudeIndependence(unittest.TestCase):
         cls.default_T_pas_BP1_CgP1_to_W_CgP1s = {}
         cls.default_vInfHat_GP1__Es = {}
         for alpha, beta in _COARSE_FULL_RANGE_PAIRS:
-            op_default = ps.operating_point.OperatingPoint(
-                vCg__E=cls.vCg__E, alpha=alpha, beta=beta
-            )
+            op_default = ps.OperatingPoint(vCg__E=cls.vCg__E, alpha=alpha, beta=beta)
             cls.default_T_pas_BP1_CgP1_to_W_CgP1s[(alpha, beta)] = (
                 op_default.T_pas_BP1_CgP1_to_W_CgP1
             )
@@ -2386,7 +2378,7 @@ class TestWindAxesAttitudeIndependence(unittest.TestCase):
         cls.vInf_W__E_via_Es = np.zeros((num_cases, 3), dtype=float)
         cls.T_pas_E_CgP1_to_W_CgP1s = np.zeros((num_cases, 4, 4), dtype=float)
         for i, (alpha, beta, attitude) in enumerate(cls.cases):
-            op = ps.operating_point.OperatingPoint(
+            op = ps.OperatingPoint(
                 vCg__E=cls.vCg__E,
                 alpha=alpha,
                 beta=beta,

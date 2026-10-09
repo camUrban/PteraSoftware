@@ -18,10 +18,8 @@ from tests.unit.fixtures import (
 
 
 def _make_base_wing_and_wing_cross_section_movements() -> tuple[
-    ps.geometry.wing.Wing,
-    list[
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
-    ],
+    ps.Wing,
+    list[ps.AeroelasticWingCrossSectionMovement],
 ]:
     """Build a base Wing and matching AeroelasticWingCrossSectionMovements.
 
@@ -33,7 +31,7 @@ def _make_base_wing_and_wing_cross_section_movements() -> tuple[
     """
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+        ps.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section
         )
         for wing_cross_section in base_wing.wing_cross_sections
@@ -48,7 +46,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
         """Test that AeroelasticWingMovement is a subclass of CoreWingMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+                ps.AeroelasticWingMovement,
                 _core.CoreWingMovement,
             )
         )
@@ -59,15 +57,13 @@ class TestAeroelasticWingMovement(unittest.TestCase):
         base_wing, wing_cross_section_movements = (
             _make_base_wing_and_wing_cross_section_movements()
         )
-        aeroelastic_wing_movement = (
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-                base_wing=base_wing,
-                wing_cross_section_movements=wing_cross_section_movements,
-            )
+        aeroelastic_wing_movement = ps.AeroelasticWingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wing_cross_section_movements,
         )
         self.assertIsInstance(
             aeroelastic_wing_movement,
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+            ps.AeroelasticWingMovement,
         )
 
     def test_rejects_non_aeroelastic_wing_cross_section_movement_children(self) -> None:
@@ -79,7 +75,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
             wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
         ]
         with self.assertRaises(TypeError):
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+            ps.AeroelasticWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
@@ -95,7 +91,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
         for wing in wings:
             self.assertIsInstance(
                 wing,
-                ps.geometry.wing.Wing,
+                ps.Wing,
             )
 
     def test_generate_wing_at_time_step_returns_wing(self) -> None:
@@ -108,7 +104,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             wing,
-            ps.geometry.wing.Wing,
+            ps.Wing,
         )
 
 
@@ -342,7 +338,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
         spacingAngles_Gs_to_Wn_ixyz: (
             np.ndarray | Sequence[str | Callable[[float], float]]
         ) = ("sine", "sine", "sine"),
-    ) -> ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement:
+    ) -> ps.AeroelasticWingMovement:
         """Construct an AeroelasticWingMovement with the given angular spacing and
         second derivative arguments.
 
@@ -353,7 +349,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
             "sine").
         :return: The constructed AeroelasticWingMovement.
         """
-        return ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+        return ps.AeroelasticWingMovement(
             base_wing=self.base_wing,
             wing_cross_section_movements=self.wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
@@ -447,7 +443,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
             return 0.0
 
         with self.assertRaises(ValueError):
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+            ps.AeroelasticWingMovement(
                 base_wing=self.base_wing,
                 wing_cross_section_movements=self.wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
@@ -484,7 +480,7 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
 
         self.assertIsInstance(
             copied_aeroelastic_wing_movement,
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+            ps.AeroelasticWingMovement,
         )
         self.assertIsNot(copied_aeroelastic_wing_movement, aeroelastic_wing_movement)
         self.assertIsNot(
@@ -506,16 +502,14 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
         def deriv_func(t: float) -> float:
             return -1.0 * t
 
-        aeroelastic_wing_movement = (
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-                base_wing=base_wing,
-                wing_cross_section_movements=wing_cross_section_movements,
-                ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
-                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-                spacingAngles_Gs_to_Wn_ixyz=(custom_spacing, "sine", "sine"),
-                phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-                spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None],
-            )
+        aeroelastic_wing_movement = ps.AeroelasticWingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wing_cross_section_movements,
+            ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+            spacingAngles_Gs_to_Wn_ixyz=(custom_spacing, "sine", "sine"),
+            phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None],
         )
 
         copied_aeroelastic_wing_movement = copy.deepcopy(aeroelastic_wing_movement)

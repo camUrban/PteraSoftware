@@ -37,9 +37,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the FreeFlightUnsteadyRingVortexLatticeMethodSolver
     on a statically stable glider."""
 
-    solver: (
-        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
-    )
+    solver: ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver
     speeds: np.ndarray
     alphas: np.ndarray
     betas: np.ndarray
@@ -63,11 +61,9 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         cls.solver.run(prescribed_wake=True, show_progress=False)
 
         problem = cls.solver.unsteady_problem
-        assert isinstance(problem, ps.problems.FreeFlightUnsteadyProblem)
+        assert isinstance(problem, ps.FreeFlightUnsteadyProblem)
         movement = problem.movement
-        assert isinstance(
-            movement, ps.movements.free_flight_movement.FreeFlightMovement
-        )
+        assert isinstance(movement, ps.FreeFlightMovement)
         operating_points = movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
@@ -217,9 +213,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
     on a flapping-wing airframe whose strongly coupled sub-iteration must remain stable
     under large oscillatory loads."""
 
-    solver: (
-        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
-    )
+    solver: ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver
     betas: np.ndarray
     positions_E_Eo: np.ndarray
     forces_W: np.ndarray
@@ -260,9 +254,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
 
         problem = cls.solver.unsteady_problem
         movement = problem.movement
-        assert isinstance(
-            movement, ps.movements.free_flight_movement.FreeFlightMovement
-        )
+        assert isinstance(movement, ps.FreeFlightMovement)
         operating_points = movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
@@ -349,9 +341,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodKatzForceMethod(unittest.Test
     """This is a class for testing the FreeFlightUnsteadyRingVortexLatticeMethodSolver
     on the statically stable glider with the Katz force method."""
 
-    solver: (
-        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
-    )
+    solver: ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver
     forces_W: np.ndarray
     lifts: np.ndarray
     weight: float

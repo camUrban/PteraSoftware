@@ -26,7 +26,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertIsInstance(self.solver, CoupledUnsteadyRingVortexLatticeMethodSolver)
         self.assertIsInstance(
             self.solver,
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
         )
         self.assertIs(self.solver.unsteady_problem, self.problem)
 

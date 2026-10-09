@@ -3,18 +3,18 @@
 import pterasoftware as ps
 
 
-def make_validation_operating_point() -> ps.operating_point.OperatingPoint:
+def make_validation_operating_point() -> ps.OperatingPoint:
     """This method makes an OperatingPoint for use in tests.
 
     :return operating_point_fixture: OperatingPoint This is an OperatingPoint fixture.
     """
-    operating_point_fixture = ps.operating_point.OperatingPoint(
+    operating_point_fixture = ps.OperatingPoint(
         rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
     )
     return operating_point_fixture
 
 
-def make_surface_effect_operating_point() -> ps.operating_point.OperatingPoint:
+def make_surface_effect_operating_point() -> ps.OperatingPoint:
     """This function creates an OperatingPoint with an image surface for surface effect
     testing.
 
@@ -27,7 +27,7 @@ def make_surface_effect_operating_point() -> ps.operating_point.OperatingPoint:
 
     :return operating_point_fixture: OperatingPoint This is an OperatingPoint fixture.
     """
-    operating_point_fixture = ps.operating_point.OperatingPoint(
+    operating_point_fixture = ps.OperatingPoint(
         rho=1.225,
         vCg__E=10.0,
         alpha=5.0,
@@ -40,14 +40,14 @@ def make_surface_effect_operating_point() -> ps.operating_point.OperatingPoint:
     return operating_point_fixture
 
 
-def make_surface_effect_free_air_operating_point() -> ps.operating_point.OperatingPoint:
+def make_surface_effect_free_air_operating_point() -> ps.OperatingPoint:
     """This function creates an OperatingPoint without an image surface, matching the
     flow conditions of the surface effect operating point, for use as a free-air
     baseline in surface effect validation tests.
 
     :return operating_point_fixture: OperatingPoint This is an OperatingPoint fixture.
     """
-    operating_point_fixture = ps.operating_point.OperatingPoint(
+    operating_point_fixture = ps.OperatingPoint(
         rho=1.225,
         vCg__E=10.0,
         alpha=5.0,
@@ -56,7 +56,7 @@ def make_surface_effect_free_air_operating_point() -> ps.operating_point.Operati
     return operating_point_fixture
 
 
-def make_simple_glider_operating_point() -> ps.operating_point.OperatingPoint:
+def make_simple_glider_operating_point() -> ps.OperatingPoint:
     """This function creates the trimmed OperatingPoint for the simple glider's free
     flight test.
 
@@ -69,7 +69,7 @@ def make_simple_glider_operating_point() -> ps.operating_point.OperatingPoint:
     :return operating_point_fixture: OperatingPoint This is the simple glider
         OperatingPoint fixture.
     """
-    operating_point_fixture = ps.operating_point.OperatingPoint(
+    operating_point_fixture = ps.OperatingPoint(
         rho=1.225,
         vCg__E=12.9,
         alpha=3.3,
@@ -80,7 +80,7 @@ def make_simple_glider_operating_point() -> ps.operating_point.OperatingPoint:
     return operating_point_fixture
 
 
-def make_flapping_free_flight_operating_point() -> ps.operating_point.OperatingPoint:
+def make_flapping_free_flight_operating_point() -> ps.OperatingPoint:
     """This function creates the initial OperatingPoint for the flapping-wing free
     flight test.
 
@@ -92,7 +92,7 @@ def make_flapping_free_flight_operating_point() -> ps.operating_point.OperatingP
     :return operating_point_fixture: OperatingPoint This is the flapping-wing
         OperatingPoint fixture.
     """
-    operating_point_fixture = ps.operating_point.OperatingPoint(
+    operating_point_fixture = ps.OperatingPoint(
         rho=1.225,
         vCg__E=12.9,
         alpha=3.3,

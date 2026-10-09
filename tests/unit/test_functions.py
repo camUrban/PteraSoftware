@@ -638,8 +638,8 @@ class TestProcessSolverLoads(unittest.TestCase):
     """Tests for the process_solver_loads function."""
 
     secondCg_GP1_CgP1: np.ndarray
-    first_airplane: ps.geometry.airplane.Airplane
-    second_airplane: ps.geometry.airplane.Airplane
+    first_airplane: ps.Airplane
+    second_airplane: ps.Airplane
     qInf__E: float
     T_pas_GP1_CgP1_to_W_CgP1: np.ndarray
     firstStackPanelForces_GP1: np.ndarray
@@ -659,13 +659,11 @@ class TestProcessSolverLoads(unittest.TestCase):
             cls.secondCg_GP1_CgP1
         )
         operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
-        steady_problem = ps.problems.SteadyProblem(
+        steady_problem = ps.SteadyProblem(
             airplanes=[first_airplane, second_airplane],
             operating_point=operating_point,
         )
-        solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem
-        )
+        solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem)
 
         # Populate the solver's Panels in the same order as its geometry collapsing
         # step: each Airplane's Wings' Panels, unraveled.

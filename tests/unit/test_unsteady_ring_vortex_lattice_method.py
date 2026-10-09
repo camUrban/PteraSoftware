@@ -18,7 +18,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         solver = solver_fixtures.make_unsteady_ring_solver_fixture()
         self.assertIsInstance(
             solver,
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
         )
 
     def test_initialization_rejects_coupled_unsteady_problem(self) -> None:
@@ -27,9 +27,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         through super()."""
         coupled_problem = problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
         with self.assertRaises(TypeError):
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                coupled_problem
-            )
+            ps.UnsteadyRingVortexLatticeMethodSolver(coupled_problem)
 
     def test_initialization_rejects_non_problem_types(self) -> None:
         """Test that initialization raises TypeError for non-problem inputs."""
@@ -43,9 +41,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         for invalid in invalid_inputs:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
-                    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                        invalid
-                    )
+                    ps.UnsteadyRingVortexLatticeMethodSolver(invalid)
 
     def test_initialization_rejects_non_zero_body_rates(self) -> None:
         """Test that initialization raises when any per-step operating point carries a
@@ -54,9 +50,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             problem_fixtures.make_with_body_rates_unsteady_problem_fixture()
         )
         with self.assertRaises(ValueError):
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                rotating_problem
-            )
+            ps.UnsteadyRingVortexLatticeMethodSolver(rotating_problem)
 
     def test_steady_problems_is_read_only(self) -> None:
         """Test that the steady_problems property cannot be reassigned, since it is a
@@ -138,9 +132,7 @@ class TestUnsteadyRingVortexLatticeMethodSolverWakeCoreRadii(unittest.TestCase):
         """Solve an unsteady problem whose Wing's standard mean chord changes every time
         step."""
         self.problem = problem_fixtures.make_pitching_tip_unsteady_problem_fixture()
-        self.solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-            self.problem
-        )
+        self.solver = ps.UnsteadyRingVortexLatticeMethodSolver(self.problem)
         self.solver.run(show_progress=False)
 
         # The per step initial core radii that _collapse_geometry assigns to each Wing's

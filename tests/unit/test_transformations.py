@@ -2210,7 +2210,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
                 self.assertEqual(beta, 0.0)
 
                 # OperatingPoint must accept the result.
-                ps.operating_point.OperatingPoint(alpha=alpha, beta=beta)
+                ps.OperatingPoint(alpha=alpha, beta=beta)
 
     def test_beta_boundaries_return_zero_alpha(self) -> None:
         """Tests that a freestream along the body y axis yields beta = +/-90.0 and
@@ -2241,7 +2241,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
                 self.assertEqual(beta, expected_beta)
 
                 # OperatingPoint must accept the result.
-                ps.operating_point.OperatingPoint(alpha=alpha, beta=beta)
+                ps.OperatingPoint(alpha=alpha, beta=beta)
 
     def test_round_trip_consistent_with_operating_point(self) -> None:
         """Tests that this function exactly inverts the OperatingPoint's alpha and beta
@@ -2259,7 +2259,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         vCg__E = 13.0
         for alpha_in in [-12.0, -5.0, 0.0, 7.0, 14.0]:
             for beta_in in [-25.0, -8.0, 0.0, 6.0, 20.0]:
-                op = ps.operating_point.OperatingPoint(
+                op = ps.OperatingPoint(
                     rho=1.225, vCg__E=vCg__E, alpha=alpha_in, beta=beta_in
                 )
                 vInf_BP1__E = _transformations.apply_T_to_vectors(

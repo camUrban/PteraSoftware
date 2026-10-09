@@ -443,7 +443,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Verify all elements are Airplanes.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
     def test_generate_airplanes_preserves_non_changing_attributes(self) -> None:
         """Test that generate_airplanes preserves non-changing attributes."""
@@ -469,7 +469,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Wing measures, so that a generated Airplane which recalculated them would fail
         # the comparison. Then build a moving CoreWingMovement around its own Wing, so
         # that each time step's Airplane is generated afresh rather than deep copied.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[geometry_fixtures.make_origin_wing_fixture()],
             s_ref=15.0,
             c_ref=2.0,
@@ -571,7 +571,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Verify that Airplanes are generated successfully.
         self.assertEqual(len(airplanes), 100)
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
@@ -683,7 +683,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
 
         # Verify all are Airplane instances.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
     def test_variable_geometry_periodicity(self) -> None:
         """Test that variable geometry produces periodic results."""
@@ -798,7 +798,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         # Should still work correctly.
         self.assertEqual(len(airplanes), num_steps)
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestGeometryMatchesEdgeCases(unittest.TestCase):
@@ -909,7 +909,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
 
     def _get_meshed_wings(
         self,
-    ) -> tuple[list[ps.geometry.wing.Wing], list[ps.geometry.wing.Wing]]:
+    ) -> tuple[list[ps.Wing], list[ps.Wing]]:
         """Helper to get two copies of meshed Wings for panel corner tests."""
         # Use static airplane movement to generate Airplanes with meshed Wings.
         airplane_movement = self.static_airplane_movement
@@ -962,7 +962,7 @@ class TestVariableGeometryFallback(unittest.TestCase):
 
         # Verify all are valid Airplane instances.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):

@@ -11,11 +11,11 @@ import pterasoftware as ps
 # purposes, but keep in mind that it makes the code much longer than it needs to be. For
 # details about each parameter, read the detailed class docstring. The same caveats
 # apply to the other classes, methods, and functions I call in this script.
-example_airplane = ps.geometry.airplane.Airplane(
+example_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=8,
                     chord=1.75,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -24,14 +24,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.5,
                     Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
@@ -40,7 +40,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
@@ -58,9 +58,9 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=8,
                     chord=1.5,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -69,14 +69,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="uniform",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
@@ -85,7 +85,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
@@ -113,31 +113,27 @@ example_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Now define the main Wing's root and tip WingCrossSections' WingCrossSectionMovements.
-main_wing_root_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+main_wing_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
-main_wing_tip_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+main_wing_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
 
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
@@ -147,64 +143,56 @@ main_wing_tip_wing_cross_section_movement = (
 # being a reflected version of the first. Therefore, we need to define a WingMovement
 # for this reflected Wing. To start, we'll first define the reflected main Wing's root
 # and tip WingCrossSections' WingCrossSectionMovements.
-reflected_main_wing_root_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+reflected_main_wing_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
-reflected_main_wing_tip_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+reflected_main_wing_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
 
 # Now define the V-tail's root and tip WingCrossSections' WingCrossSectionMovements.
-v_tail_root_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+v_tail_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
-v_tail_tip_wing_cross_section_movement = (
-    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+v_tail_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
 
 # Now define the main Wing's WingMovement, the reflected main Wing's WingMovement and
 # the V-tail's WingMovement.
-main_wing_movement = ps.movements.wing_movement.WingMovement(
+main_wing_movement = ps.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
         main_wing_root_wing_cross_section_movement,
@@ -219,7 +207,7 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
-reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
+reflected_main_wing_movement = ps.WingMovement(
     base_wing=example_airplane.wings[1],
     wing_cross_section_movements=[
         reflected_main_wing_root_wing_cross_section_movement,
@@ -234,7 +222,7 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
-v_tail_movement = ps.movements.wing_movement.WingMovement(
+v_tail_movement = ps.WingMovement(
     base_wing=example_airplane.wings[2],
     wing_cross_section_movements=[
         v_tail_root_wing_cross_section_movement,
@@ -261,7 +249,7 @@ del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
 # Now define the example Airplane's AirplaneMovement.
-airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+airplane_movement = ps.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement, v_tail_movement],
     ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -276,12 +264,12 @@ del reflected_main_wing_movement
 del v_tail_movement
 
 # Define a new OperatingPoint.
-example_operating_point = ps.operating_point.OperatingPoint(
+example_operating_point = ps.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
 # Define the OperatingPoint's OperatingPointMovement.
-operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+operating_point_movement = ps.OperatingPointMovement(
     base_operating_point=example_operating_point, periodVCg__E=0.0, spacingVCg__E="sine"
 )
 
@@ -290,7 +278,7 @@ del example_operating_point
 
 # Define the Movement. This contains the AirplaneMovement and the
 # OperatingPointMovement.
-movement = ps.movements.movement.Movement(
+movement = ps.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
     delta_time=None,
@@ -304,7 +292,7 @@ del airplane_movement
 del operating_point_movement
 
 # Define the UnsteadyProblem.
-example_problem = ps.problems.UnsteadyProblem(
+example_problem = ps.UnsteadyProblem(
     movement=movement,
 )
 
@@ -312,10 +300,8 @@ example_problem = ps.problems.UnsteadyProblem(
 # SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
 # UnsteadyRingVortexLatticeMethodSolver. We'll create an
 # UnsteadyRingVortexLatticeMethodSolver, which requires a UnsteadyProblem.
-example_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=example_problem,
-    )
+example_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_problem=example_problem,
 )
 
 # Delete the extraneous pointer.
@@ -344,7 +330,7 @@ loaded_solver = ps.load("example_solver.psz")
 # against loading the wrong file.
 assert isinstance(
     loaded_solver,
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ps.UnsteadyRingVortexLatticeMethodSolver,
 )
 print("Finished loading the saved solver.")
 
@@ -357,7 +343,7 @@ print("Finished loading the saved solver.")
 # since at true speed each stroke of this airplane's one second flapping cycle passes
 # quickly. Slowing it further would make the playback choppy, because a slower speed
 # holds each frame on screen longer rather than adding frames.
-ps.output.animate(
+ps.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,

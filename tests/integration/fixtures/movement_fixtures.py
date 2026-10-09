@@ -4,7 +4,7 @@ import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures, operating_point_fixtures
 
 
-def make_static_validation_movement() -> ps.movements.movement.Movement:
+def make_static_validation_movement() -> ps.Movement:
     """This function creates a Movement with static geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement This is a Movement with static
@@ -17,23 +17,19 @@ def make_static_validation_movement() -> ps.movements.movement.Movement:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    unsteady_validation_root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                0
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            0
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                0
-            ].wing_cross_sections[1]
-        )
+    unsteady_validation_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            0
+        ].wing_cross_sections[1]
     )
 
-    unsteady_validation_wing_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_wing_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_section_movements=[
             unsteady_validation_root_wing_cross_section_movement,
@@ -41,20 +37,16 @@ def make_static_validation_movement() -> ps.movements.movement.Movement:
         ],
     )
 
-    unsteady_validation_airplane_movement = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=unsteady_validation_airplane,
-            wing_movements=[unsteady_validation_wing_movement],
-        )
+    unsteady_validation_airplane_movement = ps.AirplaneMovement(
+        base_airplane=unsteady_validation_airplane,
+        wing_movements=[unsteady_validation_wing_movement],
     )
 
-    unsteady_validation_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=unsteady_validation_operating_point
-        )
+    unsteady_validation_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=unsteady_validation_operating_point
     )
 
-    unsteady_validation_movement = ps.movements.movement.Movement(
+    unsteady_validation_movement = ps.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_chords=6,
@@ -63,7 +55,7 @@ def make_static_validation_movement() -> ps.movements.movement.Movement:
     return unsteady_validation_movement
 
 
-def make_edge_defined_static_validation_movement() -> ps.movements.movement.Movement:
+def make_edge_defined_static_validation_movement() -> ps.Movement:
     """This function creates a static Movement over an edge-defined Airplane, to be used
     as a fixture for testing the convergence functions' edge-defined refinement.
 
@@ -80,31 +72,27 @@ def make_edge_defined_static_validation_movement() -> ps.movements.movement.Move
     )
 
     edge_defined_wing_cross_section_movements = [
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=wing_cross_section
-        )
+        ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
         for wing_cross_section in edge_defined_validation_airplane.wings[
             0
         ].wing_cross_sections
     ]
 
-    edge_defined_wing_movement = ps.movements.wing_movement.WingMovement(
+    edge_defined_wing_movement = ps.WingMovement(
         base_wing=edge_defined_validation_airplane.wings[0],
         wing_cross_section_movements=edge_defined_wing_cross_section_movements,
     )
 
-    edge_defined_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    edge_defined_airplane_movement = ps.AirplaneMovement(
         base_airplane=edge_defined_validation_airplane,
         wing_movements=[edge_defined_wing_movement],
     )
 
-    edge_defined_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=edge_defined_validation_operating_point
-        )
+    edge_defined_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=edge_defined_validation_operating_point
     )
 
-    edge_defined_validation_movement = ps.movements.movement.Movement(
+    edge_defined_validation_movement = ps.Movement(
         airplane_movements=[edge_defined_airplane_movement],
         operating_point_movement=edge_defined_operating_point_movement,
         num_chords=6,
@@ -113,9 +101,7 @@ def make_edge_defined_static_validation_movement() -> ps.movements.movement.Move
     return edge_defined_validation_movement
 
 
-def make_edge_defined_non_static_validation_movement() -> (
-    ps.movements.movement.Movement
-):
+def make_edge_defined_non_static_validation_movement() -> ps.Movement:
     """This function creates a Movement over an edge-defined Airplane whose second
     WingCrossSectionMovement pitches, to be used as a fixture for testing that edge-
     defined convergence rejects non-static WingCrossSectionMovements.
@@ -138,39 +124,33 @@ def make_edge_defined_non_static_validation_movement() -> (
         0
     ].wing_cross_sections
     edge_defined_wing_cross_section_movements = [
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=wing_cross_section
-        )
+        ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
         for wing_cross_section in edge_defined_wing_cross_sections
     ]
 
     # Replace an interior WingCrossSectionMovement with a pitching one. The root
     # WingCrossSection cannot pitch, so the second WingCrossSection is used.
-    edge_defined_wing_cross_section_movements[1] = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=edge_defined_wing_cross_sections[1],
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
-        )
+    edge_defined_wing_cross_section_movements[1] = ps.WingCrossSectionMovement(
+        base_wing_cross_section=edge_defined_wing_cross_sections[1],
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
     )
 
-    edge_defined_wing_movement = ps.movements.wing_movement.WingMovement(
+    edge_defined_wing_movement = ps.WingMovement(
         base_wing=edge_defined_validation_airplane.wings[0],
         wing_cross_section_movements=edge_defined_wing_cross_section_movements,
     )
 
-    edge_defined_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    edge_defined_airplane_movement = ps.AirplaneMovement(
         base_airplane=edge_defined_validation_airplane,
         wing_movements=[edge_defined_wing_movement],
     )
 
-    edge_defined_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=edge_defined_validation_operating_point
-        )
+    edge_defined_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=edge_defined_validation_operating_point
     )
 
-    edge_defined_non_static_validation_movement = ps.movements.movement.Movement(
+    edge_defined_non_static_validation_movement = ps.Movement(
         airplane_movements=[edge_defined_airplane_movement],
         operating_point_movement=edge_defined_operating_point_movement,
         num_cycles=1,
@@ -179,7 +159,7 @@ def make_edge_defined_non_static_validation_movement() -> (
     return edge_defined_non_static_validation_movement
 
 
-def make_variable_validation_movement() -> ps.movements.movement.Movement:
+def make_variable_validation_movement() -> ps.Movement:
     """This function creates a Movement with variable geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement This is a Movement with variable
@@ -192,31 +172,27 @@ def make_variable_validation_movement() -> ps.movements.movement.Movement:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    unsteady_validation_root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                0
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            0
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                0
-            ].wing_cross_sections[1],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(30.0, 30.0, 30.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.5, 0.5),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    unsteady_validation_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            0
+        ].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(30.0, 30.0, 30.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.5, 0.5),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 
-    unsteady_validation_wing_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_wing_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_section_movements=[
             unsteady_validation_root_wing_cross_section_movement,
@@ -224,22 +200,18 @@ def make_variable_validation_movement() -> ps.movements.movement.Movement:
         ],
     )
 
-    unsteady_validation_airplane_movement = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=unsteady_validation_airplane,
-            wing_movements=[
-                unsteady_validation_wing_movement,
-            ],
-        )
+    unsteady_validation_airplane_movement = ps.AirplaneMovement(
+        base_airplane=unsteady_validation_airplane,
+        wing_movements=[
+            unsteady_validation_wing_movement,
+        ],
     )
 
-    unsteady_validation_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=unsteady_validation_operating_point
-        )
+    unsteady_validation_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=unsteady_validation_operating_point
     )
 
-    unsteady_validation_movement = ps.movements.movement.Movement(
+    unsteady_validation_movement = ps.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_cycles=1,
@@ -248,7 +220,7 @@ def make_variable_validation_movement() -> ps.movements.movement.Movement:
     return unsteady_validation_movement
 
 
-def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Movement:
+def make_multiple_wing_static_validation_movement() -> ps.Movement:
     """This function creates a Movement with static, multi-wing geometry to be used as a
     fixture.
 
@@ -263,7 +235,7 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
     )
 
     unsteady_validation_main_wing_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0]
@@ -271,46 +243,38 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
     )
 
     unsteady_validation_main_wing_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1]
         )
     )
 
-    unsteady_validation_hstab_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                1
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_hstab_root_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            1
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_hstab_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                1
-            ].wing_cross_sections[1]
-        )
+    unsteady_validation_hstab_tip_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            1
+        ].wing_cross_sections[1]
     )
 
-    unsteady_validation_vstab_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                2
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_vstab_root_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            2
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_vstab_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                2
-            ].wing_cross_sections[1]
-        )
+    unsteady_validation_vstab_tip_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            2
+        ].wing_cross_sections[1]
     )
 
-    unsteady_validation_main_wing_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_main_wing_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_section_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
@@ -318,7 +282,7 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
         ],
     )
 
-    unsteady_validation_hstab_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_hstab_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
         wing_cross_section_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
@@ -326,7 +290,7 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
         ],
     )
 
-    unsteady_validation_vstab_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_vstab_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
         wing_cross_section_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
@@ -334,24 +298,20 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
         ],
     )
 
-    unsteady_validation_airplane_movement = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=unsteady_validation_airplane,
-            wing_movements=[
-                unsteady_validation_main_wing_movement,
-                unsteady_validation_hstab_movement,
-                unsteady_validation_vstab_movement,
-            ],
-        )
+    unsteady_validation_airplane_movement = ps.AirplaneMovement(
+        base_airplane=unsteady_validation_airplane,
+        wing_movements=[
+            unsteady_validation_main_wing_movement,
+            unsteady_validation_hstab_movement,
+            unsteady_validation_vstab_movement,
+        ],
     )
 
-    unsteady_validation_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=unsteady_validation_operating_point
-        )
+    unsteady_validation_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=unsteady_validation_operating_point
     )
 
-    unsteady_validation_movement = ps.movements.movement.Movement(
+    unsteady_validation_movement = ps.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=8,
@@ -361,7 +321,7 @@ def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Mov
     return unsteady_validation_movement
 
 
-def make_surface_effect_static_movement() -> ps.movements.movement.Movement:
+def make_surface_effect_static_movement() -> ps.Movement:
     """This function creates a Movement with static geometry and an image surface for
     surface effect testing.
 
@@ -373,23 +333,15 @@ def make_surface_effect_static_movement() -> ps.movements.movement.Movement:
         operating_point_fixtures.make_surface_effect_operating_point()
     )
 
-    root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=surface_effect_airplane.wings[
-                0
-            ].wing_cross_sections[0]
-        )
+    root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=surface_effect_airplane.wings[0].wing_cross_sections[0]
     )
 
-    tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=surface_effect_airplane.wings[
-                0
-            ].wing_cross_sections[1]
-        )
+    tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=surface_effect_airplane.wings[0].wing_cross_sections[1]
     )
 
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=surface_effect_airplane.wings[0],
         wing_cross_section_movements=[
             root_wing_cross_section_movement,
@@ -397,18 +349,16 @@ def make_surface_effect_static_movement() -> ps.movements.movement.Movement:
         ],
     )
 
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=surface_effect_airplane,
         wing_movements=[wing_movement],
     )
 
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=surface_effect_operating_point
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=surface_effect_operating_point
     )
 
-    surface_effect_movement = ps.movements.movement.Movement(
+    surface_effect_movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         num_chords=6,
@@ -417,7 +367,7 @@ def make_surface_effect_static_movement() -> ps.movements.movement.Movement:
     return surface_effect_movement
 
 
-def make_surface_effect_free_air_static_movement() -> ps.movements.movement.Movement:
+def make_surface_effect_free_air_static_movement() -> ps.Movement:
     """This function creates a Movement with static geometry and no image surface, for
     use as a free-air baseline in surface effect validation tests.
 
@@ -429,23 +379,15 @@ def make_surface_effect_free_air_static_movement() -> ps.movements.movement.Move
         operating_point_fixtures.make_surface_effect_free_air_operating_point()
     )
 
-    root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=surface_effect_airplane.wings[
-                0
-            ].wing_cross_sections[0]
-        )
+    root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=surface_effect_airplane.wings[0].wing_cross_sections[0]
     )
 
-    tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=surface_effect_airplane.wings[
-                0
-            ].wing_cross_sections[1]
-        )
+    tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=surface_effect_airplane.wings[0].wing_cross_sections[1]
     )
 
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=surface_effect_airplane.wings[0],
         wing_cross_section_movements=[
             root_wing_cross_section_movement,
@@ -453,18 +395,16 @@ def make_surface_effect_free_air_static_movement() -> ps.movements.movement.Move
         ],
     )
 
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=surface_effect_airplane,
         wing_movements=[wing_movement],
     )
 
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=free_air_operating_point
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=free_air_operating_point
     )
 
-    free_air_movement = ps.movements.movement.Movement(
+    free_air_movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         num_chords=6,
@@ -473,7 +413,7 @@ def make_surface_effect_free_air_static_movement() -> ps.movements.movement.Move
     return free_air_movement
 
 
-def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.Movement:
+def make_multiple_wing_variable_validation_movement() -> ps.Movement:
     """This function creates a Movement with variable, multi-wing geometry to be used as
     a fixture.
 
@@ -488,7 +428,7 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
     )
 
     unsteady_validation_main_wing_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0]
@@ -496,7 +436,7 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
     )
 
     unsteady_validation_main_wing_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1],
@@ -511,39 +451,31 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
         )
     )
 
-    unsteady_validation_hstab_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                1
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_hstab_root_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            1
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_hstab_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                1
-            ].wing_cross_sections[1]
-        )
+    unsteady_validation_hstab_tip_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            1
+        ].wing_cross_sections[1]
     )
 
-    unsteady_validation_vstab_root_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                2
-            ].wing_cross_sections[0]
-        )
+    unsteady_validation_vstab_root_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            2
+        ].wing_cross_sections[0]
     )
 
-    unsteady_validation_vstab_tip_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=unsteady_validation_airplane.wings[
-                2
-            ].wing_cross_sections[1]
-        )
+    unsteady_validation_vstab_tip_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=unsteady_validation_airplane.wings[
+            2
+        ].wing_cross_sections[1]
     )
 
-    unsteady_validation_main_wing_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_main_wing_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_section_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
@@ -551,7 +483,7 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
         ],
     )
 
-    unsteady_validation_hstab_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_hstab_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
         wing_cross_section_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
@@ -559,7 +491,7 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
         ],
     )
 
-    unsteady_validation_vstab_movement = ps.movements.wing_movement.WingMovement(
+    unsteady_validation_vstab_movement = ps.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
         wing_cross_section_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
@@ -567,24 +499,20 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
         ],
     )
 
-    unsteady_validation_airplane_movement = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=unsteady_validation_airplane,
-            wing_movements=[
-                unsteady_validation_main_wing_movement,
-                unsteady_validation_hstab_movement,
-                unsteady_validation_vstab_movement,
-            ],
-        )
+    unsteady_validation_airplane_movement = ps.AirplaneMovement(
+        base_airplane=unsteady_validation_airplane,
+        wing_movements=[
+            unsteady_validation_main_wing_movement,
+            unsteady_validation_hstab_movement,
+            unsteady_validation_vstab_movement,
+        ],
     )
 
-    unsteady_validation_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=unsteady_validation_operating_point
-        )
+    unsteady_validation_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=unsteady_validation_operating_point
     )
 
-    unsteady_validation_movement = ps.movements.movement.Movement(
+    unsteady_validation_movement = ps.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=20,
@@ -594,9 +522,7 @@ def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.M
     return unsteady_validation_movement
 
 
-def make_simple_glider_free_flight_movement() -> (
-    ps.movements.free_flight_movement.FreeFlightMovement
-):
+def make_simple_glider_free_flight_movement() -> ps.FreeFlightMovement:
     """This function creates the simple glider's FreeFlightMovement to be used as a
     fixture.
 
@@ -618,43 +544,37 @@ def make_simple_glider_free_flight_movement() -> (
     wing_movements = []
     for wing in simple_glider_airplane.wings:
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing_cross_section
-            )
+            ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
             for wing_cross_section in wing.wing_cross_sections
         ]
         wing_movements.append(
-            ps.movements.wing_movement.WingMovement(
+            ps.WingMovement(
                 base_wing=wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
         )
 
-    simple_glider_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    simple_glider_airplane_movement = ps.AirplaneMovement(
         base_airplane=simple_glider_airplane,
         wing_movements=wing_movements,
     )
 
-    simple_glider_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+    simple_glider_operating_point_movement = ps.FreeFlightOperatingPointMovement(
         base_operating_point=simple_glider_operating_point,
     )
 
-    simple_glider_free_flight_movement = (
-        ps.movements.free_flight_movement.FreeFlightMovement(
-            airplane_movements=[simple_glider_airplane_movement],
-            operating_point_movement=simple_glider_operating_point_movement,
-            delta_time=0.01292,
-            prescribed_num_steps=15,
-            free_num_steps=10,
-        )
+    simple_glider_free_flight_movement = ps.FreeFlightMovement(
+        airplane_movements=[simple_glider_airplane_movement],
+        operating_point_movement=simple_glider_operating_point_movement,
+        delta_time=0.01292,
+        prescribed_num_steps=15,
+        free_num_steps=10,
     )
 
     return simple_glider_free_flight_movement
 
 
-def make_flapping_free_flight_movement() -> (
-    ps.movements.free_flight_movement.FreeFlightMovement
-):
+def make_flapping_free_flight_movement() -> ps.FreeFlightMovement:
     """This function creates the flapping-wing FreeFlightMovement to be used as a
     fixture.
 
@@ -686,9 +606,7 @@ def make_flapping_free_flight_movement() -> (
     wing_movements = []
     for wing_index, wing in enumerate(flapping_airplane.wings):
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing_cross_section
-            )
+            ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
             for wing_cross_section in wing.wing_cross_sections
         ]
         if wing_index in flapping_wing_indices:
@@ -698,7 +616,7 @@ def make_flapping_free_flight_movement() -> (
             ampAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
             periodAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
         wing_movements.append(
-            ps.movements.wing_movement.WingMovement(
+            ps.WingMovement(
                 base_wing=wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=ampAngles_Gs_to_Wn_ixyz,
@@ -706,29 +624,27 @@ def make_flapping_free_flight_movement() -> (
             )
         )
 
-    flapping_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    flapping_airplane_movement = ps.AirplaneMovement(
         base_airplane=flapping_airplane,
         wing_movements=wing_movements,
     )
 
-    flapping_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+    flapping_operating_point_movement = ps.FreeFlightOperatingPointMovement(
         base_operating_point=flapping_operating_point,
     )
 
-    flapping_free_flight_movement = (
-        ps.movements.free_flight_movement.FreeFlightMovement(
-            airplane_movements=[flapping_airplane_movement],
-            operating_point_movement=flapping_operating_point_movement,
-            delta_time=0.01292,
-            prescribed_num_steps=5,
-            free_num_steps=10,
-        )
+    flapping_free_flight_movement = ps.FreeFlightMovement(
+        airplane_movements=[flapping_airplane_movement],
+        operating_point_movement=flapping_operating_point_movement,
+        delta_time=0.01292,
+        prescribed_num_steps=5,
+        free_num_steps=10,
     )
 
     return flapping_free_flight_movement
 
 
-def make_formation_validation_movement() -> ps.movements.movement.Movement:
+def make_formation_validation_movement() -> ps.Movement:
     """This function creates a static Movement over two Airplanes to be used as a
     fixture.
 
@@ -746,29 +662,27 @@ def make_formation_validation_movement() -> ps.movements.movement.Movement:
     formation_airplane_movements = []
     for formation_airplane in formation_airplanes:
         formation_wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing_cross_section
-            )
+            ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
             for wing_cross_section in formation_airplane.wings[0].wing_cross_sections
         ]
 
-        formation_wing_movement = ps.movements.wing_movement.WingMovement(
+        formation_wing_movement = ps.WingMovement(
             base_wing=formation_airplane.wings[0],
             wing_cross_section_movements=formation_wing_cross_section_movements,
         )
 
         formation_airplane_movements.append(
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=formation_airplane,
                 wing_movements=[formation_wing_movement],
             )
         )
 
-    formation_operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    formation_operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_validation_operating_point()
     )
 
-    formation_validation_movement = ps.movements.movement.Movement(
+    formation_validation_movement = ps.Movement(
         airplane_movements=formation_airplane_movements,
         operating_point_movement=formation_operating_point_movement,
         num_chords=3,

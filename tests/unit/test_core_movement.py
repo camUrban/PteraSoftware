@@ -69,7 +69,7 @@ class TestCoreMovement(unittest.TestCase):
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -150,9 +150,9 @@ class TestCoreMovement(unittest.TestCase):
         would incorrectly return 4.0 s instead of 12.0 s.
         """
         # Create a Wing with three WingCrossSections.
-        test_airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+        test_airfoil = ps.Airfoil(name="naca2412")
 
-        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        root_wing_cross_section = ps.WingCrossSection(
             airfoil=test_airfoil,
             num_spanwise_panels=4,
             chord=2.0,
@@ -160,7 +160,7 @@ class TestCoreMovement(unittest.TestCase):
             angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
 
-        middle_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        middle_wing_cross_section = ps.WingCrossSection(
             airfoil=test_airfoil,
             num_spanwise_panels=4,
             chord=1.5,
@@ -168,7 +168,7 @@ class TestCoreMovement(unittest.TestCase):
             angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
 
-        tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        tip_wing_cross_section = ps.WingCrossSection(
             airfoil=test_airfoil,
             num_spanwise_panels=None,
             chord=1.0,
@@ -176,7 +176,7 @@ class TestCoreMovement(unittest.TestCase):
             angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
 
-        base_wing = ps.geometry.wing.Wing(
+        base_wing = ps.Wing(
             wing_cross_sections=[
                 root_wing_cross_section,
                 middle_wing_cross_section,
@@ -185,7 +185,7 @@ class TestCoreMovement(unittest.TestCase):
             name="Test Wing",
         )
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -249,7 +249,7 @@ class TestCoreMovement(unittest.TestCase):
         # Create CoreAirplaneMovements with different periods.
 
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
-        base_airplane_1 = ps.geometry.airplane.Airplane(
+        base_airplane_1 = ps.Airplane(
             wings=[base_wing_1],
             name="Test Airplane 1",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -286,7 +286,7 @@ class TestCoreMovement(unittest.TestCase):
         )
 
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
-        base_airplane_2 = ps.geometry.airplane.Airplane(
+        base_airplane_2 = ps.Airplane(
             wings=[base_wing_2],
             name="Test Airplane 2",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),

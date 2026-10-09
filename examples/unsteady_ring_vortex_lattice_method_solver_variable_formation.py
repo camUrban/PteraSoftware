@@ -7,12 +7,12 @@ X_SPACING = 13
 Y_SPACING = 13
 
 # Create the lead Airplane.
-lead_airplane = ps.geometry.airplane.Airplane(
+lead_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=10,
@@ -20,8 +20,8 @@ lead_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -46,21 +46,21 @@ lead_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Now define the lead Airplane's AirplaneMovement.
-lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+lead_airplane_movement = ps.AirplaneMovement(
     base_airplane=lead_airplane,
     wing_movements=[
         # Define the main Wing's WingMovement.
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=lead_airplane.wings[0],
             wing_cross_section_movements=[
                 # Define the root WingCrossSection's WingCrossSectionMovement.
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         0
                     ]
                 ),
                 # Define the tip WingCrossSection's WingCrossSectionMovement.
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         1
                     ]
@@ -72,17 +72,17 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
         ),
         # Define the reflected main Wing's WingMovement.
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=lead_airplane.wings[1],
             wing_cross_section_movements=[
                 # Define the root WingCrossSection's WingCrossSectionMovement.
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[1].wing_cross_sections[
                         0
                     ]
                 ),
                 # Define the tip WingCrossSection's WingCrossSectionMovement.
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[1].wing_cross_sections[
                         1
                     ]
@@ -97,12 +97,12 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 )
 
 # Create the trailing right Airplane.
-trailing_right_airplane = ps.geometry.airplane.Airplane(
+trailing_right_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=10,
@@ -110,8 +110,8 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -136,18 +136,18 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create the trailing right Airplane's AirplaneMovement.
-trailing_right_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+trailing_right_airplane_movement = ps.AirplaneMovement(
     base_airplane=trailing_right_airplane,
     wing_movements=[
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trailing_right_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_right_airplane.wings[
                         0
                     ].wing_cross_sections[0]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_right_airplane.wings[
                         0
                     ].wing_cross_sections[1]
@@ -158,15 +158,15 @@ trailing_right_airplane_movement = ps.movements.airplane_movement.AirplaneMoveme
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
         ),
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trailing_right_airplane.wings[1],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_right_airplane.wings[
                         1
                     ].wing_cross_sections[0]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_right_airplane.wings[
                         1
                     ].wing_cross_sections[1]
@@ -181,12 +181,12 @@ trailing_right_airplane_movement = ps.movements.airplane_movement.AirplaneMoveme
 )
 
 # Create the trailing left Airplane.
-trailing_left_airplane = ps.geometry.airplane.Airplane(
+trailing_left_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=10,
@@ -194,8 +194,8 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -220,18 +220,18 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create the trailing left Airplane's AirplaneMovement.
-trailing_left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+trailing_left_airplane_movement = ps.AirplaneMovement(
     base_airplane=trailing_left_airplane,
     wing_movements=[
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trailing_left_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_left_airplane.wings[
                         0
                     ].wing_cross_sections[0]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_left_airplane.wings[
                         0
                     ].wing_cross_sections[1]
@@ -242,15 +242,15 @@ trailing_left_airplane_movement = ps.movements.airplane_movement.AirplaneMovemen
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
         ),
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=trailing_left_airplane.wings[1],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_left_airplane.wings[
                         1
                     ].wing_cross_sections[0]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=trailing_left_airplane.wings[
                         1
                     ].wing_cross_sections[1]
@@ -266,13 +266,11 @@ trailing_left_airplane_movement = ps.movements.airplane_movement.AirplaneMovemen
 
 # Define an OperatingPoint. This defines the state at which all the Airplanes are
 # operating.
-example_operating_point = ps.operating_point.OperatingPoint(vCg__E=15.0, alpha=0.0)
+example_operating_point = ps.OperatingPoint(vCg__E=15.0, alpha=0.0)
 
 # Define the OperatingPoint's OperatingPointMovement.
-example_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=example_operating_point
-    )
+example_operating_point_movement = ps.OperatingPointMovement(
+    base_operating_point=example_operating_point
 )
 
 # Delete the extraneous pointers to the Airplanes and the OperatingPoint, as these are
@@ -284,7 +282,7 @@ del example_operating_point
 
 # Define the Movement. This contains each AirplaneMovement and the
 # OperatingPointMovement.
-example_movement = ps.movements.movement.Movement(
+example_movement = ps.Movement(
     airplane_movements=[
         lead_airplane_movement,
         trailing_right_airplane_movement,
@@ -302,15 +300,13 @@ del trailing_left_airplane_movement
 del example_operating_point_movement
 
 # Using the Movement, create an UnsteadyProblem.
-example_problem = ps.problems.UnsteadyProblem(
+example_problem = ps.UnsteadyProblem(
     movement=example_movement,
 )
 
 # Define a new UnsteadyRingVortexLatticeMethodSolver.
-example_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=example_problem,
-    )
+example_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_problem=example_problem,
 )
 
 # Delete the extraneous pointer to the UnsteadyProblem.
@@ -339,12 +335,12 @@ loaded_solver = ps.load("example_solver.psz")
 # against loading the wrong file.
 assert isinstance(
     loaded_solver,
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ps.UnsteadyRingVortexLatticeMethodSolver,
 )
 print("Finished loading the saved solver.")
 
 # Now that we have run the solver, we can create an animation of the results.
-ps.output.animate(
+ps.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,

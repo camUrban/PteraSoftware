@@ -17,12 +17,8 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
     """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver's surface
     effect implementation."""
 
-    surface_effect_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    free_air_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    surface_effect_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    free_air_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:

@@ -18,12 +18,12 @@ from tests.unit.fixtures import (
 class TestMovement(unittest.TestCase):
     """This is a class with functions to test Movements."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
-    static_movement_with_explicit_num_steps: ps.movements.movement.Movement
-    non_static_movement_with_explicit_num_steps: ps.movements.movement.Movement
-    movement_with_custom_delta_time: ps.movements.movement.Movement
-    movement_with_multiple_airplanes: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
+    static_movement_with_explicit_num_steps: ps.Movement
+    non_static_movement_with_explicit_num_steps: ps.Movement
+    movement_with_custom_delta_time: ps.Movement
+    movement_with_multiple_airplanes: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -45,13 +45,13 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_not_list(self) -> None:
         """Test that airplane_movements must be a list."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         bad_airplane_movements: Any = "not a list"
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -59,12 +59,12 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_empty_list(self) -> None:
         """Test that airplane_movements must have at least one element."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[],
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -72,13 +72,13 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_invalid_element_type(self) -> None:
         """Test that all elements in airplane_movements must be AirplaneMovements."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         bad_airplane_movements: Any = ["not an airplane movement"]
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -92,7 +92,7 @@ class TestMovement(unittest.TestCase):
 
         bad_operating_point_movement: Any = "not an operating point movement"
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=bad_operating_point_movement,
                 num_chords=10,
@@ -103,13 +103,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with positive delta_time works. Use num_steps = 1 to speed up the test.
         # We only need to verify delta_time is accepted, not generate many Airplanes.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.01,
@@ -122,13 +122,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.0,
@@ -140,13 +140,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=-0.01,
@@ -158,13 +158,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_chords is None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=None,
@@ -175,13 +175,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_cycles is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=3,
@@ -192,13 +192,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_cycles is None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=None,
@@ -209,13 +209,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_chords is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=3,
@@ -227,13 +227,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is set and num_cycles is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_steps=100,
@@ -242,7 +242,7 @@ class TestMovement(unittest.TestCase):
 
         # Should raise error when num_steps is set and num_chords is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_steps=100,
@@ -254,13 +254,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_cycles = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -273,7 +273,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_cycles=invalid_value,
@@ -284,13 +284,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_chords = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -303,7 +303,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_chords=invalid_value,
@@ -314,13 +314,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_steps = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_steps=1,
@@ -333,7 +333,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_steps=invalid_value,
@@ -344,13 +344,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Use num_cycles=1 to speed up the test while still testing auto-calculation.
         # The auto-calculation logic doesn't depend on the specific value of num_cycles.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -420,13 +420,13 @@ class TestMovement(unittest.TestCase):
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Use num_chords=1 to speed up the test while still testing auto-calculation.
         # The averaging logic doesn't depend on the specific value of num_chords.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -441,11 +441,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -462,11 +462,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -485,7 +485,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -496,7 +496,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -512,7 +512,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 4->5 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
@@ -520,19 +520,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -548,7 +548,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_3_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -559,7 +559,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -575,7 +575,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become coincident (type 3->2 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampLer_Gs_Cgs=(0.0, 0.5, 0.0),
@@ -583,19 +583,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 delta_time=0.25,
@@ -612,7 +612,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_2_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -623,7 +623,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -639,7 +639,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 2->3 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
@@ -647,19 +647,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -674,7 +674,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -685,7 +685,7 @@ class TestMovement(unittest.TestCase):
 
         # Create static WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -700,38 +700,38 @@ class TestMovement(unittest.TestCase):
         ]
 
         # Create a static WingMovement (no rotation or translation).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
         # Create a static AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Creating a Movement should succeed without raising an error.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             num_chords=3,
         )
 
         # Verify the Movement was created successfully.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement, ps.Movement)
 
     def test_delta_time_invalid_string_raises_error(self) -> None:
         """Test that delta_time with invalid string raises ValueError."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -746,7 +746,7 @@ class TestMovement(unittest.TestCase):
         for invalid_string in invalid_strings:
             with self.subTest(invalid_string=invalid_string):
                 with self.assertRaises(ValueError):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=invalid_string,
@@ -758,11 +758,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time="optimize",
@@ -770,7 +770,7 @@ class TestMovement(unittest.TestCase):
         )
 
         # Verify the Movement was created and delta_time is a positive float.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement, ps.Movement)
         self.assertIsInstance(movement.delta_time, float)
         self.assertGreater(movement.delta_time, 0.0)
         self.assertTrue(movement.static)
@@ -786,7 +786,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -807,7 +807,7 @@ class TestMovement(unittest.TestCase):
 
             # Use num_steps=1 to speed up the test. The optimizers are mocked, so the
             # only time spent is generating airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time="optimize",
@@ -853,58 +853,58 @@ class TestMovement(unittest.TestCase):
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         wing_cross_section_movements_wing_1 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_1 = ps.movements.wing_movement.WingMovement(
+        wing_movement_1 = ps.WingMovement(
             base_wing=base_wing_1,
             wing_cross_section_movements=wing_cross_section_movements_wing_1,
         )
 
         wing_cross_section_movements_wing_2 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_2 = ps.movements.wing_movement.WingMovement(
+        wing_movement_2 = ps.WingMovement(
             base_wing=base_wing_2,
             wing_cross_section_movements=wing_cross_section_movements_wing_2,
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement_1, wing_movement_2],
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -923,7 +923,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -940,7 +940,7 @@ class TestMovement(unittest.TestCase):
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -963,7 +963,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -979,7 +979,7 @@ class TestMovement(unittest.TestCase):
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -1000,7 +1000,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1016,7 +1016,7 @@ class TestMovement(unittest.TestCase):
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -1040,7 +1040,7 @@ class TestMovement(unittest.TestCase):
         for c_ref in [None, 5.0]:
             with self.subTest(c_ref=c_ref):
                 base_wing = geometry_fixtures.make_origin_wing_fixture()
-                base_airplane = ps.geometry.airplane.Airplane(
+                base_airplane = ps.Airplane(
                     wings=[base_wing],
                     Cg_GP1_CgP1=(0.0, 0.0, 0.0),
                     c_ref=c_ref,
@@ -1052,7 +1052,7 @@ class TestMovement(unittest.TestCase):
                         base_airplane.c_ref, base_wing.mean_aerodynamic_chord
                     )
 
-                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                airplane_movement = ps.AirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=[
                         wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1060,14 +1060,12 @@ class TestMovement(unittest.TestCase):
                         )
                     ],
                 )
-                operating_point_movement = (
-                    ps.movements.operating_point_movement.OperatingPointMovement(
-                        base_operating_point=operating_point
-                    )
+                operating_point_movement = ps.OperatingPointMovement(
+                    base_operating_point=operating_point
                 )
 
                 # Use num_chords=1 to speed up the test.
-                movement = ps.movements.movement.Movement(
+                movement = ps.Movement(
                     airplane_movements=[airplane_movement],
                     operating_point_movement=operating_point_movement,
                     num_chords=1,
@@ -1093,17 +1091,17 @@ class TestMovement(unittest.TestCase):
         first_wing = geometry_fixtures.make_origin_wing_fixture()
         second_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         third_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        first_airplane = ps.geometry.airplane.Airplane(
+        first_airplane = ps.Airplane(
             wings=[first_wing, second_wing],
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
-        second_airplane = ps.geometry.airplane.Airplane(
+        second_airplane = ps.Airplane(
             wings=[third_wing],
             Cg_GP1_CgP1=(10.0, 0.0, 0.0),
         )
 
         airplane_movements = [
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=first_airplane,
                 wing_movements=[
                     wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1114,7 +1112,7 @@ class TestMovement(unittest.TestCase):
                     ),
                 ],
             ),
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=second_airplane,
                 wing_movements=[
                     wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1123,14 +1121,12 @@ class TestMovement(unittest.TestCase):
                 ],
             ),
         ]
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=operating_point
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=operating_point
         )
 
         # Use num_chords=1 to speed up the test.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -1185,11 +1181,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=3,
@@ -1202,11 +1198,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_periodic_geometry_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -1219,7 +1215,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1228,7 +1224,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_chords=3,
@@ -1240,11 +1236,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=3,
@@ -1261,12 +1257,12 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -1279,11 +1275,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=3,
@@ -1300,12 +1296,12 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1318,13 +1314,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # max_wake_rows and max_wake_chords set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1334,7 +1330,7 @@ class TestMovement(unittest.TestCase):
 
         # max_wake_rows and max_wake_cycles set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1344,7 +1340,7 @@ class TestMovement(unittest.TestCase):
 
         # max_wake_chords and max_wake_cycles set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1366,26 +1362,26 @@ class TestMeanTrailingEdgePanelChord(unittest.TestCase):
         to keep the trailing edge Panels' legs on the chord line.
         """
         airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
-        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        root_wing_cross_section = ps.WingCrossSection(
             airfoil=airfoil,
             num_spanwise_panels=8,
             chord=1.0,
             spanwise_spacing="uniform",
         )
-        tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        tip_wing_cross_section = ps.WingCrossSection(
             airfoil=airfoil,
             num_spanwise_panels=None,
             chord=1.0,
             Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             num_chordwise_panels=4,
             chordwise_spacing="uniform",
         )
 
         # Wrapping the Wing in an Airplane meshes it.
-        ps.geometry.airplane.Airplane(wings=[wing])
+        ps.Airplane(wings=[wing])
 
         self.assertAlmostEqual(mean_trailing_edge_panel_chord(wing), 0.25)
 
@@ -1397,7 +1393,7 @@ class TestMeanTrailingEdgePanelChord(unittest.TestCase):
 
         # Wrapping the Wing in an Airplane meshes it without setting the formation frame
         # positions, which only a problem sets.
-        ps.geometry.airplane.Airplane(wings=[wing])
+        ps.Airplane(wings=[wing])
 
         _panels = wing.panels
         assert _panels is not None
@@ -1420,7 +1416,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1443,7 +1439,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1469,7 +1465,7 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1497,7 +1493,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1527,7 +1523,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1551,7 +1547,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1584,7 +1580,7 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1608,7 +1604,7 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1641,7 +1637,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1682,7 +1678,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1729,7 +1725,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1774,7 +1770,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1797,7 +1793,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1826,7 +1822,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1851,9 +1847,9 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 class TestMovementGeneratedAttributes(unittest.TestCase):
     """Tests for Movement's generated airplanes and operating_points attributes."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
-    movement_with_multiple_airplanes: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
+    movement_with_multiple_airplanes: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1882,7 +1878,7 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
 
         for airplane_list in movement.airplanes:
             for airplane in airplane_list:
-                self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+                self.assertIsInstance(airplane, ps.Airplane)
 
     def test_operating_points_correct_length(self) -> None:
         """Test that operating_points has correct length (num_steps)."""
@@ -1894,7 +1890,7 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         movement = self.basic_movement
 
         for operating_point in movement.operating_points:
-            self.assertIsInstance(operating_point, ps.operating_point.OperatingPoint)
+            self.assertIsInstance(operating_point, ps.OperatingPoint)
 
     def test_airplanes_with_multiple_airplane_movements(self) -> None:
         """Test that airplanes correctly handles multiple AirplaneMovements."""
@@ -1927,8 +1923,8 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
 class TestMovementImmutability(unittest.TestCase):
     """Tests for Movement attribute immutability."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1972,8 +1968,8 @@ class TestMovementImmutability(unittest.TestCase):
 class TestMovementDeepcopy(unittest.TestCase):
     """Tests for Movement deepcopy behavior."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1988,7 +1984,7 @@ class TestMovementDeepcopy(unittest.TestCase):
         original = self.basic_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.movements.movement.Movement)
+        self.assertIsInstance(copied, ps.Movement)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_attribute_values(self) -> None:
@@ -2077,7 +2073,7 @@ class TestMovementDeepcopy(unittest.TestCase):
         original = self.static_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.movements.movement.Movement)
+        self.assertIsInstance(copied, ps.Movement)
         self.assertIsNot(original, copied)
         self.assertTrue(copied.static)
         self.assertEqual(copied.max_period, 0.0)
@@ -2095,7 +2091,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2120,7 +2116,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Multi Wing Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -2130,7 +2126,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         wing_movements = []
         for wing in base_airplane.wings:
             wing_cross_section_movements = [
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -2138,26 +2134,24 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
                 for wing_cross_section in wing.wing_cross_sections
             ]
             # Set non zero amplitude on tip for motion.
-            wing_cross_section_movements[-1] = (
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wing.wing_cross_sections[-1],
-                    periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
-                    ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                )
+            wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+                base_wing_cross_section=wing.wing_cross_sections[-1],
+                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             )
             wing_movements.append(
-                ps.movements.wing_movement.WingMovement(
+                ps.WingMovement(
                     base_wing=wing,
                     wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2189,7 +2183,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         wing = base_airplane.wings[0]
 
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -2197,25 +2191,23 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             for wing_cross_section in wing.wing_cross_sections
         ]
         # Add fast motion with short period to tip.
-        wing_cross_section_movements[-1] = (
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing.wing_cross_sections[-1],
-                periodLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.01, 0.0, 0.0),
-            )
+        wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+            base_wing_cross_section=wing.wing_cross_sections[-1],
+            periodLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ampLp_Wcsp_Lpp=(0.01, 0.0, 0.0),
         )
 
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2252,7 +2244,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
             airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2282,7 +2274,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Multi Wing Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -2292,33 +2284,31 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         wing_movements = []
         for wing in base_airplane.wings:
             wing_cross_section_movements = [
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 )
                 for wing_cross_section in wing.wing_cross_sections
             ]
-            wing_cross_section_movements[-1] = (
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wing.wing_cross_sections[-1],
-                    periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
-                    ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                )
+            wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+                base_wing_cross_section=wing.wing_cross_sections[-1],
+                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             )
             wing_movements.append(
-                ps.movements.wing_movement.WingMovement(
+                ps.WingMovement(
                     base_wing=wing,
                     wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2347,7 +2337,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2379,7 +2369,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2409,7 +2399,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2446,7 +2436,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2515,7 +2505,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2528,10 +2518,8 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
-            airplane_movements: list[ps.movements.airplane_movement.AirplaneMovement],
-            operating_point_movement: (
-                ps.movements.operating_point_movement.OperatingPointMovement
-            ),
+            airplane_movements: list[ps.AirplaneMovement],
+            operating_point_movement: ps.OperatingPointMovement,
             lcm_period: float,
             num_steps_candidates: list[int],
         ) -> dict[int, float]:
@@ -2578,7 +2566,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2591,10 +2579,8 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # lcm_period / num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
-            airplane_movements: list[ps.movements.airplane_movement.AirplaneMovement],
-            operating_point_movement: (
-                ps.movements.operating_point_movement.OperatingPointMovement
-            ),
+            airplane_movements: list[ps.AirplaneMovement],
+            operating_point_movement: ps.OperatingPointMovement,
             lcm_period: float,
             num_steps_candidates: list[int],
         ) -> dict[int, float]:
@@ -2650,7 +2636,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2708,7 +2694,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 

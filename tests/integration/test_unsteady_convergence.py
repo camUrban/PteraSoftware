@@ -7,8 +7,6 @@ from pathlib import Path
 from unittest import mock
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _convergence_cache
 from tests.integration.fixtures import (
     airplane_fixtures,

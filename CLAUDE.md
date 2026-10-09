@@ -34,7 +34,7 @@ Requires Python 3.11, but active development is done in 3.14
 
 ### Relevant Directories, Packages, and Files
 
-- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (`ascii-only.yml`, `ci.yml`, `label-sync.yml`, `pre-commit-hooks.yml`, `publish.yml`, and `zizmor.yml`)
+- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (`ascii-only.yml`, `ci.yml`, `label-sync.yml`, `pre-commit-hooks.yml`, `private-access.yml`, `publish.yml`, and `zizmor.yml`)
 - `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
 - `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
@@ -95,7 +95,6 @@ Requires Python 3.11, but active development is done in 3.14
     - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions
     - `_panel.py`: `Panel` class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
-    - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a `FreeFlightUnsteadyProblem`'s `MuJoCoModel` for the rendering layer
     - `_serialization.py`: Serialization and deserialization (save/load) to and from `.psz` files, which are zip archives of JSON members chunked by time step
     - `_transformations.py`: Coordinate transformations and rotations
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation
@@ -112,6 +111,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
+    - `check_private_access.py`: Pre-commit hook script that flags internal (underscore-prefixed) Ptera Software names used by code outside the package
     - `execute_tutorials.py`: Executes all tutorial notebooks (or a single named notebook) in `tutorials/` and stores their outputs in the notebook files for the documentation site to render
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
     - `generate_hero_graphics.py`: Solves the hero simulation and renders the README hero graphics into `docs/hero_graphics/`, re-rendering oversized WebP files at lower quality

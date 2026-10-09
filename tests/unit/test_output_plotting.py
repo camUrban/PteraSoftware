@@ -17,7 +17,6 @@ import matplotlib.text
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _fonts, _output_plotting, _output_rendering, _transformations
 from tests.unit.fixtures import operating_point_fixtures, output_plotting_fixtures
 

@@ -1,6 +1,5 @@
 """This module contains functions to create CoreMovements for use in tests."""
 
-# noinspection PyProtectedMember
 from pterasoftware._core import CoreMovement
 
 from . import core_airplane_movement_fixtures, core_operating_point_movement_fixtures

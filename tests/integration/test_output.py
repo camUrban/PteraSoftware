@@ -20,8 +20,6 @@ import pyvista as pv
 import webp
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _output_rendering
 from tests.integration.fixtures import solver_fixtures
 

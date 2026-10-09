@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware import _mujoco_model, _transformations
 
 

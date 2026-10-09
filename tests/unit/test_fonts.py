@@ -4,7 +4,6 @@ import unittest
 
 import fontTools.ttLib
 
-# noinspection PyProtectedMember
 from pterasoftware import _fonts
 
 

@@ -3,8 +3,6 @@
 import numpy as np
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware._core import CoreWingMovement
 
 from . import core_wing_cross_section_movement_fixtures, geometry_fixtures

@@ -7,8 +7,6 @@ from typing import Any
 import numpy as np
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _convergence_meshing
 from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 

@@ -4,8 +4,6 @@ tests."""
 import numpy as np
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware._core import CoreWingCrossSectionMovement
 
 from . import geometry_fixtures

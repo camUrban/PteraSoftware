@@ -5,13 +5,8 @@ from collections.abc import Callable
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware._panel import Panel
-
-# noinspection PyProtectedMember
 from pterasoftware._serialization import UnboundCallable
-
-# noinspection PyProtectedMember
 from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing

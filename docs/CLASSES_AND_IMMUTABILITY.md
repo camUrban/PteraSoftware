@@ -59,6 +59,12 @@ A constructor parameter is not always retained as an attribute. Some parameters 
 
 5. **`__slots__` on every class**: All classes in the package define `__slots__`, which eliminates per-instance `__dict__` overhead and prevents accidental dynamic attribute assignment. This catches typos like `self.num_panles = 5` at runtime with an `AttributeError` instead of silently creating a new attribute.
 
+6. **Only the owning class writes a property's backing slot**: Any module in the package may read an internal name, but only the class that owns a non-deprecated property writes, rebinds, or mutates that property's backing slot. The sole exception is `_serialization`, which may initialize backing slots on a fresh instance allocated with `object.__new__` during deserialization. It does not mutate a constructed instance. A leading underscore marks a name as outside the public API. It says nothing about who may write it, so this contract is what protects the categories above.
+
+7. **Only the owning class changes an array's `writeable` flag**: Code outside the owning class never sets `flags.writeable` on an array it reads, in either direction. The sole exception is `_serialization`, which restores the saved `writeable` flag on each array it rebuilds during deserialization, before the array is attached to any instance. It never changes the flag on an array that a constructed instance already holds.
+
+These contracts are enforced by the runtime guards described in this document (set once setters, read-only properties, read-only arrays, and tuples), by unit tests, and by review, not by static analysis of names.
+
 ### NumPy Array Mutability
 
 Even with read-only properties, numpy arrays can still be mutated in place via the getter (e.g., `panel.Frpp_G_Cg[0] = 999.0`). To prevent this, all numpy arrays that should be immutable are set to read-only using `arr.flags.writeable = False`:
@@ -780,25 +786,25 @@ These read-only properties expose the named force components defined in [Axes, P
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type                       | Notes                                                                                                                                            |
-|------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                                                             |
-| `_model`               | `mujoco.MjModel`           | Compiled MuJoCo model, a private slot with no property                                                                                           |
-| `body_id`              | `int`                      | MuJoCo body ID for the `Airplane`                                                                                                                |
-| `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                                                                       |
-| `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                                                             |
-| `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                                                            |
-| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or `None`), a private slot with no property, serialized into saved files so `_rebuild_engine` can resolve asset references |
+| Attribute              | Type                       | Notes                                                                                                          |
+|------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------|
+| `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                           |
+| `model`                | `mujoco.MjModel`           | Compiled MuJoCo model. Its backing slot is rebuilt by `rebuild_engine` on deserialization                      |
+| `body_id`              | `int`                      | MuJoCo body ID for the `Airplane`                                                                              |
+| `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                                     |
+| `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                           |
+| `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                          |
+| `mujoco_assets`        | `dict[str, bytes] \| None` | Retained assets dict (or `None`), serialized into saved files so `rebuild_engine` can resolve asset references |
 
 #### Mutable
 
-| Attribute | Type            | Notes                                                                                                   |
-|-----------|-----------------|---------------------------------------------------------------------------------------------------------|
-| `_data`   | `mujoco.MjData` | Mutated by `apply_loads`, `step`, `reset`, `restore_state`, `mj_forward`. Private slot with no property |
+| Attribute | Type            | Notes                                                                                                      |
+|-----------|-----------------|------------------------------------------------------------------------------------------------------------|
+| `data`    | `mujoco.MjData` | Plain slot. Mutated by `apply_loads`, `step`, `reset`, `restore_state`, `mj_forward`, and `rebuild_engine` |
 
 #### Construction-only parameters
 
-`integrator` and `extra_xml` are constructor parameters, not attributes: both shape the generated model during initialization, are folded into `xml_str` (so their content survives indirectly through the stored XML), and are then discarded, so neither has a slot or an attribute-category entry above. `mujoco_assets`, by contrast, is retained in the `_mujoco_assets` slot after being passed to MuJoCo's `from_xml_string`: an asset-based model cannot be rebuilt from `xml_str` alone, so the slot is serialized alongside the XML string (with the asset bytes encoded as base64) and `_rebuild_engine` passes the restored dict back to MuJoCo, which keeps saved files self-contained and load off the filesystem. `MuJoCoModel` does not validate any of the three: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo, except that `FreeFlightUnsteadyProblem` calls the model's `uncovered_file_references` method after construction and raises if the XML references files that the assets dict does not cover. See Construction-Only Parameters under Design Principles.
+`integrator` and `extra_xml` are constructor parameters, not attributes: both shape the generated model during initialization, are folded into `xml_str` (so their content survives indirectly through the stored XML), and are then discarded, so neither has a slot or an attribute-category entry above. `mujoco_assets`, by contrast, is retained in the `_mujoco_assets` slot after being passed to MuJoCo's `from_xml_string`: an asset-based model cannot be rebuilt from `xml_str` alone, so the slot is serialized alongside the XML string (with the asset bytes encoded as base64) and `rebuild_engine` passes the restored dict back to MuJoCo, which keeps saved files self-contained and load off the filesystem. `MuJoCoModel` does not validate any of the three: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo, except that `FreeFlightUnsteadyProblem` calls the model's `uncovered_file_references` method after construction and raises if the XML references files that the assets dict does not cover. See Construction-Only Parameters under Design Principles.
 
 ---
 

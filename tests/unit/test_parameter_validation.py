@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _parameter_validation as pv
 from tests.unit.fixtures import parameter_validation_fixtures as pvf
 

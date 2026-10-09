@@ -2,7 +2,6 @@
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware._core import CoreAirplaneMovement
 
 from . import core_wing_movement_fixtures, geometry_fixtures

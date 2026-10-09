@@ -15,19 +15,12 @@ from unittest import mock
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware._mujoco_model import MuJoCoModel
-
-# noinspection PyProtectedMember
 from pterasoftware._oscillation import (
     oscillating_lin_at_time,
     oscillating_sin_at_time,
 )
-
-# noinspection PyProtectedMember
 from pterasoftware._panel import Panel
-
-# noinspection PyProtectedMember
 from pterasoftware._serialization import (
     _FORMAT_VERSION,
     UnboundCallable,
@@ -47,8 +40,6 @@ from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
 from pterasoftware.free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
-
-# noinspection PyProtectedMember
 from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing

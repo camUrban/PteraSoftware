@@ -10,8 +10,6 @@ from unittest.mock import MagicMock
 import numpy as np
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _mujoco_model, _transformations
 from tests.unit.fixtures import mujoco_model_fixtures, problem_fixtures
 
@@ -28,7 +26,6 @@ def _movement_and_mass() -> (
     :return: A tuple of the FreeFlightMovement and the consistent mass in kilograms.
     """
     fixture_problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-    # noinspection PyProtectedMember
     return fixture_problem._free_flight_movement, fixture_problem.mass
 
 
@@ -435,7 +432,6 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
 
     def test_mujoco_model_attribute(self) -> None:
         """Test that the MuJoCoModel is constructed during initialization."""
-        # noinspection PyProtectedMember
         from pterasoftware import _mujoco_model
 
         self.assertIsInstance(self.problem._mujoco_model, _mujoco_model.MuJoCoModel)

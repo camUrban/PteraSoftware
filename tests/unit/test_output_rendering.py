@@ -33,8 +33,6 @@ from vtkmodules.vtkCommonCore import reference as vtk_reference
 from vtkmodules.vtkRenderingFreeType import vtkMathTextUtilities
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _colormaps, _fonts, _output_rendering, _transformations
 from tests.unit.fixtures import (
     geometry_fixtures,
@@ -2823,7 +2821,6 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.assertEqual(caret_label.input, _output_rendering._AXES_LABEL_CARET_TEXT)
         self.assertTrue(caret_label.GetVisibility())
         assert self.plotter.iren is not None
-        # noinspection PyProtectedMember
         self.assertEqual(len(self.plotter.iren._key_press_event_callbacks), 0)
 
     def test_a_single_click_does_not_start_editing(self) -> None:
@@ -2906,7 +2903,6 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.assertEqual(label.prop.GetFontFile(), str(_fonts.MONO_FONT_PATH))
         self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())
         assert self.plotter.iren is not None
-        # noinspection PyProtectedMember
         self.assertIn("q", self.plotter.iren._key_press_event_callbacks)
 
     def test_enter_sets_text_with_math_in_the_times_font_family(self) -> None:

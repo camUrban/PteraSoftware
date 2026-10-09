@@ -5,7 +5,6 @@ import logging
 import unittest
 from typing import Any
 
-# noinspection PyProtectedMember
 from pterasoftware import _logging
 
 

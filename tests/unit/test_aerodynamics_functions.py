@@ -11,7 +11,6 @@ import numba
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _aerodynamics_functions
 from tests.unit.fixtures import aerodynamics_functions_fixtures
 

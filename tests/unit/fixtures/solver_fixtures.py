@@ -1,8 +1,6 @@
 """This module contains functions to create solver objects for use in unit tests."""
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )

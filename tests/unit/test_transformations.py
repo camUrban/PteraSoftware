@@ -6,8 +6,6 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _transformations
 
 

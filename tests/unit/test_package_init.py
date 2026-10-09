@@ -1,138 +1,59 @@
 """This module contains tests for the pterasoftware package __init__.py."""
 
 import ast
+import concurrent.futures
 import importlib
+import subprocess
+import sys
 import unittest
+import warnings
 from pathlib import Path
 
 import pterasoftware as ps
 
 
-class TestLazyModuleImports(unittest.TestCase):
-    """Tests for lazy module imports via __getattr__."""
+class TestAll(unittest.TestCase):
+    """Tests for the package's __all__."""
 
-    def test_lazy_module_import_aeroelastic_unsteady_ring(self) -> None:
-        """Accessing aeroelastic_unsteady_ring_vortex_lattice_method module should
-        trigger lazy import.
-
-        :return: None
-        """
-        module = ps.aeroelastic_unsteady_ring_vortex_lattice_method
-        self.assertIsNotNone(module)
-        self.assertEqual(
-            module.__name__,
-            "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method",
-        )
-
-    def test_lazy_module_import_convergence(self) -> None:
-        """Accessing convergence module should trigger lazy import.
+    def test_all_has_no_duplicates(self) -> None:
+        """Test that no name appears in __all__ more than once.
 
         :return: None
         """
-        module = ps.convergence
-        self.assertIsNotNone(module)
-        self.assertEqual(module.__name__, "pterasoftware.convergence")
+        self.assertEqual(len(ps.__all__), len(set(ps.__all__)))
 
-    def test_lazy_module_import_output(self) -> None:
-        """Accessing output module should trigger lazy import.
+    def test_all_matches_the_lazy_callables(self) -> None:
+        """Test that __all__ lists exactly the names in the lazy callable table.
 
         :return: None
         """
-        module = ps.output
-        self.assertIsNotNone(module)
-        self.assertEqual(module.__name__, "pterasoftware.output")
-
-    def test_lazy_module_import_steady_horseshoe(self) -> None:
-        """Accessing steady_horseshoe_vortex_lattice_method module should trigger lazy
-        import.
-
-        :return: None
-        """
-        module = ps.steady_horseshoe_vortex_lattice_method
-        self.assertIsNotNone(module)
-        self.assertEqual(
-            module.__name__, "pterasoftware.steady_horseshoe_vortex_lattice_method"
-        )
-
-    def test_lazy_module_import_steady_ring(self) -> None:
-        """Accessing steady_ring_vortex_lattice_method module should trigger lazy
-        import.
-
-        :return: None
-        """
-        module = ps.steady_ring_vortex_lattice_method
-        self.assertIsNotNone(module)
-        self.assertEqual(
-            module.__name__, "pterasoftware.steady_ring_vortex_lattice_method"
-        )
-
-    def test_lazy_module_import_trim(self) -> None:
-        """Accessing trim module should trigger lazy import.
-
-        :return: None
-        """
-        module = ps.trim
-        self.assertIsNotNone(module)
-        self.assertEqual(module.__name__, "pterasoftware.trim")
-
-    def test_lazy_module_import_unsteady_ring(self) -> None:
-        """Accessing unsteady_ring_vortex_lattice_method module should trigger lazy
-        import.
-
-        :return: None
-        """
-        module = ps.unsteady_ring_vortex_lattice_method
-        self.assertIsNotNone(module)
-        self.assertEqual(
-            module.__name__, "pterasoftware.unsteady_ring_vortex_lattice_method"
-        )
-
-    def test_lazy_module_caching(self) -> None:
-        """Lazy modules should be cached in globals after first access.
-
-        :return: None
-        """
-        # First access triggers the import
-        module1 = ps.convergence
-
-        # Second access should return the cached version
-        module2 = ps.convergence
-
-        self.assertIs(module1, module2)
+        self.assertEqual(set(ps.__all__), set(ps._LAZY_CALLABLES))
 
 
 class TestLazyCallableImports(unittest.TestCase):
-    """Tests for lazy callable imports via __getattr__."""
+    """Tests for lazy imports of the public names via __getattr__."""
 
-    def test_lazy_callable_import_set_up_logging(self) -> None:
-        """Accessing set_up_logging should trigger lazy callable import.
-
-        :return: None
-        """
-        func = ps.set_up_logging
-        self.assertIsNotNone(func)
-        self.assertTrue(callable(func))
-        self.assertEqual(func.__name__, "set_up_logging")
-
-    def test_lazy_callable_import_save(self) -> None:
-        """Accessing save should trigger lazy callable import.
+    def test_every_public_name_resolves_to_its_internal_definition(self) -> None:
+        """Test that every name in __all__ resolves to the object its internal module
+        defines.
 
         :return: None
         """
-        func = ps.save
-        self.assertIsNotNone(func)
-        self.assertTrue(callable(func))
-        self.assertEqual(func.__name__, "save")
+        for name in ps.__all__:
+            with self.subTest(name=name):
+                module_path, attr_name = ps._LAZY_CALLABLES[name]
+                module = importlib.import_module(module_path)
+                self.assertIs(getattr(ps, name), getattr(module, attr_name))
 
-    def test_lazy_callable_import_load(self) -> None:
-        """Accessing load should trigger lazy callable import.
+    def test_every_public_name_keeps_its_own_name(self) -> None:
+        """Test that every name in __all__ refers to an object defined under that same
+        name.
 
         :return: None
         """
-        func = ps.load
-        self.assertIsNotNone(func)
-        self.assertTrue(callable(func))
-        self.assertEqual(func.__name__, "load")
+        for name in ps.__all__:
+            with self.subTest(name=name):
+                self.assertEqual(getattr(ps, name).__name__, name)
 
     def test_lazy_callable_caching(self) -> None:
         """Lazy callables should be cached in globals after first access.
@@ -147,113 +68,83 @@ class TestLazyCallableImports(unittest.TestCase):
 
         self.assertIs(func1, func2)
 
-    def test_lazy_callable_is_correct_function(self) -> None:
-        """The lazy imported set_up_logging should be the actual function from _logging.
+
+class TestFirstAccess(unittest.TestCase):
+    """Tests that every public name loads when it is the first one accessed.
+
+    The package imports nothing eagerly, so the first public name a program accesses
+    decides which internal module starts loading, and a circular import between internal
+    modules can fail for one starting point while succeeding for every other. Within one
+    test process the internal modules are already loaded, which would hide such a
+    failure, so each access runs in its own fresh interpreter.
+    """
+
+    def test_every_public_name_loads_as_the_first_access(self) -> None:
+        """Test that accessing each name in __all__ succeeds in a fresh interpreter that
+        has accessed nothing else.
 
         :return: None
         """
-        logging_module = importlib.import_module("pterasoftware._logging")
 
-        lazy_func = ps.set_up_logging
-        direct_func = logging_module.set_up_logging
+        def access_first(name: str) -> subprocess.CompletedProcess[str]:
+            """Accesses one public name in a fresh interpreter.
 
-        self.assertIs(lazy_func, direct_func)
+            :param name: The public name to access.
+            :return: The completed interpreter process.
+            """
+            return subprocess.run(
+                [sys.executable, "-c", f"import pterasoftware as ps; ps.{name}"],
+                capture_output=True,
+                text=True,
+            )
 
-    def test_lazy_callable_save_is_correct_function(self) -> None:
-        """The lazy imported save should be the actual function from _serialization.
+        # Each interpreter spends about a second importing the package's dependencies,
+        # so running them concurrently keeps this test from dominating the suite's run
+        # time.
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = dict(zip(ps.__all__, executor.map(access_first, ps.__all__)))
 
-        :return: None
-        """
-        serialization_module = importlib.import_module("pterasoftware._serialization")
-
-        self.assertIs(ps.save, serialization_module.save)
-
-    def test_lazy_callable_load_is_correct_function(self) -> None:
-        """The lazy imported load should be the actual function from _serialization.
-
-        :return: None
-        """
-        serialization_module = importlib.import_module("pterasoftware._serialization")
-
-        self.assertIs(ps.load, serialization_module.load)
+        for name, result in results.items():
+            with self.subTest(name=name):
+                self.assertEqual(result.returncode, 0, msg=result.stderr)
 
 
-class TestEagerImports(unittest.TestCase):
-    """Tests for eagerly imported modules."""
+class TestDeprecatedModuleAttributes(unittest.TestCase):
+    """Tests for the deprecated module attributes at the old public module paths."""
 
-    def test_geometry_is_eagerly_imported(self) -> None:
-        """The geometry subpackage should be eagerly imported.
-
-        :return: None
-        """
-        self.assertIsNotNone(ps.geometry)
-        self.assertEqual(ps.geometry.__name__, "pterasoftware.geometry")
-
-    def test_movements_is_eagerly_imported(self) -> None:
-        """The movements subpackage should be eagerly imported.
+    def test_every_deprecated_module_attribute_resolves_to_its_module(self) -> None:
+        """Test that every old module attribute resolves to the deprecated module at
+        that path.
 
         :return: None
         """
-        self.assertIsNotNone(ps.movements)
-        self.assertEqual(ps.movements.__name__, "pterasoftware.movements")
+        for name, module_path in ps._LAZY_MODULES.items():
+            with self.subTest(name=name):
+                self.assertEqual(getattr(ps, name).__name__, module_path)
 
-    def test_operating_point_is_eagerly_imported(self) -> None:
-        """The operating_point module should be eagerly imported.
-
-        :return: None
-        """
-        self.assertIsNotNone(ps.operating_point)
-        self.assertEqual(ps.operating_point.__name__, "pterasoftware.operating_point")
-
-    def test_problems_is_eagerly_imported(self) -> None:
-        """The problems module should be eagerly imported.
+    def test_accessing_a_deprecated_module_attribute_does_not_warn(self) -> None:
+        """Test that accessing an old module attribute emits no warning, since only
+        accessing a public name through it does.
 
         :return: None
         """
-        self.assertIsNotNone(ps.problems)
-        self.assertEqual(ps.problems.__name__, "pterasoftware.problems")
+        for name in ps._LAZY_MODULES:
+            with self.subTest(name=name):
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    getattr(ps, name)
+                self.assertEqual(caught, [])
 
 
 class TestDirFunction(unittest.TestCase):
     """Tests for the __dir__ function."""
 
-    def test_dir_includes_lazy_modules(self) -> None:
-        """The dir() function should include lazy module names.
+    def test_dir_lists_exactly_the_public_names(self) -> None:
+        """The dir() function should list exactly the names in __all__.
 
         :return: None
         """
-        package_dir = dir(ps)
-
-        # Check lazy modules are listed
-        self.assertIn("convergence", package_dir)
-        self.assertIn("output", package_dir)
-        self.assertIn("steady_horseshoe_vortex_lattice_method", package_dir)
-        self.assertIn("steady_ring_vortex_lattice_method", package_dir)
-        self.assertIn("trim", package_dir)
-        self.assertIn("unsteady_ring_vortex_lattice_method", package_dir)
-
-    def test_dir_includes_lazy_callables(self) -> None:
-        """The dir() function should include lazy callable names.
-
-        :return: None
-        """
-        package_dir = dir(ps)
-
-        self.assertIn("load", package_dir)
-        self.assertIn("save", package_dir)
-        self.assertIn("set_up_logging", package_dir)
-
-    def test_dir_includes_eager_imports(self) -> None:
-        """The dir() function should include eagerly imported module names.
-
-        :return: None
-        """
-        package_dir = dir(ps)
-
-        self.assertIn("geometry", package_dir)
-        self.assertIn("movements", package_dir)
-        self.assertIn("operating_point", package_dir)
-        self.assertIn("problems", package_dir)
+        self.assertEqual(dir(ps), sorted(ps.__all__))
 
 
 class TestInvalidAttributeAccess(unittest.TestCase):

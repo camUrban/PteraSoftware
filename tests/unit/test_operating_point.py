@@ -9,6 +9,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
+from pterasoftware import _transformations
 from tests.unit.fixtures import operating_point_fixtures
 
 
@@ -2097,7 +2098,7 @@ class TestWindAxesClaims(unittest.TestCase):
         """Test that the z-y extrinsic series of rotations through beta and -alpha
         equals the y-z' intrinsic series of rotations through -alpha and beta."""
         for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
-            T_intrinsic = ps._transformations.generate_rot_T(
+            T_intrinsic = _transformations.generate_rot_T(
                 angles=np.array([0.0, -alpha, beta]),
                 passive=True,
                 intrinsic=True,
@@ -2170,7 +2171,7 @@ class TestWindAxesClaims(unittest.TestCase):
         for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
             vInf_BP1__E = -op.vCg__E * _vCgHat_BP1__E(op)
             recovered_alpha, recovered_beta = (
-                ps._transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, op.vCg__E)
+                _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, op.vCg__E)
             )
             self.assertAlmostEqual(
                 recovered_alpha, alpha, places=12, msg=f"alpha={alpha}, beta={beta}"

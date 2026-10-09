@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-from pterasoftware import _core, _mujoco_model, _panel, _serialization
+from pterasoftware import _core, _mujoco_model, _panel, _problems, _serialization
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
     aeroelastic_wing_cross_section_movement_fixtures,
@@ -849,7 +849,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
         CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps._problems.CoupledUnsteadyProblem)
+        self.assertIsInstance(self.problem, _problems.CoupledUnsteadyProblem)
 
     def test_property_access(self) -> None:
         """Test that FreeFlightUnsteadyProblem-specific properties are accessible."""
@@ -2068,7 +2068,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
         CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps._problems.CoupledUnsteadyProblem)
+        self.assertIsInstance(self.problem, _problems.CoupledUnsteadyProblem)
 
     def test_config_property_access(self) -> None:
         """Test that the immutable structural config properties are accessible."""

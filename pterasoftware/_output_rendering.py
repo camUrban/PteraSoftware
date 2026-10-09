@@ -22,11 +22,12 @@ import webp
 
 from . import _colormaps, _fonts, _geometry, _logging, _mujoco_model
 from . import _operating_point as operating_point_mod
-from . import _problems, _transformations
+from . import _transformations
 
 if TYPE_CHECKING:
     from . import (
         _free_flight_unsteady_ring_vortex_lattice_method,
+        _problems,
         _unsteady_ring_vortex_lattice_method,
     )
 
@@ -2901,7 +2902,7 @@ def get_mujoco_render_geometry(
     # validates that the problem is a FreeFlightUnsteadyProblem, so the cast narrows
     # without a runtime check.
     free_flight_unsteady_problem = cast(
-        _problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
+        "_problems.FreeFlightUnsteadyProblem", free_flight_solver.unsteady_problem
     )
     extracted_render_geoms = (
         free_flight_unsteady_problem._mujoco_model.get_render_geometry()

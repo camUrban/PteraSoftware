@@ -10,51 +10,48 @@ import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import core_wing_cross_section_movement_fixtures
 
 
 class TestCoreWingCrossSectionMovement(unittest.TestCase):
     """This is a class with functions to test CoreWingCrossSectionMovements."""
 
-    sine_spacing_Lp_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
-    )
+    sine_spacing_Lp_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
     uniform_spacing_Lp_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     mixed_spacing_Lp_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     sine_spacing_angles_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     uniform_spacing_angles_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     mixed_spacing_angles_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
-    static_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
-    basic_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
-    Lp_only_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
-    angles_only_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
-    phase_offset_Lp_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
-    )
+    static_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
+    basic_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
+    Lp_only_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
+    angles_only_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
+    phase_offset_Lp_core_wing_cross_section_movement: _core.CoreWingCrossSectionMovement
     phase_offset_angles_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     multiple_periods_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     custom_spacing_Lp_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     custom_spacing_angles_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
     mixed_custom_and_standard_spacing_core_wing_cross_section_movement: (
-        ps._core.CoreWingCrossSectionMovement
+        _core.CoreWingCrossSectionMovement
     )
 
     @classmethod
@@ -304,7 +301,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         self.assertIsInstance(
             core_wing_cross_section_movement,
-            ps._core.CoreWingCrossSectionMovement,
+            _core.CoreWingCrossSectionMovement,
         )
         self.assertIsInstance(
             core_wing_cross_section_movement.base_wing_cross_section,
@@ -348,14 +345,14 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Test non-WingCrossSection raises error.
         bad_base_wing_cross_section: Any = "not a wing cross section"
         with self.assertRaises(TypeError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=bad_base_wing_cross_section
             )
 
         # Test None raises error.
         none_base_wing_cross_section: Any = None
         with self.assertRaises(TypeError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=none_base_wing_cross_section
             )
 
@@ -363,7 +360,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         base_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section
         )
         self.assertEqual(
@@ -388,11 +385,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         ]
         for amp in valid_amps:
             with self.subTest(amp=amp):
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampLp_Wcsp_Lpp=amp,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampLp_Wcsp_Lpp=amp,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.ampLp_Wcsp_Lpp, amp
@@ -400,7 +395,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(-1.0, 0.0, 0.0),
             )
@@ -409,7 +404,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         bad_amp: Any = "invalid"
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=bad_amp,
             )
@@ -428,12 +423,10 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             with self.subTest(period=period):
                 # Need matching amps for non-zero periods.
                 amp = tuple(1.0 if p > 0 else 0.0 for p in period)
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampLp_Wcsp_Lpp=amp,
-                        periodLp_Wcsp_Lpp=period,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampLp_Wcsp_Lpp=amp,
+                    periodLp_Wcsp_Lpp=period,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.periodLp_Wcsp_Lpp, period
@@ -441,7 +434,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
                 periodLp_Wcsp_Lpp=(-1.0, 1.0, 1.0),
@@ -463,11 +456,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         ]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        spacingLp_Wcsp_Lpp=spacing,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    spacingLp_Wcsp_Lpp=spacing,
                 )
                 self.assertEqual(
                     core_wing_cross_section_movement.spacingLp_Wcsp_Lpp, spacing
@@ -475,7 +466,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test invalid string raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 spacingLp_Wcsp_Lpp=("invalid", "sine", "sine"),
             )
@@ -499,13 +490,11 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 # Need non-zero amps for non-zero phases.
                 amp = tuple(1.0 if p != 0 else 0.0 for p in phase)
                 period = tuple(1.0 if p != 0 else 0.0 for p in phase)
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampLp_Wcsp_Lpp=amp,
-                        periodLp_Wcsp_Lpp=period,
-                        phaseLp_Wcsp_Lpp=phase,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampLp_Wcsp_Lpp=amp,
+                    periodLp_Wcsp_Lpp=period,
+                    phaseLp_Wcsp_Lpp=phase,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.phaseLp_Wcsp_Lpp, phase
@@ -513,7 +502,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test phase > 180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
                 periodLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
@@ -522,7 +511,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test phase <= -180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
                 periodLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
@@ -546,11 +535,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         ]
         for amp in valid_amps:
             with self.subTest(amp=amp):
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampAngles_Wcsp_to_Wcs_ixyz=amp,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampAngles_Wcsp_to_Wcs_ixyz=amp,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz, amp
@@ -558,14 +545,14 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test amplitude > 180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(180.1, 0.0, 0.0),
             )
 
         # Test negative amplitude raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(-1.0, 0.0, 0.0),
             )
@@ -583,12 +570,10 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         for period in valid_periods:
             with self.subTest(period=period):
                 amp = tuple(10.0 if p > 0 else 0.0 for p in period)
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampAngles_Wcsp_to_Wcs_ixyz=amp,
-                        periodAngles_Wcsp_to_Wcs_ixyz=period,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampAngles_Wcsp_to_Wcs_ixyz=amp,
+                    periodAngles_Wcsp_to_Wcs_ixyz=period,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
@@ -597,7 +582,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test negative period raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 10.0, 10.0),
                 periodAngles_Wcsp_to_Wcs_ixyz=(-1.0, 1.0, 1.0),
@@ -619,11 +604,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         ]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        spacingAngles_Wcsp_to_Wcs_ixyz=spacing,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    spacingAngles_Wcsp_to_Wcs_ixyz=spacing,
                 )
                 self.assertEqual(
                     core_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
@@ -632,7 +615,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test invalid string raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 spacingAngles_Wcsp_to_Wcs_ixyz=("invalid", "sine", "sine"),
             )
@@ -651,13 +634,11 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             with self.subTest(phase=phase):
                 amp = tuple(10.0 if p != 0 else 0.0 for p in phase)
                 period = tuple(1.0 if p != 0 else 0.0 for p in phase)
-                core_wing_cross_section_movement = (
-                    ps._core.CoreWingCrossSectionMovement(
-                        base_wing_cross_section=base_wing_cross_section,
-                        ampAngles_Wcsp_to_Wcs_ixyz=amp,
-                        periodAngles_Wcsp_to_Wcs_ixyz=period,
-                        phaseAngles_Wcsp_to_Wcs_ixyz=phase,
-                    )
+                core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
+                    base_wing_cross_section=base_wing_cross_section,
+                    ampAngles_Wcsp_to_Wcs_ixyz=amp,
+                    periodAngles_Wcsp_to_Wcs_ixyz=period,
+                    phaseAngles_Wcsp_to_Wcs_ixyz=phase,
                 )
                 npt.assert_array_equal(
                     core_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz, phase
@@ -665,7 +646,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test phase > 180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 10.0, 10.0),
                 periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 1.0),
@@ -681,7 +662,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test amp=0 with period=0 works.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
             periodLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -690,7 +671,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test amp=0 with period!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 1.0, 0.0),
@@ -705,7 +686,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test amp=0 with phase=0 works.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
             periodLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -715,7 +696,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test amp=0 with phase!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -732,7 +713,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test amp=0 with period=0 works.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 10.0, 0.0),
             periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
@@ -741,7 +722,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test amp=0 with period!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 10.0, 0.0),
                 periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 0.0),
@@ -757,7 +738,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test amp=0 with phase=0 works.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 10.0, 0.0),
             periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
@@ -767,7 +748,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Test amp=0 with phase!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 10.0, 0.0),
                 periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
@@ -1151,7 +1132,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test amplitude at 180.0 works.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampAngles_Wcsp_to_Wcs_ixyz=(180.0, 0.0, 0.0),
             periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
@@ -1169,7 +1150,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test phase = 0.0 works.
-        core_wing_cross_section_movement1 = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement1 = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
             periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1178,7 +1159,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertEqual(core_wing_cross_section_movement1.phaseLp_Wcsp_Lpp[0], 0.0)
 
         # Test phase = 180.0 works (upper boundary, inclusive).
-        core_wing_cross_section_movement2 = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement2 = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
             periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1187,7 +1168,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertEqual(core_wing_cross_section_movement2.phaseLp_Wcsp_Lpp[0], 180.0)
 
         # Test phase = -179.9 works (near lower boundary).
-        core_wing_cross_section_movement3 = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement3 = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
             periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1281,7 +1262,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Should raise error during initialization or generation.
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1304,7 +1285,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return float(np.sin(x) + 0.1)
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1327,7 +1308,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return float(np.sin(x) + 0.5)
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1350,7 +1331,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return float(2.0 * np.sin(x))
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1373,7 +1354,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return float(np.tanh(x))
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1396,7 +1377,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return float(np.where(x < np.pi, np.sin(x), np.nan))
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1419,7 +1400,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             return np.sin(x)[: len(x) // 2]
 
         with self.assertRaises(ValueError):
-            core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+            core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
                 ampLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
@@ -1441,7 +1422,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
         # Create CoreWingCrossSectionMovement with amplitude that will drive the second
         # element in Lp_Wcsp_Lpp negative, which is never allowed by WingCrossSection.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
             periodLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -1471,7 +1452,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Create CoreWingCrossSectionMovement with amplitude that will drive angles out
         # of valid range. Valid range for angles is (-180, 180], so amplitude 181 with
         # base 0 will exceed.
-        core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
+        core_wing_cross_section_movement = _core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
             ampAngles_Wcsp_to_Wcs_ixyz=(179.0, 0.0, 0.0),
             periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
@@ -1656,7 +1637,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps._core.CoreWingCrossSectionMovement)
+        self.assertIsInstance(copied, _core.CoreWingCrossSectionMovement)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_attribute_values(self) -> None:

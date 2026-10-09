@@ -4,6 +4,7 @@ import unittest
 from typing import Any
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     airplane_movement_fixtures,
     free_flight_movement_fixtures,
@@ -40,7 +41,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         self.assertTrue(
             issubclass(
                 ps.movements.free_flight_movement.FreeFlightMovement,
-                ps._core.CoreMovement,
+                _core.CoreMovement,
             )
         )
 

@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 import pterasoftware as ps
-from pterasoftware import _convergence_cache
+from pterasoftware import _convergence_cache, _movements
 from tests.integration.fixtures import (
     airplane_fixtures,
     operating_point_fixtures,
@@ -207,7 +207,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # iterative optimizer must never run. Patching it to raise turns any
             # optimization into a test failure.
             with mock.patch.object(
-                ps._movements.movement,
+                _movements.movement,
                 "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."
@@ -275,7 +275,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # must never run despite the different bounds. Patching it to raise turns
             # any optimization into a test failure.
             with mock.patch.object(
-                ps._movements.movement,
+                _movements.movement,
                 "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."

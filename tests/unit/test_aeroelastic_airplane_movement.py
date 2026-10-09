@@ -7,6 +7,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
     core_wing_movement_fixtures,
@@ -24,7 +25,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         self.assertTrue(
             issubclass(
                 ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
-                ps._core.CoreAirplaneMovement,
+                _core.CoreAirplaneMovement,
             )
         )
 

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import numpy as np
 
 import pterasoftware as ps
-from pterasoftware import _mujoco_model, _transformations
+from pterasoftware import _mujoco_model, _problems, _transformations
 from tests.unit.fixtures import mujoco_model_fixtures, problem_fixtures
 
 
@@ -46,7 +46,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIsInstance(
             self.problem,
-            ps._problems.CoupledUnsteadyProblem,
+            _problems.CoupledUnsteadyProblem,
         )
         self.assertIsInstance(
             self.problem.movement,

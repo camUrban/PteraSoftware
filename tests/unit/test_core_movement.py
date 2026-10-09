@@ -3,6 +3,7 @@
 import unittest
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     core_airplane_movement_fixtures,
     core_movement_fixtures,
@@ -15,8 +16,8 @@ from tests.unit.fixtures import (
 class TestCoreMovement(unittest.TestCase):
     """This is a class with functions to test CoreMovements."""
 
-    static_core_movement: ps._core.CoreMovement
-    basic_core_movement: ps._core.CoreMovement
+    static_core_movement: _core.CoreMovement
+    basic_core_movement: _core.CoreMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -76,43 +77,43 @@ class TestCoreMovement(unittest.TestCase):
 
         # Wing_1: tip CoreWingCrossSectionMovement has period 3.0 s.
         wing_cross_section_movements_wing_1 = [
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_1 = ps._core.CoreWingMovement(
+        wing_movement_1 = _core.CoreWingMovement(
             base_wing=base_wing_1,
             wing_cross_section_movements=wing_cross_section_movements_wing_1,
         )
 
         # Wing_2: tip CoreWingCrossSectionMovement has period 4.0 s.
         wing_cross_section_movements_wing_2 = [
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_2 = ps._core.CoreWingMovement(
+        wing_movement_2 = _core.CoreWingMovement(
             base_wing=base_wing_2,
             wing_cross_section_movements=wing_cross_section_movements_wing_2,
         )
 
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement_1, wing_movement_2],
             ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -125,7 +126,7 @@ class TestCoreMovement(unittest.TestCase):
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -193,29 +194,29 @@ class TestCoreMovement(unittest.TestCase):
         # Root CoreWingCrossSectionMovement must be static. Middle has period 3.0 s, tip
         # has period 4.0 s.
         wing_cross_section_movements = [
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing.wing_cross_sections[2],
                 periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement = ps._core.CoreWingMovement(
+        wing_movement = _core.CoreWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
             ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -228,7 +229,7 @@ class TestCoreMovement(unittest.TestCase):
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -258,24 +259,24 @@ class TestCoreMovement(unittest.TestCase):
         # tip WingCrossSections. The root CoreWingCrossSectionMovement must be static.
         # The tip CoreWingCrossSectionMovement will have a period of 2.0 s.
         wing_cross_section_movements_1 = [
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_1 = ps._core.CoreWingMovement(
+        wing_movement_1 = _core.CoreWingMovement(
             base_wing=base_wing_1,
             wing_cross_section_movements=wing_cross_section_movements_1,
         )
 
-        airplane_movement_1 = ps._core.CoreAirplaneMovement(
+        airplane_movement_1 = _core.CoreAirplaneMovement(
             base_airplane=base_airplane_1,
             wing_movements=[wing_movement_1],
             ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -295,24 +296,24 @@ class TestCoreMovement(unittest.TestCase):
         # tip WingCrossSections. The root CoreWingCrossSectionMovement must be static.
         # The tip CoreWingCrossSectionMovement will have a period of 3.0 s.
         wing_cross_section_movements_2 = [
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps._core.CoreWingCrossSectionMovement(
+            _core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_2 = ps._core.CoreWingMovement(
+        wing_movement_2 = _core.CoreWingMovement(
             base_wing=base_wing_2,
             wing_cross_section_movements=wing_cross_section_movements_2,
         )
 
-        airplane_movement_2 = ps._core.CoreAirplaneMovement(
+        airplane_movement_2 = _core.CoreAirplaneMovement(
             base_airplane=base_airplane_2,
             wing_movements=[wing_movement_2],
             ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -325,7 +326,7 @@ class TestCoreMovement(unittest.TestCase):
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=[airplane_movement_1, airplane_movement_2],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -352,7 +353,7 @@ class TestCoreMovement(unittest.TestCase):
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=[static_airplane_movement, basic_airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.01,
@@ -367,7 +368,7 @@ class TestCoreMovement(unittest.TestCase):
 class TestCoreMovementImmutability(unittest.TestCase):
     """Tests for CoreMovement attribute immutability."""
 
-    basic_core_movement: ps._core.CoreMovement
+    basic_core_movement: _core.CoreMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -423,14 +424,14 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        operating_point_movement = ps._core.CoreOperatingPointMovement(
+        operating_point_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_operating_point,
             ampVCg__E=1.0,
             periodVCg__E=3.0,
         )
 
         # Create the CoreMovement with explicit num_steps to avoid auto calculation.
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -453,13 +454,13 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        operating_point_movement = ps._core.CoreOperatingPointMovement(
+        operating_point_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_operating_point,
             ampVCg__E=1.0,
             periodVCg__E=3.0,
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -480,13 +481,13 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        operating_point_movement = ps._core.CoreOperatingPointMovement(
+        operating_point_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_operating_point,
             ampVCg__E=1.0,
             periodVCg__E=1.5,
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -508,13 +509,13 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        operating_point_movement = ps._core.CoreOperatingPointMovement(
+        operating_point_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_operating_point,
             ampVCg__E=1.0,
             periodVCg__E=5.0,
         )
 
-        core_movement = ps._core.CoreMovement(
+        core_movement = _core.CoreMovement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,

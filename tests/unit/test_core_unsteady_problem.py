@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 
 import pterasoftware as ps
+from pterasoftware import _core
 
 
 class TestCoreUnsteadyProblem(unittest.TestCase):
@@ -13,7 +14,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_initialization_static(self) -> None:
         """Test CoreUnsteadyProblem initialization with static parameters."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=50,
@@ -27,7 +28,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_initialization_cyclic(self) -> None:
         """Test CoreUnsteadyProblem initialization with cyclic parameters."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=300,
@@ -40,7 +41,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_first_averaging_step_static(self) -> None:
         """Test first_averaging_step for static CoreUnsteadyProblem."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=50,
@@ -52,7 +53,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_first_averaging_step_cyclic(self) -> None:
         """Test first_averaging_step for cyclic CoreUnsteadyProblem."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=300,
@@ -65,7 +66,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_first_averaging_step_cyclic_period_exceeds_duration(self) -> None:
         """Test first_averaging_step when lcm_period exceeds total duration."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=100,
@@ -77,7 +78,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_first_results_step_only_final_results_false(self) -> None:
         """Test first_results_step when only_final_results is False."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=50,
@@ -88,7 +89,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_first_results_step_only_final_results_true(self) -> None:
         """Test first_results_step when only_final_results is True."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=True,
             delta_time=0.01,
             num_steps=50,
@@ -103,7 +104,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_only_final_results_accepts_numpy_bool(self) -> None:
         """Test that only_final_results accepts numpy bool values."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=np.bool(True),
             delta_time=0.01,
             num_steps=10,
@@ -115,7 +116,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_initialization_of_load_lists(self) -> None:
         """Test that load lists are initialized as empty."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=10,
@@ -164,7 +165,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_max_wake_rows_none(self) -> None:
         """Test that max_wake_rows is None when not set."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=10,
@@ -175,7 +176,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
 
     def test_max_wake_rows_positive_int(self) -> None:
         """Test that max_wake_rows stores a positive int correctly."""
-        core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=10,
@@ -190,7 +191,7 @@ class TestCoreUnsteadyProblemImmutability(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up test fixtures for immutability tests."""
-        self.core_unsteady_problem = ps._core.CoreUnsteadyProblem(
+        self.core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
             delta_time=0.01,
             num_steps=50,

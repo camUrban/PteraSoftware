@@ -3,6 +3,7 @@
 import unittest
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     free_flight_operating_point_movement_fixtures,
     operating_point_fixtures,
@@ -18,7 +19,7 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         self.assertTrue(
             issubclass(
                 ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
-                ps._core.CoreOperatingPointMovement,
+                _core.CoreOperatingPointMovement,
             )
         )
 

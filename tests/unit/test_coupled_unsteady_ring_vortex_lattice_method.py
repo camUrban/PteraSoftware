@@ -5,6 +5,7 @@ import unittest
 from typing import Any
 
 import pterasoftware as ps
+from pterasoftware import _problems
 from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -58,7 +59,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             self.solver._coupled_unsteady_problem, self.solver.unsteady_problem
         )
         self.assertIsInstance(
-            self.solver._coupled_unsteady_problem, ps._problems.CoupledUnsteadyProblem
+            self.solver._coupled_unsteady_problem, _problems.CoupledUnsteadyProblem
         )
 
     def test_get_steady_problem_at_dispatches_through_coupled_unsteady_problem(
@@ -75,7 +76,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(len(self.solver.steady_problems), 1)
 
         next_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
-        assert isinstance(self.problem, ps._problems.CoupledUnsteadyProblem)
+        assert isinstance(self.problem, _problems.CoupledUnsteadyProblem)
         self.problem._steady_problems.append(next_steady_problem)
 
         self.assertEqual(len(self.solver.steady_problems), 2)

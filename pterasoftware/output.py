@@ -1265,9 +1265,6 @@ def animate(
             c_min,
             c_max,
         )
-    plotter.enable_depth_peeling(
-        number_of_peels=0, occlusion_ratio=0.0
-    )  # type: ignore[call-arg]
 
     first_preview_actors = _output_rendering.add_frame_geometry(
         plotter,
@@ -1455,7 +1452,6 @@ def animate(
             "finishes."
         )
         plotter.render()
-        plotter.disable_depth_peeling()  # type: ignore[call-arg]
         plotter.clear()
 
     # Build the first frame as the actual animation frame, and settle its scalar bar

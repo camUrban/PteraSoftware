@@ -25,8 +25,6 @@ from . import (
     _fonts,
     _logging,
     _mujoco_model,
-    _parameter_validation,
-    _private_access,
     _transformations,
     geometry,
 )
@@ -2901,8 +2899,7 @@ def get_mujoco_render_geometry(
     and body geoms.
 
     The geometry comes from the compiled MuJoCo model held by the solver's
-    FreeFlightUnsteadyProblem, reached through the registration pattern in
-    _private_access.
+    FreeFlightUnsteadyProblem.
 
     :param free_flight_solver: The FreeFlightUnsteadyRingVortexLatticeMethodSolver whose
         MuJoCo geometry will be returned.
@@ -2917,9 +2914,9 @@ def get_mujoco_render_geometry(
     free_flight_unsteady_problem = cast(
         problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
     )
-    extracted_render_geoms = _private_access.get_mujoco_model(
-        free_flight_unsteady_problem
-    ).get_render_geometry()
+    extracted_render_geoms = (
+        free_flight_unsteady_problem._mujoco_model.get_render_geometry()
+    )
 
     # Compute each geom's shading normals here, once, splitting the sharp edges so the
     # shading stays crisp across creases. The split duplicates the points along edges
@@ -3289,7 +3286,7 @@ class AnimationWriter:
         self._error: Exception | None = None
 
         self._thread = threading.Thread(
-            target=self._encode, name="animation-writer", daemon=True
+            target=self.encode, name="animation-writer", daemon=True
         )
         self._thread.start()
 
@@ -3317,7 +3314,7 @@ class AnimationWriter:
         if self._error is not None:
             raise self._error
 
-    def _encode(self) -> None:
+    def encode(self) -> None:
         """Encodes the frames from the queue into the WebP file, on the background
         thread.
 

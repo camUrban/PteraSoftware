@@ -62,7 +62,7 @@ class MuJoCoModel:
     __slots__ = (
         "_xml_str",
         "_model",
-        "_data",
+        "data",
         "_body_id",
         "_initial_key_frame_id",
         "_initial_qpos",
@@ -125,7 +125,7 @@ class MuJoCoModel:
             contents. These are passed to MuJoCo's from_xml_string as the assets
             parameter, allowing meshes and other binary files to be loaded without
             writing to disk. The dict is retained, which lets the serialization layer
-            save it alongside the XML string and lets _rebuild_engine resolve the XML
+            save it alongside the XML string and lets rebuild_engine resolve the XML
             string's asset references after a load. Validated by
             FreeFlightUnsteadyProblem before being passed here. The default is None,
             which provides no extra assets.
@@ -226,7 +226,7 @@ class MuJoCoModel:
             self._model = mujoco.MjModel.from_xml_string(self._xml_str)
 
         # Retain the assets dict so the serialization layer can save it alongside the
-        # XML string, which lets _rebuild_engine resolve the XML string's asset
+        # XML string, which lets rebuild_engine resolve the XML string's asset
         # references after a load without touching the filesystem.
         self._mujoco_assets: dict[str, bytes] | None = mujoco_assets
 
@@ -234,7 +234,7 @@ class MuJoCoModel:
         self._model.opt.timestep = delta_time
 
         # Initialize the mutable attributes.
-        self._data: mujoco.MjData = mujoco.MjData(self._model)
+        self.data: mujoco.MjData = mujoco.MjData(self._model)
 
         # Get and store the body ID and the initial conditions key frame ID.
         self._body_id: int = mujoco.mj_name2id(
@@ -245,23 +245,31 @@ class MuJoCoModel:
         )
 
         # Set the internal model's state to the initial conditions.
-        mujoco.mj_resetDataKeyframe(self._model, self._data, self._initial_key_frame_id)
+        mujoco.mj_resetDataKeyframe(self._model, self.data, self._initial_key_frame_id)
 
         # Run forward kinematics to compute derived quantities (xmat, xpos, etc.) from
         # the initial qpos/qvel. Without this, xmat would be zeros until the first call
         # to mj_step.
-        mujoco.mj_forward(self._model, self._data)
+        mujoco.mj_forward(self._model, self.data)
 
         # Store initial state for reset functionality.
-        self._initial_qpos: np.ndarray = np.copy(self._data.qpos)
+        self._initial_qpos: np.ndarray = np.copy(self.data.qpos)
         self._initial_qpos.flags.writeable = False
-        self._initial_qvel: np.ndarray = np.copy(self._data.qvel)
+        self._initial_qvel: np.ndarray = np.copy(self.data.qvel)
         self._initial_qvel.flags.writeable = False
 
     # --- Immutable: read only properties ---
     @property
     def xml_str(self) -> str:
         return self._xml_str
+
+    @property
+    def model(self) -> mujoco.MjModel:
+        return self._model
+
+    @property
+    def mujoco_assets(self) -> dict[str, bytes] | None:
+        return self._mujoco_assets
 
     @property
     def body_id(self) -> int:
@@ -307,9 +315,7 @@ class MuJoCoModel:
         :return: None
         """
         # Pack the force and moment into the model's 6-element xfrc_applied array.
-        self._data.xfrc_applied[self._body_id][:] = np.hstack(
-            [forces_E, moments_E_CgP1]
-        )
+        self.data.xfrc_applied[self._body_id][:] = np.hstack([forces_E, moments_E_CgP1])
 
     def step(self) -> None:
         """Advances the MuJoCo simulation by one time step.
@@ -319,7 +325,7 @@ class MuJoCoModel:
 
         :return: None
         """
-        mujoco.mj_step(self._model, self._data)
+        mujoco.mj_step(self._model, self.data)
 
     def get_state(self) -> MuJoCoState:
         """Extracts the current position, orientation, velocity, and angular velocity of
@@ -356,17 +362,17 @@ class MuJoCoModel:
         # MuJoCo's xmat is R_pas_BP1_to_E: it transforms vectors from the first
         # Airplane's body axes to Earth axes. To get R_pas_E_to_BP1, we take the
         # transpose.
-        R_pas_BP1_to_E = self._data.xmat[self._body_id].reshape(3, 3)
+        R_pas_BP1_to_E = self.data.xmat[self._body_id].reshape(3, 3)
         # TODO: Consider creating an invert_R_pas function in _transformations.py and
         #  calling it here.
         R_pas_E_to_BP1 = R_pas_BP1_to_E.T
 
         return {
-            "position_E_Eo": np.copy(self._data.qpos[0:3]),
+            "position_E_Eo": np.copy(self.data.qpos[0:3]),
             "R_pas_E_to_BP1": np.copy(R_pas_E_to_BP1),
-            "velocity_E__E": np.copy(self._data.qvel[0:3]),
-            "omegas_BP1__E": np.rad2deg(np.copy(self._data.qvel[3:6])),
-            "time": float(self._data.time),
+            "velocity_E__E": np.copy(self.data.qvel[0:3]),
+            "omegas_BP1__E": np.rad2deg(np.copy(self.data.qvel[3:6])),
+            "time": float(self.data.time),
         }
 
     def reset(self) -> None:
@@ -376,17 +382,17 @@ class MuJoCoModel:
         :return: None
         """
         # Reset the model's state to the initial conditions.
-        self._data.qpos[:] = self._initial_qpos
-        self._data.qvel[:] = self._initial_qvel
+        self.data.qpos[:] = self._initial_qpos
+        self.data.qvel[:] = self._initial_qvel
 
         # Reset time to zero seconds.
-        self._data.time = 0.0
+        self.data.time = 0.0
 
         # Remove any applied loads.
-        self._data.xfrc_applied[:] = 0.0
+        self.data.xfrc_applied[:] = 0.0
 
         # Run forward kinematics to update dependent quantities.
-        mujoco.mj_forward(self._model, self._data)
+        mujoco.mj_forward(self._model, self.data)
 
     def save_state(self) -> np.ndarray:
         """Saves and returns a snapshot of the model's current integration state.
@@ -407,7 +413,7 @@ class MuJoCoModel:
         )
         state = np.empty(state_size, dtype=float)
         mujoco.mj_getState(
-            self._model, self._data, state, mujoco.mjtState.mjSTATE_INTEGRATION
+            self._model, self.data, state, mujoco.mjtState.mjSTATE_INTEGRATION
         )
 
         return state
@@ -428,11 +434,11 @@ class MuJoCoModel:
         :return: None
         """
         mujoco.mj_setState(
-            self._model, self._data, state, mujoco.mjtState.mjSTATE_INTEGRATION
+            self._model, self.data, state, mujoco.mjtState.mjSTATE_INTEGRATION
         )
 
         # Run forward kinematics to update dependent quantities.
-        mujoco.mj_forward(self._model, self._data)
+        mujoco.mj_forward(self._model, self.data)
 
     def get_render_geometry(self) -> list[RenderGeom]:
         """Extracts the renderable geometry of every geom in the compiled model.
@@ -458,7 +464,7 @@ class MuJoCoModel:
         """
         render_geoms: list[RenderGeom] = []
         for geom_id in range(self._model.ngeom):
-            geom_mesh = self._get_local_geom_mesh(geom_id)
+            geom_mesh = self.get_local_geom_mesh(geom_id)
 
             if geom_mesh is None:
                 geom_type = int(self._model.geom_type[geom_id])
@@ -553,7 +559,7 @@ class MuJoCoModel:
 
         return render_geoms
 
-    def _get_local_geom_mesh(self, geom_id: int) -> pv.PolyData | None:
+    def get_local_geom_mesh(self, geom_id: int) -> pv.PolyData | None:
         """Builds one geom's surface mesh (in geom axes, relative to the geom origin),
         or returns None for a geom with no finite surface to triangulate.
 
@@ -667,7 +673,7 @@ class MuJoCoModel:
             uncovered.append(file_reference)
         return uncovered
 
-    def _rebuild_engine(self) -> None:
+    def rebuild_engine(self) -> None:
         """Rebuilds the native MuJoCo model and data objects from the stored XML string
         and the stored assets dict.
 
@@ -696,4 +702,4 @@ class MuJoCoModel:
         mujoco.mj_resetDataKeyframe(model, data, self._initial_key_frame_id)
         mujoco.mj_forward(model, data)
         self._model = model
-        self._data = data
+        self.data = data

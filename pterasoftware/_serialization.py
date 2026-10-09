@@ -18,23 +18,12 @@ from typing import Any
 import numpy as np
 
 from . import _logging, _parameter_validation
-
-# This module is inherently coupled to the internals of every class in the package (it
-# reads __slots__, knows class structure, and imports all classes into its registry), so
-# importing from a sibling private module is acceptable here.
-# noinspection PyProtectedMember
 from ._mujoco_model import MuJoCoModel
 from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
-
-# noinspection PyProtectedMember
 from ._panel import Panel
-
-# noinspection PyProtectedMember
 from .aeroelastic_unsteady_ring_vortex_lattice_method import (
     AeroelasticUnsteadyRingVortexLatticeMethodSolver,
 )
-
-# noinspection PyProtectedMember
 from .free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -58,8 +47,6 @@ from .movements.operating_point_movement import OperatingPointMovement
 from .movements.wing_cross_section_movement import WingCrossSectionMovement
 from .movements.wing_movement import WingMovement
 from .operating_point import OperatingPoint
-
-# noinspection PyProtectedMember
 from .problems import (
     AeroelasticUnsteadyProblem,
     FreeFlightUnsteadyProblem,
@@ -88,7 +75,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 # class registry changed, encoding strategy changed), and also when the meaning of a
 # serialized value changes, so that a file saved under the old meaning fails to load
 # loudly instead of being read under the new one.
-_FORMAT_VERSION = 31
+_FORMAT_VERSION = 32
 
 # This is the default maximum decompressed size in bytes when reading archives. The cap
 # is cumulative across every member read during one load(). Prevents zip bombs from
@@ -175,10 +162,10 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
     }
 )
 
-# These are the slots on MuJoCoModel that are serialized as null. _model and _data wrap
+# These are the slots on MuJoCoModel that are serialized as null. _model and data wrap
 # native MuJoCo state and are rebuilt from the serialized XML string and the serialized
-# _mujoco_assets dict on deserialization via MuJoCoModel._rebuild_engine.
-_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
+# _mujoco_assets dict on deserialization via MuJoCoModel.rebuild_engine.
+_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "data"})
 
 # These are the per step sequences that save() splits across the step members instead of
 # writing inline in the root member, keyed by the class that owns them. Owners are
@@ -1136,10 +1123,8 @@ def _object_from_dict(
 
     if isinstance(obj, MuJoCoModel):
         # The native model and data objects were skipped during serialization. Rebuild
-        # them from the deserialized XML string. This module is inherently coupled to
-        # class internals, so calling a private method directly is acceptable here.
-        # noinspection PyProtectedMember
-        obj._rebuild_engine()
+        # them from the deserialized XML string.
+        obj.rebuild_engine()
     return obj
 
 

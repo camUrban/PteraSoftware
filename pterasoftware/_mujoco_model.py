@@ -74,6 +74,7 @@ class MuJoCoModel:
         self,
         name: str,
         mass: float | int,
+        CgP1_E_Eo: np.ndarray,
         omegas_BP1__E: np.ndarray,
         T_pas_BP1_CgP1_to_E_CgP1: np.ndarray,
         vCg_E__E: np.ndarray,
@@ -89,6 +90,9 @@ class MuJoCoModel:
             FreeFlightUnsteadyProblem from the Airplane.
         :param mass: The mass of the first Airplane in kilograms. Supplied by
             FreeFlightUnsteadyProblem.
+        :param CgP1_E_Eo: A (3,) ndarray of floats representing the initial position of
+            the first Airplane's CG (in Earth axes, relative to the Earth origin), in
+            meters. Supplied by FreeFlightUnsteadyProblem from the OperatingPoint.
         :param omegas_BP1__E: A (3,) ndarray of floats representing the initial angular
             velocity of the first Airplane's body axes (in the first Airplane's body
             axes, observed from the Earth frame), in degrees per second. Supplied by
@@ -156,6 +160,8 @@ class MuJoCoModel:
             quatZ_act_E_to_BP1,
         ) = quat_act_E_to_BP1_wxyz[:]
 
+        CgP1X_E_Eo, CgP1Y_E_Eo, CgP1Z_E_Eo = CgP1_E_Eo[:]
+
         vCgX_E__E, vCgY_E__E, vCgZ_E__E = vCg_E__E[:]
 
         # Gravity in the MuJoCo model is turned off as it is applied by
@@ -166,8 +172,8 @@ class MuJoCoModel:
             f"{IXZ_BP1_CgP1} {IYZ_BP1_CgP1}"
         )
         qpos_str = (
-            f"0.0 0.0 0.0 {quatW_act_E_to_BP1} {quatX_act_E_to_BP1} {quatY_act_E_to_BP1} "
-            f"{quatZ_act_E_to_BP1}"
+            f"{CgP1X_E_Eo} {CgP1Y_E_Eo} {CgP1Z_E_Eo} {quatW_act_E_to_BP1} "
+            f"{quatX_act_E_to_BP1} {quatY_act_E_to_BP1} {quatZ_act_E_to_BP1}"
         )
         qvel_str = (
             f"{vCgX_E__E} {vCgY_E__E} {vCgZ_E__E} {omegaXRad_BP1__E} "
@@ -194,7 +200,7 @@ class MuJoCoModel:
 
           <worldbody>
             {extra_worldbody}
-            <body name="{name}" pos="0.0 0.0 0.0" >
+            <body name="{name}">
               <freejoint/>
               <inertial pos="0.0 0.0 0.0" mass="{mass}" fullinertia="{inertia_str}"/>
               {extra_body}

@@ -44,6 +44,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="integrator_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -112,6 +113,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="extra_xml_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -146,6 +148,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="assets_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -178,6 +181,12 @@ class TestMuJoCoModelInit(unittest.TestCase):
         state = model.get_state()
         npt.assert_allclose(state["omegas_BP1__E"], [0.0, 0.0, 10.0], atol=1e-10)
 
+    def test_non_zero_initial_position(self) -> None:
+        """Test that non zero initial position is stored correctly."""
+        model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
+        state = model.get_state()
+        npt.assert_allclose(state["position_E_Eo"], [1.0, -2.0, 3.0], atol=1e-14)
+
     def test_symmetrizes_inertia_matrix(self) -> None:
         """Test that an asymmetric inertia matrix is symmetrized."""
         I_asymmetric = np.array(
@@ -186,6 +195,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="sym_test",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -915,6 +925,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="infinite_plane_airplane",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),
@@ -938,6 +949,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="heightfield_airplane",
             mass=1.0,
+            CgP1_E_Eo=np.array((0.0, 0.0, 0.0)),
             omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
             vCg_E__E=np.array((10.0, 0.0, 0.0)),

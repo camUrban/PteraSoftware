@@ -300,6 +300,18 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIn('integrator="implicitfast"', problem._mujoco_model.xml_str)
 
+    def test_initial_position_forwarded_to_mujoco_model(self) -> None:
+        """Test that the initial OperatingPoint's CgP1_E_Eo sets the MuJoCo model's
+        initial position."""
+        base_operating_point = ps.operating_point.OperatingPoint(
+            CgP1_E_Eo=(1.0, -2.0, 3.0)
+        )
+        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+            base_operating_point=base_operating_point
+        )
+        state = problem._mujoco_model.get_state()
+        np.testing.assert_allclose(state["position_E_Eo"], [1.0, -2.0, 3.0], atol=1e-14)
+
     def test_k_max_type_validation(self) -> None:
         """Test that k_max must be an int."""
         movement, mass = _movement_and_mass()

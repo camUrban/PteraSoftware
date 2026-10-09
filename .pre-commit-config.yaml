@@ -113,6 +113,12 @@ repos:
         language: system
         types: [text]
         exclude: '\.(svg|ui)$'
+      - id: private-access
+        name: checker  private-access
+        entry: python scripts/check_private_access.py
+        language: system
+        always_run: true
+        pass_filenames: false
       - id: mypy
         name: checker  mypy
         entry: mypy pterasoftware examples scripts tests validation docs/website

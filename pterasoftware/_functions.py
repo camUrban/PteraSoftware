@@ -55,14 +55,14 @@ _SOLVE_THREAD_THRESHOLD = 3_000
 
 
 def log_unexpected_singularity_counts(
-    logger: logging.Logger,
+    target_logger: logging.Logger,
     level: int,
     context: str,
     singularity_counts: np.ndarray,
 ) -> None:
     """Logs a summary of unexpected singularity events if any occurred.
 
-    :param logger: The logger instance to use.
+    :param target_logger: The logger instance to use.
     :param level: The logging level (e.g., logging.ERROR, logging.INFO).
     :param context: A string describing the call site context (e.g.,
         "_calculate_wing_wing_influences").
@@ -81,7 +81,7 @@ def log_unexpected_singularity_counts(
         if count > 0:
             parts.append(f"{_SINGULARITY_NAMES[i]}={count}")
 
-    logger.log(
+    target_logger.log(
         level,
         "%s: %d singularity skip(s) (%s)",
         context,

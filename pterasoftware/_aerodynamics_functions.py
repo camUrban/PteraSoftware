@@ -70,7 +70,7 @@ _FOUR_LAMB = 4.0 * _LAMB
 _GRAIN = 10_000
 
 
-def _ceiling() -> int:
+def get_kernel_thread_ceiling() -> int:
     """Returns the largest share of the Numba thread pool that a kernel launch may use.
 
     The share is three quarters of the pool's width, rounded down, never below 1. A team
@@ -146,7 +146,7 @@ def report_thread_settings() -> None:
     # emitted in the opposite order, which the reads do not constrain.
     external_cap = numba.get_num_threads()
     threading_layer = numba.threading_layer()
-    ceiling = _ceiling()
+    ceiling = get_kernel_thread_ceiling()
     kernel_cap = min(external_cap, ceiling)
 
     if threading_layer == "workqueue":
@@ -254,7 +254,7 @@ def collapsed_velocities_from_ring_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
@@ -262,7 +262,7 @@ def collapsed_velocities_from_ring_vortices(
     # geometry axes, observed from the Earth frame).
     try:
         for i in range(4):
-            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+            stackVInd_GP1__E += collapsed_velocities_from_line_vortices_kernel(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
@@ -357,7 +357,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
@@ -365,7 +365,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     # first Airplane's geometry axes, observed from the Earth frame).
     try:
         for i in range(2):
-            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+            stackVInd_GP1__E += collapsed_velocities_from_line_vortices_kernel(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
@@ -437,14 +437,14 @@ def collapsed_velocities_from_line_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
     # Get the velocity induced by each line vortex (in the first Airplane's geometry
     # axes, observed from the Earth frame).
     try:
-        stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+        stackVInd_GP1__E += collapsed_velocities_from_line_vortices_kernel(
             stackP_GP1_CgP1=stackP_GP1_CgP1,
             stackSlvp_GP1_CgP1=stackSlvp_GP1_CgP1,
             stackElvp_GP1_CgP1=stackElvp_GP1_CgP1,
@@ -542,7 +542,7 @@ def expanded_velocities_from_ring_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
@@ -550,7 +550,7 @@ def expanded_velocities_from_ring_vortices(
     # geometry axes, observed from the Earth frame).
     try:
         for i in range(4):
-            gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
+            gridVInd_GP1__E += expanded_velocities_from_line_vortices_kernel(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
@@ -642,7 +642,7 @@ def collapsed_velocities_from_horseshoe_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
@@ -650,7 +650,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     # Airplane's geometry axes, observed from the Earth frame).
     try:
         for i in range(3):
-            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+            stackVInd_GP1__E += collapsed_velocities_from_line_vortices_kernel(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
@@ -744,7 +744,7 @@ def expanded_velocities_from_horseshoe_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _ceiling(),
+            get_kernel_thread_ceiling(),
         )
     )
 
@@ -752,7 +752,7 @@ def expanded_velocities_from_horseshoe_vortices(
     # Airplane's geometry axes, observed from the Earth frame).
     try:
         for i in range(3):
-            gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
+            gridVInd_GP1__E += expanded_velocities_from_line_vortices_kernel(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
@@ -768,7 +768,7 @@ def expanded_velocities_from_horseshoe_vortices(
 
 
 @njit(cache=True, fastmath=False, parallel=True)
-def _collapsed_velocities_from_line_vortices(
+def collapsed_velocities_from_line_vortices_kernel(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,
     stackElvp_GP1_CgP1: np.ndarray,
@@ -970,7 +970,7 @@ def _collapsed_velocities_from_line_vortices(
 
 
 @njit(cache=True, fastmath=False, parallel=True)
-def _expanded_velocities_from_line_vortices(
+def expanded_velocities_from_line_vortices_kernel(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,
     stackElvp_GP1_CgP1: np.ndarray,

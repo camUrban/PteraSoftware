@@ -49,10 +49,10 @@ from .movements.wing_movement import WingMovement
 from .operating_point import OperatingPoint
 from .problems import (
     AeroelasticUnsteadyProblem,
+    CoupledUnsteadyProblem,
     FreeFlightUnsteadyProblem,
     SteadyProblem,
     UnsteadyProblem,
-    _CoupledUnsteadyProblem,
 )
 from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
@@ -172,7 +172,7 @@ _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "data"})
 # matched by isinstance, so subclasses inherit their parent's entries. The unsteady
 # solver's eleven lists hold one ndarray or int per time step, and an unsteady problem's
 # _steady_problems holds one SteadyProblem per time step, which is where the per step
-# Airplanes and their Panels live. UnsteadyProblem and _CoupledUnsteadyProblem are
+# Airplanes and their Panels live. UnsteadyProblem and CoupledUnsteadyProblem are
 # siblings that each declare their own _steady_problems slot, so both need an entry.
 # Everything else stays inline in the root member on purpose: an UnsteadyProblem's per
 # Airplane final load lists and the aeroelastic deformation lists are small, and the
@@ -196,7 +196,7 @@ _CHUNKED_SLOTS: tuple[tuple[type, tuple[str, ...]], ...] = (
         ),
     ),
     (UnsteadyProblem, ("_steady_problems",)),
-    (_CoupledUnsteadyProblem, ("_steady_problems",)),
+    (CoupledUnsteadyProblem, ("_steady_problems",)),
 )
 
 

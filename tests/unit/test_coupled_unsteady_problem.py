@@ -1,4 +1,4 @@
-"""This module contains classes to test _CoupledUnsteadyProblems."""
+"""This module contains classes to test CoupledUnsteadyProblems."""
 
 import unittest
 from typing import Any
@@ -13,24 +13,24 @@ from tests.unit.fixtures import (
 
 
 class TestCoupledUnsteadyProblem(unittest.TestCase):
-    """This is a class with functions to test _CoupledUnsteadyProblems."""
+    """This is a class with functions to test CoupledUnsteadyProblems."""
 
     def setUp(self) -> None:
-        """Set up a fresh _CoupledUnsteadyProblem for each test."""
+        """Set up a fresh CoupledUnsteadyProblem for each test."""
         self.movement = core_movement_fixtures.make_static_core_movement_fixture()
         self.initial_airplane = geometry_fixtures.make_first_airplane_fixture()
         self.initial_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        self.problem = ps.problems._CoupledUnsteadyProblem(
+        self.problem = ps.problems.CoupledUnsteadyProblem(
             movement=self.movement,
             initial_airplanes=[self.initial_airplane],
             initial_operating_point=self.initial_operating_point,
         )
 
     def test_initialization_valid_parameters(self) -> None:
-        """Test _CoupledUnsteadyProblem initialization with valid parameters."""
-        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        """Test CoupledUnsteadyProblem initialization with valid parameters."""
+        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
         self.assertIsInstance(self.problem, ps._core.CoreUnsteadyProblem)
 
     def test_step_zero_seeded_from_initial_inputs(self) -> None:
@@ -129,10 +129,10 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
 
 class TestCoupledUnsteadyProblemImmutability(unittest.TestCase):
-    """Tests for _CoupledUnsteadyProblem attribute immutability."""
+    """Tests for CoupledUnsteadyProblem attribute immutability."""
 
     def setUp(self) -> None:
-        """Set up a fresh _CoupledUnsteadyProblem for each immutability test."""
+        """Set up a fresh CoupledUnsteadyProblem for each immutability test."""
         self.problem = problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
 
     def test_immutable_movement_property(self) -> None:

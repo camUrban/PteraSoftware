@@ -823,8 +823,8 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     Core-owned properties (only_final_results, num_steps, delta_time,
     first_averaging_step, first_results_step, and the mutable load lists) are tested at
     the CoreUnsteadyProblem level. Coupled-owned properties (movement, steady_problems,
-    get_steady_problem) are tested at the _CoupledUnsteadyProblem level. This class
-    tests FreeFlightUnsteadyProblem-specific slots.
+    get_steady_problem) are tested at the CoupledUnsteadyProblem level. This class tests
+    FreeFlightUnsteadyProblem-specific slots.
     """
 
     def setUp(self) -> None:
@@ -848,8 +848,8 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        CoupledUnsteadyProblem."""
+        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
 
     def test_property_access(self) -> None:
         """Test that FreeFlightUnsteadyProblem-specific properties are accessible."""
@@ -2067,8 +2067,8 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        CoupledUnsteadyProblem."""
+        self.assertIsInstance(self.problem, ps.problems.CoupledUnsteadyProblem)
 
     def test_config_property_access(self) -> None:
         """Test that the immutable structural config properties are accessible."""

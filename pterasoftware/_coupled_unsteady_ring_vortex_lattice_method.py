@@ -14,40 +14,40 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     UnsteadyRingVortexLatticeMethodSolver
 ):
     """A subclass of UnsteadyRingVortexLatticeMethodSolver that solves
-    _CoupledUnsteadyProblems.
+    CoupledUnsteadyProblems.
 
-    Geometry in a _CoupledUnsteadyProblem is determined step by step from the solver's
+    Geometry in a CoupledUnsteadyProblem is determined step by step from the solver's
     results at the previous step, so bound vortices cannot be initialized upfront. This
     class inherits the parent's run() and initialize_step_geometry() unchanged and
     overrides three hooks: _initialize_step_vortices (per step bound vortex init),
-    _update_next_step_hook (calls _CoupledUnsteadyProblem.initialize_next_problem
-    between steps), and _get_steady_problem_at (dynamic dispatch through the problem's
+    _update_next_step_hook (calls CoupledUnsteadyProblem.initialize_next_problem between
+    steps), and _get_steady_problem_at (dynamic dispatch through the problem's
     get_steady_problem accessor).
     """
 
     __slots__ = ()
 
-    def __init__(self, unsteady_problem: problems._CoupledUnsteadyProblem) -> None:
+    def __init__(self, unsteady_problem: problems.CoupledUnsteadyProblem) -> None:
         """The initialization method.
 
-        :param unsteady_problem: The _CoupledUnsteadyProblem to be solved.
+        :param unsteady_problem: The CoupledUnsteadyProblem to be solved.
         :return: None
         """
-        if not isinstance(unsteady_problem, problems._CoupledUnsteadyProblem):
-            raise TypeError("unsteady_problem must be a _CoupledUnsteadyProblem.")
+        if not isinstance(unsteady_problem, problems.CoupledUnsteadyProblem):
+            raise TypeError("unsteady_problem must be a CoupledUnsteadyProblem.")
         super().__init__(unsteady_problem)
 
     @property
-    def _coupled_unsteady_problem(self) -> problems._CoupledUnsteadyProblem:
+    def _coupled_unsteady_problem(self) -> problems.CoupledUnsteadyProblem:
         """Type narrowed view of the inherited unsteady_problem attribute.
 
         The parent stores unsteady_problem as a CoreUnsteadyProblem (widened to let
         subclasses pass their own variants). __init__ validates that this subclass
-        always receives a _CoupledUnsteadyProblem, so the cast here is safe.
+        always receives a CoupledUnsteadyProblem, so the cast here is safe.
 
-        :return: The unsteady_problem narrowed to _CoupledUnsteadyProblem.
+        :return: The unsteady_problem narrowed to CoupledUnsteadyProblem.
         """
-        return cast(problems._CoupledUnsteadyProblem, self.unsteady_problem)
+        return cast(problems.CoupledUnsteadyProblem, self.unsteady_problem)
 
     def _initialize_step_vortices(self, step: int) -> None:
         _logger.debug(

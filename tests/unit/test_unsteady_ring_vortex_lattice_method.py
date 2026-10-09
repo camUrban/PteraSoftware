@@ -23,7 +23,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
 
     def test_initialization_rejects_coupled_unsteady_problem(self) -> None:
         """Test that initialization on the base solver raises TypeError for a
-        _CoupledUnsteadyProblem, while still allowing the coupled subclass to pass one
+        CoupledUnsteadyProblem, while still allowing the coupled subclass to pass one
         through super()."""
         coupled_problem = problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
         with self.assertRaises(TypeError):

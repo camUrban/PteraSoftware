@@ -411,7 +411,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         return self._steady_problems
 
 
-class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
+class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     """A class for coupled unsteady aerodynamics problems.
 
     This class extends CoreUnsteadyProblem to manage SteadyProblems for coupled
@@ -444,7 +444,7 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         self._movement = movement
 
         # Delegate shared initialization (validation, first_averaging_step computation,
-        # load list initialization) to the core class. _CoupledUnsteadyProblems require
+        # load list initialization) to the core class. CoupledUnsteadyProblems require
         # per step results to feed the coupling hook, so only_final_results is always
         # False.
         super().__init__(
@@ -511,7 +511,7 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         raise NotImplementedError("Subclasses must implement initialize_next_problem.")
 
 
-class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
+class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
     """A class used to contain problems with coupled unsteady aerodynamics and rigid
     body dynamics."""
 
@@ -1432,7 +1432,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
-class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
+class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     """A class used to contain problems that couple aeroelastic wing deformations with
     unsteady aerodynamics.
 

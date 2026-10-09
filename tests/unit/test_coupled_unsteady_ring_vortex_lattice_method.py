@@ -21,7 +21,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.problem = self.solver.unsteady_problem
 
     def test_initialization_accepts_coupled_unsteady_problem(self) -> None:
-        """Test that initialization accepts a _CoupledUnsteadyProblem."""
+        """Test that initialization accepts a CoupledUnsteadyProblem."""
         self.assertIsInstance(self.solver, CoupledUnsteadyRingVortexLatticeMethodSolver)
         self.assertIsInstance(
             self.solver,
@@ -53,12 +53,12 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
 
     def test_coupled_unsteady_problem_property_narrows_unsteady_problem(self) -> None:
         """Test that the _coupled_unsteady_problem property returns the same object as
-        unsteady_problem, narrowed to _CoupledUnsteadyProblem."""
+        unsteady_problem, narrowed to CoupledUnsteadyProblem."""
         self.assertIs(
             self.solver._coupled_unsteady_problem, self.solver.unsteady_problem
         )
         self.assertIsInstance(
-            self.solver._coupled_unsteady_problem, ps.problems._CoupledUnsteadyProblem
+            self.solver._coupled_unsteady_problem, ps.problems.CoupledUnsteadyProblem
         )
 
     def test_get_steady_problem_at_dispatches_through_coupled_unsteady_problem(
@@ -75,7 +75,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(len(self.solver.steady_problems), 1)
 
         next_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
-        assert isinstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        assert isinstance(self.problem, ps.problems.CoupledUnsteadyProblem)
         self.problem._steady_problems.append(next_steady_problem)
 
         self.assertEqual(len(self.solver.steady_problems), 2)

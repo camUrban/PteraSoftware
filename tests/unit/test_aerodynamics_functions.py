@@ -1951,19 +1951,21 @@ class TestKernelCancellation(unittest.TestCase):
     def _expanded_relative_error(
         self, S_G_Cg: np.ndarray, E_G_Cg: np.ndarray, P_G_Cg: np.ndarray
     ) -> float:
-        """Helper to call _expanded_velocities_from_line_vortices for one line vortex
-        with a core radius of 3% of its length and return the relative error of the
-        result against the high precision reference."""
+        """Helper to call expanded_velocities_from_line_vortices_kernel for one line
+        vortex with a core radius of 3% of its length and return the relative error of
+        the result against the high precision reference."""
         r_c0 = 0.03 * float(np.linalg.norm(E_G_Cg - S_G_Cg))
 
-        velocity = _aerodynamics_functions._expanded_velocities_from_line_vortices(
-            stackP_GP1_CgP1=P_G_Cg.reshape(1, 3),
-            stackSlvp_GP1_CgP1=S_G_Cg.reshape(1, 3),
-            stackElvp_GP1_CgP1=E_G_Cg.reshape(1, 3),
-            strengths=np.array([self.gamma], dtype=float),
-            r_c0s=np.array([r_c0], dtype=float),
-            singularity_counts=np.zeros(3, dtype=np.int64),
-        )[0, 0]
+        velocity = (
+            _aerodynamics_functions.expanded_velocities_from_line_vortices_kernel(
+                stackP_GP1_CgP1=P_G_Cg.reshape(1, 3),
+                stackSlvp_GP1_CgP1=S_G_Cg.reshape(1, 3),
+                stackElvp_GP1_CgP1=E_G_Cg.reshape(1, 3),
+                strengths=np.array([self.gamma], dtype=float),
+                r_c0s=np.array([r_c0], dtype=float),
+                singularity_counts=np.zeros(3, dtype=np.int64),
+            )[0, 0]
+        )
 
         expected = self.ref_calculate_high_precision_biot_savart_velocity(
             S_G_Cg, E_G_Cg, P_G_Cg, self.gamma, r_c0
@@ -2428,7 +2430,7 @@ class TestReportThreadSettings(unittest.TestCase):
         The reported values are what this asserts on, not the phrasing that carries
         them, so rewording the records does not fail this test.
         """
-        ceiling = _aerodynamics_functions._ceiling()
+        ceiling = _aerodynamics_functions.get_kernel_thread_ceiling()
         if ceiling < 2:
             self.skipTest(
                 "This pool is too narrow for a mask to sit below the ceiling."
@@ -2604,7 +2606,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
-            "_collapsed_velocities_from_line_vortices",
+            "collapsed_velocities_from_line_vortices_kernel",
             side_effect=RuntimeError("Mock kernel failure."),
         ):
             with self.assertRaises(RuntimeError):
@@ -2618,7 +2620,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         the thread mask when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
-            "_collapsed_velocities_from_line_vortices",
+            "collapsed_velocities_from_line_vortices_kernel",
             side_effect=RuntimeError("Mock kernel failure."),
         ):
             with self.assertRaises(RuntimeError):
@@ -2632,7 +2634,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
-            "_expanded_velocities_from_line_vortices",
+            "expanded_velocities_from_line_vortices_kernel",
             side_effect=RuntimeError("Mock kernel failure."),
         ):
             with self.assertRaises(RuntimeError):
@@ -2646,7 +2648,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         mask when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
-            "_collapsed_velocities_from_line_vortices",
+            "collapsed_velocities_from_line_vortices_kernel",
             side_effect=RuntimeError("Mock kernel failure."),
         ):
             with self.assertRaises(RuntimeError):
@@ -2660,7 +2662,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         mask when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
-            "_expanded_velocities_from_line_vortices",
+            "expanded_velocities_from_line_vortices_kernel",
             side_effect=RuntimeError("Mock kernel failure."),
         ):
             with self.assertRaises(RuntimeError):
@@ -2684,7 +2686,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
         with patch.object(
             _aerodynamics_functions,
-            "_collapsed_velocities_from_line_vortices",
+            "collapsed_velocities_from_line_vortices_kernel",
             new=_fake_kernel,
         ):
             _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
@@ -2724,7 +2726,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # A two grain launch asks for 2 threads, but the ambient thread mask and the
         # ceiling cap the count on machines with very narrow pools.
         expected_num_threads = min(
-            2, self.original_num_threads, _aerodynamics_functions._ceiling()
+            2,
+            self.original_num_threads,
+            _aerodynamics_functions.get_kernel_thread_ceiling(),
         )
         self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
 
@@ -2774,21 +2778,22 @@ class TestParallelDispatchWrappers(unittest.TestCase):
     def test_mask_below_ceiling_is_honored_exactly(self) -> None:
         """Test that a thread mask set below the ceiling caps the kernel's thread count
         exactly and survives the wrapper."""
-        if _aerodynamics_functions._ceiling() < 2:
+        if _aerodynamics_functions.get_kernel_thread_ceiling() < 2:
             self.skipTest(
                 "No thread mask can sit below the ceiling on this machine's Numba "
                 "pool."
             )
 
         # Simulate a user capping the thread count just below the ceiling.
-        below_ceiling_mask = _aerodynamics_functions._ceiling() - 1
+        below_ceiling_mask = _aerodynamics_functions.get_kernel_thread_ceiling() - 1
         numba.set_num_threads(below_ceiling_mask)
 
         # With one ring vortex, this stack of points makes each leg's launch span one
         # more grain than the ceiling, so only the mask holds its thread count below the
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
+            * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2802,23 +2807,27 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         """Test that a thread mask set exactly at the ceiling runs the kernel with the
         ceiling's thread count."""
         # Simulate a user capping the thread count exactly at the ceiling.
-        numba.set_num_threads(_aerodynamics_functions._ceiling())
+        numba.set_num_threads(_aerodynamics_functions.get_kernel_thread_ceiling())
 
         # With one ring vortex, this stack of points makes each leg's launch span one
         # more grain than the ceiling, so the work-proportional count exceeds the
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
+            * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
 
         self.assertEqual(
-            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+            recorded_thread_counts,
+            [_aerodynamics_functions.get_kernel_thread_ceiling()] * 4,
         )
 
         # The wrapper must restore the user's mask.
-        self.assertEqual(numba.get_num_threads(), _aerodynamics_functions._ceiling())
+        self.assertEqual(
+            numba.get_num_threads(), _aerodynamics_functions.get_kernel_thread_ceiling()
+        )
 
     def test_full_width_mask_is_throttled_to_the_ceiling(self) -> None:
         """Test that a thread mask set at the pool's full width is throttled to the
@@ -2831,13 +2840,15 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # more grain than the ceiling, so the work-proportional count exceeds the
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
+            * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
 
         self.assertEqual(
-            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+            recorded_thread_counts,
+            [_aerodynamics_functions.get_kernel_thread_ceiling()] * 4,
         )
 
         # The wrapper must restore the full-width mask, not the ceiling.

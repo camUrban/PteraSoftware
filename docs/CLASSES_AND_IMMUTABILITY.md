@@ -3,7 +3,7 @@
 This document describes the consistent pattern of immutability and lazy caching across the following core data and geometry classes in the Ptera Software codebase:
 
 - `CoreUnsteadyProblem` / `UnsteadyProblem`
-- `_CoupledUnsteadyProblem`
+- `CoupledUnsteadyProblem`
 - `AeroelasticUnsteadyProblem`
 - `FreeFlightUnsteadyProblem`
 - `CoreMovement` / `Movement`
@@ -192,9 +192,9 @@ These read-only properties expose the named load components and coefficients def
 | `finalMeanPitchingMomentCoefficients_W_Cg` | `finalMeanMomentCoefficients_W_Cg` |                                          |
 | `finalMeanYawingMomentCoefficients_W_Cg`   | `finalMeanMomentCoefficients_W_Cg` |                                          |
 
-## `_CoupledUnsteadyProblem` Class (`problems.py`)
+## `CoupledUnsteadyProblem` Class (`problems.py`)
 
-`_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`, both documented below) whose per-step `SteadyProblem` depends on the solver's results from the previous step: deformed wing geometry for aeroelasticity, updated rigid body state for free flight. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
+`CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`, both documented below) whose per-step `SteadyProblem` depends on the solver's results from the previous step: deformed wing geometry for aeroelasticity, updated rigid body state for free flight. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
 
 All `CoreUnsteadyProblem` attributes (documented in the section above) are inherited unchanged. The additions are:
 
@@ -207,11 +207,11 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 | `movement`        | `CoreMovement`              | Source of `delta_time`, `num_steps`, `max_wake_rows`, and `lcm_period`                                                                               |
 | `steady_problems` | `tuple[SteadyProblem, ...]` | Read-only view of the `_steady_problems` backing list. Returned tuple is frozen, but successive calls may return different-length tuples (see below) |
 
-**Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `_CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
+**Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
 
 ## `AeroelasticUnsteadyProblem` Class (`problems.py`)
 
-`AeroelasticUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with a torsional spring-mass-damper structural model so that each wing's deformation at a given time step is driven by the previous step's aerodynamic, inertial, and spring-restoring moments. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the structural configuration (set once at construction) and the per-wing structural state (populated as the solve advances).
+`AeroelasticUnsteadyProblem` extends `CoupledUnsteadyProblem`. It couples aerodynamic loads with a torsional spring-mass-damper structural model so that each wing's deformation at a given time step is driven by the previous step's aerodynamic, inertial, and spring-restoring moments. All `CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the structural configuration (set once at construction) and the per-wing structural state (populated as the solve advances).
 
 ### Attribute Classification
 
@@ -243,7 +243,7 @@ These lists are allocated in `__init__` with one entry per wing in the initial a
 
 ## `FreeFlightUnsteadyProblem` Class (`problems.py`)
 
-`FreeFlightUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with six-degree-of-freedom rigid body dynamics, integrated by a `MuJoCoModel`, so that the `Airplane`'s position, orientation, and velocity at a given time step are driven by the previous step's aerodynamic loads, gravity, and any external loads. The wing geometry stays prescribed. It is the per-step `OperatingPoint` (body pose and rates) that the dynamics update. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the rigid body configuration (set once at construction) and the per-step aerodynamic load history (populated as the solve advances).
+`FreeFlightUnsteadyProblem` extends `CoupledUnsteadyProblem`. It couples aerodynamic loads with six-degree-of-freedom rigid body dynamics, integrated by a `MuJoCoModel`, so that the `Airplane`'s position, orientation, and velocity at a given time step are driven by the previous step's aerodynamic loads, gravity, and any external loads. The wing geometry stays prescribed. It is the per-step `OperatingPoint` (body pose and rates) that the dynamics update. All `CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the rigid body configuration (set once at construction) and the per-step aerodynamic load history (populated as the solve advances).
 
 ### Attribute Classification
 

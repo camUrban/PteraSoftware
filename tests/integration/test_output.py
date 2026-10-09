@@ -799,7 +799,7 @@ class TestOutputFileWriting(unittest.TestCase):
         requested_sizes: list[tuple[int, int]] = []
         shrinking_plotters: list[_ShrinkingPlotter] = []
 
-        def create_plotter(
+        def create_first_shrinking_plotter(
             width: int, height: int, off_screen: bool
         ) -> _ShrinkingPlotter | pv.Plotter:
             """Creates a stand-in Plotter whose window manager grants the first window
@@ -822,7 +822,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         with (
             patch.object(pv, "OFF_SCREEN", False),
-            patch.object(ps.output, "_create_plotter", create_plotter),
+            patch.object(ps.output, "_create_plotter", create_first_shrinking_plotter),
         ):
             ps.output.draw(
                 solver=self.unsteady_solver,

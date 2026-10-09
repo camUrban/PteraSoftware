@@ -393,18 +393,15 @@ def make_with_body_rates_free_flight_unsteady_problem_fixture() -> (
     )
 
 
-def make_basic_coupled_unsteady_problem_fixture() -> (
-    ps.problems._CoupledUnsteadyProblem
-):
-    """This method makes a fixture that is a _CoupledUnsteadyProblem for general
-    testing.
+def make_basic_coupled_unsteady_problem_fixture() -> ps.problems.CoupledUnsteadyProblem:
+    """This method makes a fixture that is a CoupledUnsteadyProblem for general testing.
 
-    :return basic_coupled_unsteady_problem_fixture: _CoupledUnsteadyProblem This is the
-        _CoupledUnsteadyProblem configured for general testing.
+    :return basic_coupled_unsteady_problem_fixture: CoupledUnsteadyProblem This is the
+        CoupledUnsteadyProblem configured for general testing.
     """
     # SteadyProblem sets GP1_CgP1 attributes on each Panel exactly once, so a fresh
-    # Airplane is required for every _CoupledUnsteadyProblem instance.
-    basic_coupled_unsteady_problem_fixture = ps.problems._CoupledUnsteadyProblem(
+    # Airplane is required for every CoupledUnsteadyProblem instance.
+    basic_coupled_unsteady_problem_fixture = ps.problems.CoupledUnsteadyProblem(
         movement=core_movement_fixtures.make_static_core_movement_fixture(),
         initial_airplanes=[geometry_fixtures.make_first_airplane_fixture()],
         initial_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),

@@ -69,7 +69,7 @@ def build_steady_problem(
             if ref_wing.spanwise_mesh == "edge_defined":
                 # The resolution's log messages nest one level under the build's.
                 with _logging.nested():
-                    this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    this_num_wing_cross_sections = resolve_num_wing_cross_sections(
                         ar_id,
                         chord_id,
                         ref_airplane_id,
@@ -77,7 +77,7 @@ def build_steady_problem(
                         ref_airplane.name,
                         ref_wing.name,
                         num_wing_cross_sections_cache,
-                        lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        lambda start: get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
                             ref_airplane,
@@ -86,7 +86,7 @@ def build_steady_problem(
                         ),
                     )
                 these_wings.append(
-                    _build_edge_defined_wing(
+                    build_edge_defined_wing(
                         ref_wing, num_chordwise_panels, this_num_wing_cross_sections
                     )
                 )
@@ -105,7 +105,7 @@ def build_steady_problem(
                 if ref_wing_cross_section_id < (len(ref_wing_cross_sections) - 1):
                     # The resolution's log messages nest one level under the build's.
                     with _logging.nested():
-                        this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        this_num_spanwise_panels = resolve_num_spanwise_panels(
                             ar_id,
                             chord_id,
                             ref_airplane_id,
@@ -114,7 +114,7 @@ def build_steady_problem(
                             ref_airplane.name,
                             ref_wing.name,
                             num_spanwise_panels_cache,
-                            lambda start: _get_wing_section_num_spanwise_panels(
+                            lambda start: get_wing_section_num_spanwise_panels(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_wing.chordwise_spacing,
@@ -142,7 +142,7 @@ def build_steady_problem(
                         # because Airfoils are immutable. Rebuilding one would
                         # revalidate and renormalize an outline that is already valid
                         # and normalized, which perturbs it by a small amount rather
-                        # than reproducing it. _build_edge_defined_wing shares its
+                        # than reproducing it. build_edge_defined_wing shares its
                         # reference's Airfoil for the same reason.
                         airfoil=ref_wing_cross_section.airfoil,
                         # These values change.
@@ -348,7 +348,7 @@ def build_unsteady_problem(
 
                 # The resolution's log messages nest one level under the build's.
                 with _logging.nested():
-                    this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    this_num_wing_cross_sections = resolve_num_wing_cross_sections(
                         ar_id,
                         chord_id,
                         ref_airplane_movement_id,
@@ -356,7 +356,7 @@ def build_unsteady_problem(
                         ref_base_airplane.name,
                         ref_base_wing.name,
                         num_wing_cross_sections_cache,
-                        lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        lambda start: get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
                             ref_base_airplane,
@@ -365,7 +365,7 @@ def build_unsteady_problem(
                         ),
                     )
 
-                this_base_wing = _build_edge_defined_wing(
+                this_base_wing = build_edge_defined_wing(
                     ref_base_wing, num_chordwise_panels, this_num_wing_cross_sections
                 )
 
@@ -436,7 +436,7 @@ def build_unsteady_problem(
                 ):
                     # The resolution's log messages nest one level under the build's.
                     with _logging.nested():
-                        this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        this_num_spanwise_panels = resolve_num_spanwise_panels(
                             ar_id,
                             chord_id,
                             ref_airplane_movement_id,
@@ -445,7 +445,7 @@ def build_unsteady_problem(
                             ref_base_airplane.name,
                             ref_base_wing.name,
                             num_spanwise_panels_cache,
-                            lambda start: _get_wing_section_movement_num_spanwise_panels(
+                            lambda start: get_wing_section_movement_num_spanwise_panels(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_base_wing.chordwise_spacing,
@@ -475,7 +475,7 @@ def build_unsteady_problem(
                     # Airfoils are immutable. Rebuilding one would revalidate and
                     # renormalize an outline that is already valid and normalized, which
                     # perturbs it by a small amount rather than reproducing it.
-                    # _build_edge_defined_wing shares its reference's Airfoil for the
+                    # build_edge_defined_wing shares its reference's Airfoil for the
                     # same reason.
                     airfoil=ref_base_wing_cross_section.airfoil,
                     # These values change.
@@ -699,7 +699,7 @@ def memos_complete(
     return True
 
 
-def _get_wing_section_movement_num_spanwise_panels(
+def get_wing_section_movement_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
@@ -761,7 +761,7 @@ def _get_wing_section_movement_num_spanwise_panels(
             f"{time_step_id+1}/{num_time_steps}"
         )
 
-        num_spanwise_panels_at_step = _get_wing_section_num_spanwise_panels(
+        num_spanwise_panels_at_step = get_wing_section_num_spanwise_panels(
             desired_average_panel_aspect_ratio=desired_average_panel_aspect_ratio,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
@@ -781,7 +781,7 @@ def _get_wing_section_movement_num_spanwise_panels(
     return int(max(these_num_spanwise_panels))
 
 
-def _get_wing_section_num_spanwise_panels(
+def get_wing_section_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
@@ -815,7 +815,7 @@ def _get_wing_section_num_spanwise_panels(
     average_panel_aspect_ratios = []
 
     while True:
-        this_average_panel_aspect_ratio = _get_wing_section_average_panel_aspect_ratio(
+        this_average_panel_aspect_ratio = get_wing_section_average_panel_aspect_ratio(
             num_chordwise_panels,
             chordwise_spacing,
             ref_airplane,
@@ -845,7 +845,7 @@ def _get_wing_section_num_spanwise_panels(
     return this_num_spanwise_panels
 
 
-def _get_wing_section_average_panel_aspect_ratio(
+def get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
     chordwise_spacing: str,
     ref_airplane: geometry.airplane.Airplane,
@@ -914,7 +914,7 @@ def _get_wing_section_average_panel_aspect_ratio(
     return _average_panel_aspect_ratio
 
 
-def _build_edge_defined_wing(
+def build_edge_defined_wing(
     ref_wing: geometry.wing.Wing,
     num_chordwise_panels: int,
     num_wing_cross_sections: int,
@@ -963,7 +963,7 @@ def _build_edge_defined_wing(
     )
 
 
-def _get_num_wing_cross_sections_for_panel_ar(
+def get_num_wing_cross_sections_for_panel_ar(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     ref_airplane: geometry.airplane.Airplane,
@@ -982,12 +982,12 @@ def _get_num_wing_cross_sections_for_panel_ar(
     A closed form built from the mean chord would undershoot the count on a tapered
     planform, because average_panel_aspect_ratio is the mean of each Panel's individual
     aspect ratio and is dominated by the small-chord tip Panels. Instead, the reference
-    Wing is rebuilt at trial WingCrossSection counts (with _build_edge_defined_wing),
+    Wing is rebuilt at trial WingCrossSection counts (with build_edge_defined_wing),
     each trial is meshed, and its average Panel aspect ratio is read. The search
     proportionally jumps to bracket the target, then bisects to the crossing, and
     returns whichever of the two counts straddling the target gives the closer average
     Panel aspect ratio. This matches how the trapezoidal
-    _get_wing_section_num_spanwise_panels searches, so a target Panel aspect ratio means
+    get_wing_section_num_spanwise_panels searches, so a target Panel aspect ratio means
     the same physical thing for an edge-defined Wing as for a trapezoidal one. Only
     meshing is performed here, never solving.
 
@@ -1011,7 +1011,7 @@ def _get_num_wing_cross_sections_for_panel_ar(
 
     def average_panel_aspect_ratio_at(num_wing_cross_sections: int) -> float:
         if num_wing_cross_sections not in meshed_average_panel_aspect_ratios:
-            refined_wing = _build_edge_defined_wing(
+            refined_wing = build_edge_defined_wing(
                 ref_wing, num_chordwise_panels, num_wing_cross_sections
             )
             # This Airplane exists only to mesh the trial Wing and measure it, but it is
@@ -1082,7 +1082,7 @@ def _get_num_wing_cross_sections_for_panel_ar(
     return upper_num
 
 
-def _resolve_num_wing_cross_sections(
+def resolve_num_wing_cross_sections(
     panel_aspect_ratio_id: int,
     num_chordwise_panels_id: int,
     airplane_id: int,
@@ -1192,7 +1192,7 @@ def _resolve_num_wing_cross_sections(
     return this_num_wing_cross_sections
 
 
-def _resolve_num_spanwise_panels(
+def resolve_num_spanwise_panels(
     panel_aspect_ratio_id: int,
     num_chordwise_panels_id: int,
     airplane_id: int,

@@ -9,12 +9,12 @@ from pterasoftware import _colormaps
 
 
 class TestLoadColormap(unittest.TestCase):
-    """Tests for the _load_colormap function."""
+    """Tests for the load_colormap function."""
 
     def test_raises_for_an_unknown_color_map(self) -> None:
-        """_load_colormap should raise FileNotFoundError for an unknown color map."""
+        """load_colormap should raise FileNotFoundError for an unknown color map."""
         with self.assertRaises(FileNotFoundError):
-            _colormaps._load_colormap("not_a_color_map")
+            _colormaps.load_colormap("not_a_color_map")
 
 
 class TestSequentialColorMap(unittest.TestCase):

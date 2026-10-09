@@ -111,7 +111,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             inner_mcl_pointsX_Ai_LpAi,
             outer_mcl_pointsY_Ao_LpAo,
             outer_mcl_pointsX_Ao_LpAo,
-        ] = _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
+        ] = get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
 
         # Define number of spanwise points and Panels. This is based on the inner
         # WingCrossSection.
@@ -132,7 +132,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             Fopp_Wn_Ler,
             Bipp_Wn_Ler,
             Bopp_Wn_Ler,
-        ] = _get_mcs_points(
+        ] = get_mcs_points(
             T_pas_Wcsi_Lpi_to_Wn_Ler,
             T_pas_Wcso_Lpo_to_Wn_Ler,
             inner_wing_cross_section,
@@ -192,7 +192,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             Brpp_G_Cg = Bipp_G_Cg
 
         # Get this wing section's Panels.
-        wing_section_panels = _get_panels(
+        wing_section_panels = get_panels(
             Flpp_G_Cg=Flpp_G_Cg,
             Frpp_G_Cg=Frpp_G_Cg,
             Blpp_G_Cg=Blpp_G_Cg,
@@ -245,7 +245,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 inner_mcl_pointsX_Ai_LpAi,
                 outer_mcl_pointsY_Ao_LpAo,
                 outer_mcl_pointsX_Ao_LpAo,
-            ] = _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
+            ] = get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
 
             # Get this wing section's preliminary panel points.
             [
@@ -253,7 +253,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 Fopp_Wn_Ler,
                 Bipp_Wn_Ler,
                 Bopp_Wn_Ler,
-            ] = _get_mcs_points(
+            ] = get_mcs_points(
                 T_pas_Wcsi_Lpi_to_Wn_Ler,
                 T_pas_Wcso_Lpo_to_Wn_Ler,
                 inner_wing_cross_section,
@@ -346,7 +346,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             )
 
             # Get the reflected wing section's Panels.
-            wing_section_panels = _get_panels(
+            wing_section_panels = get_panels(
                 Flpp_G_Cg=reflected_Fopp_G_Cg,
                 Frpp_G_Cg=reflected_Fipp_G_Cg,
                 Blpp_G_Cg=reflected_Bopp_G_Cg,
@@ -378,7 +378,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     wing.panels = wing_panels
 
 
-def _get_mcl_points(
+def get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
@@ -435,7 +435,7 @@ def _get_mcl_points(
     ]
 
 
-def _get_mcs_points(
+def get_mcs_points(
     T_pas_Wcsi_Lpi_Wn_Ler: np.ndarray,
     T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
     inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,
@@ -547,7 +547,7 @@ def _get_mcs_points(
     ]
 
 
-def _get_panels(
+def get_panels(
     Flpp_G_Cg: np.ndarray,
     Frpp_G_Cg: np.ndarray,
     Blpp_G_Cg: np.ndarray,

@@ -9,7 +9,7 @@ import numpy as np
 # corresponding quaternion component. Sarabandi and Thomas (2019) Section 4 Table 1
 # identifies eta = 0 as the experimentally optimal value across worst-case error,
 # average error, and standard deviation.
-_QUAT_BRANCH_THRESHOLD = 0.0
+QUAT_BRANCH_THRESHOLD = 0.0
 
 # Threshold above which |sin(angleY)| triggers the gimbal-lock fallback decomposition in
 # R_to_angles_izyx, equivalent to angleY within about 8.1e-5 degrees of the +/- 90
@@ -18,10 +18,10 @@ _QUAT_BRANCH_THRESHOLD = 0.0
 # so it works correctly until cos(angleY) approaches machine epsilon (cos at this
 # threshold is sqrt(2e-12) ~ 1.4e-6). The worst-case round-trip angle error just below
 # the threshold is roughly 1 nanodegree.
-_GIMBAL_LOCK_THRESHOLD = 1.0 - 1.0e-12
+GIMBAL_LOCK_THRESHOLD = 1.0 - 1.0e-12
 
 
-def _generate_homogs(vectors_A: np.ndarray, is_position: bool) -> np.ndarray:
+def generate_homogs(vectors_A: np.ndarray, is_position: bool) -> np.ndarray:
     """Converts 3D vector(s) to homogeneous coordinates for use with (4,4)
     transformation matrices.
 
@@ -340,7 +340,7 @@ def generate_reflect_T(
     return T_reflect
 
 
-def _left_compose_T(valid_T_chain: list[np.ndarray]) -> np.ndarray:
+def left_compose_T(valid_T_chain: list[np.ndarray]) -> np.ndarray:
     """Left-compose a list of homogeneous transformations.
 
     :param valid_T_chain: A list of ndarrays of floats, each with shape (4,4),
@@ -374,7 +374,7 @@ def compose_T_pas(
     if not T_pas_chain:
         raise ValueError("At least one transform must be provided.")
 
-    return _left_compose_T(list(T_pas_chain))
+    return left_compose_T(list(T_pas_chain))
 
 
 def compose_T_act(
@@ -417,10 +417,10 @@ def compose_T_act(
     if not T_act_chain:
         raise ValueError("At least one transform must be provided.")
 
-    return _left_compose_T(list(T_act_chain))
+    return left_compose_T(list(T_act_chain))
 
 
-def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
+def invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
     """Invert a rigid homogeneous transform.
 
     A valid rigid homogeneous transform can be broken down into two components:
@@ -472,7 +472,7 @@ def invert_T_pas(T_pas: np.ndarray) -> np.ndarray:
         from the target axes and reference point to the original axes and reference
         point.
     """
-    return _invert_T_rigid(T_pas)
+    return invert_T_rigid(T_pas)
 
 
 def invert_T_act(T_act: np.ndarray) -> np.ndarray:
@@ -494,7 +494,7 @@ def invert_T_act(T_act: np.ndarray) -> np.ndarray:
     :return: A (4,4) ndarray of floats representing the active transform that exactly
         undoes T_act.
     """
-    return _invert_T_rigid(T_act)
+    return invert_T_rigid(T_act)
 
 
 def convert_T_pas_to_T_act(
@@ -565,7 +565,7 @@ def apply_T_to_vectors(
     :return: A ndarray of floats with same shape as vectors_A representing the
         transformed vector(s).
     """
-    vectorsHomog_A = _generate_homogs(vectors_A, is_position)
+    vectorsHomog_A = generate_homogs(vectors_A, is_position)
     return np.asarray(
         np.einsum("ij,...j->...i", T, vectorsHomog_A)[..., :3], dtype=float
     )
@@ -591,7 +591,7 @@ def R_to_quat_wxyz(R: np.ndarray) -> np.ndarray:
 
     q_1: float
     check_1 = r_11 + r_22 + r_33
-    if check_1 > _QUAT_BRANCH_THRESHOLD:
+    if check_1 > QUAT_BRANCH_THRESHOLD:
         q_1 = 0.5 * np.sqrt(1 + check_1)
     else:
         num_1 = (r_32 - r_23) ** 2 + (r_13 - r_31) ** 2 + (r_21 - r_12) ** 2
@@ -600,7 +600,7 @@ def R_to_quat_wxyz(R: np.ndarray) -> np.ndarray:
 
     q_2_abs: float
     check_2 = r_11 - r_22 - r_33
-    if check_2 > _QUAT_BRANCH_THRESHOLD:
+    if check_2 > QUAT_BRANCH_THRESHOLD:
         q_2_abs = 0.5 * np.sqrt(1 + check_2)
     else:
         num_2 = (r_32 - r_23) ** 2 + (r_12 + r_21) ** 2 + (r_31 + r_13) ** 2
@@ -611,7 +611,7 @@ def R_to_quat_wxyz(R: np.ndarray) -> np.ndarray:
 
     q_3_abs: float
     check_3 = -r_11 + r_22 - r_33
-    if check_3 > _QUAT_BRANCH_THRESHOLD:
+    if check_3 > QUAT_BRANCH_THRESHOLD:
         q_3_abs = 0.5 * np.sqrt(1 + check_3)
     else:
         num_3 = (r_13 - r_31) ** 2 + (r_12 + r_21) ** 2 + (r_23 + r_32) ** 2
@@ -622,7 +622,7 @@ def R_to_quat_wxyz(R: np.ndarray) -> np.ndarray:
 
     q_4_abs: float
     check_4 = -r_11 - r_22 + r_33
-    if check_4 > _QUAT_BRANCH_THRESHOLD:
+    if check_4 > QUAT_BRANCH_THRESHOLD:
         q_4_abs = 0.5 * np.sqrt(1 + check_4)
     else:
         num_4 = (r_21 - r_12) ** 2 + (r_31 + r_13) ** 2 + (r_32 + r_23) ** 2
@@ -661,7 +661,7 @@ def R_to_angles_izyx(R: np.ndarray) -> np.ndarray:
     """
     sin_angleY = float(np.clip(-R[0, 2], -1.0, 1.0))
     angleY = float(np.rad2deg(np.arcsin(sin_angleY)))
-    if abs(sin_angleY) > _GIMBAL_LOCK_THRESHOLD:
+    if abs(sin_angleY) > GIMBAL_LOCK_THRESHOLD:
         angleX = 0.0
         angleZ = float(np.rad2deg(np.arctan2(-R[1, 0], R[1, 1])))
     else:

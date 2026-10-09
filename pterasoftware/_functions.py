@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 logger = _logging.get_logger("_functions")
 
-_SINGULARITY_NAMES: tuple[str, ...] = (
+SINGULARITY_NAMES: tuple[str, ...] = (
     "degenerate filament",
     "point on start vertex",
     "point on end vertex",
@@ -41,7 +41,7 @@ _SINGULARITY_NAMES: tuple[str, ...] = (
 # possible components (a negative sign, three-digit hours, and a seconds portion whose
 # three-significant-figure form needs a three-digit exponent, the widest a float can
 # produce).
-_DURATION_PAD_WIDTH: int = 32
+DURATION_PAD_WIDTH: int = 32
 
 # The Panel count at or above which letting the BLAS library multi-thread the linear
 # solves wins whole runs. Below it, a multi-threaded solve's post-work spin window taxes
@@ -51,7 +51,7 @@ _DURATION_PAD_WIDTH: int = 32
 # an isolated timing cannot see the spin window's effect on the launches around it and
 # so puts the crossover well below its in-solver value. One threshold serves both solver
 # families.
-_SOLVE_THREAD_THRESHOLD = 3_000
+SOLVE_THREAD_THRESHOLD = 3_000
 
 
 def log_unexpected_singularity_counts(
@@ -79,7 +79,7 @@ def log_unexpected_singularity_counts(
     for i in range(3):
         count = singularity_counts[i]
         if count > 0:
-            parts.append(f"{_SINGULARITY_NAMES[i]}={count}")
+            parts.append(f"{SINGULARITY_NAMES[i]}={count}")
 
     target_logger.log(
         level,
@@ -725,7 +725,7 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
             formatted_duration = sign + f"{seconds_str} s"
 
     if left_pad:
-        return formatted_duration.rjust(_DURATION_PAD_WIDTH)
+        return formatted_duration.rjust(DURATION_PAD_WIDTH)
     return formatted_duration
 
 
@@ -748,24 +748,24 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
 # The hook is registered only on Linux, the one platform whose Numba wheels build the
 # layer with GCC. The macOS wheels build it with clang against LLVM's libomp, which
 # resets itself in the child, and Windows has no fork.
-_solve_loop_lock = threading.Lock()
-_solve_loop_owner: str | None = None
-_solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
-_forked_from_omp_process = False
+solve_loop_lock = threading.Lock()
+solve_loop_owner: str | None = None
+solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
+forked_from_omp_process = False
 
 
-def _flag_forked_child() -> None:
-    global _forked_from_omp_process
+def flag_forked_child() -> None:
+    global forked_from_omp_process
     try:
         threading_layer = numba.threading_layer()
     except ValueError:
         return
     if threading_layer == "omp":
-        _forked_from_omp_process = True
+        forked_from_omp_process = True
 
 
 if sys.platform.startswith("linux"):
-    os.register_at_fork(after_in_child=_flag_forked_child)
+    os.register_at_fork(after_in_child=flag_forked_child)
 
 
 @contextmanager
@@ -803,12 +803,12 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
         the process is a forked child that inherited a live GNU OpenMP layer.
     :return: None
     """
-    global _solve_loop_owner, _solve_loop_limiter
+    global solve_loop_owner, solve_loop_limiter
 
     this_thread = threading.current_thread().name
 
-    with _solve_loop_lock:
-        if _forked_from_omp_process:
+    with solve_loop_lock:
+        if forked_from_omp_process:
             raise RuntimeError(
                 "This process is a forked child that inherited a live GNU OpenMP "
                 "layer from its parent after a solver run. Fork-method "
@@ -820,10 +820,10 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 "ProcessPoolExecutor, or create worker processes before the first "
                 "solve."
             )
-        if _solve_loop_owner is not None:
+        if solve_loop_owner is not None:
             raise RuntimeError(
                 f"A solver run is already in progress in thread "
-                f'"{_solve_loop_owner}", and thread "{this_thread}" tried to start '
+                f'"{solve_loop_owner}", and thread "{this_thread}" tried to start '
                 f"another. Ptera Software's solvers cannot run concurrently within one "
                 f"process, because limiting the BLAS thread pool around a run's linear "
                 f"solves changes process-wide state that concurrent runs would corrupt, "
@@ -837,17 +837,17 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 f"Biot-Savart kernels hold the global interpreter lock."
             )
 
-        _solve_loop_owner = this_thread
-        if num_panels < _SOLVE_THREAD_THRESHOLD:
-            _solve_loop_limiter = threadpoolctl.threadpool_limits(
+        solve_loop_owner = this_thread
+        if num_panels < SOLVE_THREAD_THRESHOLD:
+            solve_loop_limiter = threadpoolctl.threadpool_limits(
                 limits=1, user_api="blas"
             )
 
     try:
         yield
     finally:
-        with _solve_loop_lock:
-            if _solve_loop_limiter is not None:
-                _solve_loop_limiter.restore_original_limits()
-                _solve_loop_limiter = None
-            _solve_loop_owner = None
+        with solve_loop_lock:
+            if solve_loop_limiter is not None:
+                solve_loop_limiter.restore_original_limits()
+                solve_loop_limiter = None
+            solve_loop_owner = None

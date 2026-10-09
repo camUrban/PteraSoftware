@@ -83,75 +83,75 @@ class TestConvertLoggingLevelNameToValue(unittest.TestCase):
     def test_debug_level(self) -> None:
         """Should convert "Debug" to logging.DEBUG."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("Debug"), logging.DEBUG
+            _logging.convert_logging_level_name_to_value("Debug"), logging.DEBUG
         )
 
     def test_info_level(self) -> None:
         """Should convert "Info" to logging.INFO."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("Info"), logging.INFO
+            _logging.convert_logging_level_name_to_value("Info"), logging.INFO
         )
 
     def test_warning_level(self) -> None:
         """Should convert "Warning" to logging.WARNING."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("Warning"), logging.WARNING
+            _logging.convert_logging_level_name_to_value("Warning"), logging.WARNING
         )
 
     def test_error_level(self) -> None:
         """Should convert "Error" to logging.ERROR."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("Error"), logging.ERROR
+            _logging.convert_logging_level_name_to_value("Error"), logging.ERROR
         )
 
     def test_critical_level(self) -> None:
         """Should convert "Critical" to logging.CRITICAL."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("Critical"), logging.CRITICAL
+            _logging.convert_logging_level_name_to_value("Critical"), logging.CRITICAL
         )
 
     def test_invalid_level_raises_value_error(self) -> None:
         """Should raise ValueError for invalid level names."""
         with self.assertRaises(ValueError):
-            _logging._convert_logging_level_name_to_value("InvalidLevel")
+            _logging.convert_logging_level_name_to_value("InvalidLevel")
 
     def test_case_insensitive_lowercase(self) -> None:
         """Should accept lowercase level names."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("debug"), logging.DEBUG
+            _logging.convert_logging_level_name_to_value("debug"), logging.DEBUG
         )
 
     def test_case_insensitive_uppercase(self) -> None:
         """Should accept uppercase level names."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("WARNING"), logging.WARNING
+            _logging.convert_logging_level_name_to_value("WARNING"), logging.WARNING
         )
 
     def test_case_insensitive_mixed_case(self) -> None:
         """Should accept mixed case level names."""
         self.assertEqual(
-            _logging._convert_logging_level_name_to_value("CrItIcAl"), logging.CRITICAL
+            _logging.convert_logging_level_name_to_value("CrItIcAl"), logging.CRITICAL
         )
 
 
 class TestTqdmLoggingHandler(unittest.TestCase):
-    """Tests for the _TqdmLoggingHandler class."""
+    """Tests for the TqdmLoggingHandler class."""
 
     def test_handler_inherits_from_logging_handler(self) -> None:
-        """_TqdmLoggingHandler should inherit from logging.Handler."""
-        handler = _logging._TqdmLoggingHandler()
+        """TqdmLoggingHandler should inherit from logging.Handler."""
+        handler = _logging.TqdmLoggingHandler()
         self.assertIsInstance(handler, logging.Handler)
 
     def test_handler_uses_provided_stream(self) -> None:
-        """_TqdmLoggingHandler should use the provided stream."""
+        """TqdmLoggingHandler should use the provided stream."""
         stream = io.StringIO()
-        handler = _logging._TqdmLoggingHandler(stream=stream)
+        handler = _logging.TqdmLoggingHandler(stream=stream)
         self.assertEqual(handler.stream, stream)
 
     def test_handler_emits_formatted_log_record(self) -> None:
-        """_TqdmLoggingHandler should emit formatted log records."""
+        """TqdmLoggingHandler should emit formatted log records."""
         stream = io.StringIO()
-        handler = _logging._TqdmLoggingHandler(stream=stream)
+        handler = _logging.TqdmLoggingHandler(stream=stream)
         handler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
         # Create and emit a log record.
@@ -171,9 +171,9 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         self.assertIn("INFO - Test message", output)
 
     def test_handler_flush_works(self) -> None:
-        """_TqdmLoggingHandler should flush the stream when flush() is called."""
+        """TqdmLoggingHandler should flush the stream when flush() is called."""
         stream = io.StringIO()
-        handler = _logging._TqdmLoggingHandler(stream=stream)
+        handler = _logging.TqdmLoggingHandler(stream=stream)
         handler.setFormatter(logging.Formatter("%(message)s"))
 
         # Emit a log record.
@@ -197,29 +197,29 @@ class TestTqdmLoggingHandler(unittest.TestCase):
 
 
 class TestMaxModuleLoggerDisplayNameLength(unittest.TestCase):
-    """Tests for the _max_module_logger_display_name_length function."""
+    """Tests for the max_module_logger_display_name_length function."""
 
     def test_returns_at_least_the_package_logger_name_length(self) -> None:
         """Should return at least the length of the package logger name."""
         self.assertGreaterEqual(
-            _logging._max_module_logger_display_name_length(),
+            _logging.max_module_logger_display_name_length(),
             len(_logging.PACKAGE_LOGGER_NAME),
         )
 
     def test_returns_the_longest_display_name_length(self) -> None:
         """Should return the length of the longest module logger display name."""
         self.assertEqual(
-            _logging._max_module_logger_display_name_length(),
+            _logging.max_module_logger_display_name_length(),
             len("_coupled_unsteady_ring_vortex_lattice_method"),
         )
 
 
 class TestPackageLogFormatter(unittest.TestCase):
-    """Tests for the _PackageLogFormatter class."""
+    """Tests for the PackageLogFormatter class."""
 
     def test_strips_package_prefix_from_display_name(self) -> None:
-        """_PackageLogFormatter should strip the package prefix from the name."""
-        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        """PackageLogFormatter should strip the package prefix from the name."""
+        formatter = _logging.PackageLogFormatter("%(display_name)s|%(message)s")
         record = logging.LogRecord(
             name="pterasoftware.trim",
             level=logging.INFO,
@@ -232,8 +232,8 @@ class TestPackageLogFormatter(unittest.TestCase):
         self.assertEqual(formatter.format(record), "trim|Test message")
 
     def test_keeps_hierarchy_below_package_prefix(self) -> None:
-        """_PackageLogFormatter should keep the hierarchy below the prefix."""
-        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        """PackageLogFormatter should keep the hierarchy below the prefix."""
+        formatter = _logging.PackageLogFormatter("%(display_name)s|%(message)s")
         record = logging.LogRecord(
             name="pterasoftware.movements.movement",
             level=logging.INFO,
@@ -246,8 +246,8 @@ class TestPackageLogFormatter(unittest.TestCase):
         self.assertEqual(formatter.format(record), "movements.movement|Test message")
 
     def test_keeps_bare_package_logger_name(self) -> None:
-        """_PackageLogFormatter should leave the bare package name unchanged."""
-        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        """PackageLogFormatter should leave the bare package name unchanged."""
+        formatter = _logging.PackageLogFormatter("%(display_name)s|%(message)s")
         record = logging.LogRecord(
             name="pterasoftware",
             level=logging.INFO,
@@ -292,10 +292,10 @@ class TestSetupLogging(unittest.TestCase):
         self.assertEqual(len(logger.handlers), 1)
 
     def test_uses_tqdm_handler_by_default(self) -> None:
-        """set_up_logging should use _TqdmLoggingHandler when no handler is provided."""
+        """set_up_logging should use TqdmLoggingHandler when no handler is provided."""
         _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
-        self.assertIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
+        self.assertIsInstance(logger.handlers[0], _logging.TqdmLoggingHandler)
 
     def test_uses_custom_handler_when_provided(self) -> None:
         """set_up_logging should use the provided handler instead of the default."""

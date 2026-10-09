@@ -88,7 +88,7 @@ def _public_constructor_parameters(this_class: type) -> set[str]:
 
 class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     """This class contains methods for testing
-    _convergence_meshing._get_wing_section_num_spanwise_panels, the search that picks a
+    _convergence_meshing.get_wing_section_num_spanwise_panels, the search that picks a
     non-edge-defined Wing section's number of spanwise Panels."""
 
     def setUp(self) -> None:
@@ -110,7 +110,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     def _average_panel_aspect_ratio(self, num_spanwise_panels: int) -> float:
         """Meshes the wing section at a number of spanwise Panels and returns its
         average Panel aspect ratio."""
-        return _convergence_meshing._get_wing_section_average_panel_aspect_ratio(
+        return _convergence_meshing.get_wing_section_average_panel_aspect_ratio(
             self.num_chordwise_panels,
             self.chordwise_spacing,
             self.ref_airplane,
@@ -122,7 +122,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     def _num_spanwise_panels_for(self, target: int) -> int:
         """Searches for the number of spanwise Panels that hits a target average Panel
         aspect ratio, starting from the smallest valid count."""
-        return _convergence_meshing._get_wing_section_num_spanwise_panels(
+        return _convergence_meshing.get_wing_section_num_spanwise_panels(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
             chordwise_spacing=self.chordwise_spacing,
@@ -164,8 +164,8 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
 
 class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
     """This class contains methods for testing
-    _convergence_meshing._get_num_wing_cross_sections_for_panel_ar, the search that
-    picks an edge-defined Wing's number of WingCrossSections."""
+    _convergence_meshing.get_num_wing_cross_sections_for_panel_ar, the search that picks
+    an edge-defined Wing's number of WingCrossSections."""
 
     @staticmethod
     def _tapered_edge_points() -> tuple[np.ndarray, np.ndarray]:
@@ -208,7 +208,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
     def _average_panel_aspect_ratio(self, num_wing_cross_sections: int) -> float:
         """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections
         and returns its average Panel aspect ratio."""
-        refined_wing = _convergence_meshing._build_edge_defined_wing(
+        refined_wing = _convergence_meshing.build_edge_defined_wing(
             self.ref_wing, self.num_chordwise_panels, num_wing_cross_sections
         )
         airplane = ps.geometry.airplane.Airplane(wings=[refined_wing])
@@ -223,7 +223,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         aspect ratio, starting from the smallest valid count."""
         if ref_airplane is None:
             ref_airplane = self.ref_airplane
-        return _convergence_meshing._get_num_wing_cross_sections_for_panel_ar(
+        return _convergence_meshing.get_num_wing_cross_sections_for_panel_ar(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
             ref_airplane=ref_airplane,

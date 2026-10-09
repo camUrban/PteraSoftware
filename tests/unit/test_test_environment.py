@@ -20,7 +20,7 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
     def test_dirty_file_load_warning_is_suppressed(self) -> None:
         """Loading provenance flagged _dirty should log no warning."""
         with self.assertNoLogs("pterasoftware._serialization", level="WARNING"):
-            _serialization._log_load_warnings({"_dirty": True})
+            _serialization.log_load_warnings({"_dirty": True})
 
     def test_dirty_working_tree_load_warning_is_suppressed(self) -> None:
         """Loading with a dirty working tree should log no warning."""
@@ -39,9 +39,7 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
             ],
         ):
             with self.assertNoLogs("pterasoftware._serialization", level="WARNING"):
-                _serialization._log_load_warnings(
-                    {"_dirty": False, "_commit": "abc123"}
-                )
+                _serialization.log_load_warnings({"_dirty": False, "_commit": "abc123"})
 
     def test_unrelated_serialization_warnings_still_pass(self) -> None:
         """The filter should not suppress other serialization warnings."""
@@ -60,8 +58,6 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
             with self.assertLogs(
                 "pterasoftware._serialization", level="WARNING"
             ) as logs:
-                _serialization._log_load_warnings(
-                    {"_dirty": False, "_commit": "abc123"}
-                )
+                _serialization.log_load_warnings({"_dirty": False, "_commit": "abc123"})
         self.assertEqual(len(logs.output), 1)
         self.assertIn("saved at commit", logs.output[0])

@@ -22,17 +22,17 @@ from pterasoftware._oscillation import (
 )
 from pterasoftware._panel import Panel
 from pterasoftware._serialization import (
-    _FORMAT_VERSION,
+    FORMAT_VERSION,
     UnboundCallable,
-    _deserialize_value,
-    _ndarray_from_dict,
-    _ndarray_to_dict,
-    _object_from_dict,
-    _object_to_dict,
-    _serialize_value,
+    deserialize_value,
     hash_object,
     load,
+    ndarray_from_dict,
+    ndarray_to_dict,
+    object_from_dict,
+    object_to_dict,
     save,
+    serialize_value,
 )
 from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
     AeroelasticUnsteadyRingVortexLatticeMethodSolver,
@@ -157,7 +157,7 @@ def count_records(data: object, type_name: str) -> int:
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
-    """This class contains methods for testing _ndarray_to_dict and _ndarray_from_dict
+    """This class contains methods for testing ndarray_to_dict and ndarray_from_dict
     round trips."""
 
     def test_float64_1d(self) -> None:
@@ -166,7 +166,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([1.0, 2.0, 3.0], dtype=np.float64)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.float64)
 
@@ -176,7 +176,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], dtype=np.float64)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.shape, (3, 2))
 
@@ -186,7 +186,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.arange(24.0, dtype=np.float64).reshape((2, 4, 3))
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.shape, (2, 4, 3))
 
@@ -196,7 +196,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([10, 20, 30], dtype=np.int64)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.int64)
 
@@ -206,7 +206,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([True, False, True, False], dtype=np.bool)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.bool)
 
@@ -216,7 +216,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([], dtype=np.float64)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.shape, (0,))
         self.assertEqual(result.dtype, np.float64)
@@ -227,7 +227,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.empty((0, 3), dtype=np.float64)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertEqual(result.shape, (0, 3))
         self.assertEqual(result.dtype, np.float64)
 
@@ -238,7 +238,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         """
         arr = np.array([1.0, 2.0, 3.0], dtype=np.float64)
         self.assertTrue(arr.flags.writeable)
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertTrue(result.flags.writeable)
 
     def test_read_only_preserved(self) -> None:
@@ -248,7 +248,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         """
         arr = np.array([1.0, 2.0, 3.0], dtype=np.float64)
         arr.flags.writeable = False
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
         self.assertFalse(result.flags.writeable)
 
@@ -258,9 +258,9 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         :return: None
         """
         arr = np.array([1.0, 2.0], dtype=np.float64)
-        serialized_dict = _ndarray_to_dict(arr)
+        serialized_dict = ndarray_to_dict(arr)
         del serialized_dict["writeable"]
-        result = _ndarray_from_dict(serialized_dict)
+        result = ndarray_from_dict(serialized_dict)
         self.assertTrue(result.flags.writeable)
 
     def test_dtype_object_with_none(self) -> None:
@@ -272,7 +272,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         arr[0] = None
         arr[1] = None
         arr[2] = None
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertEqual(result.dtype, object)
         self.assertEqual(result.shape, (3,))
         for i in range(3):
@@ -287,7 +287,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         for i in range(2):
             for j in range(3):
                 arr[i, j] = None
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertEqual(result.shape, (2, 3))
         self.assertEqual(result.dtype, object)
 
@@ -300,7 +300,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         arr[0] = None
         arr[1] = None
         arr.flags.writeable = False
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertFalse(result.flags.writeable)
 
     def test_dtype_object_writeable_preserved(self) -> None:
@@ -311,12 +311,12 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         arr = np.empty(2, dtype=object)
         arr[0] = None
         arr[1] = None
-        result = _ndarray_from_dict(_ndarray_to_dict(arr))
+        result = ndarray_from_dict(ndarray_to_dict(arr))
         self.assertTrue(result.flags.writeable)
 
 
 class TestNdarrayToDict(unittest.TestCase):
-    """This class contains methods for testing _ndarray_to_dict output structure."""
+    """This class contains methods for testing ndarray_to_dict output structure."""
 
     def test_numeric_dict_keys(self) -> None:
         """Tests that a numeric array produces a dict with the expected keys.
@@ -324,7 +324,7 @@ class TestNdarrayToDict(unittest.TestCase):
         :return: None
         """
         arr = np.array([1.0], dtype=np.float64)
-        serialized_dict = _ndarray_to_dict(arr)
+        serialized_dict = ndarray_to_dict(arr)
         self.assertEqual(serialized_dict["_type"], "ndarray")
         self.assertEqual(serialized_dict["dtype"], "float64")
         self.assertEqual(serialized_dict["shape"], [1])
@@ -339,7 +339,7 @@ class TestNdarrayToDict(unittest.TestCase):
         """
         arr = np.empty(1, dtype=object)
         arr[0] = None
-        serialized_dict = _ndarray_to_dict(arr)
+        serialized_dict = ndarray_to_dict(arr)
         self.assertEqual(serialized_dict["_type"], "ndarray")
         self.assertEqual(serialized_dict["dtype"], "object")
         self.assertEqual(serialized_dict["shape"], [1])
@@ -353,26 +353,26 @@ class TestNdarrayToDict(unittest.TestCase):
         :return: None
         """
         arr = np.array([1.0, 2.0], dtype=np.float64)
-        serialized_dict = _ndarray_to_dict(arr)
+        serialized_dict = ndarray_to_dict(arr)
         self.assertIsInstance(serialized_dict["data"], str)
 
 
 class TestSerializeValue(unittest.TestCase):
-    """This class contains methods for testing _serialize_value."""
+    """This class contains methods for testing serialize_value."""
 
     def test_none(self) -> None:
         """Tests that None serializes to None.
 
         :return: None
         """
-        self.assertIsNone(_serialize_value(None))
+        self.assertIsNone(serialize_value(None))
 
     def test_bool_true(self) -> None:
         """Tests that True serializes to True.
 
         :return: None
         """
-        result = _serialize_value(True)
+        result = serialize_value(True)
         self.assertIs(result, True)
 
     def test_bool_false(self) -> None:
@@ -380,7 +380,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(False)
+        result = serialize_value(False)
         self.assertIs(result, False)
 
     def test_np_bool(self) -> None:
@@ -388,7 +388,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(np.bool(True))
+        result = serialize_value(np.bool(True))
         self.assertIs(result, True)
         self.assertIsInstance(result, bool)
 
@@ -397,7 +397,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(True)
+        result = serialize_value(True)
         self.assertNotIsInstance(result, dict)
 
     def test_int(self) -> None:
@@ -405,7 +405,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(42)
+        result = serialize_value(42)
         self.assertEqual(result, {"_type": "int", "value": 42})
 
     def test_np_int64(self) -> None:
@@ -413,7 +413,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(np.int64(7))
+        result = serialize_value(np.int64(7))
         self.assertEqual(result, {"_type": "int", "value": 7})
         assert isinstance(result, dict)
         self.assertIsInstance(result["value"], int)
@@ -423,7 +423,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(3.14)
+        result = serialize_value(3.14)
         self.assertEqual(result, {"_type": "float", "value": 3.14})
 
     def test_np_float64(self) -> None:
@@ -431,7 +431,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(np.float64(2.718))
+        result = serialize_value(np.float64(2.718))
         self.assertEqual(result, {"_type": "float", "value": 2.718})
         assert isinstance(result, dict)
         self.assertIsInstance(result["value"], float)
@@ -442,7 +442,7 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _serialize_value(float("inf"))
+            serialize_value(float("inf"))
 
     def test_float_negative_inf_raises(self) -> None:
         """Tests that serializing negative inf raises a ValueError.
@@ -450,7 +450,7 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _serialize_value(float("-inf"))
+            serialize_value(float("-inf"))
 
     def test_float_nan_raises(self) -> None:
         """Tests that serializing NaN raises a ValueError.
@@ -458,14 +458,14 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _serialize_value(float("nan"))
+            serialize_value(float("nan"))
 
     def test_str(self) -> None:
         """Tests that a string serializes to itself.
 
         :return: None
         """
-        result = _serialize_value("hello")
+        result = serialize_value("hello")
         self.assertEqual(result, "hello")
 
     def test_bytes(self) -> None:
@@ -473,18 +473,18 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(b"\x00\x01binary")
+        result = serialize_value(b"\x00\x01binary")
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "bytes")
         self.assertIsInstance(result["data"], str)
 
     def test_ndarray(self) -> None:
-        """Tests that a numpy array delegates to _ndarray_to_dict.
+        """Tests that a numpy array delegates to ndarray_to_dict.
 
         :return: None
         """
         arr = np.array([1.0, 2.0], dtype=np.float64)
-        result = _serialize_value(arr)
+        result = serialize_value(arr)
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "ndarray")
 
@@ -493,7 +493,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value((1, 2.0, "three"))
+        result = serialize_value((1, 2.0, "three"))
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "tuple")
         self.assertEqual(len(result["items"]), 3)
@@ -503,7 +503,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(())
+        result = serialize_value(())
         self.assertEqual(result, {"_type": "tuple", "items": []})
 
     def test_list(self) -> None:
@@ -511,7 +511,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value([1, 2.0, "three"])
+        result = serialize_value([1, 2.0, "three"])
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "list")
         self.assertEqual(len(result["items"]), 3)
@@ -521,7 +521,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value([])
+        result = serialize_value([])
         self.assertEqual(result, {"_type": "list", "items": []})
 
     def test_dict(self) -> None:
@@ -529,7 +529,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value({"a": 1, "b": 2.0, "c": "three"})
+        result = serialize_value({"a": 1, "b": 2.0, "c": "three"})
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "dict")
         self.assertEqual(len(result["items"]), 3)
@@ -539,7 +539,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value({})
+        result = serialize_value({})
         self.assertEqual(result, {"_type": "dict", "items": {}})
 
     def test_dict_non_str_key_raises(self) -> None:
@@ -548,14 +548,14 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(TypeError):
-            _serialize_value({1: "one"})
+            serialize_value({1: "one"})
 
     def test_nested_tuple(self) -> None:
         """Tests that a nested tuple serializes recursively.
 
         :return: None
         """
-        result = _serialize_value((1, (2, 3)))
+        result = serialize_value((1, (2, 3)))
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "tuple")
         inner = result["items"][1]
@@ -568,7 +568,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(oscillating_sin_at_time)
+        result = serialize_value(oscillating_sin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "sine"})
 
     def test_callable_uniform(self) -> None:
@@ -576,7 +576,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(oscillating_lin_at_time)
+        result = serialize_value(oscillating_lin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "uniform"})
 
     def test_custom_callable_serializes_as_marker(self) -> None:
@@ -587,7 +587,7 @@ class TestSerializeValue(unittest.TestCase):
         """
         custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
         source = textwrap.dedent(inspect.getsource(custom_spacing))
-        result = _serialize_value(custom_spacing)
+        result = serialize_value(custom_spacing)
         self.assertEqual(
             result,
             {
@@ -607,7 +607,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(lambda time: 0.0)
+        result = serialize_value(lambda time: 0.0)
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "custom_callable")
         self.assertTrue(result["qualname"].endswith(".<locals>.<lambda>"))
@@ -623,7 +623,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(len)
+        result = serialize_value(len)
         self.assertEqual(
             result,
             {
@@ -640,7 +640,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(functools.partial(max, 0.0))
+        result = serialize_value(functools.partial(max, 0.0))
         self.assertEqual(
             result,
             {
@@ -658,7 +658,7 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         unbound = serialization_fixtures.make_unbound_callable_fixture()
-        result = _serialize_value(unbound)
+        result = serialize_value(unbound)
         self.assertEqual(
             result,
             {
@@ -675,7 +675,7 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(TypeError):
-            _serialize_value(set())
+            serialize_value(set())
 
     def test_shared_object_serializes_as_ref(self) -> None:
         """Tests that the second encounter of one object serializes as a ref dict.
@@ -683,7 +683,7 @@ class TestSerializeValue(unittest.TestCase):
         :return: None
         """
         operating_point = OperatingPoint()
-        result = _serialize_value((operating_point, operating_point))
+        result = serialize_value((operating_point, operating_point))
         assert isinstance(result, dict)
         first, second = result["items"]
         self.assertEqual(first["_type"], "OperatingPoint")
@@ -691,42 +691,42 @@ class TestSerializeValue(unittest.TestCase):
 
 
 class TestDeserializeValue(unittest.TestCase):
-    """This class contains methods for testing _deserialize_value."""
+    """This class contains methods for testing deserialize_value."""
 
     def test_none(self) -> None:
         """Tests that None deserializes to None.
 
         :return: None
         """
-        self.assertIsNone(_deserialize_value(None))
+        self.assertIsNone(deserialize_value(None))
 
     def test_bool_true(self) -> None:
         """Tests that True deserializes to True.
 
         :return: None
         """
-        self.assertIs(_deserialize_value(True), True)
+        self.assertIs(deserialize_value(True), True)
 
     def test_bool_false(self) -> None:
         """Tests that False deserializes to False.
 
         :return: None
         """
-        self.assertIs(_deserialize_value(False), False)
+        self.assertIs(deserialize_value(False), False)
 
     def test_str(self) -> None:
         """Tests that a string deserializes to itself.
 
         :return: None
         """
-        self.assertEqual(_deserialize_value("hello"), "hello")
+        self.assertEqual(deserialize_value("hello"), "hello")
 
     def test_bytes(self) -> None:
         """Tests that a bytes dict deserializes to bytes.
 
         :return: None
         """
-        result = _deserialize_value({"_type": "bytes", "data": "AAFiaW5hcnk="})
+        result = deserialize_value({"_type": "bytes", "data": "AAFiaW5hcnk="})
         self.assertEqual(result, b"\x00\x01binary")
         self.assertIsInstance(result, bytes)
 
@@ -735,7 +735,7 @@ class TestDeserializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value({"_type": "int", "value": 42})
+        result = deserialize_value({"_type": "int", "value": 42})
         self.assertEqual(result, 42)
         self.assertIsInstance(result, int)
 
@@ -744,7 +744,7 @@ class TestDeserializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value({"_type": "float", "value": 3.14})
+        result = deserialize_value({"_type": "float", "value": 3.14})
         self.assertEqual(result, 3.14)
         self.assertIsInstance(result, float)
 
@@ -754,8 +754,8 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         arr = np.array([1.0, 2.0], dtype=np.float64)
-        serialized_dict = _ndarray_to_dict(arr)
-        result = _deserialize_value(serialized_dict)
+        serialized_dict = ndarray_to_dict(arr)
+        result = deserialize_value(serialized_dict)
         npt.assert_array_equal(result, arr)
 
     def test_tuple(self) -> None:
@@ -771,7 +771,7 @@ class TestDeserializeValue(unittest.TestCase):
                 "three",
             ],
         }
-        result = _deserialize_value(data)
+        result = deserialize_value(data)
         self.assertEqual(result, (1, 2.0, "three"))
         self.assertIsInstance(result, tuple)
 
@@ -787,7 +787,7 @@ class TestDeserializeValue(unittest.TestCase):
                 {"_type": "float", "value": 2.0},
             ],
         }
-        result = _deserialize_value(data)
+        result = deserialize_value(data)
         self.assertEqual(result, [1, 2.0])
         self.assertIsInstance(result, list)
 
@@ -803,7 +803,7 @@ class TestDeserializeValue(unittest.TestCase):
                 "b": {"_type": "float", "value": 2.0},
             },
         }
-        result = _deserialize_value(data)
+        result = deserialize_value(data)
         self.assertEqual(result, {"a": 1, "b": 2.0})
         self.assertIsInstance(result, dict)
 
@@ -813,7 +813,7 @@ class TestDeserializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value({"_type": "callable", "name": "sine"})
+        result = deserialize_value({"_type": "callable", "name": "sine"})
         self.assertIs(result, oscillating_sin_at_time)
 
     def test_callable_uniform(self) -> None:
@@ -822,7 +822,7 @@ class TestDeserializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value({"_type": "callable", "name": "uniform"})
+        result = deserialize_value({"_type": "callable", "name": "uniform"})
         self.assertIs(result, oscillating_lin_at_time)
 
     def test_callable_unknown_name_raises(self) -> None:
@@ -831,7 +831,7 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _deserialize_value({"_type": "callable", "name": "unknown"})
+            deserialize_value({"_type": "callable", "name": "unknown"})
 
     def test_custom_callable_deserializes_to_unbound_callable(self) -> None:
         """Tests that a custom callable marker deserializes to an UnboundCallable
@@ -841,7 +841,7 @@ class TestDeserializeValue(unittest.TestCase):
         """
         source = "def my_spacing(time: float) -> float:\n    return 0.0\n"
         source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
-        result = _deserialize_value(
+        result = deserialize_value(
             {
                 "_type": "custom_callable",
                 "qualname": "my_module.my_spacing",
@@ -861,9 +861,9 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
-        marker = _serialize_value(custom_spacing)
+        marker = serialize_value(custom_spacing)
         assert isinstance(marker, dict)
-        result = _deserialize_value(
+        result = deserialize_value(
             marker, callables={marker["qualname"]: custom_spacing}
         )
         self.assertIs(result, custom_spacing)
@@ -877,8 +877,8 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
-        marker = _serialize_value(custom_spacing)
-        result = _deserialize_value(
+        marker = serialize_value(custom_spacing)
+        result = deserialize_value(
             marker, callables={"some_module.other_function": custom_spacing}
         )
         self.assertIsInstance(result, UnboundCallable)
@@ -889,7 +889,7 @@ class TestDeserializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value(
+        result = deserialize_value(
             {
                 "_type": "custom_callable",
                 "qualname": "builtins.len",
@@ -908,7 +908,7 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _deserialize_value(42)
+            deserialize_value(42)
 
     def test_bare_float_raises(self) -> None:
         """Tests that a bare JSON float raises a ValueError.
@@ -916,7 +916,7 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _deserialize_value(3.14)
+            deserialize_value(3.14)
 
     def test_dict_without_type_raises(self) -> None:
         """Tests that a dict without a _type key raises a ValueError.
@@ -924,7 +924,7 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _deserialize_value({"key": "value"})
+            deserialize_value({"key": "value"})
 
     def test_unknown_type_tag_raises(self) -> None:
         """Tests that an unknown _type tag raises a TypeError.
@@ -932,7 +932,7 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(TypeError):
-            _deserialize_value({"_type": "unknown"})
+            deserialize_value({"_type": "unknown"})
 
     def test_chunked_placeholder_without_chunk_values_raises(self) -> None:
         """Tests that a chunked slot placeholder raises a ValueError when no chunk
@@ -947,7 +947,7 @@ class TestDeserializeValue(unittest.TestCase):
             "length": 0,
         }
         with self.assertRaises(ValueError):
-            _deserialize_value(placeholder)
+            deserialize_value(placeholder)
 
     def test_unknown_ref_id_raises(self) -> None:
         """Tests that a ref to an id absent from the reference table raises a
@@ -956,11 +956,11 @@ class TestDeserializeValue(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            _deserialize_value({"_type": "ref", "id": 0})
+            deserialize_value({"_type": "ref", "id": 0})
 
 
 class TestValueRoundTrip(unittest.TestCase):
-    """This class contains methods for testing _serialize_value and _deserialize_value
+    """This class contains methods for testing serialize_value and deserialize_value
     round trips."""
 
     def test_none(self) -> None:
@@ -968,7 +968,7 @@ class TestValueRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        self.assertIsNone(_deserialize_value(_serialize_value(None)))
+        self.assertIsNone(deserialize_value(serialize_value(None)))
 
     def test_bool(self) -> None:
         """Tests round trip for bool values.
@@ -977,7 +977,7 @@ class TestValueRoundTrip(unittest.TestCase):
         """
         for value in [True, False]:
             with self.subTest(value=value):
-                self.assertIs(_deserialize_value(_serialize_value(value)), value)
+                self.assertIs(deserialize_value(serialize_value(value)), value)
 
     def test_int(self) -> None:
         """Tests round trip for int values.
@@ -986,7 +986,7 @@ class TestValueRoundTrip(unittest.TestCase):
         """
         for value in [0, 1, -1, 42, -999]:
             with self.subTest(value=value):
-                result = _deserialize_value(_serialize_value(value))
+                result = deserialize_value(serialize_value(value))
                 self.assertEqual(result, value)
                 self.assertIsInstance(result, int)
 
@@ -995,7 +995,7 @@ class TestValueRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value(_serialize_value(np.int64(7)))
+        result = deserialize_value(serialize_value(np.int64(7)))
         self.assertEqual(result, 7)
         self.assertIsInstance(result, int)
 
@@ -1006,7 +1006,7 @@ class TestValueRoundTrip(unittest.TestCase):
         """
         for value in [0.0, 1.5, -3.14, 1e-10, 1e10]:
             with self.subTest(value=value):
-                result = _deserialize_value(_serialize_value(value))
+                result = deserialize_value(serialize_value(value))
                 self.assertEqual(result, value)
                 self.assertIsInstance(result, float)
 
@@ -1015,7 +1015,7 @@ class TestValueRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value(_serialize_value(np.float64(2.718)))
+        result = deserialize_value(serialize_value(np.float64(2.718)))
         self.assertEqual(result, 2.718)
         self.assertIsInstance(result, float)
 
@@ -1026,7 +1026,7 @@ class TestValueRoundTrip(unittest.TestCase):
         """
         for value in ["", "hello", "cosine", "uniform"]:
             with self.subTest(value=value):
-                self.assertEqual(_deserialize_value(_serialize_value(value)), value)
+                self.assertEqual(deserialize_value(serialize_value(value)), value)
 
     def test_bytes(self) -> None:
         """Tests round trip for bytes values.
@@ -1035,7 +1035,7 @@ class TestValueRoundTrip(unittest.TestCase):
         """
         for value in [b"", b"hello", b"\x00\x01\xff"]:
             with self.subTest(value=value):
-                result = _deserialize_value(_serialize_value(value))
+                result = deserialize_value(serialize_value(value))
                 self.assertEqual(result, value)
                 self.assertIsInstance(result, bytes)
 
@@ -1045,7 +1045,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         value = (1, 2.0, "three", None, True)
-        result = _deserialize_value(_serialize_value(value))
+        result = deserialize_value(serialize_value(value))
         self.assertEqual(result, value)
         self.assertIsInstance(result, tuple)
 
@@ -1055,7 +1055,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         value = [1, 2.0, "three", None, False]
-        result = _deserialize_value(_serialize_value(value))
+        result = deserialize_value(serialize_value(value))
         self.assertEqual(result, value)
         self.assertIsInstance(result, list)
 
@@ -1065,7 +1065,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         value = {"a": 1, "b": 2.0, "c": "three", "d": None, "e": b"bytes"}
-        result = _deserialize_value(_serialize_value(value))
+        result = deserialize_value(serialize_value(value))
         self.assertEqual(result, value)
         self.assertIsInstance(result, dict)
 
@@ -1075,7 +1075,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         value = ([1, 2], (3.0, "four"), [None, True])
-        result = _deserialize_value(_serialize_value(value))
+        result = deserialize_value(serialize_value(value))
         assert isinstance(result, tuple)
         self.assertEqual(result[0], [1, 2])
         self.assertIsInstance(result[0], list)
@@ -1088,7 +1088,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         self.assertIs(
-            _deserialize_value(_serialize_value(oscillating_sin_at_time)),
+            deserialize_value(serialize_value(oscillating_sin_at_time)),
             oscillating_sin_at_time,
         )
 
@@ -1098,7 +1098,7 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         self.assertIs(
-            _deserialize_value(_serialize_value(oscillating_lin_at_time)),
+            deserialize_value(serialize_value(oscillating_lin_at_time)),
             oscillating_lin_at_time,
         )
 
@@ -1109,10 +1109,10 @@ class TestValueRoundTrip(unittest.TestCase):
         :return: None
         """
         custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
-        marker = _serialize_value(custom_spacing)
-        result = _deserialize_value(marker)
+        marker = serialize_value(custom_spacing)
+        result = deserialize_value(marker)
         assert isinstance(result, UnboundCallable)
-        self.assertEqual(_serialize_value(result), marker)
+        self.assertEqual(serialize_value(result), marker)
 
 
 class TestUnboundCallable(unittest.TestCase):
@@ -1219,7 +1219,7 @@ class TestUnboundCallable(unittest.TestCase):
 
 
 class TestObjectToDict(unittest.TestCase):
-    """This class contains methods for testing _object_to_dict."""
+    """This class contains methods for testing object_to_dict."""
 
     def test_unregistered_class_raises(self) -> None:
         """Tests that an unregistered class raises a TypeError.
@@ -1227,11 +1227,11 @@ class TestObjectToDict(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(TypeError):
-            _object_to_dict("not a Ptera Software object")
+            object_to_dict("not a Ptera Software object")
 
 
 class TestObjectFromDict(unittest.TestCase):
-    """This class contains methods for testing _object_from_dict."""
+    """This class contains methods for testing object_from_dict."""
 
     def test_unknown_class_raises(self) -> None:
         """Tests that an unknown class name raises a TypeError.
@@ -1239,7 +1239,7 @@ class TestObjectFromDict(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(TypeError):
-            _object_from_dict({"_type": "UnknownClass"})
+            object_from_dict({"_type": "UnknownClass"})
 
 
 class TestHashObject(unittest.TestCase):
@@ -1354,7 +1354,7 @@ class TestHashObject(unittest.TestCase):
         operating_point = OperatingPoint()
         base_hash = hash_object(operating_point)
         with mock.patch(
-            "pterasoftware._serialization._FORMAT_VERSION", _FORMAT_VERSION + 1
+            "pterasoftware._serialization.FORMAT_VERSION", FORMAT_VERSION + 1
         ):
             bumped_hash = hash_object(operating_point)
         self.assertNotEqual(base_hash, bumped_hash)
@@ -1475,7 +1475,7 @@ class TestSaveLoad(unittest.TestCase):
             path = Path(tmp) / "test.psz"
             save(path, operating_point)
             header = read_header(path)
-        self.assertEqual(header["_format_version"], _FORMAT_VERSION)
+        self.assertEqual(header["_format_version"], FORMAT_VERSION)
 
     def test_file_contains_provenance(self) -> None:
         """Tests that the saved archive's header contains provenance metadata.
@@ -1531,7 +1531,7 @@ class TestSaveLoad(unittest.TestCase):
                 load(path)
         message = str(context.exception)
         self.assertIn("9999", message)
-        self.assertIn(str(_FORMAT_VERSION), message)
+        self.assertIn(str(FORMAT_VERSION), message)
         self.assertNotIn("4.0.0", message)
 
     def test_non_public_header_type_raises(self) -> None:
@@ -2244,7 +2244,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         :return: None
         """
         airfoil = Airfoil(name="NACA0012")
-        result = _deserialize_value(_serialize_value(airfoil))
+        result = deserialize_value(serialize_value(airfoil))
         assert isinstance(result, Airfoil)
         self.assertEqual(result.name, "NACA0012")
         npt.assert_array_equal(result.outline_A_Lp, airfoil.outline_A_Lp)
@@ -2257,7 +2257,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         :return: None
         """
         airfoil = Airfoil(name="NACA2412")
-        result = _deserialize_value(_serialize_value(airfoil))
+        result = deserialize_value(serialize_value(airfoil))
         assert isinstance(result, Airfoil)
         assert result.mcl_A_Lp is not None
         assert airfoil.mcl_A_Lp is not None
@@ -2269,7 +2269,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         :return: None
         """
         airfoil = Airfoil(name="NACA0012")
-        result = _deserialize_value(_serialize_value(airfoil))
+        result = deserialize_value(serialize_value(airfoil))
         assert isinstance(result, Airfoil)
         self.assertFalse(result.outline_A_Lp.flags.writeable)
 
@@ -2298,7 +2298,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0)
-        result = _deserialize_value(_serialize_value(operating_point))
+        result = deserialize_value(serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         self.assertEqual(result.rho, 1.225)
         self.assertEqual(result.vCg__E, 10.0)
@@ -2315,7 +2315,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
             surfaceNormal_E=(0.0, 0.0, 1.0),
             surfacePoint_E_Eo=(0.0, 0.0, -1.0),
         )
-        result = _deserialize_value(_serialize_value(operating_point))
+        result = deserialize_value(serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         assert result.surfaceNormal_E is not None
         assert operating_point.surfaceNormal_E is not None
@@ -2332,7 +2332,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point = OperatingPoint()
-        result = _deserialize_value(_serialize_value(operating_point))
+        result = deserialize_value(serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         self.assertIsNone(result.surfaceNormal_E)
         self.assertIsNone(result.surfacePoint_E_Eo)
@@ -2343,7 +2343,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point = OperatingPoint()
-        result = _deserialize_value(_serialize_value(operating_point))
+        result = deserialize_value(serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         self.assertIsNone(object.__getattribute__(result, "_qInf__E"))
         self.assertIsNone(object.__getattribute__(result, "_T_pas_GP1_CgP1_to_W_CgP1"))
@@ -2378,7 +2378,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
             num_spanwise_panels=8,
             chord=1.0,
         )
-        result = _deserialize_value(_serialize_value(wing_cross_section))
+        result = deserialize_value(serialize_value(wing_cross_section))
         assert isinstance(result, WingCrossSection)
         self.assertEqual(result.airfoil.name, "NACA0012")
         self.assertEqual(result.num_spanwise_panels, 8)
@@ -2394,7 +2394,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
             airfoil=Airfoil(name="NACA0012"),
             num_spanwise_panels=None,
         )
-        result = _deserialize_value(_serialize_value(wing_cross_section))
+        result = deserialize_value(serialize_value(wing_cross_section))
         assert isinstance(result, WingCrossSection)
         self.assertIsNone(result.num_spanwise_panels)
 
@@ -2408,7 +2408,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
             airfoil=airfoil,
             num_spanwise_panels=8,
         )
-        result = _deserialize_value(_serialize_value(wing_cross_section))
+        result = deserialize_value(serialize_value(wing_cross_section))
         assert isinstance(result, WingCrossSection)
         npt.assert_array_equal(result.airfoil.outline_A_Lp, airfoil.outline_A_Lp)
 
@@ -2440,7 +2440,7 @@ class TestPanelRoundTrip(unittest.TestCase):
         :return: None
         """
         panel = serialization_fixtures.make_basic_panel_fixture()
-        result = _deserialize_value(_serialize_value(panel))
+        result = deserialize_value(serialize_value(panel))
         assert isinstance(result, Panel)
         npt.assert_array_equal(result.Frpp_G_Cg, np.array([1.0, 0.0, 0.0]))
         npt.assert_array_equal(result.Flpp_G_Cg, np.array([1.0, 1.0, 0.0]))
@@ -2453,7 +2453,7 @@ class TestPanelRoundTrip(unittest.TestCase):
         :return: None
         """
         panel = serialization_fixtures.make_basic_panel_fixture()
-        result = _deserialize_value(_serialize_value(panel))
+        result = deserialize_value(serialize_value(panel))
         assert isinstance(result, Panel)
         self.assertIsNone(result.forces_GP1)
 
@@ -2463,7 +2463,7 @@ class TestPanelRoundTrip(unittest.TestCase):
         :return: None
         """
         panel = serialization_fixtures.make_basic_panel_fixture()
-        result = _deserialize_value(_serialize_value(panel))
+        result = deserialize_value(serialize_value(panel))
         assert isinstance(result, Panel)
         self.assertFalse(result.Frpp_G_Cg.flags.writeable)
 
@@ -2478,7 +2478,7 @@ class TestWingRoundTrip(unittest.TestCase):
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertEqual(result.name, wing.name)
         self.assertEqual(result.num_chordwise_panels, wing.num_chordwise_panels)
@@ -2511,7 +2511,7 @@ class TestWingRoundTrip(unittest.TestCase):
             explode_into_strips=True,
         )
         self.assertEqual(wing.spanwise_mesh, "exploded")
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertEqual(result.spanwise_mesh, "exploded")
 
@@ -2532,7 +2532,7 @@ class TestWingRoundTrip(unittest.TestCase):
             airfoil=Airfoil(name="naca0012"),
             tip_trim_fraction=0.1,
         )
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertEqual(result.spanwise_mesh, "edge_defined")
         self.assertEqual(result.tip_trim_fraction, 0.1)
@@ -2552,7 +2552,7 @@ class TestWingRoundTrip(unittest.TestCase):
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
         assert wing.panels is not None
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         assert result.panels is not None
         self.assertEqual(result.panels.shape, wing.panels.shape)
@@ -2572,7 +2572,7 @@ class TestWingRoundTrip(unittest.TestCase):
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertEqual(len(result.wing_cross_sections), len(wing.wing_cross_sections))
         for orig, loaded in zip(wing.wing_cross_sections, result.wing_cross_sections):
@@ -2616,7 +2616,7 @@ class TestWingRoundTrip(unittest.TestCase):
         wing = Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         )
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertIs(
             result.wing_cross_sections[0].airfoil,
@@ -2643,7 +2643,7 @@ class TestWingRoundTrip(unittest.TestCase):
         wing = Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         )
-        result = _deserialize_value(_serialize_value(wing))
+        result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
         self.assertIsNot(
             result.wing_cross_sections[0].airfoil,
@@ -2660,7 +2660,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         :return: None
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
-        result = _deserialize_value(_serialize_value(airplane))
+        result = deserialize_value(serialize_value(airplane))
         assert isinstance(result, Airplane)
         self.assertEqual(result.name, airplane.name)
         self.assertEqual(len(result.wings), len(airplane.wings))
@@ -2674,7 +2674,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         :return: None
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
-        result = _deserialize_value(_serialize_value(airplane))
+        result = deserialize_value(serialize_value(airplane))
         assert isinstance(result, Airplane)
         for orig_wing, loaded_wing in zip(airplane.wings, result.wings):
             assert isinstance(loaded_wing, Wing)
@@ -2707,7 +2707,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         self.assertEqual(len(result.airplanes), 1)
         assert isinstance(result.airplanes[0], Airplane)
@@ -2725,7 +2725,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         orig_panels = problem.airplanes[0].wings[0].panels
         assert orig_panels is not None
         orig_panel = orig_panels[0, 0]
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         loaded_panels = result.airplanes[0].wings[0].panels
         assert loaded_panels is not None
@@ -2754,7 +2754,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_formation_steady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         self.assertEqual(len(result.airplanes), 2)
         for i in range(2):
@@ -2768,7 +2768,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_formation_steady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         for i in range(2):
             orig_panels = problem.airplanes[i].wings[0].panels
@@ -2794,7 +2794,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
         self.assertTrue(result.ran)
         assert result.airplanes[0].forces_W is not None
@@ -2812,7 +2812,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
         for solver_airplane, problem_airplane in zip(
             result.airplanes, result._steady_problem.airplanes, strict=True
@@ -2827,7 +2827,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
@@ -2859,7 +2859,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
         self.assertTrue(result.ran)
         assert result.airplanes[0].forces_W is not None
@@ -2877,7 +2877,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
         for solver_airplane, problem_airplane in zip(
             result.airplanes, result._steady_problem.airplanes, strict=True
@@ -2892,7 +2892,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
         solver = SteadyRingVortexLatticeMethodSolver(problem)
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
@@ -2924,7 +2924,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         operating_point_movement = OperatingPointMovement(
             base_operating_point=OperatingPoint(),
         )
-        result = _deserialize_value(_serialize_value(operating_point_movement))
+        result = deserialize_value(serialize_value(operating_point_movement))
         assert isinstance(result, OperatingPointMovement)
         self.assertEqual(result.base_operating_point.vCg__E, 10.0)
 
@@ -2940,7 +2940,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
                 chord=1.0,
             ),
         )
-        result = _deserialize_value(_serialize_value(wing_cross_section_movement))
+        result = deserialize_value(serialize_value(wing_cross_section_movement))
         assert isinstance(result, WingCrossSectionMovement)
         self.assertEqual(result.base_wing_cross_section.chord, 1.0)
 
@@ -2951,7 +2951,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         wing_movement = problem.movement.airplane_movements[0].wing_movements[0]
-        result = _deserialize_value(_serialize_value(wing_movement))
+        result = deserialize_value(serialize_value(wing_movement))
         assert isinstance(result, WingMovement)
         self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
         self.assertEqual(
@@ -2966,7 +2966,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         airplane_movement = problem.movement.airplane_movements[0]
-        result = _deserialize_value(_serialize_value(airplane_movement))
+        result = deserialize_value(serialize_value(airplane_movement))
         assert isinstance(result, AirplaneMovement)
         self.assertEqual(
             result.base_airplane.name, airplane_movement.base_airplane.name
@@ -2980,7 +2980,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         movement = problem.movement
-        result = _deserialize_value(_serialize_value(movement))
+        result = deserialize_value(serialize_value(movement))
         assert isinstance(result, Movement)
         self.assertEqual(len(result.airplanes), len(movement.airplanes))
         self.assertEqual(len(result.operating_points), len(movement.operating_points))
@@ -3013,7 +3013,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             periodVCg__E=1.0,
             spacingVCg__E=custom_spacing,
         )
-        result = _deserialize_value(_serialize_value(operating_point_movement))
+        result = deserialize_value(serialize_value(operating_point_movement))
         assert isinstance(result, OperatingPointMovement)
         assert isinstance(result.spacingVCg__E, UnboundCallable)
         self.assertEqual(
@@ -3041,7 +3041,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             periodVCg__E=1.0,
             spacingVCg__E=custom_spacing,
         )
-        result = _deserialize_value(_serialize_value(operating_point_movement))
+        result = deserialize_value(serialize_value(operating_point_movement))
         assert isinstance(result, OperatingPointMovement)
         with self.assertRaises(ValueError) as context:
             result.generate_operating_point_at_time_step(1, 0.1)
@@ -3146,7 +3146,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, UnsteadyProblem)
         self.assertEqual(result.num_steps, problem.num_steps)
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
@@ -3158,7 +3158,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, UnsteadyProblem)
         for step in range(result.num_steps):
             for airplane_movement_index in range(
@@ -3176,7 +3176,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, UnsteadyProblem)
         for step in range(result.num_steps):
             self.assertIs(
@@ -3204,7 +3204,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_formation_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, UnsteadyProblem)
         self.assertEqual(len(result.movement.airplane_movements), 2)
 
@@ -3233,7 +3233,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         solver = UnsteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertTrue(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
@@ -3247,7 +3247,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         solver = UnsteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertIs(result.steady_problems, result.unsteady_problem.steady_problems)
 
@@ -3260,7 +3260,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         solver = UnsteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         unsteady_problem = result.unsteady_problem
         assert isinstance(unsteady_problem, UnsteadyProblem)
@@ -3282,7 +3282,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         solver = UnsteadyRingVortexLatticeMethodSolver(problem)
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
@@ -3322,7 +3322,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         """
         movement = self.problem.movement
         assert isinstance(movement, AeroelasticMovement)
-        result = _deserialize_value(_serialize_value(movement))
+        result = deserialize_value(serialize_value(movement))
         assert isinstance(result, AeroelasticMovement)
         self.assertEqual(len(result.operating_points), len(movement.operating_points))
 
@@ -3332,7 +3332,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         :return: None
         """
         airplane_movement = self.problem.movement.airplane_movements[0]
-        result = _deserialize_value(_serialize_value(airplane_movement))
+        result = deserialize_value(serialize_value(airplane_movement))
         assert isinstance(result, AeroelasticAirplaneMovement)
         self.assertEqual(
             result.base_airplane.name, airplane_movement.base_airplane.name
@@ -3346,7 +3346,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         """
         wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
         assert isinstance(wing_movement, AeroelasticWingMovement)
-        result = _deserialize_value(_serialize_value(wing_movement))
+        result = deserialize_value(serialize_value(wing_movement))
         assert isinstance(result, AeroelasticWingMovement)
         self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
         self.assertEqual(
@@ -3364,7 +3364,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             .wing_movements[0]
             .wing_cross_section_movements[0]
         )
-        result = _deserialize_value(_serialize_value(wing_cross_section_movement))
+        result = deserialize_value(serialize_value(wing_cross_section_movement))
         assert isinstance(result, AeroelasticWingCrossSectionMovement)
 
     def test_custom_callable_spacing_round_trip(self) -> None:
@@ -3395,7 +3395,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
                 None,
             ],
         )
-        result = _deserialize_value(_serialize_value(custom_wing_movement))
+        result = deserialize_value(serialize_value(custom_wing_movement))
         assert isinstance(result, AeroelasticWingMovement)
 
         spacing = result.spacingAngles_Gs_to_Wn_ixyz[0]
@@ -3447,8 +3447,8 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             ],
         )
         qualname = custom_spacing.__module__ + "." + custom_spacing.__qualname__
-        result = _deserialize_value(
-            _serialize_value(custom_wing_movement),
+        result = deserialize_value(
+            serialize_value(custom_wing_movement),
             callables={qualname: custom_spacing},
         )
         assert isinstance(result, AeroelasticWingMovement)
@@ -3468,7 +3468,7 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, AeroelasticUnsteadyProblem)
         self.assertEqual(result.num_steps, problem.num_steps)
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
@@ -3501,7 +3501,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
@@ -3512,7 +3512,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         """
         solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         self.assertTrue(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
@@ -3525,7 +3525,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         """
         solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         for reconstructed, problem_side in zip(
             result.steady_problems, result.unsteady_problem.steady_problems
@@ -3543,7 +3543,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         """
         solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
         solver.run()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         original = solver.unsteady_problem
         reconstructed = result.unsteady_problem
@@ -3608,7 +3608,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         :return: None
         """
         model = self.problem._mujoco_model
-        result = _deserialize_value(_serialize_value(model))
+        result = deserialize_value(serialize_value(model))
         assert isinstance(result, MuJoCoModel)
         self.assertEqual(result.xml_str, model.xml_str)
         self.assertEqual(result.body_id, model.body_id)
@@ -3623,7 +3623,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         :return: None
         """
         model = mujoco_model_fixtures.make_render_geometry_mujoco_model_fixture()
-        result = _deserialize_value(_serialize_value(model))
+        result = deserialize_value(serialize_value(model))
         assert isinstance(result, MuJoCoModel)
         self.assertEqual(result.xml_str, model.xml_str)
         self.assertEqual(result._mujoco_assets, model._mujoco_assets)
@@ -3636,7 +3636,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value(_serialize_value(self.problem._mujoco_model))
+        result = deserialize_value(serialize_value(self.problem._mujoco_model))
         assert isinstance(result, MuJoCoModel)
         state = result.get_state()
         self.assertEqual(
@@ -3674,7 +3674,7 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         """
         movement = self.problem.movement
         assert isinstance(movement, FreeFlightMovement)
-        result = _deserialize_value(_serialize_value(movement))
+        result = deserialize_value(serialize_value(movement))
         assert isinstance(result, FreeFlightMovement)
         self.assertEqual(result.num_steps, movement.num_steps)
         self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
@@ -3686,7 +3686,7 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         """
         operating_point_movement = self.problem.movement.operating_point_movement
         assert isinstance(operating_point_movement, FreeFlightOperatingPointMovement)
-        result = _deserialize_value(_serialize_value(operating_point_movement))
+        result = deserialize_value(serialize_value(operating_point_movement))
         assert isinstance(result, FreeFlightOperatingPointMovement)
         self.assertEqual(
             len(result.operating_points),
@@ -3705,7 +3705,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.num_steps, problem.num_steps)
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
@@ -3729,7 +3729,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
             I_BP1_CgP1=fixture.I_BP1_CgP1,
             k_max=5,
         )
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
 
@@ -3750,7 +3750,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
             external_loads_fn=external_loads_fn
         )
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         assert isinstance(result.external_loads_fn, UnboundCallable)
         self.assertEqual(
@@ -3777,8 +3777,8 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
             external_loads_fn=external_loads_fn
         )
         qualname = external_loads_fn.__module__ + "." + external_loads_fn.__qualname__
-        result = _deserialize_value(
-            _serialize_value(problem), callables={qualname: external_loads_fn}
+        result = deserialize_value(
+            serialize_value(problem), callables={qualname: external_loads_fn}
         )
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertIs(result.external_loads_fn, external_loads_fn)
@@ -3797,7 +3797,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
             mujoco_assets=mujoco_assets
         )
-        result = _deserialize_value(_serialize_value(problem))
+        result = deserialize_value(serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result._mujoco_model._mujoco_assets, mujoco_assets)
         # The rebuilt MuJoCoModel is functional.
@@ -3827,7 +3827,7 @@ class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, FreeFlightUnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
@@ -3839,7 +3839,7 @@ class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
-        result = _deserialize_value(_serialize_value(solver))
+        result = deserialize_value(serialize_value(solver))
         assert isinstance(result, FreeFlightUnsteadyRingVortexLatticeMethodSolver)
         for reconstructed, problem_side in zip(
             result.steady_problems, result.unsteady_problem.steady_problems

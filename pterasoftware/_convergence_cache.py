@@ -22,7 +22,7 @@ logger = _logging.get_logger("_convergence_cache")
 # This is independent of the serialization format version that hash_object folds into
 # each key, which guards against changes to the reference problem's serialized
 # structure.
-_SOLVE_CACHE_VERSION = 10
+SOLVE_CACHE_VERSION = 10
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
@@ -82,7 +82,7 @@ def load_solve_cache(
         logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
-    if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
+    if data.get("_cache_version") != SOLVE_CACHE_VERSION:
         return {}
 
     entries = data.get("entries", {})
@@ -139,7 +139,7 @@ def write_cache(
     :return: None
     """
     data = {
-        "_cache_version": _SOLVE_CACHE_VERSION,
+        "_cache_version": SOLVE_CACHE_VERSION,
         "entries": {
             key: {
                 "coefficients": coefficients.tolist(),
@@ -411,7 +411,7 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
         logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
-    if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
+    if data.get("_cache_version") != SOLVE_CACHE_VERSION:
         return {}
 
     memos = data.get("memos", {})

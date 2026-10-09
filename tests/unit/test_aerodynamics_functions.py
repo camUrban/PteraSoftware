@@ -1442,7 +1442,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
         :return v_A__I: A (3,) ndarray of floats representing the induced velocity (in A
             axes, observed from an inertial frame) in meters per second.
         """
-        r_c = _aerodynamics_functions._CORE_FRACTION * float(
+        r_c = _aerodynamics_functions.CORE_FRACTION * float(
             np.linalg.norm(E_A_a - S_A_a)
         )
         return TestCoreRadiusFormula.ref_calculate_regularized_biot_savart_velocity(
@@ -1587,8 +1587,8 @@ class TestCoreRadiusFormula(unittest.TestCase):
 
         # Manually compute r_c using the Ramasamy-Leishman formula with the module's
         # physical constants.
-        lamb = _aerodynamics_functions._LAMB
-        squire = _aerodynamics_functions._SQUIRE
+        lamb = _aerodynamics_functions.LAMB
+        squire = _aerodynamics_functions.SQUIRE
         r_c = np.sqrt(r_c0**2 + 4.0 * lamb * (nu + squire * abs(gamma)) * age)
 
         # Call the kernel.
@@ -2283,73 +2283,73 @@ class TestLogSingularityCounts(unittest.TestCase):
 
 
 class TestThreadsForLaunch(unittest.TestCase):
-    """This is a class with functions to test the _threads_for_launch dispatch
+    """This is a class with functions to test the threads_for_launch dispatch
     function."""
 
     def test_zero_evaluation_launch_clamps_to_one_thread(self) -> None:
-        """Test that _threads_for_launch returns 1 thread for a launch with zero
+        """Test that threads_for_launch returns 1 thread for a launch with zero
         evaluations."""
-        self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 0), 1)
-        self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 100), 1)
-        self.assertEqual(_aerodynamics_functions._threads_for_launch(100, 0), 1)
+        self.assertEqual(_aerodynamics_functions.threads_for_launch(0, 0), 1)
+        self.assertEqual(_aerodynamics_functions.threads_for_launch(0, 100), 1)
+        self.assertEqual(_aerodynamics_functions.threads_for_launch(100, 0), 1)
 
     def test_sub_grain_launch_clamps_to_one_thread(self) -> None:
-        """Test that _threads_for_launch returns 1 thread for a launch with fewer
+        """Test that threads_for_launch returns 1 thread for a launch with fewer
         evaluations than one grain."""
-        self.assertEqual(_aerodynamics_functions._threads_for_launch(1, 1), 1)
+        self.assertEqual(_aerodynamics_functions.threads_for_launch(1, 1), 1)
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                1, _aerodynamics_functions._GRAIN - 1
+            _aerodynamics_functions.threads_for_launch(
+                1, _aerodynamics_functions.GRAIN - 1
             ),
             1,
         )
 
     def test_single_grain_launch_gets_one_thread(self) -> None:
-        """Test that _threads_for_launch returns 1 thread for a launch with exactly one
+        """Test that threads_for_launch returns 1 thread for a launch with exactly one
         grain of evaluations."""
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                1, _aerodynamics_functions._GRAIN
+            _aerodynamics_functions.threads_for_launch(
+                1, _aerodynamics_functions.GRAIN
             ),
             1,
         )
 
     def test_whole_grain_launches_scale_linearly(self) -> None:
-        """Test that _threads_for_launch returns one thread per whole grain of
+        """Test that threads_for_launch returns one thread per whole grain of
         evaluations."""
         for num_grains in (2, 3, 7):
             with self.subTest(num_grains=num_grains):
                 self.assertEqual(
-                    _aerodynamics_functions._threads_for_launch(
-                        num_grains, _aerodynamics_functions._GRAIN
+                    _aerodynamics_functions.threads_for_launch(
+                        num_grains, _aerodynamics_functions.GRAIN
                     ),
                     num_grains,
                 )
 
     def test_partial_grains_round_down(self) -> None:
-        """Test that _threads_for_launch ignores a partial grain of evaluations.
+        """Test that threads_for_launch ignores a partial grain of evaluations.
 
         Both launches carry more points than the thread count they justify, so the point
         cap cannot bind and the rounding is tested on its own.
         """
         # Two points and one vortex short of a grain each, so just under two grains.
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                2, _aerodynamics_functions._GRAIN - 1
+            _aerodynamics_functions.threads_for_launch(
+                2, _aerodynamics_functions.GRAIN - 1
             ),
             1,
         )
 
         # Three points and one vortex short of a grain each, so just under three grains.
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                3, _aerodynamics_functions._GRAIN - 1
+            _aerodynamics_functions.threads_for_launch(
+                3, _aerodynamics_functions.GRAIN - 1
             ),
             2,
         )
 
     def test_thread_count_never_exceeds_the_point_count(self) -> None:
-        """Test that _threads_for_launch never asks for more threads than the launch has
+        """Test that threads_for_launch never asks for more threads than the launch has
         points.
 
         The kernels parallelize over points alone and sum each point's vortices in a
@@ -2360,16 +2360,16 @@ class TestThreadsForLaunch(unittest.TestCase):
         # A single point with a hundred grains of vortices. The work would justify a
         # hundred threads, but only one of them could ever run an iteration.
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                1, 100 * _aerodynamics_functions._GRAIN
+            _aerodynamics_functions.threads_for_launch(
+                1, 100 * _aerodynamics_functions.GRAIN
             ),
             1,
         )
 
         # Four points with a hundred grains of vortices each, capped at the four points.
         self.assertEqual(
-            _aerodynamics_functions._threads_for_launch(
-                4, 100 * _aerodynamics_functions._GRAIN
+            _aerodynamics_functions.threads_for_launch(
+                4, 100 * _aerodynamics_functions.GRAIN
             ),
             4,
         )
@@ -2718,7 +2718,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # With one ring vortex, this stack of points makes each leg's launch span
         # exactly two grains of evaluations.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            2 * _aerodynamics_functions._GRAIN
+            2 * _aerodynamics_functions.GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2738,7 +2738,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # With one ring vortex, this stack of points makes each leg's launch span
         # exactly two grains of evaluations.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            2 * _aerodynamics_functions._GRAIN
+            2 * _aerodynamics_functions.GRAIN
         )
 
         # Simulate a user capping the thread count before running a solver.
@@ -2765,7 +2765,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # more grain than the ceiling, so the work-proportional count exceeds the
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (ceiling + 1) * _aerodynamics_functions._GRAIN
+            (ceiling + 1) * _aerodynamics_functions.GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2793,7 +2793,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
-            * _aerodynamics_functions._GRAIN
+            * _aerodynamics_functions.GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2814,7 +2814,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
-            * _aerodynamics_functions._GRAIN
+            * _aerodynamics_functions.GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2841,7 +2841,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions.get_kernel_thread_ceiling() + 1)
-            * _aerodynamics_functions._GRAIN
+            * _aerodynamics_functions.GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)

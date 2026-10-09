@@ -856,9 +856,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         # Ask for a speed 1.9 times what the maximum frame rate can carry, which
         # resolves to saving every second frame.
-        speed = (
-            1.9 * _output_rendering._MAX_FRAME_RATE * self.unsteady_solver.delta_time
-        )
+        speed = 1.9 * _output_rendering.MAX_FRAME_RATE * self.unsteady_solver.delta_time
 
         with self.assertNoLogs("pterasoftware.output", level=logging.WARNING):
             with contextlib.chdir(self.temporary_path):
@@ -1234,7 +1232,7 @@ class TestAnimatePlayback(unittest.TestCase):
         speed = (
             1.5
             * (self.variable_solver.num_steps - 1)
-            * _output_rendering._MAX_FRAME_RATE
+            * _output_rendering.MAX_FRAME_RATE
             * self.variable_solver.delta_time
         )
 
@@ -1271,12 +1269,12 @@ class TestAnimatePlayback(unittest.TestCase):
             2,
             math.floor(
                 movement.min_period
-                / (_output_rendering._MIN_FRAMES_PER_PERIOD * delta_time)
+                / (_output_rendering.MIN_FRAMES_PER_PERIOD * delta_time)
             )
             + 1,
         )
         self.assertLessEqual(stride, num_steps - 1)
-        speed = (stride - 0.5) * _output_rendering._MAX_FRAME_RATE * delta_time
+        speed = (stride - 0.5) * _output_rendering.MAX_FRAME_RATE * delta_time
 
         animations_directory = self.temporary_path / "animations"
         animations_directory.mkdir()

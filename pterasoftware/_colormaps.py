@@ -5,10 +5,10 @@ import importlib.resources
 import matplotlib.colors
 import numpy as np
 
-_DATA_DIR = importlib.resources.files("pterasoftware").joinpath("_colormap_data")
+DATA_DIR = importlib.resources.files("pterasoftware").joinpath("_colormap_data")
 
 
-def _load_colormap(name: str) -> matplotlib.colors.ListedColormap:
+def load_colormap(name: str) -> matplotlib.colors.ListedColormap:
     """Returns a ListedColormap built from one of the color map data files in the
     _colormap_data directory.
 
@@ -16,7 +16,7 @@ def _load_colormap(name: str) -> matplotlib.colors.ListedColormap:
         _colormap_data directory.
     :return: A ListedColormap built from the named data file's colors.
     """
-    with _DATA_DIR.joinpath(name + "_rgb.txt").open("r") as rgb_file:
+    with DATA_DIR.joinpath(name + "_rgb.txt").open("r") as rgb_file:
         rgb = np.loadtxt(rgb_file)
     return matplotlib.colors.ListedColormap(rgb, name=name)
 
@@ -24,5 +24,5 @@ def _load_colormap(name: str) -> matplotlib.colors.ListedColormap:
 # Use cmocean's "speed" and "delta" color maps. Their colors are vendored in the
 # _colormap_data directory so that Ptera Software does not depend on the cmocean
 # package. See that directory's CMOCEAN_LICENSE.md.
-SEQUENTIAL_COLOR_MAP = _load_colormap("speed")
-DIVERGING_COLOR_MAP = _load_colormap("delta")
+SEQUENTIAL_COLOR_MAP = load_colormap("speed")
+DIVERGING_COLOR_MAP = load_colormap("delta")

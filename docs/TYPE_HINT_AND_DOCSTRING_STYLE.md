@@ -153,7 +153,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     ...
 
 
-def _get_mcl_points(
+def get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
     outer_airfoil: airfoil_mod.Airfoil,
     ...
@@ -750,7 +750,7 @@ def function_name() -> None:
 ### Example 2: Function with Array Parameters (Internal)
 
 ```python
-def _get_mcl_points(
+def get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
@@ -780,7 +780,7 @@ def _get_mcl_points(
 ### Example 3: Function with Transformation Matrices
 
 ```python
-def _get_mcs_points(
+def get_mcs_points(
     T_pas_Wcsi_Lpi_Wn_Ler: np.ndarray,
     T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
     inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,

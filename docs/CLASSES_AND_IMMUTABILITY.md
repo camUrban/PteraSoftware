@@ -97,7 +97,7 @@ This works because:
 2. Cached derived values remain valid because the immutable and set once attributes they depend on are also restored with their original values, and alias slots resolve to the same restored objects as their canonical sources.
 3. NumPy array writeable flags are preserved through serialization, maintaining the same mutability guarantees as the original objects.
 
-When adding or renaming `__slots__` on any class, both `__deepcopy__` and `_serialization` are affected. The serialization module discovers attributes generically via `__slots__`, so new slots are automatically serialized (subject to the `MuJoCoModel` exception described above). However, adding or removing slots requires incrementing `_FORMAT_VERSION` in `_serialization.py` to ensure old files are not loaded with incompatible code.
+When adding or renaming `__slots__` on any class, both `__deepcopy__` and `_serialization` are affected. The serialization module discovers attributes generically via `__slots__`, so new slots are automatically serialized (subject to the `MuJoCoModel` exception described above). However, adding or removing slots requires incrementing `FORMAT_VERSION` in `_serialization.py` to ensure old files are not loaded with incompatible code.
 
 ### List Collection Immutability
 

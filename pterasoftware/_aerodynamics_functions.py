@@ -19,16 +19,16 @@ logger = _logging.get_logger("_aerodynamics_functions")
 # the stability of the result. I'm using this value, as cited for use in flapping-wing
 # vehicles in "Role of Filament Strain in the Free-Vortex Modeling of Rotor Wakes"
 # (Ananthan and Leishman, 2004). It is unitless.
-_SQUIRE = 1.0e-4
+SQUIRE = 1.0e-4
 
 # Lamb's constant relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is well agreed upon, and published in "Extended
 # Unsteady Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016). It is
 # unitless.
-_LAMB = 1.25643
+LAMB = 1.25643
 
 # The local machine error is used to detect degenerate (zero length) line vortices.
-_EPS = sys.float_info.epsilon
+EPS = sys.float_info.epsilon
 
 # The minimum core radius of a line vortex, as a fraction of its length. Every line
 # vortex gets at least this core, so a zero initial core radius means the floor.
@@ -40,12 +40,12 @@ _EPS = sys.float_info.epsilon
 # is a fraction f of the length scales the induced velocity by about 1 - f^2, a relative
 # error of f^2. Second, a core bounds the spurious velocity at a point that should lie
 # on the line vortex, such as a load evaluation point at a leg's center. Rounding leaves
-# such a point about _EPS times its distance from the reference point off the line
+# such a point about EPS times its distance from the reference point off the line
 # vortex, and with a core the velocity there is about strength * offset / (2 * pi *
 # core^2). Relative to a typical near field velocity of strength / (2 * pi * length),
-# that is _EPS / f^2 when the point's distance from the reference point is about a
+# that is EPS / f^2 when the point's distance from the reference point is about a
 # length. Growing f shrinks the spurious error and grows the bias, and the two are equal
-# at f = _EPS^(1 / 4), where both are about _EPS^(1 / 2).
+# at f = EPS^(1 / 4), where both are about EPS^(1 / 2).
 #
 # Two ratios were taken as one above. Evaluations closer than a length, such as a
 # collocation point half a Panel chord from a long spanwise leg, raise the bias by the
@@ -53,11 +53,11 @@ _EPS = sys.float_info.epsilon
 # length from the line vortex raise the spurious error linearly in that distance over
 # the length. Across all plausible ranges of both ratios, these cause relative errors
 # much lower than the solvers' own accuracies, so the fraction is not adjusted for them.
-_CORE_FRACTION = _EPS**0.25
+CORE_FRACTION = EPS**0.25
 
-# Pre compute 4 * pi and 4.0 * _LAMB as they used repeatedly.
-_FOUR_PI = 4.0 * math.pi
-_FOUR_LAMB = 4.0 * _LAMB
+# Pre compute 4 * pi and 4.0 * LAMB as they used repeatedly.
+FOUR_PI = 4.0 * math.pi
+FOUR_LAMB = 4.0 * LAMB
 
 # The smallest number of evaluations worth handing one thread of a parallel kernel
 # launch, where one evaluation is computing one line vortex's induced velocity at one
@@ -67,7 +67,7 @@ _FOUR_LAMB = 4.0 * _LAMB
 # time rallying than computing, so it runs on a single thread. The grain is expressed as
 # work per thread rather than as a core count, so it transfers across machines of
 # different sizes without per-machine calibration.
-_GRAIN = 10_000
+GRAIN = 10_000
 
 
 def get_kernel_thread_ceiling() -> int:
@@ -97,7 +97,7 @@ def get_kernel_thread_ceiling() -> int:
     return max((3 * pool_width) // 4, 1)
 
 
-def _threads_for_launch(num_points: int, num_vortices: int) -> int:
+def threads_for_launch(num_points: int, num_vortices: int) -> int:
     """Returns the work-proportional thread count for a parallel kernel launch.
 
     :param num_points: A non negative int representing the number of points at which the
@@ -118,7 +118,7 @@ def _threads_for_launch(num_points: int, num_vortices: int) -> int:
     # more than one grain of vortices and fewer points than the ceiling, as an unsteady
     # run's wake influences do on a small mesh once the wake grows, and as streamline
     # launches do generally.
-    return min(max(evaluations // _GRAIN, 1), max(num_points, 1))
+    return min(max(evaluations // GRAIN, 1), max(num_points, 1))
 
 
 def report_thread_settings() -> None:
@@ -252,7 +252,7 @@ def collapsed_velocities_from_ring_vortices(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -355,7 +355,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -435,7 +435,7 @@ def collapsed_velocities_from_line_vortices(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -540,7 +540,7 @@ def expanded_velocities_from_ring_vortices(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -640,7 +640,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -742,7 +742,7 @@ def expanded_velocities_from_horseshoe_vortices(
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
-            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
             get_kernel_thread_ceiling(),
         )
@@ -863,7 +863,7 @@ def collapsed_velocities_from_line_vortices_kernel(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _EPS:
+        if r0 < EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -874,12 +874,12 @@ def collapsed_velocities_from_line_vortices_kernel(
         age = ages[vortex_id]
 
         # Clamp the initial core radius to the numerical floor.
-        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
+        r_c0 = max(r_c0s[vortex_id], CORE_FRACTION * r0)
 
         # Calculate the radius of the line vortex's core squared.
-        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + FOUR_LAMB * (nu + SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _FOUR_PI
+        vortex_c1[vortex_id] = strength / FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index
@@ -1065,7 +1065,7 @@ def expanded_velocities_from_line_vortices_kernel(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _EPS:
+        if r0 < EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -1076,12 +1076,12 @@ def expanded_velocities_from_line_vortices_kernel(
         age = ages[vortex_id]
 
         # Clamp the initial core radius to the numerical floor.
-        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
+        r_c0 = max(r_c0s[vortex_id], CORE_FRACTION * r0)
 
         # Calculate the radius of the line vortex's core squared.
-        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + FOUR_LAMB * (nu + SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _FOUR_PI
+        vortex_c1[vortex_id] = strength / FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index

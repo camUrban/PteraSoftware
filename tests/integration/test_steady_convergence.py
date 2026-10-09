@@ -326,7 +326,7 @@ class TestSteadyConvergence(unittest.TestCase):
             # raise turns any recomputation into a test failure.
             with mock.patch.object(
                 _convergence_meshing,
-                "_get_wing_section_num_spanwise_panels",
+                "get_wing_section_num_spanwise_panels",
                 side_effect=AssertionError(
                     "The spanwise Panel resolver ran despite a warm cache."
                 ),

@@ -2,7 +2,6 @@
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware import _panel
 
 

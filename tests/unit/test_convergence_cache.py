@@ -8,7 +8,6 @@ from pathlib import Path
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _convergence_cache
 
 

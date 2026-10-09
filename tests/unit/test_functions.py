@@ -9,8 +9,6 @@ import numpy.testing as npt
 import threadpoolctl
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _functions, _transformations
 from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 

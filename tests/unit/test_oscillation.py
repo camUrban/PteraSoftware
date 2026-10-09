@@ -5,7 +5,6 @@ from collections.abc import Callable
 
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _oscillation
 from tests.unit.fixtures import oscillation_fixtures
 

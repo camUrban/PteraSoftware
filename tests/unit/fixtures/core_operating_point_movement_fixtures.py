@@ -3,7 +3,6 @@ tests."""
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware._core import CoreOperatingPointMovement
 
 from . import operating_point_fixtures

@@ -6,7 +6,6 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _panel
 from tests.unit.fixtures import panel_fixtures
 

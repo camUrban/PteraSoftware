@@ -4,7 +4,6 @@ import unittest
 
 import numpy as np
 
-# noinspection PyProtectedMember
 from pterasoftware import _fixed_point_relaxation
 
 

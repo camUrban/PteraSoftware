@@ -5,8 +5,6 @@ import unittest
 from typing import Any
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )

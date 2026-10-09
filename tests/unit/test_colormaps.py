@@ -5,7 +5,6 @@ import unittest
 import matplotlib.colors
 import numpy.testing as npt
 
-# noinspection PyProtectedMember
 from pterasoftware import _colormaps
 
 

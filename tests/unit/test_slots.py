@@ -7,11 +7,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
 from pterasoftware import _core, _mujoco_model, _panel, _serialization
-
-# noinspection PyProtectedMember
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
     aeroelastic_wing_cross_section_movement_fixtures,

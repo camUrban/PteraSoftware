@@ -44,33 +44,10 @@ __all__ = [
     "set_up_logging",
 ]
 
-# Static imports of every lazily loaded name, visible only to type checkers. Without
-# these, any name resolved through __getattr__ is typed as Any, so every use of the lazy
-# modules and callables through the package namespace goes unchecked. Each deprecated
-# module name is typed as the internal module that now defines its public names.
+# Static imports of every public name, visible only to type checkers. Without these, any
+# name resolved through __getattr__ is typed as Any, so every use of the public names
+# through the package namespace goes unchecked.
 if TYPE_CHECKING:
-    from pterasoftware import (
-        _aeroelastic_unsteady_ring_vortex_lattice_method as aeroelastic_unsteady_ring_vortex_lattice_method,
-    )
-    from pterasoftware import _convergence as convergence
-    from pterasoftware import (
-        _free_flight_unsteady_ring_vortex_lattice_method as free_flight_unsteady_ring_vortex_lattice_method,
-    )
-    from pterasoftware import _geometry as geometry
-    from pterasoftware import _movements as movements
-    from pterasoftware import _operating_point as operating_point
-    from pterasoftware import _output as output
-    from pterasoftware import _problems as problems
-    from pterasoftware import (
-        _steady_horseshoe_vortex_lattice_method as steady_horseshoe_vortex_lattice_method,
-    )
-    from pterasoftware import (
-        _steady_ring_vortex_lattice_method as steady_ring_vortex_lattice_method,
-    )
-    from pterasoftware import _trim as trim
-    from pterasoftware import (
-        _unsteady_ring_vortex_lattice_method as unsteady_ring_vortex_lattice_method,
-    )
     from pterasoftware._aeroelastic_unsteady_ring_vortex_lattice_method import (
         AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     )

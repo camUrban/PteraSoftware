@@ -163,18 +163,17 @@ class TestInvalidAttributeAccess(unittest.TestCase):
 
 
 class TestTypeCheckingImportSync(unittest.TestCase):
-    """Tests that the package's TYPE_CHECKING imports stay in sync with its lazy import
-    tables.
+    """Tests that the package's TYPE_CHECKING imports stay in sync with its lazy
+    callable table.
 
     Type checkers never execute __getattr__, so they resolve each lazily loaded name
     through the static imports in the package __init__.py's TYPE_CHECKING block instead.
     A lazy name missing from that block is silently typed as Any, which reverts every
-    use of it through the package namespace to being unchecked. These tests parse the
-    __init__.py source and fail whenever the block and the lazy tables drift apart, in
-    either direction.
+    use of it through the package namespace to being unchecked. This test parses the
+    __init__.py source and fails whenever the block and the table drift apart, in either
+    direction.
     """
 
-    type_checking_modules: set[str]
     type_checking_callables: dict[str, tuple[str, str]]
 
     @classmethod
@@ -183,7 +182,6 @@ class TestTypeCheckingImportSync(unittest.TestCase):
         init_path = Path(ps.__file__)
         tree = ast.parse(init_path.read_text())
 
-        cls.type_checking_modules = set()
         cls.type_checking_callables = {}
         for node in tree.body:
             if not isinstance(node, ast.If):
@@ -195,32 +193,11 @@ class TestTypeCheckingImportSync(unittest.TestCase):
             for statement in node.body:
                 if not isinstance(statement, ast.ImportFrom):
                     continue
-                if statement.module == "pterasoftware":
-                    for alias in statement.names:
-                        cls.type_checking_modules.add(alias.asname or alias.name)
-                else:
-                    for alias in statement.names:
-                        cls.type_checking_callables[alias.name] = (
-                            str(statement.module),
-                            alias.name,
-                        )
-
-    def test_every_lazy_module_has_a_type_checking_import(self) -> None:
-        """Test that the TYPE_CHECKING block imports exactly the lazy modules.
-
-        A lazy module missing from the block is typed as Any by type checkers, so every
-        use of it through the package namespace goes unchecked. An extra import in the
-        block advertises a name that __getattr__ cannot deliver.
-        """
-        self.assertEqual(
-            self.type_checking_modules,
-            set(ps._LAZY_MODULES),
-            msg=(
-                "The package __init__.py's TYPE_CHECKING block and its "
-                "_LAZY_MODULES table no longer import the same module names. Add "
-                "any new lazy module to both, so that type checkers can resolve it."
-            ),
-        )
+                for alias in statement.names:
+                    cls.type_checking_callables[alias.name] = (
+                        str(statement.module),
+                        alias.name,
+                    )
 
     def test_every_lazy_callable_has_a_type_checking_import(self) -> None:
         """Test that the TYPE_CHECKING block imports exactly the lazy callables, each

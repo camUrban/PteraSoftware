@@ -172,6 +172,10 @@ root_doc = "README"
 templates_path = ["_templates"]
 exclude_patterns = [
     "_build",
+    # The notebook extension writes its executed notebooks into a folder next to the
+    # build output folder, so a local build into docs/website/_build/ leaves this folder
+    # in the source directory, where the next build would read it as stray documents.
+    "jupyter_execute",
     "Thumbs.db",
     ".DS_Store",
     "venv",

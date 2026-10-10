@@ -3,6 +3,7 @@
 import ast
 import concurrent.futures
 import importlib
+import os
 import subprocess
 import sys
 import unittest
@@ -100,8 +101,12 @@ class TestFirstAccess(unittest.TestCase):
 
         # Each interpreter spends about a second importing the package's dependencies,
         # so running them concurrently keeps this test from dominating the suite's run
-        # time.
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        # time. Each one also holds a few hundred megabytes once the solver stack is
+        # imported, so the pool is capped rather than sized to the core count, which
+        # would start up to 32 of them at once on a large workstation.
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=min(8, os.cpu_count() or 1)
+        ) as executor:
             results = dict(zip(ps.__all__, executor.map(access_first, ps.__all__)))
 
         for name, result in results.items():

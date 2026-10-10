@@ -5,6 +5,7 @@ import pkgutil
 import types
 import unittest
 import warnings
+from typing import Any
 
 import pterasoftware as ps
 from pterasoftware import _deprecation, _trim
@@ -35,52 +36,51 @@ def import_shim_modules() -> list[types.ModuleType]:
     return shim_modules
 
 
-class TestGetDeprecatedAttribute(unittest.TestCase):
-    """Tests for the get_deprecated_attribute function."""
+class TestMakeDeprecatedModule(unittest.TestCase):
+    """Tests for the make_deprecated_module function."""
 
-    def test_returns_the_object_from_the_new_module(self) -> None:
-        """get_deprecated_attribute should return the named object from the new
-        module."""
+    def setUp(self) -> None:
+        """Make the module __getattr__, module __dir__, and __all__ list for a
+        deprecated module that forwards one name."""
+        self.module_getattr, self.module_dir, self.module_all = (
+            _deprecation.make_deprecated_module(
+                "pterasoftware.trim", "pterasoftware._trim", ("analyze_steady_trim",)
+            )
+        )
+
+    def test_getattr_returns_the_object_from_the_new_module(self) -> None:
+        """The module __getattr__ should return the named object from the new module."""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            result = _deprecation.get_deprecated_attribute(
-                "pterasoftware.trim",
-                "pterasoftware._trim",
-                ("analyze_steady_trim",),
-                "analyze_steady_trim",
-            )
+            result = self.module_getattr("analyze_steady_trim")
         self.assertIs(result, _trim.analyze_steady_trim)
 
-    def test_warns_naming_the_old_path_and_the_flat_replacement(self) -> None:
-        """get_deprecated_attribute should emit a DeprecationWarning that names the old
+    def test_getattr_warns_naming_the_old_path_and_the_flat_replacement(self) -> None:
+        """The module __getattr__ should emit a DeprecationWarning that names the old
         path and the package top level replacement."""
         with self.assertWarns(DeprecationWarning) as context:
-            _deprecation.get_deprecated_attribute(
-                "pterasoftware.trim",
-                "pterasoftware._trim",
-                ("analyze_steady_trim",),
-                "analyze_steady_trim",
-            )
+            self.module_getattr("analyze_steady_trim")
         message = str(context.warning)
         self.assertIn("pterasoftware.trim.analyze_steady_trim", message)
         self.assertIn("v6.0.0", message)
         self.assertIn("pterasoftware.analyze_steady_trim", message)
 
-    def test_raises_for_a_name_not_forwarded(self) -> None:
-        """get_deprecated_attribute should raise AttributeError, without warning, for a
+    def test_getattr_raises_for_a_name_not_forwarded(self) -> None:
+        """The module __getattr__ should raise AttributeError, without warning, for a
         name the deprecated module does not forward."""
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             with self.assertRaises(AttributeError) as context:
-                _deprecation.get_deprecated_attribute(
-                    "pterasoftware.trim",
-                    "pterasoftware._trim",
-                    ("analyze_steady_trim",),
-                    "SEED",
-                )
+                self.module_getattr("SEED")
         self.assertEqual(caught, [])
         self.assertIn("pterasoftware.trim", str(context.exception))
         self.assertIn("SEED", str(context.exception))
+
+    def test_dir_and_all_list_the_forwarded_names(self) -> None:
+        """The module __dir__ and the __all__ list should both hold exactly the
+        forwarded names."""
+        self.assertEqual(self.module_dir(), ["analyze_steady_trim"])
+        self.assertEqual(self.module_all, ["analyze_steady_trim"])
 
     def test_attributes_the_warning_to_the_accessing_line(self) -> None:
         """Accessing a name through a deprecated module should attribute the warning to
@@ -115,7 +115,7 @@ class TestDeprecatedModules(unittest.TestCase):
         """Accessing each name through its deprecated module should emit exactly one
         DeprecationWarning and return the same object as the package top level."""
         for module in self.shim_modules:
-            for name in module.NAMES:
+            for name in module.__all__:
                 with self.subTest(module=module.__name__, name=name):
                     with warnings.catch_warnings(record=True) as caught:
                         warnings.simplefilter("always")
@@ -129,12 +129,37 @@ class TestDeprecatedModules(unittest.TestCase):
         forwards."""
         for module in self.shim_modules:
             with self.subTest(module=module.__name__):
-                self.assertEqual(dir(module), sorted(module.NAMES))
+                self.assertEqual(dir(module), sorted(module.__all__))
+
+    def test_star_import_binds_exactly_the_forwarded_names(self) -> None:
+        """A star import through a deprecated module should bind exactly the names it
+        forwards, each to the public object, and warn once per name."""
+        for module in self.shim_modules:
+            with self.subTest(module=module.__name__):
+                namespace: dict[str, Any] = {}
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    exec(f"from {module.__name__} import *", namespace)
+                # The exec call adds __builtins__ to the namespace, and warnings.warn
+                # records each warning it attributes to the star import's frame in
+                # __warningregistry__ there, so neither dunder name came from the
+                # import.
+                bound = {
+                    name: value
+                    for name, value in namespace.items()
+                    if not name.startswith("__")
+                }
+                self.assertEqual(set(bound), set(module.__all__))
+                for name, result in bound.items():
+                    self.assertIs(result, getattr(ps, name))
+                self.assertEqual(len(caught), len(module.__all__))
+                for warning in caught:
+                    self.assertIs(warning.category, DeprecationWarning)
 
     def test_forwarded_names_cover_every_public_name_with_an_old_path(self) -> None:
         """Together, the deprecated modules should forward every public name that had an
         old public module path, each exactly once."""
-        forwarded = [name for module in self.shim_modules for name in module.NAMES]
+        forwarded = [name for module in self.shim_modules for name in module.__all__]
         self.assertEqual(len(forwarded), len(set(forwarded)))
         self.assertEqual(set(forwarded), set(ps.__all__) - NAMES_WITHOUT_OLD_PATHS)
 

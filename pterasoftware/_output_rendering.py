@@ -2995,7 +2995,7 @@ def reflect_mesh(
 def get_free_flight_fit_parallel_scale(
     meshes: list[pv.PolyData],
     focalPoint_E_Eo: np.ndarray,
-    viewDirection_E: np.ndarray,
+    cameraOffsetDirection_E: np.ndarray,
     viewUp_E: np.ndarray,
     margin: float = 1.15,
 ) -> float:
@@ -3012,8 +3012,9 @@ def get_free_flight_fit_parallel_scale(
     :param focalPoint_E_Eo: A (3,) ndarray of floats locating the camera's focal point
         (in Earth axes, relative to the Earth origin). Extents are measured from this
         point, since it projects to the center of the viewport.
-    :param viewDirection_E: A (3,) ndarray of floats giving the offset from the focal
-        point to the camera position (in Earth axes). The camera looks back along it.
+    :param cameraOffsetDirection_E: A (3,) ndarray of floats giving the direction from
+        the focal point toward the camera position (in Earth axes). The camera looks
+        back along it.
     :param viewUp_E: A (3,) ndarray of floats giving the camera's up direction (in Earth
         axes).
     :param margin: A factor (at least 1.0) by which to pad the fitted scale. The default
@@ -3021,9 +3022,9 @@ def get_free_flight_fit_parallel_scale(
     :return: The parallel-projection scale.
     """
     # Build the camera's screen right and up axes in Earth axes. The camera looks from
-    # its position back toward the focal point, i.e. along the negative view direction.
-    # The up axis is the supplied up made orthogonal to that look direction.
-    lookDirection_E = -viewDirection_E
+    # its position back toward the focal point, i.e. along the negative camera offset
+    # direction. The up axis is the supplied up made orthogonal to that look direction.
+    lookDirection_E = -cameraOffsetDirection_E
     lookDirection_E = lookDirection_E / np.linalg.norm(lookDirection_E)
     upDirection_E = viewUp_E - np.dot(viewUp_E, lookDirection_E) * lookDirection_E
     upDirection_E = upDirection_E / np.linalg.norm(upDirection_E)

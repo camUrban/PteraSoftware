@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os.path
 import time
 from collections.abc import Sequence
@@ -128,12 +129,14 @@ AERODYNAMIC_ANGLE_Y_LABEL = "Angle (deg)"
 # setting, not an axis system.
 freeFlightViewUp_E = np.array([0.0, 0.0, -1.0], dtype=float)
 
-# Define the camera's view direction for free flight visualizations, given as the offset
-# from the focal point to the camera position (in Earth axes). This views the scene
-# obliquely from the South, West, and above (Earth -x, -y, and -z).
-freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
-freeFlightViewDirection_E = freeFlightViewDirection_E / np.linalg.norm(
-    freeFlightViewDirection_E
+# Define the camera's offset direction for free flight visualizations, which is the unit
+# vector from the focal point toward the camera position (in Earth axes). The camera
+# looks along the negative of this vector. This views the scene obliquely from the
+# North, West, and above (Earth +x, -y, and -z). The normalization is computed in plain
+# Python because the documentation build imports this module with NumPy replaced by a
+# stand-in that does not support arithmetic.
+freeFlightCameraOffsetDirection_E = np.array(
+    [component / math.sqrt(3.0) for component in (1.0, -1.0, -1.0)], dtype=float
 )
 
 
@@ -743,10 +746,11 @@ def draw(
     # surface plane.
     draw_cpos: tuple | None
     if is_free_flight:
-        # Aim the camera along the Earth-axes view direction with physical up, then fit
-        # the parallel projection to the rendered geometry. The camera is set explicitly
-        # here (rather than via cpos) so that show() preserves the fit, since passing a
-        # full position to cpos would not set the parallel projection's scale.
+        # Place the camera along the Earth-axes camera offset direction from the
+        # geometry's center, with physical up, then fit the parallel projection to the
+        # rendered geometry. The camera is set explicitly here (rather than via cpos) so
+        # that show() preserves the fit, since passing a full position to cpos would not
+        # set the parallel projection's scale.
         airplane_bounds = np.array(panel_surfaces.bounds, dtype=float)
         center_E_Eo = 0.5 * (airplane_bounds[1::2] + airplane_bounds[::2])
         airplane_diagonal = float(
@@ -754,7 +758,7 @@ def draw(
         )
         plotter.camera.focal_point = tuple(center_E_Eo)
         plotter.camera.position = tuple(
-            center_E_Eo + 3.0 * airplane_diagonal * freeFlightViewDirection_E
+            center_E_Eo + 3.0 * airplane_diagonal * freeFlightCameraOffsetDirection_E
         )
         plotter.camera.up = freeFlightViewUp_E
 
@@ -1169,13 +1173,14 @@ def animate(
             np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
         )
 
-        # Aim the camera along the Earth-axes view direction with physical up, centered
-        # on the trajectory's midpoint and far enough back to clear the geometry at both
-        # ends.
+        # Place the camera along the Earth-axes camera offset direction from the
+        # trajectory's midpoint, with physical up, far enough back to clear the geometry
+        # at both ends.
         padding = max(2.0 * airplane_diagonal, 0.5 * trajectory_extent)
         camera_distance = trajectory_extent + padding
         cameraPosition_E_Eo = (
-            trajectoryMidpoint_E_Eo + camera_distance * freeFlightViewDirection_E
+            trajectoryMidpoint_E_Eo
+            + camera_distance * freeFlightCameraOffsetDirection_E
         )
         free_flight_cpos = [
             tuple(cameraPosition_E_Eo),
@@ -1228,7 +1233,7 @@ def animate(
             _output_rendering.get_free_flight_fit_parallel_scale(
                 framing_meshes,
                 trajectoryMidpoint_E_Eo,
-                freeFlightViewDirection_E,
+                freeFlightCameraOffsetDirection_E,
                 freeFlightViewUp_E,
             )
         )

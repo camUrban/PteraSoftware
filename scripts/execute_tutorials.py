@@ -51,23 +51,23 @@ from nbclient import NotebookClient
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TUTORIALS_DIR = PROJECT_ROOT / "tutorials"
 
-_KERNEL_NAME = "python3"
-_CELL_TIMEOUT_S = 600
+KERNEL_NAME = "python3"
+CELL_TIMEOUT_S = 600
 
 # A substring of the warning VTK prints when it cannot open an on-screen render window.
-_NO_DISPLAY_WARNING = "bad X server connection"
+NO_DISPLAY_WARNING = "bad X server connection"
 
 # The output values that vary between otherwise identical runs, paired with their
 # replacements. Every run time is logged at the end of its line, so each duration
 # pattern masks through the end of the line.
-_OUTPUT_MASKS = (
+OUTPUT_MASKS = (
     (re.compile(r"(completed in ).*$", re.MULTILINE), r"\1<time>"),
     (re.compile(r"(Simulation time: ).*$", re.MULTILINE), r"\1<time>"),
     (re.compile(r"\(\d+ bytes\)"), "(<size> bytes)"),
 )
 
 
-def _discover_notebooks() -> list[Path]:
+def discover_notebooks() -> list[Path]:
     """Discovers all notebooks in the tutorials directory.
 
     :return: A sorted list of Paths to the notebooks.
@@ -75,7 +75,7 @@ def _discover_notebooks() -> list[Path]:
     return sorted(TUTORIALS_DIR.glob("*.ipynb"))
 
 
-def _merge_stream_outputs(
+def merge_stream_outputs(
     outputs: list[nbformat.NotebookNode],
 ) -> list[nbformat.NotebookNode]:
     """Merges consecutive stream outputs on the same stream into one output.
@@ -102,7 +102,7 @@ def _merge_stream_outputs(
     return merged
 
 
-def _remove_no_display_warnings(
+def remove_no_display_warnings(
     outputs: list[nbformat.NotebookNode],
 ) -> list[nbformat.NotebookNode]:
     """Removes VTK's no display warning lines from a cell's stderr outputs.
@@ -118,7 +118,7 @@ def _remove_no_display_warnings(
             output.text = "".join(
                 line
                 for line in output.text.splitlines(keepends=True)
-                if _NO_DISPLAY_WARNING not in line
+                if NO_DISPLAY_WARNING not in line
             )
             if not output.text:
                 continue
@@ -126,7 +126,7 @@ def _remove_no_display_warnings(
     return kept
 
 
-def _execute_notebook(notebook_path: Path) -> bool:
+def execute_notebook(notebook_path: Path) -> bool:
     """Executes a single notebook in place and cleans up the stored result.
 
     :param notebook_path: The path to the notebook to execute.
@@ -147,8 +147,8 @@ def _execute_notebook(notebook_path: Path) -> bool:
 
         client = NotebookClient(
             nb,
-            timeout=_CELL_TIMEOUT_S,
-            kernel_name=_KERNEL_NAME,
+            timeout=CELL_TIMEOUT_S,
+            kernel_name=KERNEL_NAME,
             record_timing=False,
             resources={"metadata": {"path": str(TUTORIALS_DIR)}},
         )
@@ -170,10 +170,10 @@ def _execute_notebook(notebook_path: Path) -> bool:
         cell.metadata = nbformat.NotebookNode()
         if cell.cell_type != "code":
             continue
-        cell.outputs = _merge_stream_outputs(_remove_no_display_warnings(cell.outputs))
+        cell.outputs = merge_stream_outputs(remove_no_display_warnings(cell.outputs))
         for output in cell.outputs:
             if output.output_type == "stream":
-                for pattern, replacement in _OUTPUT_MASKS:
+                for pattern, replacement in OUTPUT_MASKS:
                     output.text = pattern.sub(replacement, output.text)
             data = output.get("data", {})
             image_types = [mime for mime in data if mime.startswith("image/")]
@@ -223,7 +223,7 @@ def main() -> int:
             return 1
         notebooks = [notebook_path]
     else:
-        notebooks = _discover_notebooks()
+        notebooks = discover_notebooks()
         if not notebooks:
             print("No notebooks found.")
             return 1
@@ -233,7 +233,7 @@ def main() -> int:
 
     for notebook_path in notebooks:
         print(f"Executing {notebook_path.name}...", flush=True)
-        if _execute_notebook(notebook_path):
+        if execute_notebook(notebook_path):
             print(f"  Stored outputs in {notebook_path.relative_to(PROJECT_ROOT)}")
             succeeded.append(notebook_path.name)
         else:

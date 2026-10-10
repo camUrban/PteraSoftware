@@ -29,34 +29,34 @@ import pyvista as pv
 
 import pterasoftware as ps
 
-_HERO_GRAPHICS_DIR = Path(__file__).resolve().parent.parent / "docs" / "hero_graphics"
-_STATIC_PATH = _HERO_GRAPHICS_DIR / "hero_static.webp"
-_ANIMATED_PATH = _HERO_GRAPHICS_DIR / "hero_animated.webp"
+HERO_GRAPHICS_DIR = Path(__file__).resolve().parent.parent / "docs" / "hero_graphics"
+STATIC_PATH = HERO_GRAPHICS_DIR / "hero_static.webp"
+ANIMATED_PATH = HERO_GRAPHICS_DIR / "hero_animated.webp"
 
-_MAX_WEBP_BYTES = 5 * 1024 * 1024
-_INITIAL_QUALITY = 75.0
-_QUALITY_STEP = 25.0
+MAX_WEBP_BYTES = 5 * 1024 * 1024
+INITIAL_QUALITY = 75.0
+QUALITY_STEP = 25.0
 # The lowest quality a re-render will try. Below this, WebP compression makes the
 # visualizations' overlay text hard to read. The floor was chosen by inspecting the
 # aeroelastic example's animation rendered at qualities from 5 to 95.
-_MIN_QUALITY = 25.0
-_MAX_RERENDER_ATTEMPTS = 2
+MIN_QUALITY = 25.0
+MAX_RERENDER_ATTEMPTS = 2
 
-_DRAW_KWARGS: dict[str, Any] = {
+DRAW_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
 }
-_ANIMATE_KWARGS: dict[str, Any] = {
+ANIMATE_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
 }
 
 # The render window classes VTK falls back to when it cannot open an on-screen window,
 # after printing a warning that it cannot connect to an X server.
-_OFF_SCREEN_WINDOW_CLASSES = ("vtkEGLRenderWindow", "vtkOSOpenGLRenderWindow")
+OFF_SCREEN_WINDOW_CLASSES = ("vtkEGLRenderWindow", "vtkOSOpenGLRenderWindow")
 
 
-def _create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
+def create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     """Creates and solves the hero simulation.
 
     :return: The solved hero solver.
@@ -246,7 +246,7 @@ def _create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
     return hero_solver
 
 
-def _render_within_size_ceiling(
+def render_within_size_ceiling(
     webp_path: Path,
     render_func: Callable[..., None],
     render_kwargs: dict[str, Any],
@@ -264,13 +264,13 @@ def _render_within_size_ceiling(
     render_func(**render_kwargs, save=True, path=webp_path)
 
     original_bytes = webp_path.stat().st_size
-    if original_bytes <= _MAX_WEBP_BYTES:
+    if original_bytes <= MAX_WEBP_BYTES:
         return
 
     name = webp_path.name
-    quality = _INITIAL_QUALITY
-    for _ in range(_MAX_RERENDER_ATTEMPTS):
-        quality = max(quality - _QUALITY_STEP, _MIN_QUALITY)
+    quality = INITIAL_QUALITY
+    for _ in range(MAX_RERENDER_ATTEMPTS):
+        quality = max(quality - QUALITY_STEP, MIN_QUALITY)
         print(
             f"  {name} is {original_bytes / 1024:.0f} KB, "
             f"re-rendering at quality={quality:.0f}..."
@@ -278,11 +278,11 @@ def _render_within_size_ceiling(
         render_func(**render_kwargs, save=True, path=webp_path, quality=quality)
 
         new_bytes = webp_path.stat().st_size
-        if new_bytes <= _MAX_WEBP_BYTES or quality == _MIN_QUALITY:
+        if new_bytes <= MAX_WEBP_BYTES or quality == MIN_QUALITY:
             break
 
     new_bytes = webp_path.stat().st_size
-    if new_bytes <= _MAX_WEBP_BYTES:
+    if new_bytes <= MAX_WEBP_BYTES:
         print(
             f"Re-rendered {name}: "
             f"{original_bytes / 1024:.0f} KB -> {new_bytes / 1024:.0f} KB "
@@ -292,7 +292,7 @@ def _render_within_size_ceiling(
         print(
             f"Warning: {name} is still {new_bytes / 1024:.0f} KB after "
             f"re-rendering down to quality={quality:.0f}. Quality is never "
-            f"reduced below {_MIN_QUALITY:.0f}, where the text stops being "
+            f"reduced below {MIN_QUALITY:.0f}, where the text stops being "
             f"readable."
         )
 
@@ -309,7 +309,7 @@ def main() -> int:
     assert render_window is not None
     window_class = render_window.GetClassName()
     probe.close()
-    if window_class in _OFF_SCREEN_WINDOW_CLASSES:
+    if window_class in OFF_SCREEN_WINDOW_CLASSES:
         raise RuntimeError(
             f"VTK could not open an on-screen window and fell back to {window_class}, "
             f"so there is no way to orient the hero graphics' view. Run this script "
@@ -318,15 +318,15 @@ def main() -> int:
 
     ps.set_up_logging()
 
-    hero_solver = _create_and_solve_hero()
+    hero_solver = create_and_solve_hero()
 
-    _render_within_size_ceiling(
-        _STATIC_PATH, ps.draw, {"solver": hero_solver, **_DRAW_KWARGS}
+    render_within_size_ceiling(
+        STATIC_PATH, ps.draw, {"solver": hero_solver, **DRAW_KWARGS}
     )
-    _render_within_size_ceiling(
-        _ANIMATED_PATH,
+    render_within_size_ceiling(
+        ANIMATED_PATH,
         ps.animate,
-        {"unsteady_solver": hero_solver, **_ANIMATE_KWARGS},
+        {"unsteady_solver": hero_solver, **ANIMATE_KWARGS},
     )
     return 0
 

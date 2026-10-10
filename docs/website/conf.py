@@ -12,10 +12,10 @@ from typing import Any
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-_TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
-_TUTORIALS_TARGET = Path(__file__).resolve().parent / "tutorials"
-_PACKAGE_DIR = REPO_ROOT / "pterasoftware"
-_API_TARGET = Path(__file__).resolve().parent / "api"
+TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
+TUTORIALS_TARGET = Path(__file__).resolve().parent / "tutorials"
+PACKAGE_DIR = REPO_ROOT / "pterasoftware"
+API_TARGET = Path(__file__).resolve().parent / "api"
 
 # Parameter annotations to show in place of the source annotation, keyed by the fully
 # qualified class (for constructor parameters) or method where it is defined, and then
@@ -26,7 +26,7 @@ _API_TARGET = Path(__file__).resolve().parent / "api"
 # constructor is widened to the shared parent problem type so the derived solvers can
 # pass their own problem types through it. The docs show the type that actually works,
 # and contributors can read the source for the formal contract.
-_ANNOTATION_OVERRIDES = {
+ANNOTATION_OVERRIDES = {
     "pterasoftware._unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver": {
         "unsteady_problem": "~pterasoftware.UnsteadyProblem",
     },
@@ -91,7 +91,7 @@ myst_heading_anchors = 3
 nb_execution_mode = "off"
 
 
-def _load_benchmark_host_info() -> dict[str, str]:
+def load_benchmark_host_info() -> dict[str, str]:
     """Read docs/_static/benchmarks/host.json into MyST substitutions.
 
     The benchmark publish workflow at PteraSoftwareBenchmarks drops host.json alongside
@@ -141,7 +141,7 @@ def _load_benchmark_host_info() -> dict[str, str]:
     }
 
 
-myst_substitutions = _load_benchmark_host_info()
+myst_substitutions = load_benchmark_host_info()
 
 # Suppress warnings that are informational or unavoidable
 suppress_warnings = [
@@ -243,20 +243,20 @@ html_theme_options = {
 # tutorial notebooks (and the images they embed) from the repo root's tutorials/
 # directory into docs/website/tutorials/. The copies are gitignored, and tutorials/
 # stays the single source of truth.
-_TUTORIALS_TARGET.mkdir(exist_ok=True)
-for _tutorial_file in sorted(_TUTORIALS_SOURCE.iterdir()):
-    if _tutorial_file.suffix in {".ipynb", ".png", ".webp"}:
-        shutil.copy2(_tutorial_file, _TUTORIALS_TARGET / _tutorial_file.name)
+TUTORIALS_TARGET.mkdir(exist_ok=True)
+for tutorial_file in sorted(TUTORIALS_SOURCE.iterdir()):
+    if tutorial_file.suffix in {".ipynb", ".png", ".webp"}:
+        shutil.copy2(tutorial_file, TUTORIALS_TARGET / tutorial_file.name)
 
 
-def _read_package_tables() -> tuple[list[str], dict[str, tuple[str, str]]]:
+def read_package_tables() -> tuple[list[str], dict[str, tuple[str, str]]]:
     """Read __all__ and the lazy callable table from the package's __init__.py.
 
     The tables are read from the source rather than by importing the package, so this
     does not depend on the package's runtime dependencies. The lazy callable table maps
     each public name to the internal module that defines it and its name there.
     """
-    tree = ast.parse((_PACKAGE_DIR / "__init__.py").read_text())
+    tree = ast.parse((PACKAGE_DIR / "__init__.py").read_text())
     tables: dict[str, Any] = {}
     for node in tree.body:
         if not isinstance(node, ast.Assign):
@@ -270,7 +270,7 @@ def _read_package_tables() -> tuple[list[str], dict[str, tuple[str, str]]]:
     return tables["__all__"], tables["_LAZY_CALLABLES"]
 
 
-def _is_class(module: str, name: str) -> bool:
+def is_class(module: str, name: str) -> bool:
     """Report whether a module in the package defines the given name as a class."""
     path = REPO_ROOT.joinpath(*module.split("."))
     path = path / "__init__.py" if path.is_dir() else path.with_suffix(".py")
@@ -280,7 +280,7 @@ def _is_class(module: str, name: str) -> bool:
     )
 
 
-def _get_definition_spellings(module: str, name: str) -> list[str]:
+def get_definition_spellings(module: str, name: str) -> list[str]:
     """Return each spelling of an internal definition that can reach a signature.
 
     Autodoc writes the full dotted path for an annotation it evaluated. For an
@@ -296,33 +296,33 @@ def _get_definition_spellings(module: str, name: str) -> list[str]:
     return spellings
 
 
-_PUBLIC_NAMES, _PUBLIC_DEFINITIONS = _read_package_tables()
+PUBLIC_NAMES, PUBLIC_DEFINITIONS = read_package_tables()
 
 # The public name of each public object, keyed by every spelling of its internal
 # definition that can reach a signature.
-_PUBLIC_NAMES_BY_SPELLING = {
+PUBLIC_NAMES_BY_SPELLING = {
     spelling: name
-    for name, definition in _PUBLIC_DEFINITIONS.items()
-    for spelling in _get_definition_spellings(*definition)
+    for name, definition in PUBLIC_DEFINITIONS.items()
+    for spelling in get_definition_spellings(*definition)
 }
 
 # Write one API reference page per public name into docs/website/api/, which is
 # gitignored, so that the reference always matches __all__. api.md lists the pages, and
 # the build warns about any page it lists that does not exist and any page it does not
 # list.
-shutil.rmtree(_API_TARGET, ignore_errors=True)
-_API_TARGET.mkdir()
-for _name in _PUBLIC_NAMES:
-    if _is_class(*_PUBLIC_DEFINITIONS[_name]):
-        _title, _directive = f"`pterasoftware.{_name}`", "autoclass"
+shutil.rmtree(API_TARGET, ignore_errors=True)
+API_TARGET.mkdir()
+for name in PUBLIC_NAMES:
+    if is_class(*PUBLIC_DEFINITIONS[name]):
+        title, directive = f"`pterasoftware.{name}`", "autoclass"
     else:
-        _title, _directive = f"`pterasoftware.{_name}()`", "autofunction"
-    (_API_TARGET / f"{_name}.md").write_text(
-        f"# {_title}\n\n```{{eval-rst}}\n.. {_directive}:: pterasoftware.{_name}\n```\n"
+        title, directive = f"`pterasoftware.{name}()`", "autofunction"
+    (API_TARGET / f"{name}.md").write_text(
+        f"# {title}\n\n```{{eval-rst}}\n.. {directive}:: pterasoftware.{name}\n```\n"
     )
 
 
-def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
+def rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
     """Rewrite relative links in files included from the repo root.
 
     Files like CONTRIBUTING.md live at the repo root and use paths like
@@ -339,7 +339,7 @@ def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
         source[0] = text
 
 
-def _is_deprecation_warning(node: ast.AST) -> bool:
+def is_deprecation_warning(node: ast.AST) -> bool:
     """Reports whether a node is a statement calling warnings.warn with
     DeprecationWarning."""
     if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
@@ -359,7 +359,7 @@ def _is_deprecation_warning(node: ast.AST) -> bool:
     return isinstance(category, ast.Name) and category.id == "DeprecationWarning"
 
 
-def _iter_functions(package_dir: Path) -> Iterator[tuple[str, ast.FunctionDef]]:
+def iter_functions(package_dir: Path) -> Iterator[tuple[str, ast.FunctionDef]]:
     """Yield each module-level function and method in a package from its source.
 
     Each function is yielded with its fully qualified name, which is the module's dotted
@@ -385,7 +385,7 @@ def _iter_functions(package_dir: Path) -> Iterator[tuple[str, ast.FunctionDef]]:
                             yield f"{class_id}.{member.name}", member
 
 
-def _get_parameter_names(function: ast.FunctionDef) -> set[str]:
+def get_parameter_names(function: ast.FunctionDef) -> set[str]:
     """Return the names of a function's parameters, other than * and ** parameters."""
     return {
         argument.arg
@@ -397,7 +397,7 @@ def _get_parameter_names(function: ast.FunctionDef) -> set[str]:
     }
 
 
-def _find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]]:
+def find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]]:
     """Find the deprecated members and parameters in a package from its source.
 
     A deprecation is whatever emits a DeprecationWarning, so this reads the package's
@@ -412,14 +412,14 @@ def _find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]
     """
     members: set[str] = set()
     parameters: dict[str, list[str]] = {}
-    for function_id, function in _iter_functions(package_dir):
-        if any(_is_deprecation_warning(statement) for statement in function.body):
+    for function_id, function in iter_functions(package_dir):
+        if any(is_deprecation_warning(statement) for statement in function.body):
             members.add(function_id)
-        parameter_names = _get_parameter_names(function)
+        parameter_names = get_parameter_names(function)
         for statement in function.body:
             if not isinstance(statement, ast.If):
                 continue
-            if not any(_is_deprecation_warning(node) for node in ast.walk(statement)):
+            if not any(is_deprecation_warning(node) for node in ast.walk(statement)):
                 continue
             for node in ast.walk(statement.test):
                 if isinstance(node, ast.Name) and node.id in parameter_names:
@@ -427,34 +427,34 @@ def _find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]
     return members, parameters
 
 
-_DEPRECATED_MEMBERS, _DEPRECATED_PARAMETERS = _find_deprecations(_PACKAGE_DIR)
+DEPRECATED_MEMBERS, DEPRECATED_PARAMETERS = find_deprecations(PACKAGE_DIR)
 
 # Fail the build on an annotation override whose function or parameter no longer exists,
 # so a rename cannot silently drop an override.
-_PARAMETER_NAMES = {
-    function_id: _get_parameter_names(function)
-    for function_id, function in _iter_functions(_PACKAGE_DIR)
+PARAMETER_NAMES = {
+    function_id: get_parameter_names(function)
+    for function_id, function in iter_functions(PACKAGE_DIR)
 }
-for _target_id, _overrides in _ANNOTATION_OVERRIDES.items():
-    for _parameter in _overrides:
-        if _parameter not in _PARAMETER_NAMES.get(_target_id, set()):
+for target_id, overrides in ANNOTATION_OVERRIDES.items():
+    for parameter in overrides:
+        if parameter not in PARAMETER_NAMES.get(target_id, set()):
             raise ValueError(
-                f"Annotation override target {_target_id} has no parameter "
-                f"{_parameter}."
+                f"Annotation override target {target_id} has no parameter "
+                f"{parameter}."
             )
 
 
-def _get_object_id(obj: Any) -> str:
+def get_object_id(obj: Any) -> str:
     """Return the fully qualified name of an object that autodoc documents.
 
     The name is the object's module followed by its qualified name, which matches the
-    names that _iter_functions gives. A property is named by its getter.
+    names that iter_functions gives. A property is named by its getter.
     """
     target = obj.fget if isinstance(obj, property) else obj
     return f"{getattr(target, '__module__', '')}.{getattr(target, '__qualname__', '')}"
 
 
-def _skip_deprecated_members(
+def skip_deprecated_members(
     app: Any, what: str, name: str, obj: Any, skip: bool, options: Any
 ) -> bool | None:
     """Keep deprecated members out of the API reference.
@@ -462,12 +462,12 @@ def _skip_deprecated_members(
     Returns True to skip a deprecated member and None to leave autodoc's own decision in
     place for everything else.
     """
-    if _get_object_id(obj) in _DEPRECATED_MEMBERS:
+    if get_object_id(obj) in DEPRECATED_MEMBERS:
         return True
     return None
 
 
-def _parameter_end(signature: str, start: int) -> int:
+def parameter_end(signature: str, start: int) -> int:
     """Find where the parameter starting at the given index ends in a signature.
 
     The end is the next top-level comma or closing parenthesis, ignoring the commas
@@ -487,26 +487,26 @@ def _parameter_end(signature: str, start: int) -> int:
     return end
 
 
-def _override_annotation(signature: str, parameter: str, annotation: str) -> str:
+def override_annotation(signature: str, parameter: str, annotation: str) -> str:
     """Replace one parameter's annotation in a signature, keeping any default."""
     match = re.search(rf"(?<![\w]){parameter}: ", signature)
     if match is None:
         raise ValueError(f"Parameter {parameter} not found in signature {signature}.")
     start = match.end()
-    end = _parameter_end(signature, start)
+    end = parameter_end(signature, start)
     default = signature[start:end].find(" = ")
     if default != -1:
         end = start + default
     return signature[:start] + annotation + signature[end:]
 
 
-def _remove_parameter(signature: str, parameter: str) -> str:
+def remove_parameter(signature: str, parameter: str) -> str:
     """Remove one parameter, with its annotation and default, from a signature."""
     match = re.search(rf"(?<![\w]){parameter}(?=[:=,)])", signature)
     if match is None:
         raise ValueError(f"Parameter {parameter} not found in signature {signature}.")
     start = match.start()
-    end = _parameter_end(signature, start)
+    end = parameter_end(signature, start)
     if signature.startswith(", ", end):
         end += 2
     elif signature.startswith(", ", start - 2):
@@ -517,10 +517,10 @@ def _remove_parameter(signature: str, parameter: str) -> str:
 # This matches a dotted path in a signature, such as ~pterasoftware._geometry.wing.Wing
 # or wing_mod.Wing, including the leading tilde that autodoc adds to a path it wrote
 # itself.
-_DOTTED_PATH_PATTERN = re.compile(r"(?<![\w.~])~?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+")
+DOTTED_PATH_PATTERN = re.compile(r"(?<![\w.~])~?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+")
 
 
-def _flatten_public_paths(text: str) -> str:
+def flatten_public_paths(text: str) -> str:
     """Replace each path to a public object's internal definition with its public name.
 
     This makes the reference show each such annotation as the object's public name and
@@ -528,15 +528,15 @@ def _flatten_public_paths(text: str) -> str:
     """
 
     def flatten(match: re.Match[str]) -> str:
-        public_name = _PUBLIC_NAMES_BY_SPELLING.get(match.group().lstrip("~"))
+        public_name = PUBLIC_NAMES_BY_SPELLING.get(match.group().lstrip("~"))
         if public_name is None:
             return match.group()
         return f"~pterasoftware.{public_name}"
 
-    return _DOTTED_PATH_PATTERN.sub(flatten, text)
+    return DOTTED_PATH_PATTERN.sub(flatten, text)
 
 
-def _rewrite_signature(
+def rewrite_signature(
     app: Any,
     what: str,
     name: str,
@@ -548,18 +548,18 @@ def _rewrite_signature(
     """Show public names in a signature, apply its annotation overrides, and remove its
     deprecated parameters."""
     if signature is not None:
-        object_id = _get_object_id(obj)
-        signature = _flatten_public_paths(signature)
-        for parameter, annotation in _ANNOTATION_OVERRIDES.get(object_id, {}).items():
-            signature = _override_annotation(signature, parameter, annotation)
-        for parameter in _DEPRECATED_PARAMETERS.get(object_id, []):
-            signature = _remove_parameter(signature, parameter)
+        object_id = get_object_id(obj)
+        signature = flatten_public_paths(signature)
+        for parameter, annotation in ANNOTATION_OVERRIDES.get(object_id, {}).items():
+            signature = override_annotation(signature, parameter, annotation)
+        for parameter in DEPRECATED_PARAMETERS.get(object_id, []):
+            signature = remove_parameter(signature, parameter)
     if return_annotation:
-        return_annotation = _flatten_public_paths(return_annotation)
+        return_annotation = flatten_public_paths(return_annotation)
     return signature, return_annotation
 
 
-def _process_docstring(
+def process_docstring(
     app: Any, what: str, name: str, obj: Any, options: Any, lines: list[str]
 ) -> None:
     """Prepare a docstring for the API reference.
@@ -571,7 +571,7 @@ def _process_docstring(
     """
     kept_lines: list[str] = []
     field_indent: int | None = None
-    deprecated_parameters = _DEPRECATED_PARAMETERS.get(_get_object_id(obj), [])
+    deprecated_parameters = DEPRECATED_PARAMETERS.get(get_object_id(obj), [])
     for line in lines:
         indent = len(line) - len(line.lstrip())
         if field_indent is not None:
@@ -591,10 +591,10 @@ def _process_docstring(
 
 
 def setup(app: Any) -> None:
-    app.connect("source-read", _rewrite_repo_root_links)
-    app.connect("autodoc-process-signature", _rewrite_signature)
-    app.connect("autodoc-process-docstring", _process_docstring)
-    app.connect("autodoc-skip-member", _skip_deprecated_members)
+    app.connect("source-read", rewrite_repo_root_links)
+    app.connect("autodoc-process-signature", rewrite_signature)
+    app.connect("autodoc-process-docstring", process_docstring)
+    app.connect("autodoc-skip-member", skip_deprecated_members)
 
     # Copy extra assets to the site root after build
     # noinspection PyShadowingNames

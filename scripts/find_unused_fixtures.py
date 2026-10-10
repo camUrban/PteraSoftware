@@ -51,7 +51,7 @@ def find_all_python_files() -> list[Path]:
     return files
 
 
-def _resolve_import_to_filepath(
+def resolve_import_to_filepath(
     module_str: str, level: int, caller_filepath: str
 ) -> str | None:
     """Resolves a Python import to a filesystem path.
@@ -82,7 +82,7 @@ def _resolve_import_to_filepath(
     return None
 
 
-def _parse_fixture_imports(
+def parse_fixture_imports(
     tree: ast.Module, caller_filepath: str, fixture_file_set: set[str]
 ) -> dict[str, str]:
     """Parses a file's imports to map local names to their source fixture files.
@@ -106,7 +106,7 @@ def _parse_fixture_imports(
 
         for alias in node.names:
             combined = f"{node.module}.{alias.name}" if node.module else alias.name
-            source = _resolve_import_to_filepath(combined, node.level, caller_filepath)
+            source = resolve_import_to_filepath(combined, node.level, caller_filepath)
             if source and source in fixture_file_set:
                 local_alias = alias.asname or alias.name
                 module_aliases[local_alias] = source
@@ -147,7 +147,7 @@ def find_fixture_call_sites(
             continue
 
         filepath_str = str(filepath)
-        module_aliases = _parse_fixture_imports(tree, filepath_str, fixture_file_set)
+        module_aliases = parse_fixture_imports(tree, filepath_str, fixture_file_set)
 
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -341,7 +341,7 @@ def find_dead_setup_attributes(
     return dead_attrs
 
 
-def _batch_delete(deletions: list[tuple[str, int, int]]) -> dict[str, str]:
+def batch_delete(deletions: list[tuple[str, int, int]]) -> dict[str, str]:
     """Deletes multiple line ranges across multiple files.
 
     Within each file, deletions are applied from bottom to top so that line numbers
@@ -366,7 +366,7 @@ def _batch_delete(deletions: list[tuple[str, int, int]]) -> dict[str, str]:
     return originals
 
 
-def _restore_files(originals: dict[str, str]) -> None:
+def restore_files(originals: dict[str, str]) -> None:
     """Restores files to their original content.
 
     :param originals: A dictionary mapping filepath to original content.
@@ -375,7 +375,7 @@ def _restore_files(originals: dict[str, str]) -> None:
         Path(filepath).write_text(content)
 
 
-def _discover_test_ids() -> list[str]:
+def discover_test_ids() -> list[str]:
     """Discovers all test IDs without running them.
 
     Uses unittest's test loader to walk the test suite and collect fully qualified test
@@ -416,7 +416,7 @@ def _discover_test_ids() -> list[str]:
     return sorted(result.stdout.strip().splitlines())
 
 
-def _run_full_test_suite() -> tuple[bool, str, str, float | None]:
+def run_full_test_suite() -> tuple[bool, str, str, float | None]:
     """Runs the full test suite under coverage in a subprocess.
 
     :return: A (success, summary, stderr, coverage_pct) tuple where success is a bool,
@@ -475,7 +475,7 @@ def _run_full_test_suite() -> tuple[bool, str, str, float | None]:
     return False, last_line, stderr, coverage_pct
 
 
-def _find_false_positives_from_traceback(
+def find_false_positives_from_traceback(
     stderr: str, all_deletions: list[tuple[str, int, int, str]]
 ) -> set[str]:
     """Analyzes test suite stderr to identify which deletions caused failures.
@@ -504,7 +504,7 @@ def _find_false_positives_from_traceback(
     return false_positives
 
 
-def _format_key(key: tuple[str, str]) -> tuple[Path, str]:
+def format_key(key: tuple[str, str]) -> tuple[Path, str]:
     """Formats a (filepath, name) fixture key for display.
 
     :param key: A (filepath, function_name) tuple.
@@ -562,7 +562,7 @@ def main() -> int:
     print("=" * 80)
     if directly_unused:
         for key in sorted(directly_unused):
-            rel, name = _format_key(key)
+            rel, name = format_key(key)
             filepath, _ = key
             lineno, _ = fixture_functions[key]
             print(f"  {rel}:{lineno}  {name}")
@@ -575,7 +575,7 @@ def main() -> int:
     print("=" * 80)
     if only_transitively_unused:
         for key in sorted(only_transitively_unused):
-            rel, name = _format_key(key)
+            rel, name = format_key(key)
             lineno, _ = fixture_functions[key]
             callers = call_sites[key]
             caller_names = sorted({c for _, _, c in callers})
@@ -644,12 +644,12 @@ def main() -> int:
         "Baseline: Discovering test IDs and running test suite with coverage...",
         flush=True,
     )
-    baseline_ids = _discover_test_ids()
+    baseline_ids = discover_test_ids()
     if not baseline_ids:
         print("  [FAIL] Baseline discovery found no tests.")
         return 1
 
-    baseline_ok, baseline_summary, _, baseline_cov = _run_full_test_suite()
+    baseline_ok, baseline_summary, _, baseline_cov = run_full_test_suite()
     if not baseline_ok:
         print(f"  [FAIL] Baseline test suite failed ({baseline_summary})")
         print("Cannot verify candidates against a failing baseline.")
@@ -666,12 +666,12 @@ def main() -> int:
     )
 
     batch = [(fp, sl, el) for fp, sl, el, _ in all_deletions]
-    originals = _batch_delete(batch)
+    originals = batch_delete(batch)
     try:
-        ok, summary, stderr, post_cov = _run_full_test_suite()
-        post_ids = _discover_test_ids() if ok else []
+        ok, summary, stderr, post_cov = run_full_test_suite()
+        post_ids = discover_test_ids() if ok else []
     finally:
-        _restore_files(originals)
+        restore_files(originals)
 
     if ok:
         # Check test ID match.
@@ -710,7 +710,7 @@ def main() -> int:
         # Some candidates are false positives. Identify them.
         print(f"  [FAIL] Batch test failed ({summary})")
         print()
-        false_positives = _find_false_positives_from_traceback(stderr, all_deletions)
+        false_positives = find_false_positives_from_traceback(stderr, all_deletions)
         if not false_positives:
             print("Could not identify specific false positives from the " "traceback.")
             print("Full stderr from the test run:")
@@ -738,12 +738,12 @@ def main() -> int:
             flush=True,
         )
         batch = [(fp, sl, el) for fp, sl, el, _ in confirmed_deletions]
-        originals = _batch_delete(batch)
+        originals = batch_delete(batch)
         try:
-            ok, summary, stderr, post_cov = _run_full_test_suite()
-            post_ids = _discover_test_ids() if ok else []
+            ok, summary, stderr, post_cov = run_full_test_suite()
+            post_ids = discover_test_ids() if ok else []
         finally:
-            _restore_files(originals)
+            restore_files(originals)
 
         if ok:
             missing = sorted(set(baseline_ids) - set(post_ids))
@@ -790,7 +790,7 @@ def main() -> int:
     print(flush=True)
 
     batch = [(fp, sl, el) for fp, sl, el, _ in confirmed_deletions]
-    originals = _batch_delete(batch)
+    originals = batch_delete(batch)
     try:
         new_fixture_functions = find_fixture_functions()
         new_all_files = find_all_python_files()
@@ -800,7 +800,7 @@ def main() -> int:
         )
         new_dead_attrs = find_dead_setup_attributes(new_all_files)
     finally:
-        _restore_files(originals)
+        restore_files(originals)
 
     # Filter to only genuinely new candidates (not already in confirmed list).
     confirmed_keys = set()
@@ -827,7 +827,7 @@ def main() -> int:
         if newly_exposed_fixtures:
             print("  New unused fixture functions:")
             for key in newly_exposed_fixtures:
-                rel, name = _format_key(key)
+                rel, name = format_key(key)
                 lineno, _ = new_fixture_functions[key]
                 print(f"    {rel}:{lineno}  {name}")
         if newly_exposed_attrs:
@@ -847,7 +847,7 @@ def main() -> int:
         print()
 
         batch = [(fp, sl, el) for fp, sl, el, _ in confirmed_deletions]
-        _batch_delete(batch)
+        batch_delete(batch)
 
         print(f"Deleted {len(confirmed_deletions)} confirmed candidate(s):")
         for _, _, _, label in confirmed_deletions:

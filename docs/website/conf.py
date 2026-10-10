@@ -280,12 +280,30 @@ def _is_class(module: str, name: str) -> bool:
     )
 
 
+def _get_definition_spellings(module: str, name: str) -> list[str]:
+    """Return each spelling of an internal definition that can reach a signature.
+
+    Autodoc writes the full dotted path for an annotation it evaluated. For an
+    annotation it could not evaluate under the mocked imports, it copies the source text
+    instead, where the package spells a module by any trailing part of its dotted path
+    (pterasoftware._geometry.wing, _geometry.wing, or wing) or by the alias its imports
+    give it, which is the last part without its leading underscore plus _mod (wing_mod
+    or operating_point_mod).
+    """
+    parts = module.split(".")
+    spellings = [".".join([*parts[start:], name]) for start in range(len(parts))]
+    spellings.append(f"{parts[-1].lstrip('_')}_mod.{name}")
+    return spellings
+
+
 _PUBLIC_NAMES, _PUBLIC_DEFINITIONS = _read_package_tables()
 
-# The public name of each public object, keyed by the internal module that defines it
-# and its name there.
-_PUBLIC_NAMES_BY_DEFINITION = {
-    definition: name for name, definition in _PUBLIC_DEFINITIONS.items()
+# The public name of each public object, keyed by every spelling of its internal
+# definition that can reach a signature.
+_PUBLIC_NAMES_BY_SPELLING = {
+    spelling: name
+    for name, definition in _PUBLIC_DEFINITIONS.items()
+    for spelling in _get_definition_spellings(*definition)
 }
 
 # Write one API reference page per public name into docs/website/api/, which is
@@ -496,26 +514,26 @@ def _remove_parameter(signature: str, parameter: str) -> str:
     return signature[:start] + signature[end:]
 
 
-# This matches a dotted path into the package as autodoc writes it into a signature,
-# such as ~pterasoftware._geometry.wing.Wing.
-_PACKAGE_PATH_PATTERN = re.compile(r"~?pterasoftware(?:\.\w+)+")
+# This matches a dotted path in a signature, such as ~pterasoftware._geometry.wing.Wing
+# or wing_mod.Wing, including the leading tilde that autodoc adds to a path it wrote
+# itself.
+_DOTTED_PATH_PATTERN = re.compile(r"(?<![\w.~])~?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+")
 
 
 def _flatten_public_paths(text: str) -> str:
     """Replace each path to a public object's internal definition with its public name.
 
-    This makes the reference link each such annotation to the object's page. Paths to
-    internal objects are left as they are.
+    This makes the reference show each such annotation as the object's public name and
+    link it to the object's page. Paths to anything else are left as they are.
     """
 
     def flatten(match: re.Match[str]) -> str:
-        module, _, name = match.group().lstrip("~").rpartition(".")
-        public_name = _PUBLIC_NAMES_BY_DEFINITION.get((module, name))
+        public_name = _PUBLIC_NAMES_BY_SPELLING.get(match.group().lstrip("~"))
         if public_name is None:
             return match.group()
         return f"~pterasoftware.{public_name}"
 
-    return _PACKAGE_PATH_PATTERN.sub(flatten, text)
+    return _DOTTED_PATH_PATTERN.sub(flatten, text)
 
 
 def _rewrite_signature(

@@ -43,6 +43,7 @@ _ANNOTATION_OVERRIDES = {
 # (for example, np.ndarray), since autodoc falls back to the source text for the types
 # it cannot resolve.
 autodoc_mock_imports = [
+    "fontTools",
     "matplotlib",
     "mujoco",
     "numba",

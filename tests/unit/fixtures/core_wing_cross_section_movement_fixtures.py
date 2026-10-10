@@ -179,9 +179,7 @@ def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture() -> (
 
 
 def make_static_core_wing_cross_section_movement_fixture(
-    base_wing_cross_section: (
-        ps.geometry.wing_cross_section.WingCrossSection | None
-    ) = None,
+    base_wing_cross_section: ps.WingCrossSection | None = None,
 ) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement).
@@ -217,9 +215,7 @@ def make_static_core_wing_cross_section_movement_fixture(
 
 
 def make_static_tip_core_wing_cross_section_movement_fixture(
-    base_wing_cross_section: (
-        ps.geometry.wing_cross_section.WingCrossSection | None
-    ) = None,
+    base_wing_cross_section: ps.WingCrossSection | None = None,
 ) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement), using a tip WingCrossSection as the base.
@@ -255,9 +251,7 @@ def make_static_tip_core_wing_cross_section_movement_fixture(
 
 
 def make_basic_core_wing_cross_section_movement_fixture(
-    base_wing_cross_section: (
-        ps.geometry.wing_cross_section.WingCrossSection | None
-    ) = None,
+    base_wing_cross_section: ps.WingCrossSection | None = None,
 ) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with general-
     purpose moderate values.
@@ -419,9 +413,7 @@ def make_phase_offset_angles_core_wing_cross_section_movement_fixture() -> (
 
 
 def make_multiple_periods_core_wing_cross_section_movement_fixture(
-    base_wing_cross_section: (
-        ps.geometry.wing_cross_section.WingCrossSection | None
-    ) = None,
+    base_wing_cross_section: ps.WingCrossSection | None = None,
 ) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with different
     periods for different dimensions.
@@ -553,9 +545,7 @@ def make_custom_spacing_angles_core_wing_cross_section_movement_fixture() -> (
 
 
 def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(
-    base_wing_cross_section: (
-        ps.geometry.wing_cross_section.WingCrossSection | None
-    ) = None,
+    base_wing_cross_section: ps.WingCrossSection | None = None,
 ) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     custom and standard spacing functions.

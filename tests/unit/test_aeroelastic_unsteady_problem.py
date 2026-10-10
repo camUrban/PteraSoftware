@@ -30,19 +30,19 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         ].wing_movements[0]
         assert isinstance(
             wing_movement,
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+            ps.AeroelasticWingMovement,
         )
         self.wing_movement = wing_movement
 
     def test_initialization_accepts_aeroelastic_movement(self) -> None:
         """Test that AeroelasticUnsteadyProblem accepts an AeroelasticMovement."""
-        self.assertIsInstance(self.problem, ps.problems.AeroelasticUnsteadyProblem)
+        self.assertIsInstance(self.problem, ps.AeroelasticUnsteadyProblem)
 
     def test_initialization_rejects_non_aeroelastic_movement(self) -> None:
         """Test that a non-AeroelasticMovement raises TypeError."""
         basic_movement: Any = movement_fixtures.make_basic_movement_fixture()
         with self.assertRaises(TypeError):
-            ps.problems.AeroelasticUnsteadyProblem(
+            ps.AeroelasticUnsteadyProblem(
                 movement=basic_movement,
                 wing_density=0.01,
                 spring_constant_rad=10.0,
@@ -107,7 +107,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         discarded between steps (a restart from rest every step), the deformation angle
         y component would freeze at that one-step response instead of converging.
         """
-        problem = ps.problems.AeroelasticUnsteadyProblem(
+        problem = ps.AeroelasticUnsteadyProblem(
             movement=movement_fixtures.make_basic_aeroelastic_movement_fixture(),
             wing_density=0.01,
             spring_constant_rad=10.0,

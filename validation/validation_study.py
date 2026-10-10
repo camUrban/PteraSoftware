@@ -208,13 +208,13 @@ def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
 # orientation of the wing axes relative to the geometry axes (after accounting for
 # symmetry) using an intrinsic xy'z" sequence is the flap angle at the start of a flap.
 # The WingMovements oscillate it about that value.
-validation_airplane = ps.geometry.airplane.Airplane(
+validation_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing.from_edge_points(
+        ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
             trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
             num_wing_cross_sections=NUM_SPANWISE_SECTIONS + 1,
-            airfoil=ps.geometry.airfoil.Airfoil(
+            airfoil=ps.Airfoil(
                 name="naca0012",
             ),
             name="Main Wing",
@@ -240,15 +240,11 @@ reflected_main_wing_cross_section_movements = []
 # Create static WingCrossSectionMovements for each WingCrossSection in the main and
 # reflected main Wings.
 for i in range(NUM_SPANWISE_SECTIONS + 1):
-    this_main_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[i]
-        )
+    this_main_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[i]
     )
-    this_reflected_main_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=validation_airplane.wings[1].wing_cross_sections[i]
-        )
+    this_reflected_main_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=validation_airplane.wings[1].wing_cross_sections[i]
     )
 
     main_wing_cross_section_movements.append(this_main_wing_cross_section_movement)
@@ -300,7 +296,7 @@ def time_normalized_validation_geometry_sweep_function_rad(
 
 
 # Define the WingMovements for the main and reflected main Wings.
-main_wing_movement = ps.movements.wing_movement.WingMovement(
+main_wing_movement = ps.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_section_movements=main_wing_cross_section_movements,
     ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
@@ -308,7 +304,7 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
-reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
+reflected_main_wing_movement = ps.WingMovement(
     base_wing=validation_airplane.wings[1],
     wing_cross_section_movements=reflected_main_wing_cross_section_movements,
     ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
@@ -322,7 +318,7 @@ del main_wing_cross_section_movements
 del reflected_main_wing_cross_section_movements
 
 # Define the AirplaneMovement that contains the WingMovements.
-validation_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+validation_airplane_movement = ps.AirplaneMovement(
     base_airplane=validation_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement],
 )
@@ -334,17 +330,15 @@ del reflected_main_wing_movement
 
 # Define an OperatingPoint and OperatingPointMovement corresponding to the conditions of
 # the validation study.
-validation_operating_point = ps.operating_point.OperatingPoint(
+validation_operating_point = ps.OperatingPoint(
     vCg__E=VALIDATION_VELOCITY, alpha=VALIDATION_ALPHA
 )
-validation_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=validation_operating_point
-    )
+validation_operating_point_movement = ps.OperatingPointMovement(
+    base_operating_point=validation_operating_point
 )
 
 # Define the Movement.
-validation_movement = ps.movements.movement.Movement(
+validation_movement = ps.Movement(
     airplane_movements=[validation_airplane_movement],
     operating_point_movement=validation_operating_point_movement,
     num_cycles=NUM_FLAPS,
@@ -356,7 +350,7 @@ del validation_operating_point_movement
 
 # Define the reference UnsteadyProblem for the convergence analysis. It only needs each
 # iteration's final results, which is all the analysis compares.
-reference_problem = ps.problems.UnsteadyProblem(
+reference_problem = ps.UnsteadyProblem(
     movement=validation_movement,
     only_final_results=True,
 )
@@ -381,7 +375,7 @@ del validation_movement
     converged_panel_aspect_ratio,
     converged_num_chordwise_panels,
     converged_solver,
-) = ps.convergence.analyze_unsteady_convergence(
+) = ps.analyze_unsteady_convergence(
     ref_problem=reference_problem,
     prescribed_wake=True,
     free_wake=True,
@@ -816,7 +810,7 @@ print(f"Lift RMS Absolute Percent Error: {lift_rmsape:#.3G}%")
 print()
 print(f"Lift Mean Absolute Error: {lift_mean_absolute_error:#.3G} N")
 
-ps.output.draw(
+ps.draw(
     solver=converged_solver,
     show_wake_vortices=True,
     scalar_type="lift",

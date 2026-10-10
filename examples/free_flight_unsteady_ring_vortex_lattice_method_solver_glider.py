@@ -32,11 +32,11 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"
 # static pitch and yaw stability and verified in XFLR5. The negative horizontal
 # stabilizer incidence provides the restoring pitch moment that keeps the glider on a
 # bounded, damped trajectory rather than diverging once it is released into free flight.
-example_airplane = ps.geometry.airplane.Airplane(
+example_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=10,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -45,14 +45,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
@@ -61,7 +61,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
@@ -79,9 +79,9 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_chordwise_panels=4,
             chordwise_spacing="uniform",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=6,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -90,14 +90,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -106,7 +106,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
@@ -124,9 +124,9 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_chordwise_panels=4,
             chordwise_spacing="uniform",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=6,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -135,14 +135,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
@@ -151,7 +151,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
@@ -193,13 +193,13 @@ example_airplane = ps.geometry.airplane.Airplane(
 wing_movements = []
 for wing in example_airplane.wings:
     wing_cross_section_movements = [
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in wing.wing_cross_sections
     ]
     wing_movements.append(
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
@@ -207,7 +207,7 @@ for wing in example_airplane.wings:
 
 # Now define the example Airplane's AirplaneMovement. As with the Wings, the
 # airplane-level prescribed motion is left at its zero defaults.
-airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+airplane_movement = ps.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=wing_movements,
 )
@@ -225,7 +225,7 @@ del wing_movements
 # with FreeFlightUnsteadyProblem's external_loads_fn. Standard gravity is set explicitly
 # via g_E (the default is no gravitational field), while the zero initial body rates
 # (omegas_BP1__E) are left at their default.
-example_operating_point = ps.operating_point.OperatingPoint(
+example_operating_point = ps.OperatingPoint(
     rho=1.225,
     vCg__E=12.9,
     alpha=3.3,
@@ -239,10 +239,8 @@ example_operating_point = ps.operating_point.OperatingPoint(
 # Define the OperatingPoint's FreeFlightOperatingPointMovement. It holds only the
 # initial OperatingPoint. The solver populates its operating_points list with the body
 # state from the dynamics integration at each time step.
-operating_point_movement = (
-    ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
-        base_operating_point=example_operating_point,
-    )
+operating_point_movement = ps.FreeFlightOperatingPointMovement(
+    base_operating_point=example_operating_point,
 )
 
 # Delete the extraneous pointer.
@@ -252,7 +250,7 @@ del example_operating_point
 # FreeFlightOperatingPointMovement. The glider first holds its trimmed condition for
 # prescribed_num_steps time steps so the wake can develop, then the solver releases the
 # rigid body dynamics for the remaining free_num_steps time steps.
-movement = ps.movements.free_flight_movement.FreeFlightMovement(
+movement = ps.FreeFlightMovement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
     delta_time=0.01292,
@@ -273,7 +271,7 @@ del operating_point_movement
 # consistent. The solver applies the gravitational force as mass * g_E. No external
 # loads are applied (external_loads_fn=None), so the glider flies an unpowered glide
 # driven only by its aerodynamics, gravity, and inertia.
-example_problem = ps.problems.FreeFlightUnsteadyProblem(
+example_problem = ps.FreeFlightUnsteadyProblem(
     movement=movement,
     mass=420.0 / 9.80665,
     I_BP1_CgP1=(
@@ -289,7 +287,7 @@ del movement
 
 # Define a new solver. We'll create a FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 # which requires a FreeFlightUnsteadyProblem.
-example_solver = ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver(
+example_solver = ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     free_flight_unsteady_problem=example_problem,
 )
 
@@ -315,19 +313,19 @@ loaded_solver = ps.load("example_solver.psz")
 # against loading the wrong file.
 assert isinstance(
     loaded_solver,
-    ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
 
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,
 # orientation, angular velocity, and aerodynamic angles.
-ps.output.log_results(solver=loaded_solver)
+ps.log_results(solver=loaded_solver)
 
 # Call the draw function on the loaded solver. For a free flight solver, the geometry is
 # drawn in Earth axes at the final time step's true flight pose, so the airplane appears
 # where and how it ended up after final time step. Press any key to close the plotter
 # after it draws the output.
-ps.output.draw(
+ps.draw(
     solver=loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
@@ -339,7 +337,7 @@ ps.output.draw(
 # the airplane through the scene along its computed trajectory, producing an animated
 # WebP saved in the same directory as this script. Press any key, after orienting the
 # view, to begin the animation.
-ps.output.animate(
+ps.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
@@ -357,7 +355,7 @@ ps.output.animate(
 # results step, while the state history begins at the first time step. Note that
 # save_csv is independent of save, so the data can be exported without rendering any
 # images.
-ps.output.plot_results_versus_time(
+ps.plot_results_versus_time(
     unsteady_solver=loaded_solver,
     show=True,
     save=True,

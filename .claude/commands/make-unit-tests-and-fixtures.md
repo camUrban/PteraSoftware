@@ -16,7 +16,7 @@ Follow these steps carefully and track your progress:
 - [ ] Read the style docs: `docs/CODE_STYLE.md`, `docs/TYPE_HINT_AND_DOCSTRING_STYLE.md`, and `docs/WRITING_STYLE.md`
 - [ ] Read `tests/unit/test_wing_cross_section_movement.py` for examples of test patterns
 - [ ] Read `tests/unit/fixtures/wing_cross_section_movement_fixtures.py` for examples of fixture patterns
-- [ ] Understand how `movements/wing_cross_section_movement.py` informs design of example tests and fixtures
+- [ ] Understand how `pterasoftware/_movements/wing_cross_section_movement.py` informs design of example tests and fixtures
 - [ ] Create comprehensive tests and fixtures for each public class/function in `$ARGUMENTS`
 - [ ] Review the tests and fixtures against `docs/CODE_STYLE.md`, `docs/TYPE_HINT_AND_DOCSTRING_STYLE.md`, and `docs/WRITING_STYLE.md`
 
@@ -40,7 +40,7 @@ These steps are both handled by other slash commands.
     - Read `tests/unit/fixtures/wing_cross_section_movement_fixtures.py`
     - Understand the patterns for creating fixtures and unit tests
 6. **Study the implementation**:
-    - Read `movements/wing_cross_section_movement.py`
+    - Read `pterasoftware/_movements/wing_cross_section_movement.py`
     - Consider how the implementation reveals test design patterns
 7. **For each class and function within `$ARGUMENTS`**:
    a. **Determine file placement**:

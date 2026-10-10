@@ -18,7 +18,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the SteadyRingVortexLatticeMethodSolver."""
 
     steady_ring_vortex_lattice_method_validation_solver: (
-        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        ps.SteadyRingVortexLatticeMethodSolver
     )
 
     @classmethod
@@ -64,7 +64,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        ps.draw(
             solver=self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,

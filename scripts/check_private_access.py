@@ -1,16 +1,36 @@
 """Verify that code outside the package reaches Ptera Software only through public
-names.
+names, and that the package names its modules and members by its naming rules.
 
 This pre-commit hook parses every tracked Python file in examples/, scripts/, and
 validation/, the code cells of every tracked notebook in tutorials/, and the Python code
 blocks in README.md. It flags any reference to a Ptera Software name that has a leading
 underscore, whether it appears in an import (import pterasoftware._core or from
 pterasoftware import _core) or in an attribute chain rooted at a name bound to the
-package or to something imported from it (ps._core or ps.geometry._meshing). Dunder
+package or to something imported from it (ps._core or ps.Movement._lcm_period). Dunder
 names are allowed.
 
-Each violation is reported with its location and the dotted reference that contains the
-internal name.
+It also parses every tracked Python file in pterasoftware/ and flags any name that
+breaks one of the package's naming rules, which follow.
+
+Every module and package directly inside pterasoftware/, other than __init__.py, starts
+with an underscore, and the modules and packages nested inside them do not. The
+deprecated modules and packages at the old public paths, which are the keys of the
+package's _LAZY_MODULES table, are exempt.
+
+A name defined at module level in pterasoftware/__init__.py starts with an underscore if
+and only if it is not in __all__. A name defined at module level in any other module
+never starts with an underscore.
+
+A member defined on an internal-only class never starts with an underscore, unless it
+backs a property of the same name without the underscore. A class is internal-only if it
+is not a public class or a base of one, where the public classes are the classes in the
+package's _LAZY_CALLABLES table. A member is a name defined in the class body, an entry
+in its __slots__, or an attribute assigned through self in one of its methods.
+
+Imported names, function-local names, and dunder names are exempt from these rules. Base
+classes defined outside the package are skipped when resolving class hierarchies.
+
+Each violation is reported with its location and the name that breaks the rule.
 """
 
 import ast
@@ -19,6 +39,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 PACKAGE_NAME = "pterasoftware"
 
@@ -26,6 +47,9 @@ PACKAGE_NAME = "pterasoftware"
 PYTHON_PATHSPECS = ("examples/*.py", "scripts/*.py", "validation/*.py")
 NOTEBOOK_PATHSPECS = ("tutorials/*.ipynb",)
 MARKDOWN_PATHSPECS = ("README.md",)
+
+# These are the tracked package files whose names are checked against the naming rules.
+PACKAGE_PATHSPECS = ("pterasoftware/*.py",)
 
 # This matches a fenced Python code block in a Markdown file and captures its body.
 PYTHON_FENCE_PATTERN = re.compile(
@@ -119,6 +143,312 @@ def find_violations(source: str) -> list[tuple[int, str]]:
     return sorted(violations)
 
 
+def get_module_name(path: Path) -> str:
+    """Returns the dotted name of the module or package that a package file defines.
+
+    :param path: The file's Path, relative to the repository root.
+    :return: The dotted module name, which is the package's name for an __init__.py.
+    """
+    parts = list(path.with_suffix("").parts)
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
+def get_defined_names(body: list[ast.stmt]) -> list[tuple[int, str]]:
+    """Returns the names that a block of statements defines in its own scope.
+
+    The names come from def and class statements, from assignment, for loop, and with
+    statement targets, and from the same statements nested inside if, try, for, while,
+    and with blocks. Imported names are not included.
+
+    :param body: The statements to scan.
+    :return: A list of (line, name) tuples, one per defined name.
+    """
+    names: list[tuple[int, str]] = []
+    for node in body:
+        targets: list[ast.expr] = []
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names.append((node.lineno, node.name))
+        elif isinstance(node, ast.Assign):
+            targets.extend(node.targets)
+        elif isinstance(node, (ast.AnnAssign, ast.AugAssign, ast.For, ast.AsyncFor)):
+            targets.append(node.target)
+        elif isinstance(node, (ast.With, ast.AsyncWith)):
+            targets.extend(
+                item.optional_vars
+                for item in node.items
+                if item.optional_vars is not None
+            )
+        for target in targets:
+            for target_node in ast.walk(target):
+                if isinstance(target_node, ast.Name):
+                    names.append((node.lineno, target_node.id))
+        if isinstance(
+            node, (ast.If, ast.Try, ast.For, ast.AsyncFor, ast.While, ast.With)
+        ):
+            for field in ("body", "orelse", "finalbody"):
+                names.extend(get_defined_names(getattr(node, field, [])))
+            for handler in getattr(node, "handlers", []):
+                names.extend(get_defined_names(handler.body))
+    return names
+
+
+def get_literal_assignment(tree: ast.Module, name: str) -> Any:
+    """Returns the literal value assigned to a module-level name.
+
+    :param tree: The parsed module.
+    :param name: The name whose assigned value to return.
+    :return: The evaluated literal value.
+    """
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            target_names = [
+                target.id for target in node.targets if isinstance(target, ast.Name)
+            ]
+            if name in target_names:
+                return ast.literal_eval(node.value)
+    raise ValueError(f"pterasoftware/__init__.py does not assign {name}.")
+
+
+def find_naming_violations() -> list[tuple[str, int, str]]:
+    """Returns the names in the package that break its naming rules.
+
+    :return: A list of (path, line, message) tuples, one per violation, where path is
+        the file's path relative to the repository root.
+    """
+    paths = {
+        get_module_name(path): path for path in list_tracked_files(PACKAGE_PATHSPECS)
+    }
+    trees = {
+        module: ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for module, path in paths.items()
+    }
+    init_tree = trees[PACKAGE_NAME]
+    public_names = set(get_literal_assignment(init_tree, "__all__"))
+    deprecated_names = set(get_literal_assignment(init_tree, "_LAZY_MODULES"))
+    lazy_callables = get_literal_assignment(init_tree, "_LAZY_CALLABLES")
+
+    violations: list[tuple[str, int, str]] = []
+
+    # Check the names of the modules and packages. Each module and package is checked by
+    # its own name alone, since its enclosing packages are checked by theirs.
+    for module, path in paths.items():
+        parts = module.split(".")
+        if len(parts) == 2:
+            if not is_internal(parts[1]) and parts[1] not in deprecated_names:
+                violations.append(
+                    (
+                        str(path),
+                        1,
+                        f"{parts[1]} is directly inside pterasoftware/, so its name "
+                        f"must start with an underscore.",
+                    )
+                )
+        elif len(parts) > 2 and is_internal(parts[-1]):
+            violations.append(
+                (
+                    str(path),
+                    1,
+                    f"{parts[-1]} is nested inside a package in pterasoftware/, so its "
+                    f"name must not start with an underscore.",
+                )
+            )
+
+    # Check the module-level names. A global statement inside a function also defines a
+    # module-level name.
+    for module, tree in trees.items():
+        path = paths[module]
+        defined_names = get_defined_names(tree.body)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Global):
+                defined_names.extend((node.lineno, name) for name in node.names)
+        for line, name in defined_names:
+            if module == PACKAGE_NAME:
+                is_dunder = name.startswith("__") and name.endswith("__")
+                if is_dunder or is_internal(name) != (name in public_names):
+                    continue
+                if name in public_names:
+                    message = (
+                        f"{name} is in __all__, so it must not start with an "
+                        f"underscore."
+                    )
+                else:
+                    message = (
+                        f"{name} is not in __all__, so it must start with an "
+                        f"underscore."
+                    )
+                violations.append((str(path), line, message))
+            elif is_internal(name):
+                violations.append(
+                    (
+                        str(path),
+                        line,
+                        f"{name} is a module-level name outside "
+                        f"pterasoftware/__init__.py, so it must not start with an "
+                        f"underscore.",
+                    )
+                )
+
+    # Check the members of the internal-only classes. First, find each module's import
+    # bindings and module-level classes, so that each class's bases can be resolved to
+    # the classes they name.
+    bindings: dict[str, dict[str, tuple[str, str]]] = {}
+    classes: dict[tuple[str, str], ast.ClassDef] = {}
+    for module, tree in trees.items():
+        is_package = paths[module].name == "__init__.py"
+        module_bindings: dict[str, tuple[str, str]] = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                if node.level == 0:
+                    source = str(node.module)
+                else:
+                    base_parts = module.split(".")
+                    if not is_package:
+                        base_parts = base_parts[:-1]
+                    base_parts = base_parts[: len(base_parts) - node.level + 1]
+                    if node.module is not None:
+                        base_parts.append(node.module)
+                    source = ".".join(base_parts)
+                for alias in node.names:
+                    module_bindings[alias.asname or alias.name] = (source, alias.name)
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.asname is None:
+                        root = alias.name.split(".")[0]
+                        module_bindings[root] = ("", root)
+                    else:
+                        module_bindings[alias.asname] = ("", alias.name)
+        bindings[module] = module_bindings
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef):
+                classes[(module, node.name)] = node
+
+    def resolve(module: str, expression: ast.expr) -> str | tuple[str, str] | None:
+        """Resolves an expression in a module to the package module or class it names.
+
+        :param module: The dotted name of the module the expression appears in.
+        :param expression: The expression to resolve.
+        :return: The dotted name of a package module, a (module, name) tuple naming a
+            package class, or None if the expression names neither.
+        """
+        if isinstance(expression, ast.Subscript):
+            return resolve(module, expression.value)
+        if isinstance(expression, ast.Attribute):
+            owner = resolve(module, expression.value)
+            if isinstance(owner, str):
+                return resolve_attribute(owner, expression.attr, set())
+            return None
+        if isinstance(expression, ast.Name):
+            return resolve_attribute(module, expression.id, set())
+        return None
+
+    def resolve_attribute(
+        module: str, name: str, visited: set[tuple[str, str]]
+    ) -> str | tuple[str, str] | None:
+        """Resolves a name looked up on a package module.
+
+        :param module: The dotted name of the module.
+        :param name: The name to look up on it.
+        :param visited: The (module, name) lookups already followed, which guards
+            against import cycles.
+        :return: The dotted name of a package module, a (module, name) tuple naming a
+            package class, or None if the name is neither.
+        """
+        if (module, name) in visited:
+            return None
+        visited.add((module, name))
+        if (module, name) in classes:
+            return module, name
+        if name in bindings.get(module, {}):
+            source, imported_name = bindings[module][name]
+            if not source:
+                return imported_name if imported_name in trees else None
+            if f"{source}.{imported_name}" in trees:
+                return f"{source}.{imported_name}"
+            if source in trees:
+                return resolve_attribute(source, imported_name, visited)
+            return None
+        submodule = f"{module}.{name}" if module else name
+        return submodule if submodule in trees else None
+
+    bases: dict[tuple[str, str], list[tuple[str, str]]] = {}
+    for (module, name), node in classes.items():
+        bases[(module, name)] = []
+        for base in node.bases:
+            resolved = resolve(module, base)
+            if isinstance(resolved, tuple):
+                bases[(module, name)].append(resolved)
+
+    def get_ancestors(key: tuple[str, str]) -> set[tuple[str, str]]:
+        """Returns a package class and every package class it inherits from.
+
+        :param key: The (module, name) tuple naming the class.
+        :return: A set of (module, name) tuples, including the given class's.
+        """
+        ancestors: set[tuple[str, str]] = set()
+        pending = [key]
+        while pending:
+            current = pending.pop()
+            if current not in ancestors:
+                ancestors.add(current)
+                pending.extend(bases[current])
+        return ancestors
+
+    reachable: set[tuple[str, str]] = set()
+    for module, name in lazy_callables.values():
+        if (module, name) in classes:
+            reachable |= get_ancestors((module, name))
+
+    for key, node in classes.items():
+        if key in reachable:
+            continue
+        properties = {
+            item.name
+            for ancestor in get_ancestors(key)
+            for item in classes[ancestor].body
+            if isinstance(item, ast.FunctionDef)
+            and any(
+                isinstance(decorator, ast.Name) and decorator.id == "property"
+                for decorator in item.decorator_list
+            )
+        }
+        members: list[tuple[int, str]] = []
+        for item in node.body:
+            if isinstance(item, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == "__slots__"
+                for target in item.targets
+            ):
+                members.extend(
+                    (item.lineno, constant.value)
+                    for constant in ast.walk(item.value)
+                    if isinstance(constant, ast.Constant)
+                    and isinstance(constant.value, str)
+                )
+        members.extend(get_defined_names(node.body))
+        for subnode in ast.walk(node):
+            if (
+                isinstance(subnode, ast.Attribute)
+                and isinstance(subnode.ctx, ast.Store)
+                and isinstance(subnode.value, ast.Name)
+                and subnode.value.id == "self"
+            ):
+                members.append((subnode.lineno, subnode.attr))
+        for line, member in members:
+            if is_internal(member) and member[1:] not in properties:
+                violations.append(
+                    (
+                        str(paths[key[0]]),
+                        line,
+                        f"{key[1]}.{member} is a member of an internal-only class "
+                        f"and does not back a property, so it must not start with an "
+                        f"underscore.",
+                    )
+                )
+
+    return sorted(set(violations))
+
+
 def strip_notebook_magics(source: str) -> str:
     """Blanks the IPython magic and shell lines in a notebook cell's source so that it
     parses as Python, keeping the line numbering intact.
@@ -149,7 +479,7 @@ def list_tracked_files(pathspecs: tuple[str, ...]) -> list[Path]:
 
 
 def main() -> int:
-    """Checks every in scope file and prints each violation.
+    """Checks every in scope file and package file and prints each violation.
 
     :return: An int representing the exit code, which is 0 if no violations were found
         and 1 otherwise.
@@ -192,6 +522,9 @@ def main() -> int:
                 f"{location}:{line + line_offset}: {reference} uses an internal name. "
                 f"Code outside the package must use only Ptera Software's public names."
             )
+    for path_name, line, message in find_naming_violations():
+        exit_code = 1
+        print(f"{path_name}:{line}: {message}")
     return exit_code
 
 

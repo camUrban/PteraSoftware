@@ -7,9 +7,9 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from . import _logging, geometry, movements, problems
+from . import _geometry, _logging, _movements, _problems
 
-_logger = _logging.get_logger("_convergence_meshing")
+logger = _logging.get_logger("_convergence_meshing")
 
 
 def build_steady_problem(
@@ -17,10 +17,10 @@ def build_steady_problem(
     chord_id: int,
     panel_aspect_ratio: int,
     num_chordwise_panels: int,
-    ref_problem: problems.SteadyProblem,
+    ref_problem: _problems.SteadyProblem,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
-) -> problems.SteadyProblem:
+) -> _problems.SteadyProblem:
     """Builds the SteadyProblem for one convergence iteration.
 
     Each of the reference SteadyProblem's Airplanes is copied with the given Panel
@@ -69,7 +69,7 @@ def build_steady_problem(
             if ref_wing.spanwise_mesh == "edge_defined":
                 # The resolution's log messages nest one level under the build's.
                 with _logging.nested():
-                    this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    this_num_wing_cross_sections = resolve_num_wing_cross_sections(
                         ar_id,
                         chord_id,
                         ref_airplane_id,
@@ -77,7 +77,7 @@ def build_steady_problem(
                         ref_airplane.name,
                         ref_wing.name,
                         num_wing_cross_sections_cache,
-                        lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        lambda start: get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
                             ref_airplane,
@@ -86,7 +86,7 @@ def build_steady_problem(
                         ),
                     )
                 these_wings.append(
-                    _build_edge_defined_wing(
+                    build_edge_defined_wing(
                         ref_wing, num_chordwise_panels, this_num_wing_cross_sections
                     )
                 )
@@ -105,7 +105,7 @@ def build_steady_problem(
                 if ref_wing_cross_section_id < (len(ref_wing_cross_sections) - 1):
                     # The resolution's log messages nest one level under the build's.
                     with _logging.nested():
-                        this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        this_num_spanwise_panels = resolve_num_spanwise_panels(
                             ar_id,
                             chord_id,
                             ref_airplane_id,
@@ -114,7 +114,7 @@ def build_steady_problem(
                             ref_airplane.name,
                             ref_wing.name,
                             num_spanwise_panels_cache,
-                            lambda start: _get_wing_section_num_spanwise_panels(
+                            lambda start: get_wing_section_num_spanwise_panels(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_wing.chordwise_spacing,
@@ -128,7 +128,7 @@ def build_steady_problem(
                     this_num_spanwise_panels = None
 
                 these_wing_cross_sections.append(
-                    geometry.wing_cross_section.WingCrossSection(
+                    _geometry.wing_cross_section.WingCrossSection(
                         # These values are copied from the reference WingCrossSection.
                         chord=ref_wing_cross_section.chord,
                         Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
@@ -142,7 +142,7 @@ def build_steady_problem(
                         # because Airfoils are immutable. Rebuilding one would
                         # revalidate and renormalize an outline that is already valid
                         # and normalized, which perturbs it by a small amount rather
-                        # than reproducing it. _build_edge_defined_wing shares its
+                        # than reproducing it. build_edge_defined_wing shares its
                         # reference's Airfoil for the same reason.
                         airfoil=ref_wing_cross_section.airfoil,
                         # These values change.
@@ -157,7 +157,7 @@ def build_steady_problem(
                 # mesh is neither trapezoidal nor edge-defined before it reaches here,
                 # so every Wing that arrives was built with explode_into_strips as
                 # False.
-                geometry.wing.Wing(
+                _geometry.wing.Wing(
                     # These values are copied from the reference Wing.
                     name=ref_wing.name,
                     Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
@@ -174,7 +174,7 @@ def build_steady_problem(
             )
 
         these_airplanes.append(
-            geometry.airplane.Airplane(
+            _geometry.airplane.Airplane(
                 # These values are copied from the reference Airplane. The reference
                 # dimensions are copied rather than recomputed from the refined Wings,
                 # so every iteration's load coefficients share one normalization.
@@ -193,7 +193,7 @@ def build_steady_problem(
     # OperatingPoint. Solving populates the OperatingPoint's lazy caches, so sharing the
     # reference OperatingPoint would mutate the reference problem and change its content
     # hash between an uncached run and a later cached one.
-    return problems.SteadyProblem(
+    return _problems.SteadyProblem(
         airplanes=these_airplanes,
         operating_point=copy.deepcopy(ref_operating_point),
     )
@@ -205,11 +205,11 @@ def build_unsteady_problem(
     panel_aspect_ratio: int,
     num_chordwise_panels: int,
     wake_length: int,
-    ref_problem: problems.UnsteadyProblem,
+    ref_problem: _problems.UnsteadyProblem,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
     delta_time_cache: dict[tuple[int, int], float],
-) -> problems.UnsteadyProblem:
+) -> _problems.UnsteadyProblem:
     """Builds the UnsteadyProblem for one convergence iteration.
 
     Each of the reference Movement's AirplaneMovements (and its nested WingMovements and
@@ -301,7 +301,7 @@ def build_unsteady_problem(
     # 7. Create a copy of the AirplaneMovement.
     # 8. Append the base Airplane copy to the list of base Airplane copies.
     # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
-    ref_airplane_movement: movements.airplane_movement.AirplaneMovement
+    ref_airplane_movement: _movements.airplane_movement.AirplaneMovement
     for ref_airplane_movement_id, ref_airplane_movement in enumerate(
         ref_airplane_movements
     ):
@@ -348,7 +348,7 @@ def build_unsteady_problem(
 
                 # The resolution's log messages nest one level under the build's.
                 with _logging.nested():
-                    this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    this_num_wing_cross_sections = resolve_num_wing_cross_sections(
                         ar_id,
                         chord_id,
                         ref_airplane_movement_id,
@@ -356,7 +356,7 @@ def build_unsteady_problem(
                         ref_base_airplane.name,
                         ref_base_wing.name,
                         num_wing_cross_sections_cache,
-                        lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        lambda start: get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
                             ref_base_airplane,
@@ -365,12 +365,12 @@ def build_unsteady_problem(
                         ),
                     )
 
-                this_base_wing = _build_edge_defined_wing(
+                this_base_wing = build_edge_defined_wing(
                     ref_base_wing, num_chordwise_panels, this_num_wing_cross_sections
                 )
 
                 these_wing_cross_section_movements = [
-                    movements.wing_cross_section_movement.WingCrossSectionMovement(
+                    _movements.wing_cross_section_movement.WingCrossSectionMovement(
                         base_wing_cross_section=this_base_wing_cross_section
                     )
                     for this_base_wing_cross_section in (
@@ -378,7 +378,7 @@ def build_unsteady_problem(
                     )
                 ]
 
-                this_wing_movement = movements.wing_movement.WingMovement(
+                this_wing_movement = _movements.wing_movement.WingMovement(
                     # These values are copied from the reference WingMovement.
                     ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
                     periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
@@ -436,7 +436,7 @@ def build_unsteady_problem(
                 ):
                     # The resolution's log messages nest one level under the build's.
                     with _logging.nested():
-                        this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        this_num_spanwise_panels = resolve_num_spanwise_panels(
                             ar_id,
                             chord_id,
                             ref_airplane_movement_id,
@@ -445,7 +445,7 @@ def build_unsteady_problem(
                             ref_base_airplane.name,
                             ref_base_wing.name,
                             num_spanwise_panels_cache,
-                            lambda start: _get_wing_section_movement_num_spanwise_panels(
+                            lambda start: get_wing_section_movement_num_spanwise_panels(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_base_wing.chordwise_spacing,
@@ -461,7 +461,7 @@ def build_unsteady_problem(
                     this_num_spanwise_panels = None
 
                 # 5.5.3. Create a copy of the base WingCrossSection.
-                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
+                this_base_wing_cross_section = _geometry.wing_cross_section.WingCrossSection(
                     # These values are copied from the reference base WingCrossSection.
                     chord=ref_base_wing_cross_section.chord,
                     Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
@@ -475,7 +475,7 @@ def build_unsteady_problem(
                     # Airfoils are immutable. Rebuilding one would revalidate and
                     # renormalize an outline that is already valid and normalized, which
                     # perturbs it by a small amount rather than reproducing it.
-                    # _build_edge_defined_wing shares its reference's Airfoil for the
+                    # build_edge_defined_wing shares its reference's Airfoil for the
                     # same reason.
                     airfoil=ref_base_wing_cross_section.airfoil,
                     # These values change.
@@ -483,7 +483,7 @@ def build_unsteady_problem(
                 )
 
                 # 5.5.4. Create a copy of the WingCrossSectionMovement.
-                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
+                this_wing_cross_section_movement = _movements.wing_cross_section_movement.WingCrossSectionMovement(
                     # These values are copied from the reference
                     # WingCrossSectionMovement.
                     ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
@@ -514,7 +514,7 @@ def build_unsteady_problem(
             # a Wing whose spanwise mesh is neither trapezoidal nor edge-defined before
             # it reaches here, so every Wing that arrives was built with
             # explode_into_strips as False.
-            this_base_wing = geometry.wing.Wing(
+            this_base_wing = _geometry.wing.Wing(
                 # These values are copied from the reference Wing.
                 name=ref_base_wing.name,
                 Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
@@ -530,7 +530,7 @@ def build_unsteady_problem(
             )
 
             # 5.7. Create a copy of the WingMovement.
-            this_wing_movement = movements.wing_movement.WingMovement(
+            this_wing_movement = _movements.wing_movement.WingMovement(
                 # These values are copied from the reference WingMovement.
                 ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
                 periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
@@ -553,7 +553,7 @@ def build_unsteady_problem(
             these_wing_movements.append(this_wing_movement)
 
         # 6. Create a copy of the base Airplane.
-        this_base_airplane = geometry.airplane.Airplane(
+        this_base_airplane = _geometry.airplane.Airplane(
             # These values are copied from the reference Airplane. The reference
             # dimensions are copied rather than recomputed from the refined Wings, so
             # every iteration's load coefficients share one normalization.
@@ -568,7 +568,7 @@ def build_unsteady_problem(
         )
 
         # 7. Create a copy of the AirplaneMovement.
-        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
+        this_airplane_movement = _movements.airplane_movement.AirplaneMovement(
             # These values are copied from the reference AirplaneMovement.
             ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
             periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
@@ -594,14 +594,14 @@ def build_unsteady_problem(
 
     # Create a new Movement for this iteration.
     if static:
-        this_movement = movements.movement.Movement(
+        this_movement = _movements.movement.Movement(
             airplane_movements=these_airplane_movements,
             operating_point_movement=ref_operating_point_movement,
             num_chords=wake_length,
             delta_time=this_delta_time,
         )
     else:
-        this_movement = movements.movement.Movement(
+        this_movement = _movements.movement.Movement(
             airplane_movements=these_airplane_movements,
             operating_point_movement=ref_operating_point_movement,
             num_cycles=wake_length,
@@ -614,7 +614,7 @@ def build_unsteady_problem(
     if delta_time_key not in delta_time_cache:
         delta_time_cache[delta_time_key] = this_movement.delta_time
     else:
-        _logger.info(
+        logger.info(
             _logging.indent()
             + "Cached delta_time: "
             + f"{this_movement.delta_time:#.3G}"
@@ -622,7 +622,7 @@ def build_unsteady_problem(
         )
 
     # Create a new UnsteadyProblem for this iteration.
-    return problems.UnsteadyProblem(
+    return _problems.UnsteadyProblem(
         movement=this_movement,
         only_final_results=True,
     )
@@ -631,7 +631,7 @@ def build_unsteady_problem(
 def memos_complete(
     ar_id: int,
     chord_id: int,
-    ref_airplanes: Sequence[geometry.airplane.Airplane],
+    ref_airplanes: Sequence[_geometry.airplane.Airplane],
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
     delta_time_cache: dict[tuple[int, int], float] | None = None,
@@ -699,11 +699,11 @@ def memos_complete(
     return True
 
 
-def _get_wing_section_movement_num_spanwise_panels(
+def get_wing_section_movement_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
-    ref_airplanes: tuple[geometry.airplane.Airplane, ...],
+    ref_airplanes: tuple[_geometry.airplane.Airplane, ...],
     ref_wing_id: int,
     ref_root_wing_cross_section_id: int,
     ref_tip_wing_cross_section_id: int,
@@ -755,13 +755,13 @@ def _get_wing_section_movement_num_spanwise_panels(
             ref_wing_at_time_step.wing_cross_sections[ref_tip_wing_cross_section_id]
         )
 
-        _logger.debug(
+        logger.debug(
             _logging.indent()
             + "Calculating the number of spanwise Panels for time step "
             f"{time_step_id+1}/{num_time_steps}"
         )
 
-        num_spanwise_panels_at_step = _get_wing_section_num_spanwise_panels(
+        num_spanwise_panels_at_step = get_wing_section_num_spanwise_panels(
             desired_average_panel_aspect_ratio=desired_average_panel_aspect_ratio,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
@@ -773,7 +773,7 @@ def _get_wing_section_movement_num_spanwise_panels(
 
         these_num_spanwise_panels[time_step_id] = num_spanwise_panels_at_step
 
-        _logger.debug(
+        logger.debug(
             _logging.indent()
             + f"Number of spanwise Panels: {num_spanwise_panels_at_step}"
         )
@@ -781,13 +781,13 @@ def _get_wing_section_movement_num_spanwise_panels(
     return int(max(these_num_spanwise_panels))
 
 
-def _get_wing_section_num_spanwise_panels(
+def get_wing_section_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
-    ref_airplane: geometry.airplane.Airplane,
-    ref_root_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
-    ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    ref_airplane: _geometry.airplane.Airplane,
+    ref_root_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
+    ref_tip_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
     start_val: int,
 ) -> int:
     """Calculates the number of spanwise Panels to use for the wing section of a Wing
@@ -815,7 +815,7 @@ def _get_wing_section_num_spanwise_panels(
     average_panel_aspect_ratios = []
 
     while True:
-        this_average_panel_aspect_ratio = _get_wing_section_average_panel_aspect_ratio(
+        this_average_panel_aspect_ratio = get_wing_section_average_panel_aspect_ratio(
             num_chordwise_panels,
             chordwise_spacing,
             ref_airplane,
@@ -845,12 +845,12 @@ def _get_wing_section_num_spanwise_panels(
     return this_num_spanwise_panels
 
 
-def _get_wing_section_average_panel_aspect_ratio(
+def get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
     chordwise_spacing: str,
-    ref_airplane: geometry.airplane.Airplane,
-    ref_root_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
-    ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    ref_airplane: _geometry.airplane.Airplane,
+    ref_root_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
+    ref_tip_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
     num_spanwise_panels: int,
 ) -> float:
     """Calculates the average aspect ratio of Panels in a wing section with a particular
@@ -876,11 +876,11 @@ def _get_wing_section_average_panel_aspect_ratio(
     # the reference Airplane rather than left to default, because computing defaults
     # from the probe Wing could raise for a valid wing section whose offset is steep
     # enough to make the probe Wing's planform too steeply inclined.
-    this_airplane = geometry.airplane.Airplane(
+    this_airplane = _geometry.airplane.Airplane(
         wings=[
-            geometry.wing.Wing(
+            _geometry.wing.Wing(
                 wing_cross_sections=[
-                    geometry.wing_cross_section.WingCrossSection(
+                    _geometry.wing_cross_section.WingCrossSection(
                         # Each reference Airfoil is shared rather than rebuilt, which is
                         # safe because Airfoils are immutable. This Wing only exists to
                         # be meshed and measured, so rebuilding one would revalidate,
@@ -891,7 +891,7 @@ def _get_wing_section_average_panel_aspect_ratio(
                         chord=ref_root_wing_cross_section.chord,
                         spanwise_spacing=ref_root_wing_cross_section.spanwise_spacing,
                     ),
-                    geometry.wing_cross_section.WingCrossSection(
+                    _geometry.wing_cross_section.WingCrossSection(
                         airfoil=ref_tip_wing_cross_section.airfoil,
                         num_spanwise_panels=None,
                         chord=ref_tip_wing_cross_section.chord,
@@ -914,11 +914,11 @@ def _get_wing_section_average_panel_aspect_ratio(
     return _average_panel_aspect_ratio
 
 
-def _build_edge_defined_wing(
-    ref_wing: geometry.wing.Wing,
+def build_edge_defined_wing(
+    ref_wing: _geometry.wing.Wing,
     num_chordwise_panels: int,
     num_wing_cross_sections: int,
-) -> geometry.wing.Wing:
+) -> _geometry.wing.Wing:
     """Rebuilds an edge-defined Wing from its stored edge curves at a new resolution.
 
     The reference Wing's stored leading edge and trailing edge curves are resampled into
@@ -945,7 +945,7 @@ def _build_edge_defined_wing(
     assert trailingEdgePoints_Wn_Ler is not None
     assert tip_trim_fraction is not None
 
-    return geometry.wing.Wing.from_edge_points(
+    return _geometry.wing.Wing.from_edge_points(
         leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
         trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
         num_wing_cross_sections=num_wing_cross_sections,
@@ -963,11 +963,11 @@ def _build_edge_defined_wing(
     )
 
 
-def _get_num_wing_cross_sections_for_panel_ar(
+def get_num_wing_cross_sections_for_panel_ar(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
-    ref_airplane: geometry.airplane.Airplane,
-    ref_wing: geometry.wing.Wing,
+    ref_airplane: _geometry.airplane.Airplane,
+    ref_wing: _geometry.wing.Wing,
     start_val: int,
 ) -> int:
     """Calculates the number of WingCrossSections that gives an edge-defined Wing a
@@ -982,12 +982,12 @@ def _get_num_wing_cross_sections_for_panel_ar(
     A closed form built from the mean chord would undershoot the count on a tapered
     planform, because average_panel_aspect_ratio is the mean of each Panel's individual
     aspect ratio and is dominated by the small-chord tip Panels. Instead, the reference
-    Wing is rebuilt at trial WingCrossSection counts (with _build_edge_defined_wing),
+    Wing is rebuilt at trial WingCrossSection counts (with build_edge_defined_wing),
     each trial is meshed, and its average Panel aspect ratio is read. The search
     proportionally jumps to bracket the target, then bisects to the crossing, and
     returns whichever of the two counts straddling the target gives the closer average
     Panel aspect ratio. This matches how the trapezoidal
-    _get_wing_section_num_spanwise_panels searches, so a target Panel aspect ratio means
+    get_wing_section_num_spanwise_panels searches, so a target Panel aspect ratio means
     the same physical thing for an edge-defined Wing as for a trapezoidal one. Only
     meshing is performed here, never solving.
 
@@ -1011,13 +1011,13 @@ def _get_num_wing_cross_sections_for_panel_ar(
 
     def average_panel_aspect_ratio_at(num_wing_cross_sections: int) -> float:
         if num_wing_cross_sections not in meshed_average_panel_aspect_ratios:
-            refined_wing = _build_edge_defined_wing(
+            refined_wing = build_edge_defined_wing(
                 ref_wing, num_chordwise_panels, num_wing_cross_sections
             )
             # This Airplane exists only to mesh the trial Wing and measure it, but it is
             # a derivative of the reference Airplane, so it inherits the reference
             # dimensions like every other derived Airplane.
-            refined_airplane = geometry.airplane.Airplane(
+            refined_airplane = _geometry.airplane.Airplane(
                 wings=[refined_wing],
                 s_ref=ref_airplane.s_ref,
                 c_ref=ref_airplane.c_ref,
@@ -1082,7 +1082,7 @@ def _get_num_wing_cross_sections_for_panel_ar(
     return upper_num
 
 
-def _resolve_num_wing_cross_sections(
+def resolve_num_wing_cross_sections(
     panel_aspect_ratio_id: int,
     num_chordwise_panels_id: int,
     airplane_id: int,
@@ -1126,10 +1126,10 @@ def _resolve_num_wing_cross_sections(
         wing_id,
     )
 
-    _logger.debug(_logging.indent() + f"{airplane_name}'s {wing_name}:")
+    logger.debug(_logging.indent() + f"{airplane_name}'s {wing_name}:")
 
     if num_wing_cross_sections_key in num_wing_cross_sections_cache:
-        _logger.debug(
+        logger.debug(
             _logging.indent(1) + "Getting the cached number of WingCrossSections"
         )
         this_num_wing_cross_sections = num_wing_cross_sections_cache[
@@ -1168,10 +1168,8 @@ def _resolve_num_wing_cross_sections(
         if last_cache_val != np.inf:
             starting_num_wing_cross_sections = int(last_cache_val)
 
-        _logger.debug(
-            _logging.indent(1) + "Calculating the number of WingCrossSections"
-        )
-        _logger.debug(
+        logger.debug(_logging.indent(1) + "Calculating the number of WingCrossSections")
+        logger.debug(
             _logging.indent(1)
             + f"Starting the search at {starting_num_wing_cross_sections}"
         )
@@ -1186,7 +1184,7 @@ def _resolve_num_wing_cross_sections(
             this_num_wing_cross_sections
         )
 
-    _logger.debug(
+    logger.debug(
         _logging.indent(1)
         + f"Number of WingCrossSections: {this_num_wing_cross_sections}"
     )
@@ -1194,7 +1192,7 @@ def _resolve_num_wing_cross_sections(
     return this_num_wing_cross_sections
 
 
-def _resolve_num_spanwise_panels(
+def resolve_num_spanwise_panels(
     panel_aspect_ratio_id: int,
     num_chordwise_panels_id: int,
     airplane_id: int,
@@ -1243,13 +1241,13 @@ def _resolve_num_spanwise_panels(
         wing_cross_section_id,
     )
 
-    _logger.debug(
+    logger.debug(
         _logging.indent() + f"{airplane_name}'s {wing_name}, "
         f"WingCrossSection #{wing_cross_section_id + 1}:"
     )
 
     if num_spanwise_panels_key in num_spanwise_panels_cache:
-        _logger.debug(
+        logger.debug(
             _logging.indent(1) + "Getting the cached number of spanwise Panels"
         )
         this_num_spanwise_panels = num_spanwise_panels_cache[num_spanwise_panels_key]
@@ -1288,8 +1286,8 @@ def _resolve_num_spanwise_panels(
         if last_cache_val != np.inf:
             starting_num_spanwise_panels = int(last_cache_val)
 
-        _logger.debug(_logging.indent(1) + "Calculating the number of spanwise Panels")
-        _logger.debug(
+        logger.debug(_logging.indent(1) + "Calculating the number of spanwise Panels")
+        logger.debug(
             _logging.indent(1)
             + f"Starting the search at {starting_num_spanwise_panels}"
         )
@@ -1302,7 +1300,7 @@ def _resolve_num_spanwise_panels(
 
         num_spanwise_panels_cache[num_spanwise_panels_key] = this_num_spanwise_panels
 
-    _logger.debug(
+    logger.debug(
         _logging.indent(1) + f"Number of spanwise Panels: {this_num_spanwise_panels}"
     )
 

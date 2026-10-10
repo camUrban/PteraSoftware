@@ -21,8 +21,8 @@ from tests.unit.fixtures import (
 class TestSteadyProblem(unittest.TestCase):
     """This is a class with functions to test SteadyProblems."""
 
-    basic_steady_problem: ps.problems.SteadyProblem
-    multi_airplane_steady_problem: ps.problems.SteadyProblem
+    basic_steady_problem: ps.SteadyProblem
+    multi_airplane_steady_problem: ps.SteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -38,17 +38,17 @@ class TestSteadyProblem(unittest.TestCase):
         # Test that basic SteadyProblem initializes correctly.
         self.assertIsInstance(
             self.basic_steady_problem,
-            ps.problems.SteadyProblem,
+            ps.SteadyProblem,
         )
         self.assertIsInstance(self.basic_steady_problem.airplanes, tuple)
         self.assertEqual(len(self.basic_steady_problem.airplanes), 1)
         self.assertIsInstance(
             self.basic_steady_problem.airplanes[0],
-            ps.geometry.airplane.Airplane,
+            ps.Airplane,
         )
         self.assertIsInstance(
             self.basic_steady_problem.operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
 
     def test_initialization_multiple_airplanes(self) -> None:
@@ -56,18 +56,18 @@ class TestSteadyProblem(unittest.TestCase):
         # Test that SteadyProblem with multiple Airplanes initializes correctly.
         self.assertIsInstance(
             self.multi_airplane_steady_problem,
-            ps.problems.SteadyProblem,
+            ps.SteadyProblem,
         )
         self.assertEqual(len(self.multi_airplane_steady_problem.airplanes), 2)
         for airplane in self.multi_airplane_steady_problem.airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
     def test_airplanes_parameter_validation_not_list(self) -> None:
         """Test that airplanes parameter must be a list."""
         # Test with single Airplane instead of list.
         single_airplane: Any = geometry_fixtures.make_basic_airplane_fixture()
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=single_airplane,
                 operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
             )
@@ -75,7 +75,7 @@ class TestSteadyProblem(unittest.TestCase):
         # Test with None.
         none_airplanes: Any = None
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=none_airplanes,
                 operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
             )
@@ -85,7 +85,7 @@ class TestSteadyProblem(unittest.TestCase):
         for invalid in invalid_airplanes:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
-                    ps.problems.SteadyProblem(
+                    ps.SteadyProblem(
                         airplanes=invalid,
                         operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
                     )
@@ -93,7 +93,7 @@ class TestSteadyProblem(unittest.TestCase):
     def test_airplanes_parameter_validation_empty_list(self) -> None:
         """Test that airplanes list must have at least one element."""
         with self.assertRaises(ValueError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=[],
                 operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
             )
@@ -103,7 +103,7 @@ class TestSteadyProblem(unittest.TestCase):
         # Test with list containing non-Airplane elements.
         non_airplane_elements: list[Any] = ["not_an_airplane"]
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=non_airplane_elements,
                 operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
             )
@@ -114,7 +114,7 @@ class TestSteadyProblem(unittest.TestCase):
             "not_an_airplane",
         ]
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=mixed_elements,
                 operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
             )
@@ -124,7 +124,7 @@ class TestSteadyProblem(unittest.TestCase):
         # Test with invalid operating_point type.
         bad_operating_point: Any = "not_an_operating_point"
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=[geometry_fixtures.make_basic_airplane_fixture()],
                 operating_point=bad_operating_point,
             )
@@ -132,7 +132,7 @@ class TestSteadyProblem(unittest.TestCase):
         # Test with None.
         none_operating_point: Any = None
         with self.assertRaises(TypeError):
-            ps.problems.SteadyProblem(
+            ps.SteadyProblem(
                 airplanes=[geometry_fixtures.make_basic_airplane_fixture()],
                 operating_point=none_operating_point,
             )
@@ -142,7 +142,7 @@ class TestSteadyProblem(unittest.TestCase):
         for invalid in invalid_operating_points:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
-                    ps.problems.SteadyProblem(
+                    ps.SteadyProblem(
                         airplanes=[geometry_fixtures.make_basic_airplane_fixture()],
                         operating_point=invalid,
                     )
@@ -189,7 +189,7 @@ class TestSteadyProblem(unittest.TestCase):
 class TestSteadyProblemImmutability(unittest.TestCase):
     """Tests for SteadyProblem attribute immutability."""
 
-    basic_steady_problem: ps.problems.SteadyProblem
+    basic_steady_problem: ps.SteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -342,9 +342,9 @@ class TestSteadyProblemDiagram(unittest.TestCase):
 class TestUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test UnsteadyProblems."""
 
-    basic_unsteady_problem: ps.problems.UnsteadyProblem
-    only_final_results_unsteady_problem: ps.problems.UnsteadyProblem
-    multi_airplane_unsteady_problem: ps.problems.UnsteadyProblem
+    basic_unsteady_problem: ps.UnsteadyProblem
+    only_final_results_unsteady_problem: ps.UnsteadyProblem
+    multi_airplane_unsteady_problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -365,11 +365,11 @@ class TestUnsteadyProblem(unittest.TestCase):
         # Test that basic UnsteadyProblem initializes correctly.
         self.assertIsInstance(
             self.basic_unsteady_problem,
-            ps.problems.UnsteadyProblem,
+            ps.UnsteadyProblem,
         )
         self.assertIsInstance(
             self.basic_unsteady_problem.movement,
-            ps.movements.movement.Movement,
+            ps.Movement,
         )
         self.assertFalse(self.basic_unsteady_problem.only_final_results)
 
@@ -378,7 +378,7 @@ class TestUnsteadyProblem(unittest.TestCase):
         # Test that UnsteadyProblem with only_final_results=True initializes correctly.
         self.assertIsInstance(
             self.only_final_results_unsteady_problem,
-            ps.problems.UnsteadyProblem,
+            ps.UnsteadyProblem,
         )
         self.assertTrue(self.only_final_results_unsteady_problem.only_final_results)
 
@@ -391,7 +391,7 @@ class TestUnsteadyProblem(unittest.TestCase):
         for value in valid_values:
             with self.subTest(value=value):
                 movement = movement_fixtures.make_basic_movement_fixture()
-                unsteady_problem = ps.problems.UnsteadyProblem(
+                unsteady_problem = ps.UnsteadyProblem(
                     movement=movement,
                     only_final_results=value,
                 )
@@ -402,14 +402,14 @@ class TestUnsteadyProblem(unittest.TestCase):
         # Test with invalid movement type.
         bad_movement: Any = "not_a_movement"
         with self.assertRaises(TypeError):
-            ps.problems.UnsteadyProblem(
+            ps.UnsteadyProblem(
                 movement=bad_movement,
             )
 
         # Test with None.
         none_movement: Any = None
         with self.assertRaises(TypeError):
-            ps.problems.UnsteadyProblem(
+            ps.UnsteadyProblem(
                 movement=none_movement,
             )
 
@@ -418,7 +418,7 @@ class TestUnsteadyProblem(unittest.TestCase):
         for invalid in invalid_movements:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
-                    ps.problems.UnsteadyProblem(
+                    ps.UnsteadyProblem(
                         movement=invalid,
                     )
 
@@ -451,7 +451,7 @@ class TestUnsteadyProblem(unittest.TestCase):
         """Test that all elements in steady_problems are SteadyProblems."""
         # All elements in steady_problems should be SteadyProblems.
         for steady_problem in self.basic_unsteady_problem.steady_problems:
-            self.assertIsInstance(steady_problem, ps.problems.SteadyProblem)
+            self.assertIsInstance(steady_problem, ps.SteadyProblem)
 
     def test_steady_problems_list_airplanes(self) -> None:
         """Test that each SteadyProblem has correct Airplanes."""
@@ -462,22 +462,20 @@ class TestUnsteadyProblem(unittest.TestCase):
         for steady_problem in self.basic_unsteady_problem.steady_problems:
             self.assertEqual(len(steady_problem.airplanes), num_airplanes)
             for airplane in steady_problem.airplanes:
-                self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+                self.assertIsInstance(airplane, ps.Airplane)
 
     def test_steady_problems_list_operating_points(self) -> None:
         """Test that each SteadyProblem has an OperatingPoint."""
         # Each SteadyProblem should have an OperatingPoint.
         for steady_problem in self.basic_unsteady_problem.steady_problems:
-            self.assertIsInstance(
-                steady_problem.operating_point, ps.operating_point.OperatingPoint
-            )
+            self.assertIsInstance(steady_problem.operating_point, ps.OperatingPoint)
 
     def test_initialization_multiple_airplanes(self) -> None:
         """Test UnsteadyProblem initialization with multiple Airplanes."""
         # Test that UnsteadyProblem with multiple Airplanes initializes correctly.
         self.assertIsInstance(
             self.multi_airplane_unsteady_problem,
-            ps.problems.UnsteadyProblem,
+            ps.UnsteadyProblem,
         )
         # Verify that each SteadyProblem has multiple Airplanes.
         for steady_problem in self.multi_airplane_unsteady_problem.steady_problems:
@@ -487,7 +485,7 @@ class TestUnsteadyProblem(unittest.TestCase):
 class TestUnsteadyProblemDiagram(unittest.TestCase):
     """Tests for the UnsteadyProblem diagram method."""
 
-    basic_unsteady_problem: ps.problems.UnsteadyProblem
+    basic_unsteady_problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -506,9 +504,7 @@ class TestUnsteadyProblemDiagram(unittest.TestCase):
 
     def test_diagram_draws_the_last_time_step_by_default(self) -> None:
         """Test that diagram draws the last time step's SteadyProblem by default."""
-        with patch.object(
-            ps.problems.SteadyProblem, "diagram", autospec=True
-        ) as mock_diagram:
+        with patch.object(ps.SteadyProblem, "diagram", autospec=True) as mock_diagram:
             self.basic_unsteady_problem.diagram()
 
         mock_diagram.assert_called_once()
@@ -519,9 +515,7 @@ class TestUnsteadyProblemDiagram(unittest.TestCase):
 
     def test_diagram_draws_the_given_time_step(self) -> None:
         """Test that diagram draws the SteadyProblem of the time step it is given."""
-        with patch.object(
-            ps.problems.SteadyProblem, "diagram", autospec=True
-        ) as mock_diagram:
+        with patch.object(ps.SteadyProblem, "diagram", autospec=True) as mock_diagram:
             self.basic_unsteady_problem.diagram(step=1)
 
         mock_diagram.assert_called_once()
@@ -578,7 +572,7 @@ class TestUnsteadyProblemDiagram(unittest.TestCase):
 class TestUnsteadyProblemImmutability(unittest.TestCase):
     """Tests for UnsteadyProblem attribute immutability."""
 
-    basic_unsteady_problem: ps.problems.UnsteadyProblem
+    basic_unsteady_problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:

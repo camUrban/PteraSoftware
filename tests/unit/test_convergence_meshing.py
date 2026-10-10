@@ -44,9 +44,9 @@ _WING_CHANGED_PARAMETERS = frozenset({"wing_cross_sections", "num_chordwise_pane
 
 # A Wing never stores explode_into_strips, recording only its effect on spanwise_mesh,
 # so a copy could not carry it even if a build tried. Omitting it is safe only because
-# both analysis functions in convergence.py reject a Wing whose spanwise mesh is neither
-# trapezoidal nor edge-defined, which leaves False as the only value a Wing reaching a
-# build can have been built with.
+# both analysis functions in _convergence.py reject a Wing whose spanwise mesh is
+# neither trapezoidal nor edge-defined, which leaves False as the only value a Wing
+# reaching a build can have been built with.
 _WING_OMITTED_PARAMETERS = frozenset({"explode_into_strips"})
 
 # A build shares each reference WingCrossSection's Airfoil rather than rebuilding one,
@@ -88,7 +88,7 @@ def _public_constructor_parameters(this_class: type) -> set[str]:
 
 class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     """This class contains methods for testing
-    _convergence_meshing._get_wing_section_num_spanwise_panels, the search that picks a
+    _convergence_meshing.get_wing_section_num_spanwise_panels, the search that picks a
     non-edge-defined Wing section's number of spanwise Panels."""
 
     def setUp(self) -> None:
@@ -110,7 +110,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     def _average_panel_aspect_ratio(self, num_spanwise_panels: int) -> float:
         """Meshes the wing section at a number of spanwise Panels and returns its
         average Panel aspect ratio."""
-        return _convergence_meshing._get_wing_section_average_panel_aspect_ratio(
+        return _convergence_meshing.get_wing_section_average_panel_aspect_ratio(
             self.num_chordwise_panels,
             self.chordwise_spacing,
             self.ref_airplane,
@@ -122,7 +122,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     def _num_spanwise_panels_for(self, target: int) -> int:
         """Searches for the number of spanwise Panels that hits a target average Panel
         aspect ratio, starting from the smallest valid count."""
-        return _convergence_meshing._get_wing_section_num_spanwise_panels(
+        return _convergence_meshing.get_wing_section_num_spanwise_panels(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
             chordwise_spacing=self.chordwise_spacing,
@@ -164,8 +164,8 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
 
 class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
     """This class contains methods for testing
-    _convergence_meshing._get_num_wing_cross_sections_for_panel_ar, the search that
-    picks an edge-defined Wing's number of WingCrossSections."""
+    _convergence_meshing.get_num_wing_cross_sections_for_panel_ar, the search that picks
+    an edge-defined Wing's number of WingCrossSections."""
 
     @staticmethod
     def _tapered_edge_points() -> tuple[np.ndarray, np.ndarray]:
@@ -181,14 +181,14 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
         return leading, trailing
 
-    def _make_edge_wing(self, symmetric: bool = False) -> ps.geometry.wing.Wing:
+    def _make_edge_wing(self, symmetric: bool = False) -> ps.Wing:
         """Builds an edge-defined Wing from the tapered edge curves."""
         leading, trailing = self._tapered_edge_points()
-        return ps.geometry.wing.Wing.from_edge_points(
+        return ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             name="Edge Wing",
             symmetric=symmetric,
             symmetryNormal_G=(0.0, 1.0, 0.0) if symmetric else None,
@@ -202,28 +202,28 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         :return: None
         """
         self.ref_wing = self._make_edge_wing()
-        self.ref_airplane = ps.geometry.airplane.Airplane(wings=[self.ref_wing])
+        self.ref_airplane = ps.Airplane(wings=[self.ref_wing])
         self.num_chordwise_panels = 4
 
     def _average_panel_aspect_ratio(self, num_wing_cross_sections: int) -> float:
         """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections
         and returns its average Panel aspect ratio."""
-        refined_wing = _convergence_meshing._build_edge_defined_wing(
+        refined_wing = _convergence_meshing.build_edge_defined_wing(
             self.ref_wing, self.num_chordwise_panels, num_wing_cross_sections
         )
-        airplane = ps.geometry.airplane.Airplane(wings=[refined_wing])
+        airplane = ps.Airplane(wings=[refined_wing])
         average_panel_aspect_ratio = airplane.wings[0].average_panel_aspect_ratio
         assert average_panel_aspect_ratio is not None
         return average_panel_aspect_ratio
 
     def _num_wing_cross_sections_for(
-        self, target: int, ref_airplane: ps.geometry.airplane.Airplane | None = None
+        self, target: int, ref_airplane: ps.Airplane | None = None
     ) -> int:
         """Searches for the number of WingCrossSections that hits a target average Panel
         aspect ratio, starting from the smallest valid count."""
         if ref_airplane is None:
             ref_airplane = self.ref_airplane
-        return _convergence_meshing._get_num_wing_cross_sections_for_panel_ar(
+        return _convergence_meshing.get_num_wing_cross_sections_for_panel_ar(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
             ref_airplane=ref_airplane,
@@ -265,15 +265,11 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         asymmetric Wing built from the same half-span curves need the same count."""
         asymmetric_result = self._num_wing_cross_sections_for(
             4,
-            ref_airplane=ps.geometry.airplane.Airplane(
-                wings=[self._make_edge_wing(symmetric=False)]
-            ),
+            ref_airplane=ps.Airplane(wings=[self._make_edge_wing(symmetric=False)]),
         )
         symmetric_result = self._num_wing_cross_sections_for(
             4,
-            ref_airplane=ps.geometry.airplane.Airplane(
-                wings=[self._make_edge_wing(symmetric=True)]
-            ),
+            ref_airplane=ps.Airplane(wings=[self._make_edge_wing(symmetric=True)]),
         )
         self.assertEqual(asymmetric_result, symmetric_result)
 
@@ -296,18 +292,18 @@ class TestMemosComplete(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leading = np.column_stack((0.25 * ys, ys, zeros))
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
-        edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+        edge_defined_wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             name="Edge Wing",
             num_chordwise_panels=4,
         )
 
         self.ref_airplanes = [
-            ps.geometry.airplane.Airplane(wings=[trapezoidal_wing]),
-            ps.geometry.airplane.Airplane(wings=[edge_defined_wing]),
+            ps.Airplane(wings=[trapezoidal_wing]),
+            ps.Airplane(wings=[edge_defined_wing]),
         ]
 
         # The trapezoidal Wing has three WingCrossSections, so its build records one
@@ -408,7 +404,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
             _AIRPLANE_COPIED_PARAMETERS
             | _AIRPLANE_CHANGED_PARAMETERS
             | _AIRPLANE_OMITTED_PARAMETERS,
-            _public_constructor_parameters(ps.geometry.airplane.Airplane),
+            _public_constructor_parameters(ps.Airplane),
             msg=self._coverage_failure_message("Airplane"),
         )
 
@@ -419,7 +415,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
             _WING_COPIED_PARAMETERS
             | _WING_CHANGED_PARAMETERS
             | _WING_OMITTED_PARAMETERS,
-            _public_constructor_parameters(ps.geometry.wing.Wing),
+            _public_constructor_parameters(ps.Wing),
             msg=self._coverage_failure_message("Wing"),
         )
 
@@ -430,9 +426,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
             _WING_CROSS_SECTION_COPIED_PARAMETERS
             | _WING_CROSS_SECTION_CHANGED_PARAMETERS
             | _WING_CROSS_SECTION_OMITTED_PARAMETERS,
-            _public_constructor_parameters(
-                ps.geometry.wing_cross_section.WingCrossSection
-            ),
+            _public_constructor_parameters(ps.WingCrossSection),
             msg=self._coverage_failure_message("WingCrossSection"),
         )
 
@@ -490,11 +484,11 @@ class TestBuildSteadyProblem(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leading = np.column_stack((0.25 * ys, ys, zeros))
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
-        self.edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+        self.edge_defined_wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             name="Edge Wing",
             num_chordwise_panels=4,
         )
@@ -503,9 +497,9 @@ class TestBuildSteadyProblem(unittest.TestCase):
         # second carries the nonzero value that the copy is checked for. Both carry
         # explicit reference dimensions that differ from what their Wings measure, so
         # that a copy which recalculated them would fail the copy tests.
-        self.ref_problem = ps.problems.SteadyProblem(
+        self.ref_problem = ps.SteadyProblem(
             airplanes=[
-                ps.geometry.airplane.Airplane(
+                ps.Airplane(
                     wings=[self.trapezoidal_wing],
                     name="Trapezoidal Airplane",
                     weight=10.0,
@@ -513,7 +507,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
                     c_ref=2.0,
                     b_ref=10.0,
                 ),
-                ps.geometry.airplane.Airplane(
+                ps.Airplane(
                     wings=[self.edge_defined_wing],
                     name="Edge Airplane",
                     Cg_GP1_CgP1=(1.0, 2.0, 3.0),
@@ -529,7 +523,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
         self.num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
 
-    def _build(self, num_chordwise_panels: int = 4) -> ps.problems.SteadyProblem:
+    def _build(self, num_chordwise_panels: int = 4) -> ps.SteadyProblem:
         """Builds the SteadyProblem for the first mesh against the reference problem and
         the caches."""
         return _convergence_meshing.build_steady_problem(
@@ -547,7 +541,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
         reference Airplane."""
         this_problem = self._build()
 
-        self.assertIsInstance(this_problem, ps.problems.SteadyProblem)
+        self.assertIsInstance(this_problem, ps.SteadyProblem)
         self.assertEqual(len(this_problem.airplanes), 2)
 
     def test_operating_point_is_deep_copied(self) -> None:
@@ -841,11 +835,11 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leading = np.column_stack((0.25 * ys, ys, zeros))
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
-        edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+        edge_defined_wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             name="Edge Wing",
             num_chordwise_panels=4,
         )
@@ -863,18 +857,18 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             (edge_defined_wing, {}, self.airplane_motion_parameters),
         ):
             airplane_movements.append(
-                ps.movements.airplane_movement.AirplaneMovement(
-                    base_airplane=ps.geometry.airplane.Airplane(
+                ps.AirplaneMovement(
+                    base_airplane=ps.Airplane(
                         wings=[wing],
                         s_ref=self.airplane_reference_dimensions["s_ref"],
                         c_ref=self.airplane_reference_dimensions["c_ref"],
                         b_ref=self.airplane_reference_dimensions["b_ref"],
                     ),
                     wing_movements=[
-                        ps.movements.wing_movement.WingMovement(
+                        ps.WingMovement(
                             base_wing=wing,
                             wing_cross_section_movements=[
-                                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                                ps.WingCrossSectionMovement(
                                     base_wing_cross_section=wing_cross_section,
                                     # A root WingCrossSection must keep a zero
                                     # Lp_Wcsp_Lpp and zero angles_Wcsp_to_Wcs_ixyz, so
@@ -897,12 +891,12 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
                 )
             )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        self.ref_problem = ps.problems.UnsteadyProblem(
-            movement=ps.movements.movement.Movement(
+        self.ref_problem = ps.UnsteadyProblem(
+            movement=ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -993,9 +987,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         parameter except the two that the build is meant to change, so that a parameter
         added to AirplaneMovement later fails here until it is covered by the tests
         below."""
-        parameters = inspect.signature(
-            ps.movements.airplane_movement.AirplaneMovement.__init__
-        ).parameters
+        parameters = inspect.signature(ps.AirplaneMovement.__init__).parameters
 
         self.assertEqual(
             set(self.airplane_motion_parameters),
@@ -1008,9 +1000,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         parameter except the two that the build is meant to change, so that a parameter
         added to WingMovement later fails here until it is covered by the tests
         below."""
-        parameters = inspect.signature(
-            ps.movements.wing_movement.WingMovement.__init__
-        ).parameters
+        parameters = inspect.signature(ps.WingMovement.__init__).parameters
 
         self.assertEqual(
             set(self.wing_motion_parameters),
@@ -1025,9 +1015,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         WingCrossSectionMovement constructor parameter except the one that the build is
         meant to change, so that a parameter added to WingCrossSectionMovement later
         fails here until it is covered by the tests below."""
-        parameters = inspect.signature(
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement.__init__
-        ).parameters
+        parameters = inspect.signature(ps.WingCrossSectionMovement.__init__).parameters
 
         self.assertEqual(
             set(self.wing_cross_section_motion_parameters),

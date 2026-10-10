@@ -10,7 +10,7 @@ from tests.integration.fixtures import (
 )
 
 
-def make_steady_validation_problem() -> ps.problems.SteadyProblem:
+def make_steady_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem to be used as a fixture.
 
     :return steady_validation_problem: SteadyProblem This is the SteadyProblem fixture.
@@ -20,7 +20,7 @@ def make_steady_validation_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    steady_validation_problem = ps.problems.SteadyProblem(
+    steady_validation_problem = ps.SteadyProblem(
         airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
@@ -28,7 +28,7 @@ def make_steady_validation_problem() -> ps.problems.SteadyProblem:
     return steady_validation_problem
 
 
-def make_steady_formation_validation_problem() -> ps.problems.SteadyProblem:
+def make_steady_formation_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with two identical, widely separated
     Airplanes to be used as a fixture.
 
@@ -47,7 +47,7 @@ def make_steady_formation_validation_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    steady_formation_validation_problem = ps.problems.SteadyProblem(
+    steady_formation_validation_problem = ps.SteadyProblem(
         airplanes=[first_airplane, second_airplane],
         operating_point=steady_validation_operating_point,
     )
@@ -55,7 +55,7 @@ def make_steady_formation_validation_problem() -> ps.problems.SteadyProblem:
     return steady_formation_validation_problem
 
 
-def make_steady_multiple_wing_validation_problem() -> ps.problems.SteadyProblem:
+def make_steady_multiple_wing_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with multi-wing geometry to be used as a
     fixture.
 
@@ -68,7 +68,7 @@ def make_steady_multiple_wing_validation_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    steady_validation_problem = ps.problems.SteadyProblem(
+    steady_validation_problem = ps.SteadyProblem(
         airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
@@ -76,7 +76,7 @@ def make_steady_multiple_wing_validation_problem() -> ps.problems.SteadyProblem:
     return steady_validation_problem
 
 
-def make_edge_defined_steady_validation_problem() -> ps.problems.SteadyProblem:
+def make_edge_defined_steady_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with an edge-defined Airplane to be used as
     a fixture.
 
@@ -90,7 +90,7 @@ def make_edge_defined_steady_validation_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    edge_defined_steady_validation_problem = ps.problems.SteadyProblem(
+    edge_defined_steady_validation_problem = ps.SteadyProblem(
         airplanes=[edge_defined_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
@@ -98,7 +98,7 @@ def make_edge_defined_steady_validation_problem() -> ps.problems.SteadyProblem:
     return edge_defined_steady_validation_problem
 
 
-def make_mixed_steady_validation_problem() -> ps.problems.SteadyProblem:
+def make_mixed_steady_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with an Airplane holding both a trapezoidal
     Wing and an edge-defined Wing, to be used as a fixture.
 
@@ -110,7 +110,7 @@ def make_mixed_steady_validation_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_validation_operating_point()
     )
 
-    mixed_steady_validation_problem = ps.problems.SteadyProblem(
+    mixed_steady_validation_problem = ps.SteadyProblem(
         airplanes=[mixed_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
@@ -118,9 +118,7 @@ def make_mixed_steady_validation_problem() -> ps.problems.SteadyProblem:
     return mixed_steady_validation_problem
 
 
-def make_unsteady_validation_problem_with_static_geometry() -> (
-    ps.problems.UnsteadyProblem
-):
+def make_unsteady_validation_problem_with_static_geometry() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with static geometry to be used as a
     fixture.
 
@@ -129,14 +127,14 @@ def make_unsteady_validation_problem_with_static_geometry() -> (
     """
     unsteady_validation_movement = movement_fixtures.make_static_validation_movement()
 
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
     return unsteady_validation_problem
 
 
-def make_edge_defined_unsteady_validation_problem() -> ps.problems.UnsteadyProblem:
+def make_edge_defined_unsteady_validation_problem() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with an edge-defined Airplane and static
     WingCrossSectionMovements, to be used as a fixture.
 
@@ -147,16 +145,14 @@ def make_edge_defined_unsteady_validation_problem() -> ps.problems.UnsteadyProbl
         movement_fixtures.make_edge_defined_static_validation_movement()
     )
 
-    edge_defined_unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    edge_defined_unsteady_validation_problem = ps.UnsteadyProblem(
         movement=edge_defined_validation_movement
     )
 
     return edge_defined_unsteady_validation_problem
 
 
-def make_edge_defined_non_static_unsteady_validation_problem() -> (
-    ps.problems.UnsteadyProblem
-):
+def make_edge_defined_non_static_unsteady_validation_problem() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with an edge-defined Airplane whose
     WingCrossSectionMovements are not all static, to be used as a fixture for testing
     that edge-defined convergence rejects it.
@@ -168,16 +164,14 @@ def make_edge_defined_non_static_unsteady_validation_problem() -> (
         movement_fixtures.make_edge_defined_non_static_validation_movement()
     )
 
-    edge_defined_non_static_unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    edge_defined_non_static_unsteady_validation_problem = ps.UnsteadyProblem(
         movement=edge_defined_non_static_validation_movement
     )
 
     return edge_defined_non_static_unsteady_validation_problem
 
 
-def make_unsteady_validation_problem_with_variable_geometry() -> (
-    ps.problems.UnsteadyProblem
-):
+def make_unsteady_validation_problem_with_variable_geometry() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with variable geometry to be used as a
     fixture.
 
@@ -186,7 +180,7 @@ def make_unsteady_validation_problem_with_variable_geometry() -> (
     """
     unsteady_validation_movement = movement_fixtures.make_variable_validation_movement()
 
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -194,7 +188,7 @@ def make_unsteady_validation_problem_with_variable_geometry() -> (
 
 
 def make_unsteady_validation_problem_with_multiple_wing_static_geometry() -> (
-    ps.problems.UnsteadyProblem
+    ps.UnsteadyProblem
 ):
     """This function creates an UnsteadyProblem with multi-wing, static geometry to be
     used as a fixture.
@@ -206,7 +200,7 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry() -> (
         movement_fixtures.make_multiple_wing_static_validation_movement()
     )
 
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -214,7 +208,7 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry() -> (
 
 
 def make_unsteady_validation_problem_with_multiple_wing_variable_geometry() -> (
-    ps.problems.UnsteadyProblem
+    ps.UnsteadyProblem
 ):
     """This function creates an UnsteadyProblem with multi-wing, variable geometry to be
     used as a fixture.
@@ -226,14 +220,14 @@ def make_unsteady_validation_problem_with_multiple_wing_variable_geometry() -> (
         movement_fixtures.make_multiple_wing_variable_validation_movement()
     )
 
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
     return unsteady_validation_problem
 
 
-def make_surface_effect_steady_problem() -> ps.problems.SteadyProblem:
+def make_surface_effect_steady_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with an image surface for surface effect
     testing.
 
@@ -245,7 +239,7 @@ def make_surface_effect_steady_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_surface_effect_operating_point()
     )
 
-    surface_effect_steady_problem = ps.problems.SteadyProblem(
+    surface_effect_steady_problem = ps.SteadyProblem(
         airplanes=[surface_effect_airplane],
         operating_point=surface_effect_operating_point,
     )
@@ -253,7 +247,7 @@ def make_surface_effect_steady_problem() -> ps.problems.SteadyProblem:
     return surface_effect_steady_problem
 
 
-def make_surface_effect_free_air_steady_problem() -> ps.problems.SteadyProblem:
+def make_surface_effect_free_air_steady_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem without an image surface, for use as a
     free-air baseline in surface effect validation tests.
 
@@ -264,7 +258,7 @@ def make_surface_effect_free_air_steady_problem() -> ps.problems.SteadyProblem:
         operating_point_fixtures.make_surface_effect_free_air_operating_point()
     )
 
-    free_air_steady_problem = ps.problems.SteadyProblem(
+    free_air_steady_problem = ps.SteadyProblem(
         airplanes=[surface_effect_airplane],
         operating_point=free_air_operating_point,
     )
@@ -272,7 +266,7 @@ def make_surface_effect_free_air_steady_problem() -> ps.problems.SteadyProblem:
     return free_air_steady_problem
 
 
-def make_surface_effect_unsteady_problem() -> ps.problems.UnsteadyProblem:
+def make_surface_effect_unsteady_problem() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with an image surface for surface effect
     testing.
 
@@ -281,14 +275,14 @@ def make_surface_effect_unsteady_problem() -> ps.problems.UnsteadyProblem:
     """
     surface_effect_movement = movement_fixtures.make_surface_effect_static_movement()
 
-    surface_effect_unsteady_problem = ps.problems.UnsteadyProblem(
+    surface_effect_unsteady_problem = ps.UnsteadyProblem(
         movement=surface_effect_movement
     )
 
     return surface_effect_unsteady_problem
 
 
-def make_surface_effect_free_air_unsteady_problem() -> ps.problems.UnsteadyProblem:
+def make_surface_effect_free_air_unsteady_problem() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem without an image surface, for use as a
     free-air baseline in surface effect validation tests.
 
@@ -297,14 +291,14 @@ def make_surface_effect_free_air_unsteady_problem() -> ps.problems.UnsteadyProbl
     """
     free_air_movement = movement_fixtures.make_surface_effect_free_air_static_movement()
 
-    free_air_unsteady_problem = ps.problems.UnsteadyProblem(movement=free_air_movement)
+    free_air_unsteady_problem = ps.UnsteadyProblem(movement=free_air_movement)
 
     return free_air_unsteady_problem
 
 
 def make_simple_glider_free_flight_problem(
     extra_xml: dict[str, str] | None = None,
-) -> ps.problems.FreeFlightUnsteadyProblem:
+) -> ps.FreeFlightUnsteadyProblem:
     """This function creates the simple glider's FreeFlightUnsteadyProblem to be used as
     a fixture.
 
@@ -345,7 +339,7 @@ def make_simple_glider_free_flight_problem(
         dtype=float,
     )
 
-    simple_glider_free_flight_problem = ps.problems.FreeFlightUnsteadyProblem(
+    simple_glider_free_flight_problem = ps.FreeFlightUnsteadyProblem(
         movement=simple_glider_free_flight_movement,
         mass=mass,
         I_BP1_CgP1=I_BP1_CgP1,
@@ -356,7 +350,7 @@ def make_simple_glider_free_flight_problem(
     return simple_glider_free_flight_problem
 
 
-def make_flapping_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem:
+def make_flapping_free_flight_problem() -> ps.FreeFlightUnsteadyProblem:
     """This function creates the flapping-wing FreeFlightUnsteadyProblem to be used as a
     fixture.
 
@@ -392,7 +386,7 @@ def make_flapping_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem
         dtype=float,
     )
 
-    flapping_free_flight_problem = ps.problems.FreeFlightUnsteadyProblem(
+    flapping_free_flight_problem = ps.FreeFlightUnsteadyProblem(
         movement=flapping_free_flight_movement,
         mass=mass,
         I_BP1_CgP1=I_BP1_CgP1,
@@ -402,7 +396,7 @@ def make_flapping_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem
     return flapping_free_flight_problem
 
 
-def make_unsteady_formation_validation_problem() -> ps.problems.UnsteadyProblem:
+def make_unsteady_formation_validation_problem() -> ps.UnsteadyProblem:
     """This function creates an UnsteadyProblem with two Airplanes, the second of which
     has a name carrying a path separator, to be used as a fixture.
 
@@ -413,7 +407,7 @@ def make_unsteady_formation_validation_problem() -> ps.problems.UnsteadyProblem:
         movement_fixtures.make_formation_validation_movement()
     )
 
-    unsteady_formation_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_formation_validation_problem = ps.UnsteadyProblem(
         movement=formation_validation_movement
     )
 

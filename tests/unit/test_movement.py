@@ -5,7 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pterasoftware as ps
-from pterasoftware.movements.movement import _mean_trailing_edge_panel_chord
+from pterasoftware._movements.movement import mean_trailing_edge_panel_chord
 from tests.unit.fixtures import (
     airplane_movement_fixtures,
     geometry_fixtures,
@@ -18,12 +18,12 @@ from tests.unit.fixtures import (
 class TestMovement(unittest.TestCase):
     """This is a class with functions to test Movements."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
-    static_movement_with_explicit_num_steps: ps.movements.movement.Movement
-    non_static_movement_with_explicit_num_steps: ps.movements.movement.Movement
-    movement_with_custom_delta_time: ps.movements.movement.Movement
-    movement_with_multiple_airplanes: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
+    static_movement_with_explicit_num_steps: ps.Movement
+    non_static_movement_with_explicit_num_steps: ps.Movement
+    movement_with_custom_delta_time: ps.Movement
+    movement_with_multiple_airplanes: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -45,13 +45,13 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_not_list(self) -> None:
         """Test that airplane_movements must be a list."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         bad_airplane_movements: Any = "not a list"
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -59,12 +59,12 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_empty_list(self) -> None:
         """Test that airplane_movements must have at least one element."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[],
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -72,13 +72,13 @@ class TestMovement(unittest.TestCase):
 
     def test_airplane_movements_validation_invalid_element_type(self) -> None:
         """Test that all elements in airplane_movements must be AirplaneMovements."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         bad_airplane_movements: Any = ["not an airplane movement"]
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=10,
@@ -92,7 +92,7 @@ class TestMovement(unittest.TestCase):
 
         bad_operating_point_movement: Any = "not an operating point movement"
         with self.assertRaises(TypeError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=bad_operating_point_movement,
                 num_chords=10,
@@ -103,13 +103,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with positive delta_time works. Use num_steps = 1 to speed up the test.
         # We only need to verify delta_time is accepted, not generate many Airplanes.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.01,
@@ -122,13 +122,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.0,
@@ -140,13 +140,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=-0.01,
@@ -158,13 +158,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_chords is None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=None,
@@ -175,13 +175,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_cycles is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=3,
@@ -192,13 +192,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_cycles is None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=None,
@@ -209,13 +209,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is None and num_chords is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=3,
@@ -227,13 +227,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Should raise error when num_steps is set and num_cycles is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_steps=100,
@@ -242,7 +242,7 @@ class TestMovement(unittest.TestCase):
 
         # Should raise error when num_steps is set and num_chords is not None.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_steps=100,
@@ -254,13 +254,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_cycles = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -273,7 +273,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_cycles=invalid_value,
@@ -284,13 +284,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_chords = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -303,7 +303,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_chords=invalid_value,
@@ -314,13 +314,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Test with valid positive integer. Use num_steps = 1 to speed up the test. The
         # validation logic doesn't depend on the specific value.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_steps=1,
@@ -333,7 +333,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_steps=invalid_value,
@@ -344,13 +344,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Use num_cycles=1 to speed up the test while still testing auto-calculation.
         # The auto-calculation logic doesn't depend on the specific value of num_cycles.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -420,13 +420,13 @@ class TestMovement(unittest.TestCase):
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Use num_chords=1 to speed up the test while still testing auto-calculation.
         # The averaging logic doesn't depend on the specific value of num_chords.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -441,11 +441,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -462,11 +462,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -485,7 +485,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -496,7 +496,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -512,7 +512,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 4->5 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
@@ -520,19 +520,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -548,7 +548,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_3_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -559,7 +559,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -575,7 +575,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become coincident (type 3->2 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampLer_Gs_Cgs=(0.0, 0.5, 0.0),
@@ -583,19 +583,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 delta_time=0.25,
@@ -612,7 +612,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_2_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -623,7 +623,7 @@ class TestMovement(unittest.TestCase):
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -639,7 +639,7 @@ class TestMovement(unittest.TestCase):
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 2->3 transition).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
@@ -647,19 +647,19 @@ class TestMovement(unittest.TestCase):
         )
 
         # Create an AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Attempting to create a Movement should raise a ValueError.
         with self.assertRaises(ValueError) as context:
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -674,7 +674,7 @@ class TestMovement(unittest.TestCase):
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
         # Create an Airplane with the base Wing first, so it processes symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -685,7 +685,7 @@ class TestMovement(unittest.TestCase):
 
         # Create static WingCrossSectionMovements using the actual WingCrossSections.
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -700,38 +700,38 @@ class TestMovement(unittest.TestCase):
         ]
 
         # Create a static WingMovement (no rotation or translation).
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
         # Create a static AirplaneMovement.
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
         # Create an OperatingPointMovement.
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Creating a Movement should succeed without raising an error.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             num_chords=3,
         )
 
         # Verify the Movement was created successfully.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement, ps.Movement)
 
     def test_delta_time_invalid_string_raises_error(self) -> None:
         """Test that delta_time with invalid string raises ValueError."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -746,7 +746,7 @@ class TestMovement(unittest.TestCase):
         for invalid_string in invalid_strings:
             with self.subTest(invalid_string=invalid_string):
                 with self.assertRaises(ValueError):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         delta_time=invalid_string,
@@ -758,11 +758,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time="optimize",
@@ -770,7 +770,7 @@ class TestMovement(unittest.TestCase):
         )
 
         # Verify the Movement was created and delta_time is a positive float.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement, ps.Movement)
         self.assertIsInstance(movement.delta_time, float)
         self.assertGreater(movement.delta_time, 0.0)
         self.assertTrue(movement.static)
@@ -786,7 +786,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -796,10 +796,10 @@ class TestMovement(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement._analytically_optimize_delta_time"
+                "pterasoftware._movements.movement.analytically_optimize_delta_time"
             ) as mock_analytical,
             patch(
-                "pterasoftware.movements.movement._optimize_delta_time"
+                "pterasoftware._movements.movement.optimize_delta_time"
             ) as mock_iterative,
         ):
             mock_analytical.return_value = fake_analytical_delta_time
@@ -807,7 +807,7 @@ class TestMovement(unittest.TestCase):
 
             # Use num_steps=1 to speed up the test. The optimizers are mocked, so the
             # only time spent is generating airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time="optimize",
@@ -853,58 +853,58 @@ class TestMovement(unittest.TestCase):
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         wing_cross_section_movements_wing_1 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_1.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_1 = ps.movements.wing_movement.WingMovement(
+        wing_movement_1 = ps.WingMovement(
             base_wing=base_wing_1,
             wing_cross_section_movements=wing_cross_section_movements_wing_1,
         )
 
         wing_cross_section_movements_wing_2 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[0],
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=base_wing_2.wing_cross_sections[1],
                 periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             ),
         ]
 
-        wing_movement_2 = ps.movements.wing_movement.WingMovement(
+        wing_movement_2 = ps.WingMovement(
             base_wing=base_wing_2,
             wing_cross_section_movements=wing_cross_section_movements_wing_2,
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement_1, wing_movement_2],
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=0.1,
@@ -923,24 +923,24 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a known value instantly. The
+        # Mock analytically_optimize_delta_time to return a known value instantly. The
         # value is below this fixture's clamp threshold (an LCM period of 2.0 seconds
         # divided by the minimum of 30 time steps per LCM period), so it passes through
         # the clamp unchanged.
         fake_optimized_delta_time = 0.0123456789
 
         with patch(
-            "pterasoftware.movements.movement._analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -963,23 +963,23 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a value far above the clamp
+        # Mock analytically_optimize_delta_time to return a value far above the clamp
         # threshold (an LCM period of 2.0 seconds divided by the minimum of 30 time
         # steps per LCM period).
         fake_optimized_delta_time = 10.0
 
         with patch(
-            "pterasoftware.movements.movement._analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -1000,23 +1000,23 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a large value instantly. For
-        # a static Movement, the real optimizer would return its initial estimate
+        # Mock analytically_optimize_delta_time to return a large value instantly. For a
+        # static Movement, the real optimizer would return its initial estimate
         # unchanged.
         fake_optimized_delta_time = 10.0
 
         with patch(
-            "pterasoftware.movements.movement._analytically_optimize_delta_time"
+            "pterasoftware._movements.movement.analytically_optimize_delta_time"
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
             # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
             # time spent is generating Airplanes after getting the delta_time.
-            movement = ps.movements.movement.Movement(
+            movement = ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=None,
@@ -1040,7 +1040,7 @@ class TestMovement(unittest.TestCase):
         for c_ref in [None, 5.0]:
             with self.subTest(c_ref=c_ref):
                 base_wing = geometry_fixtures.make_origin_wing_fixture()
-                base_airplane = ps.geometry.airplane.Airplane(
+                base_airplane = ps.Airplane(
                     wings=[base_wing],
                     Cg_GP1_CgP1=(0.0, 0.0, 0.0),
                     c_ref=c_ref,
@@ -1052,7 +1052,7 @@ class TestMovement(unittest.TestCase):
                         base_airplane.c_ref, base_wing.mean_aerodynamic_chord
                     )
 
-                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                airplane_movement = ps.AirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=[
                         wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1060,14 +1060,12 @@ class TestMovement(unittest.TestCase):
                         )
                     ],
                 )
-                operating_point_movement = (
-                    ps.movements.operating_point_movement.OperatingPointMovement(
-                        base_operating_point=operating_point
-                    )
+                operating_point_movement = ps.OperatingPointMovement(
+                    base_operating_point=operating_point
                 )
 
                 # Use num_chords=1 to speed up the test.
-                movement = ps.movements.movement.Movement(
+                movement = ps.Movement(
                     airplane_movements=[airplane_movement],
                     operating_point_movement=operating_point_movement,
                     num_chords=1,
@@ -1075,7 +1073,7 @@ class TestMovement(unittest.TestCase):
 
                 self.assertAlmostEqual(
                     movement.delta_time,
-                    _mean_trailing_edge_panel_chord(base_wing) / operating_point.vCg__E,
+                    mean_trailing_edge_panel_chord(base_wing) / operating_point.vCg__E,
                 )
                 delta_times.append(movement.delta_time)
 
@@ -1093,17 +1091,17 @@ class TestMovement(unittest.TestCase):
         first_wing = geometry_fixtures.make_origin_wing_fixture()
         second_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         third_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        first_airplane = ps.geometry.airplane.Airplane(
+        first_airplane = ps.Airplane(
             wings=[first_wing, second_wing],
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
-        second_airplane = ps.geometry.airplane.Airplane(
+        second_airplane = ps.Airplane(
             wings=[third_wing],
             Cg_GP1_CgP1=(10.0, 0.0, 0.0),
         )
 
         airplane_movements = [
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=first_airplane,
                 wing_movements=[
                     wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1114,7 +1112,7 @@ class TestMovement(unittest.TestCase):
                     ),
                 ],
             ),
-            ps.movements.airplane_movement.AirplaneMovement(
+            ps.AirplaneMovement(
                 base_airplane=second_airplane,
                 wing_movements=[
                     wing_movement_fixtures.make_static_wing_movement_fixture(
@@ -1123,14 +1121,12 @@ class TestMovement(unittest.TestCase):
                 ],
             ),
         ]
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=operating_point
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=operating_point
         )
 
         # Use num_chords=1 to speed up the test.
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=1,
@@ -1139,7 +1135,7 @@ class TestMovement(unittest.TestCase):
         chords = []
         nums_spanwise = []
         for wing in [first_wing, second_wing, third_wing]:
-            chords.append(_mean_trailing_edge_panel_chord(wing))
+            chords.append(mean_trailing_edge_panel_chord(wing))
             _num_spanwise = wing.num_spanwise_panels
             assert _num_spanwise is not None
             nums_spanwise.append(_num_spanwise)
@@ -1185,11 +1181,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=3,
@@ -1202,11 +1198,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_periodic_geometry_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=1,
@@ -1219,7 +1215,7 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1228,7 +1224,7 @@ class TestMovement(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.movements.movement.Movement(
+                    ps.Movement(
                         airplane_movements=airplane_movements,
                         operating_point_movement=operating_point_movement,
                         num_chords=3,
@@ -1240,11 +1236,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_chords=3,
@@ -1261,12 +1257,12 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
@@ -1279,11 +1275,11 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             num_cycles=3,
@@ -1300,12 +1296,12 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1318,13 +1314,13 @@ class TestMovement(unittest.TestCase):
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # max_wake_rows and max_wake_chords set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1334,7 +1330,7 @@ class TestMovement(unittest.TestCase):
 
         # max_wake_rows and max_wake_cycles set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1344,7 +1340,7 @@ class TestMovement(unittest.TestCase):
 
         # max_wake_chords and max_wake_cycles set together.
         with self.assertRaises(ValueError):
-            ps.movements.movement.Movement(
+            ps.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_chords=3,
@@ -1354,7 +1350,7 @@ class TestMovement(unittest.TestCase):
 
 
 class TestMeanTrailingEdgePanelChord(unittest.TestCase):
-    """This is a class with functions to test the _mean_trailing_edge_panel_chord
+    """This is a class with functions to test the mean_trailing_edge_panel_chord
     function."""
 
     def test_uniform_rectangular_wing(self) -> None:
@@ -1366,69 +1362,67 @@ class TestMeanTrailingEdgePanelChord(unittest.TestCase):
         to keep the trailing edge Panels' legs on the chord line.
         """
         airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
-        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        root_wing_cross_section = ps.WingCrossSection(
             airfoil=airfoil,
             num_spanwise_panels=8,
             chord=1.0,
             spanwise_spacing="uniform",
         )
-        tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        tip_wing_cross_section = ps.WingCrossSection(
             airfoil=airfoil,
             num_spanwise_panels=None,
             chord=1.0,
             Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
         )
-        wing = ps.geometry.wing.Wing(
+        wing = ps.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             num_chordwise_panels=4,
             chordwise_spacing="uniform",
         )
 
         # Wrapping the Wing in an Airplane meshes it.
-        ps.geometry.airplane.Airplane(wings=[wing])
+        ps.Airplane(wings=[wing])
 
-        self.assertAlmostEqual(_mean_trailing_edge_panel_chord(wing), 0.25)
+        self.assertAlmostEqual(mean_trailing_edge_panel_chord(wing), 0.25)
 
     def test_works_without_formation_frame_positions(self) -> None:
-        """Test that _mean_trailing_edge_panel_chord works on a Wing that has never been
+        """Test that mean_trailing_edge_panel_chord works on a Wing that has never been
         placed in a problem, so its Panels' positions in the first Airplane's geometry
         axes are still unset."""
         wing = geometry_fixtures.make_origin_wing_fixture()
 
         # Wrapping the Wing in an Airplane meshes it without setting the formation frame
         # positions, which only a problem sets.
-        ps.geometry.airplane.Airplane(wings=[wing])
+        ps.Airplane(wings=[wing])
 
         _panels = wing.panels
         assert _panels is not None
         self.assertIsNone(_panels[-1, 0].leftLeg_GP1)
 
-        mean_chord = _mean_trailing_edge_panel_chord(wing)
+        mean_chord = mean_trailing_edge_panel_chord(wing)
 
         self.assertIsInstance(mean_chord, float)
         self.assertGreater(mean_chord, 0.0)
 
 
 class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
-    """This is a class with functions to test the _analytically_optimize_delta_time
+    """This is a class with functions to test the analytically_optimize_delta_time
     function."""
 
     def test_returns_positive_float(self) -> None:
-        """Test that _analytically_optimize_delta_time returns a positive float."""
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        """Test that analytically_optimize_delta_time returns a positive float."""
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _analytically_optimize_delta_time(
+        optimized_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1438,22 +1432,20 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_returns_initial_for_static_movement(self) -> None:
-        """Test that _analytically_optimize_delta_time returns initial_delta_time for
+        """Test that analytically_optimize_delta_time returns initial_delta_time for
         static Movement."""
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _analytically_optimize_delta_time(
+        optimized_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1463,25 +1455,23 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         self.assertEqual(optimized_delta_time, initial_delta_time)
 
     def test_result_is_reasonable(self) -> None:
-        """Test that _analytically_optimize_delta_time produces a reasonable result.
+        """Test that analytically_optimize_delta_time produces a reasonable result.
 
         The result should be within a reasonable range of the initial estimate (within
         two orders of magnitude).
         """
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _analytically_optimize_delta_time(
+        optimized_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1493,17 +1483,17 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
 
 
 class TestComputeWakeAreaMismatch(unittest.TestCase):
-    """This is a class with functions to test the _compute_wake_area_mismatch
+    """This is a class with functions to test the compute_wake_area_mismatch
     function."""
 
     def test_returns_non_negative_value(self) -> None:
-        """Test that _compute_wake_area_mismatch returns a non-negative value."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        """Test that compute_wake_area_mismatch returns a non-negative value."""
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1516,7 +1506,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
             / operating_point_movement.base_operating_point.vCg__E
         )
 
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1526,14 +1516,14 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_returns_zero_for_static_single_step(self) -> None:
-        """Test that _compute_wake_area_mismatch returns 0.0 when no comparisons are
+        """Test that compute_wake_area_mismatch returns 0.0 when no comparisons are
         made."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1541,7 +1531,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         # max_period = 0, num_steps will be 1, so step > 0 never runs.
         delta_time = 0.01
 
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1551,13 +1541,13 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertEqual(mismatch, 0.0)
 
     def test_does_not_mutate_original_movements(self) -> None:
-        """Test that _compute_wake_area_mismatch does not mutate original objects."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        """Test that compute_wake_area_mismatch does not mutate original objects."""
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1566,7 +1556,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 
         delta_time = 0.01
 
-        _compute_wake_area_mismatch(
+        compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1580,23 +1570,23 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 
 
 class TestOptimizeDeltaTimeStatic(unittest.TestCase):
-    """This is a class with functions to test the _optimize_delta_time_static
+    """This is a class with functions to test the optimize_delta_time_static
     function."""
 
     def test_returns_positive_float(self) -> None:
-        """Test that _optimize_delta_time_static returns a positive float."""
-        from pterasoftware.movements.movement import _optimize_delta_time_static
+        """Test that optimize_delta_time_static returns a positive float."""
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _optimize_delta_time_static(
+        optimized_delta_time = optimize_delta_time_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1607,21 +1597,21 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_early_termination_with_acceptable_initial(self) -> None:
-        """Test that _optimize_delta_time_static terminates early if initial mismatch is
+        """Test that optimize_delta_time_static terminates early if initial mismatch is
         below cutoff."""
-        from pterasoftware.movements.movement import _optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
         # Use a high cutoff that the initial should satisfy.
-        optimized_delta_time = _optimize_delta_time_static(
+        optimized_delta_time = optimize_delta_time_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1633,21 +1623,21 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
 
 
 class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
-    """This is a class with functions to test the _optimize_delta_time_non_static
+    """This is a class with functions to test the optimize_delta_time_non_static
     function."""
 
     def test_returns_positive_float(self) -> None:
-        """Test that _optimize_delta_time_non_static returns a positive float."""
+        """Test that optimize_delta_time_non_static returns a positive float."""
         from pterasoftware._core import lcm_multiple
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-            _optimize_delta_time_non_static,
+        from pterasoftware._movements.movement import (
+            analytically_optimize_delta_time,
+            optimize_delta_time_non_static,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1661,13 +1651,13 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         # the true optimum, mirroring real usage. The analytical's initial_delta_time is
         # only used as a fallback for fully static Movements, so any positive
         # placeholder works here.
-        initial_delta_time = _analytically_optimize_delta_time(
+        initial_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=1.0,
         )
 
-        optimized_delta_time = _optimize_delta_time_non_static(
+        optimized_delta_time = optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1678,18 +1668,17 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_result_divides_lcm_period_evenly(self) -> None:
-        """Test that _optimize_delta_time_non_static result divides LCM period
-        evenly."""
+        """Test that optimize_delta_time_non_static result divides LCM period evenly."""
         from pterasoftware._core import lcm_multiple
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-            _optimize_delta_time_non_static,
+        from pterasoftware._movements.movement import (
+            analytically_optimize_delta_time,
+            optimize_delta_time_non_static,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -1703,13 +1692,13 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         # the true optimum, mirroring real usage. The analytical's initial_delta_time is
         # only used as a fallback for fully static Movements, so any positive
         # placeholder works here.
-        initial_delta_time = _analytically_optimize_delta_time(
+        initial_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=1.0,
         )
 
-        optimized_delta_time = _optimize_delta_time_non_static(
+        optimized_delta_time = optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1723,30 +1712,30 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
 
 
 class TestOptimizeDeltaTime(unittest.TestCase):
-    """This is a class with functions to test the _optimize_delta_time function."""
+    """This is a class with functions to test the optimize_delta_time function."""
 
     def test_returns_positive_float_within_bounds(self) -> None:
-        """Test that _optimize_delta_time returns a positive float within expected
+        """Test that optimize_delta_time returns a positive float within expected
         bounds."""
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-            _optimize_delta_time,
+        from pterasoftware._movements.movement import (
+            analytically_optimize_delta_time,
+            optimize_delta_time,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         # Seed the iterative optimizer with the analytical result. This keeps the brute
         # force bracket centered near the true optimum so the search does not hit either
         # bound, mirroring real usage. The initial_delta_time passed to
-        # _analytically_optimize_delta_time is only used as a fallback for fully static
+        # analytically_optimize_delta_time is only used as a fallback for fully static
         # Movements, so any positive placeholder works here since the fixture has
         # motion.
-        initial_delta_time = _analytically_optimize_delta_time(
+        initial_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=1.0,
@@ -1754,7 +1743,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         # For non static movements, brute force search is used (mismatch_cutoff is
         # ignored).
-        optimized_delta_time = _optimize_delta_time(
+        optimized_delta_time = optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1775,19 +1764,19 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         self.assertLessEqual(optimized_delta_time, max_delta_time)
 
     def test_works_with_static_movement(self) -> None:
-        """Test that _optimize_delta_time works with static AirplaneMovement."""
-        from pterasoftware.movements.movement import _optimize_delta_time
+        """Test that optimize_delta_time works with static AirplaneMovement."""
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _optimize_delta_time(
+        optimized_delta_time = optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -1797,60 +1786,60 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_dispatches_to_static_for_static_movement(self) -> None:
-        """Test that _optimize_delta_time dispatches to _optimize_delta_time_static for
+        """Test that optimize_delta_time dispatches to optimize_delta_time_static for
         static movements."""
-        from pterasoftware.movements.movement import _optimize_delta_time
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        # Mock _optimize_delta_time_static to verify it's called.
+        # Mock optimize_delta_time_static to verify it's called.
         with patch(
-            "pterasoftware.movements.movement._optimize_delta_time_static"
+            "pterasoftware._movements.movement.optimize_delta_time_static"
         ) as mock_static:
             mock_static.return_value = 0.012
-            optimized_delta_time = _optimize_delta_time(
+            optimized_delta_time = optimize_delta_time(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
             )
 
-            # Verify _optimize_delta_time_static was called.
+            # Verify optimize_delta_time_static was called.
             mock_static.assert_called_once()
             self.assertEqual(optimized_delta_time, 0.012)
 
     def test_dispatches_to_non_static_for_non_static_movement(self) -> None:
-        """Test that _optimize_delta_time dispatches to _optimize_delta_time_non_static
+        """Test that optimize_delta_time dispatches to optimize_delta_time_non_static
         for non static movements."""
-        from pterasoftware.movements.movement import _optimize_delta_time
+        from pterasoftware._movements.movement import optimize_delta_time
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.1
 
-        # Mock _optimize_delta_time_non_static to verify it's called.
+        # Mock optimize_delta_time_non_static to verify it's called.
         with patch(
-            "pterasoftware.movements.movement._optimize_delta_time_non_static"
+            "pterasoftware._movements.movement.optimize_delta_time_non_static"
         ) as mock_non_static:
             mock_non_static.return_value = 0.05
-            optimized_delta_time = _optimize_delta_time(
+            optimized_delta_time = optimize_delta_time(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
             )
 
-            # Verify _optimize_delta_time_non_static was called.
+            # Verify optimize_delta_time_non_static was called.
             mock_non_static.assert_called_once()
             self.assertEqual(optimized_delta_time, 0.05)
 
@@ -1858,9 +1847,9 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 class TestMovementGeneratedAttributes(unittest.TestCase):
     """Tests for Movement's generated airplanes and operating_points attributes."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
-    movement_with_multiple_airplanes: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
+    movement_with_multiple_airplanes: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1889,7 +1878,7 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
 
         for airplane_list in movement.airplanes:
             for airplane in airplane_list:
-                self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+                self.assertIsInstance(airplane, ps.Airplane)
 
     def test_operating_points_correct_length(self) -> None:
         """Test that operating_points has correct length (num_steps)."""
@@ -1901,7 +1890,7 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         movement = self.basic_movement
 
         for operating_point in movement.operating_points:
-            self.assertIsInstance(operating_point, ps.operating_point.OperatingPoint)
+            self.assertIsInstance(operating_point, ps.OperatingPoint)
 
     def test_airplanes_with_multiple_airplane_movements(self) -> None:
         """Test that airplanes correctly handles multiple AirplaneMovements."""
@@ -1934,8 +1923,8 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
 class TestMovementImmutability(unittest.TestCase):
     """Tests for Movement attribute immutability."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1979,8 +1968,8 @@ class TestMovementImmutability(unittest.TestCase):
 class TestMovementDeepcopy(unittest.TestCase):
     """Tests for Movement deepcopy behavior."""
 
-    static_movement: ps.movements.movement.Movement
-    basic_movement: ps.movements.movement.Movement
+    static_movement: ps.Movement
+    basic_movement: ps.Movement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1995,7 +1984,7 @@ class TestMovementDeepcopy(unittest.TestCase):
         original = self.basic_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.movements.movement.Movement)
+        self.assertIsInstance(copied, ps.Movement)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_attribute_values(self) -> None:
@@ -2084,33 +2073,31 @@ class TestMovementDeepcopy(unittest.TestCase):
         original = self.static_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.movements.movement.Movement)
+        self.assertIsInstance(copied, ps.Movement)
         self.assertIsNot(original, copied)
         self.assertTrue(copied.static)
         self.assertEqual(copied.max_period, 0.0)
 
 
 class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
-    """Tests for edge cases in the _analytically_optimize_delta_time function."""
+    """Tests for edge cases in the analytically_optimize_delta_time function."""
 
     def test_with_multiple_airplanes(self) -> None:
-        """Test _analytically_optimize_delta_time works with multiple Airplanes."""
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        """Test analytically_optimize_delta_time works with multiple Airplanes."""
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create two AirplaneMovements with different motion.
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _analytically_optimize_delta_time(
+        optimized_delta_time = analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -2120,18 +2107,16 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_with_multiple_wings_per_airplane(self) -> None:
-        """Test _analytically_optimize_delta_time works with multiple Wings per
+        """Test analytically_optimize_delta_time works with multiple Wings per
         Airplane."""
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create an Airplane with multiple Wings, with Cg_GP1_CgP1 at the origin. Use
         # simple tapered Wings.
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Multi Wing Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -2141,7 +2126,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         wing_movements = []
         for wing in base_airplane.wings:
             wing_cross_section_movements = [
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -2149,32 +2134,30 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
                 for wing_cross_section in wing.wing_cross_sections
             ]
             # Set non zero amplitude on tip for motion.
-            wing_cross_section_movements[-1] = (
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wing.wing_cross_sections[-1],
-                    periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
-                    ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                )
+            wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+                base_wing_cross_section=wing.wing_cross_sections[-1],
+                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             )
             wing_movements.append(
-                ps.movements.wing_movement.WingMovement(
+                ps.WingMovement(
                     base_wing=wing,
                     wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         initial_delta_time = 0.01
 
-        optimized_delta_time = _analytically_optimize_delta_time(
+        optimized_delta_time = analytically_optimize_delta_time(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
@@ -2184,13 +2167,11 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_coarse_temporal_resolution_warning(self) -> None:
-        """Test that _analytically_optimize_delta_time warns when steps per min period
-        is less than 20."""
+        """Test that analytically_optimize_delta_time warns when steps per min period is
+        less than 20."""
         import logging
 
-        from pterasoftware.movements.movement import (
-            _analytically_optimize_delta_time,
-        )
+        from pterasoftware._movements.movement import analytically_optimize_delta_time
 
         # Create an AirplaneMovement with very fast motion (a short period) and few
         # chordwise Panels. This should result in fewer than 20 steps per min period.
@@ -2202,7 +2183,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         wing = base_airplane.wings[0]
 
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -2210,25 +2191,23 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             for wing_cross_section in wing.wing_cross_sections
         ]
         # Add fast motion with short period to tip.
-        wing_cross_section_movements[-1] = (
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing.wing_cross_sections[-1],
-                periodLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.01, 0.0, 0.0),
-            )
+        wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+            base_wing_cross_section=wing.wing_cross_sections[-1],
+            periodLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ampLp_Wcsp_Lpp=(0.01, 0.0, 0.0),
         )
 
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[wing_movement],
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2238,7 +2217,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         with self.assertLogs(
             "pterasoftware.movements.movement", level=logging.WARNING
         ) as log_context:
-            _analytically_optimize_delta_time(
+            analytically_optimize_delta_time(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
@@ -2255,17 +2234,17 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
 
 
 class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
-    """Tests for edge cases in the _compute_wake_area_mismatch function."""
+    """Tests for edge cases in the compute_wake_area_mismatch function."""
 
     def test_with_multiple_airplanes(self) -> None:
-        """Test _compute_wake_area_mismatch works with multiple Airplanes."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        """Test compute_wake_area_mismatch works with multiple Airplanes."""
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2278,7 +2257,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
             / operating_point_movement.base_operating_point.vCg__E
         )
 
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -2288,14 +2267,14 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_with_multiple_wings_per_airplane(self) -> None:
-        """Test _compute_wake_area_mismatch works with multiple Wings per Airplane."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        """Test compute_wake_area_mismatch works with multiple Wings per Airplane."""
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         # Create a multi wing Airplane with Cg_GP1_CgP1 at origin.
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing_1, base_wing_2],
             name="Multi Wing Test Airplane",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -2305,33 +2284,31 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         wing_movements = []
         for wing in base_airplane.wings:
             wing_cross_section_movements = [
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 )
                 for wing_cross_section in wing.wing_cross_sections
             ]
-            wing_cross_section_movements[-1] = (
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wing.wing_cross_sections[-1],
-                    periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
-                    ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-                )
+            wing_cross_section_movements[-1] = ps.WingCrossSectionMovement(
+                base_wing_cross_section=wing.wing_cross_sections[-1],
+                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
             )
             wing_movements.append(
-                ps.movements.wing_movement.WingMovement(
+                ps.WingMovement(
                     base_wing=wing,
                     wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
 
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2343,7 +2320,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
             / operating_point_movement.base_operating_point.vCg__E
         )
 
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
@@ -2353,14 +2330,14 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_with_non_static_movement_multiple_steps(self) -> None:
-        """Test _compute_wake_area_mismatch computes correctly over multiple time steps
+        """Test compute_wake_area_mismatch computes correctly over multiple time steps
         for non static movement."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+        from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2368,7 +2345,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         # basic fixture has period 2.0 s. With delta_time=0.5, we get 4 steps.
         delta_time = 0.5
 
-        mismatch = _compute_wake_area_mismatch(
+        mismatch = compute_wake_area_mismatch(
             delta_time=delta_time,
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -2380,19 +2357,19 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
 
 
 class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
-    """Tests for the _compute_wake_area_mismatches_cached_non_static function."""
+    """Tests for the compute_wake_area_mismatches_cached_non_static function."""
 
     def test_returns_dict_with_all_candidate_keys(self) -> None:
         """Test that the result dict has exactly the input candidates as keys, with non-
         negative float values."""
-        from pterasoftware.movements.movement import (
-            _compute_wake_area_mismatches_cached_non_static,
+        from pterasoftware._movements.movement import (
+            compute_wake_area_mismatches_cached_non_static,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2401,7 +2378,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         lcm_period = 2.0
         candidates = [2, 3, 4]
 
-        results = _compute_wake_area_mismatches_cached_non_static(
+        results = compute_wake_area_mismatches_cached_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             lcm_period=lcm_period,
@@ -2415,20 +2392,20 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
 
     def test_does_not_mutate_original_movements(self) -> None:
         """Test that the cached helper does not mutate the original objects."""
-        from pterasoftware.movements.movement import (
-            _compute_wake_area_mismatches_cached_non_static,
+        from pterasoftware._movements.movement import (
+            compute_wake_area_mismatches_cached_non_static,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         original_base_airplane = airplane_movements[0].base_airplane
 
-        _compute_wake_area_mismatches_cached_non_static(
+        compute_wake_area_mismatches_cached_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             lcm_period=2.0,
@@ -2441,32 +2418,32 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
         )
 
     def test_agrees_with_uncached_at_exact_divisor_candidates(self) -> None:
-        """Test that the cached helper matches _compute_wake_area_mismatch at
+        """Test that the cached helper matches compute_wake_area_mismatch at
         candidates where linear interpolation reduces to a direct lookup.
 
-        With _NON_STATIC_CACHE_OVERSAMPLE = 2 and max_candidate = 4, the high
+        With NON_STATIC_CACHE_OVERSAMPLE = 2 and max_candidate = 4, the high
         resolution Movement has 8 intervals. Candidates 2 and 4 both divide 8
         exactly, so their fractional sample indices are all integers and the
         cached evaluator's interpolation weights collapse to a direct lookup.
         Under that condition the cached result must equal the uncached result
         at the same delta_time to within floating-point round-off.
         """
-        from pterasoftware.movements.movement import (
-            _compute_wake_area_mismatch,
-            _compute_wake_area_mismatches_cached_non_static,
+        from pterasoftware._movements.movement import (
+            compute_wake_area_mismatch,
+            compute_wake_area_mismatches_cached_non_static,
         )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
         lcm_period = 2.0
         candidates = [2, 4]
 
-        cached_results = _compute_wake_area_mismatches_cached_non_static(
+        cached_results = compute_wake_area_mismatches_cached_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             lcm_period=lcm_period,
@@ -2475,7 +2452,7 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
 
         for num_steps in candidates:
             delta_time = lcm_period / num_steps
-            uncached_result = _compute_wake_area_mismatch(
+            uncached_result = compute_wake_area_mismatch(
                 delta_time=delta_time,
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
@@ -2487,20 +2464,18 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
 
 
 class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
-    """Tests for the _evaluate_cached_wake_area_mismatch function."""
+    """Tests for the evaluate_cached_wake_area_mismatch function."""
 
     def test_returns_zero_for_num_steps_below_two(self) -> None:
         """Test that the evaluator returns 0.0 when num_steps is less than 2, since at
         least one step pair is needed for a comparison."""
         import numpy as np
 
-        from pterasoftware.movements.movement import (
-            _evaluate_cached_wake_area_mismatch,
-        )
+        from pterasoftware._movements.movement import evaluate_cached_wake_area_mismatch
 
         # The function returns early before touching cache_per_wing or v_inf_high_res,
         # so minimal placeholder inputs are sufficient.
-        result = _evaluate_cached_wake_area_mismatch(
+        result = evaluate_cached_wake_area_mismatch(
             cache_per_wing=[],
             v_inf_high_res=np.zeros((1, 3)),
             lcm_period=1.0,
@@ -2512,25 +2487,25 @@ class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
 
 
 class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
-    """Tests for warnings in _optimize_delta_time_non_static."""
+    """Tests for warnings in optimize_delta_time_non_static."""
 
     def test_warns_when_at_lower_bound(self) -> None:
-        """Test that _optimize_delta_time_non_static warns when optimum is at lower
+        """Test that optimize_delta_time_non_static warns when optimum is at lower
         bound.
 
         This test uses mocking to avoid running the expensive optimization. We mock
-        _compute_wake_area_mismatches_cached_non_static to return mismatches that
+        compute_wake_area_mismatches_cached_non_static to return mismatches that
         increase with num_steps, forcing the best value to be at min_num_steps (lower
         bound).
         """
         import logging
 
-        from pterasoftware.movements.movement import _optimize_delta_time_non_static
+        from pterasoftware._movements.movement import optimize_delta_time_non_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2543,10 +2518,8 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
-            airplane_movements: list[ps.movements.airplane_movement.AirplaneMovement],
-            operating_point_movement: (
-                ps.movements.operating_point_movement.OperatingPointMovement
-            ),
+            airplane_movements: list[ps.AirplaneMovement],
+            operating_point_movement: ps.OperatingPointMovement,
             lcm_period: float,
             num_steps_candidates: list[int],
         ) -> dict[int, float]:
@@ -2554,14 +2527,14 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatches_cached_non_static",
+                "pterasoftware._movements.movement.compute_wake_area_mismatches_cached_non_static",
                 side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
                 "pterasoftware.movements.movement", level=logging.WARNING
             ) as log_context,
         ):
-            _optimize_delta_time_non_static(
+            optimize_delta_time_non_static(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
@@ -2578,22 +2551,22 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         )
 
     def test_warns_when_at_upper_bound(self) -> None:
-        """Test that _optimize_delta_time_non_static warns when optimum is at upper
+        """Test that optimize_delta_time_non_static warns when optimum is at upper
         bound.
 
         This test uses mocking to avoid running the expensive optimization. We mock
-        _compute_wake_area_mismatches_cached_non_static to return mismatches that
+        compute_wake_area_mismatches_cached_non_static to return mismatches that
         decrease with num_steps, forcing the best value to be at max_num_steps (upper
         bound).
         """
         import logging
 
-        from pterasoftware.movements.movement import _optimize_delta_time_non_static
+        from pterasoftware._movements.movement import optimize_delta_time_non_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2606,10 +2579,8 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # lcm_period / num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
-            airplane_movements: list[ps.movements.airplane_movement.AirplaneMovement],
-            operating_point_movement: (
-                ps.movements.operating_point_movement.OperatingPointMovement
-            ),
+            airplane_movements: list[ps.AirplaneMovement],
+            operating_point_movement: ps.OperatingPointMovement,
             lcm_period: float,
             num_steps_candidates: list[int],
         ) -> dict[int, float]:
@@ -2617,14 +2588,14 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatches_cached_non_static",
+                "pterasoftware._movements.movement.compute_wake_area_mismatches_cached_non_static",
                 side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
                 "pterasoftware.movements.movement", level=logging.WARNING
             ) as log_context,
         ):
-            _optimize_delta_time_non_static(
+            optimize_delta_time_non_static(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
@@ -2642,7 +2613,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 
 
 class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
-    """Tests for warning logic in _optimize_delta_time_static.
+    """Tests for warning logic in optimize_delta_time_static.
 
     scipy's bounded optimizer uses xatol=0.001 tolerance, so it may not converge exactly
     to bounds. These tests verify the warning logic by mocking the optimizer to return
@@ -2650,7 +2621,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
     """
 
     def test_warning_logic_for_lower_bound(self) -> None:
-        """Test that _optimize_delta_time_static warning logic triggers correctly for
+        """Test that optimize_delta_time_static warning logic triggers correctly for
         lower bound.
 
         This test directly verifies the warning logic by patching the optimizer to
@@ -2660,12 +2631,12 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         import scipy.optimize as sp_opt
 
-        from pterasoftware.movements.movement import _optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2679,7 +2650,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatch",
+                "pterasoftware._movements.movement.compute_wake_area_mismatch",
                 return_value=0.5,  # Any value above cutoff.
             ),
             patch.object(
@@ -2691,7 +2662,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
                 "pterasoftware.movements.movement", level=logging.WARNING
             ) as log_context,
         ):
-            _optimize_delta_time_static(
+            optimize_delta_time_static(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,
@@ -2708,7 +2679,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         )
 
     def test_warning_logic_for_upper_bound(self) -> None:
-        """Test that _optimize_delta_time_static warning logic triggers correctly for
+        """Test that optimize_delta_time_static warning logic triggers correctly for
         upper bound.
 
         This test directly verifies the warning logic by patching the optimizer to
@@ -2718,12 +2689,12 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         import scipy.optimize as sp_opt
 
-        from pterasoftware.movements.movement import _optimize_delta_time_static
+        from pterasoftware._movements.movement import optimize_delta_time_static
 
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        operating_point_movement = ps.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
@@ -2737,7 +2708,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatch",
+                "pterasoftware._movements.movement.compute_wake_area_mismatch",
                 return_value=0.5,  # Any value above cutoff.
             ),
             patch.object(
@@ -2749,7 +2720,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
                 "pterasoftware.movements.movement", level=logging.WARNING
             ) as log_context,
         ):
-            _optimize_delta_time_static(
+            optimize_delta_time_static(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=initial_delta_time,

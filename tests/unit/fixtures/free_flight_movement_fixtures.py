@@ -9,9 +9,7 @@ from . import (
 )
 
 
-def make_basic_free_flight_movement_fixture() -> (
-    ps.movements.free_flight_movement.FreeFlightMovement
-):
+def make_basic_free_flight_movement_fixture() -> ps.FreeFlightMovement:
     """This method makes a fixture that is a FreeFlightMovement with general-purpose
     moderate values.
 
@@ -28,23 +26,19 @@ def make_basic_free_flight_movement_fixture() -> (
     )
 
     # Create the basic FreeFlightMovement.
-    basic_free_flight_movement_fixture = (
-        ps.movements.free_flight_movement.FreeFlightMovement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            prescribed_num_steps=2,
-            free_num_steps=3,
-        )
+    basic_free_flight_movement_fixture = ps.FreeFlightMovement(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        delta_time=0.1,
+        prescribed_num_steps=2,
+        free_num_steps=3,
     )
 
     # Return the FreeFlightMovement fixture.
     return basic_free_flight_movement_fixture
 
 
-def make_static_free_flight_movement_fixture() -> (
-    ps.movements.free_flight_movement.FreeFlightMovement
-):
+def make_static_free_flight_movement_fixture() -> ps.FreeFlightMovement:
     """This method makes a fixture that is a FreeFlightMovement with all static
     components.
 
@@ -64,22 +58,22 @@ def make_static_free_flight_movement_fixture() -> (
 
     # Create static WingCrossSectionMovements (default zero oscillation).
     wing_cross_section_movements = [
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=root_wing_cross_section,
         ),
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        ps.WingCrossSectionMovement(
             base_wing_cross_section=tip_wing_cross_section,
         ),
     ]
 
     # Create a static WingMovement (default zero oscillation).
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wing_cross_section_movements,
     )
 
     # Create a static AirplaneMovement (default zero oscillation).
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=[wing_movement],
     )
@@ -89,14 +83,12 @@ def make_static_free_flight_movement_fixture() -> (
     )
 
     # Create the static FreeFlightMovement.
-    static_free_flight_movement_fixture = (
-        ps.movements.free_flight_movement.FreeFlightMovement(
-            airplane_movements=[airplane_movement],
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            prescribed_num_steps=2,
-            free_num_steps=3,
-        )
+    static_free_flight_movement_fixture = ps.FreeFlightMovement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        delta_time=0.1,
+        prescribed_num_steps=2,
+        free_num_steps=3,
     )
 
     # Return the FreeFlightMovement fixture.
@@ -104,7 +96,7 @@ def make_static_free_flight_movement_fixture() -> (
 
 
 def make_free_flight_movement_with_multiple_airplanes_fixture() -> (
-    ps.movements.free_flight_movement.FreeFlightMovement
+    ps.FreeFlightMovement
 ):
     """This method makes a fixture that is a FreeFlightMovement with multiple
     AirplaneMovements.
@@ -122,14 +114,12 @@ def make_free_flight_movement_with_multiple_airplanes_fixture() -> (
     )
 
     # Create the FreeFlightMovement with multiple AirplaneMovements.
-    free_flight_movement_with_multiple_airplanes_fixture = (
-        ps.movements.free_flight_movement.FreeFlightMovement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            prescribed_num_steps=2,
-            free_num_steps=3,
-        )
+    free_flight_movement_with_multiple_airplanes_fixture = ps.FreeFlightMovement(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        delta_time=0.1,
+        prescribed_num_steps=2,
+        free_num_steps=3,
     )
 
     # Return the FreeFlightMovement fixture.

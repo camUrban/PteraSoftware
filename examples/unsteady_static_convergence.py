@@ -14,12 +14,12 @@ import pterasoftware as ps
 ps.set_up_logging(level="Info", handler=logging.FileHandler("example_convergence.log"))
 
 # Create an Airplane and AirplaneMovement
-example_airplane = ps.geometry.airplane.Airplane(
+example_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
@@ -28,8 +28,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="asymmetric",
                     spanwise_spacing="uniform",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -48,18 +48,18 @@ example_airplane = ps.geometry.airplane.Airplane(
     ],
     name="Example Airplane",
 )
-example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+example_airplane_movement = ps.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[
-        ps.movements.wing_movement.WingMovement(
+        ps.WingMovement(
             base_wing=example_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[0]
                 ),
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                ps.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[1]
@@ -70,15 +70,13 @@ example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 )
 
 # Create an OperatingPoint and an OperatingPointMovement.
-example_operating_point = ps.operating_point.OperatingPoint()
-example_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=example_operating_point
-    )
+example_operating_point = ps.OperatingPoint()
+example_operating_point_movement = ps.OperatingPointMovement(
+    base_operating_point=example_operating_point
 )
 
 # Create a Movement using the AirplaneMovement and OperatingPointMovement objects.
-example_movement = ps.movements.movement.Movement(
+example_movement = ps.Movement(
     airplane_movements=[example_airplane_movement],
     operating_point_movement=example_operating_point_movement,
     num_chords=10,
@@ -88,9 +86,7 @@ del example_airplane_movement
 del example_operating_point_movement
 
 # Create an UnsteadyProblem. We will pass this into the convergence function.
-example_problem = ps.problems.UnsteadyProblem(
-    movement=example_movement, only_final_results=True
-)
+example_problem = ps.UnsteadyProblem(movement=example_movement, only_final_results=True)
 
 del example_movement
 
@@ -101,7 +97,7 @@ del example_movement
 # between successive meshes, it will return the parameters it found to result in a
 # converged solution. See the analyze_unsteady_convergence function docstring for more
 # details.
-ps.convergence.analyze_unsteady_convergence(
+ps.analyze_unsteady_convergence(
     ref_problem=example_problem,
     prescribed_wake=True,
     free_wake=True,

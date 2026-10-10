@@ -1,0 +1,13 @@
+"""Contains the movement classes."""
+
+import pterasoftware._movements.aeroelastic_airplane_movement
+import pterasoftware._movements.aeroelastic_movement
+import pterasoftware._movements.aeroelastic_wing_cross_section_movement
+import pterasoftware._movements.aeroelastic_wing_movement
+import pterasoftware._movements.airplane_movement
+import pterasoftware._movements.free_flight_movement
+import pterasoftware._movements.free_flight_operating_point_movement
+import pterasoftware._movements.movement
+import pterasoftware._movements.operating_point_movement
+import pterasoftware._movements.wing_cross_section_movement
+import pterasoftware._movements.wing_movement

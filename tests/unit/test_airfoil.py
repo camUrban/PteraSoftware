@@ -170,7 +170,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         # Check that we get a new Airfoil.
-        self.assertIsInstance(modified_airfoil, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(modified_airfoil, ps.Airfoil)
         self.assertIsNot(modified_airfoil, self.naca0012_airfoil)
 
         # Check that outline is modified.
@@ -246,55 +246,51 @@ class TestAirfoil(unittest.TestCase):
         # unique points in each portion.
         invalid_outline = np.array([[-0.1, 0.0], [0.5, 0.1], [1.0, 0.0], [0.5, -0.1]])
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(
-                name="Invalid", outline_A_Lp=invalid_outline, resample=False
-            )
+            ps.Airfoil(name="Invalid", outline_A_Lp=invalid_outline, resample=False)
 
         invalid_outline2 = np.array([[0.0, 0.0], [0.5, 0.1], [1.1, 0.0], [0.5, -0.1]])
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(
-                name="Invalid2", outline_A_Lp=invalid_outline2, resample=False
-            )
+            ps.Airfoil(name="Invalid2", outline_A_Lp=invalid_outline2, resample=False)
 
     def test_naca_4_series_validation(self) -> None:
         """Test validation of NACA 4 series airfoil parameters."""
         # Test that NACA 4 series airfoils with thickness above 30% raise a ValueError.
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA0031")
+            ps.Airfoil(name="NACA0031")
 
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA2499")
+            ps.Airfoil(name="NACA2499")
 
         # Test that NACA0000 (zero thickness) raises a ValueError.
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA0000")
+            ps.Airfoil(name="NACA0000")
 
         # Test that NACA 4 series at exactly 30% thickness is valid.
-        airfoil_30_percent = ps.geometry.airfoil.Airfoil(name="NACA0030")
+        airfoil_30_percent = ps.Airfoil(name="NACA0030")
         self.assertIsNotNone(airfoil_30_percent.outline_A_Lp)
 
         # Test that Airfoils with inconsistent camber parameters (first two digits must
         # both be zero or both be non zero) raise a ValueError. Case 1: camber without
         # camber location (e.g., NACA1012, NACA9012).
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA1012")
+            ps.Airfoil(name="NACA1012")
 
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA9012")
+            ps.Airfoil(name="NACA9012")
 
         # Case 2: camber location without camber (e.g., NACA0112, NACA0912).
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA0112")
+            ps.Airfoil(name="NACA0112")
 
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA0912")
+            ps.Airfoil(name="NACA0912")
 
         # Test that symmetric airfoils (both first digits are 0) are valid.
-        airfoil_symmetric = ps.geometry.airfoil.Airfoil(name="NACA0012")
+        airfoil_symmetric = ps.Airfoil(name="NACA0012")
         self.assertIsNotNone(airfoil_symmetric.outline_A_Lp)
 
         # Test that cambered airfoils (both first digits are non zero) are valid.
-        airfoil_cambered = ps.geometry.airfoil.Airfoil(name="NACA2412")
+        airfoil_cambered = ps.Airfoil(name="NACA2412")
         self.assertIsNotNone(airfoil_cambered.outline_A_Lp)
 
         # Test that Airfoils with position of maximum camber too close to the leading
@@ -304,21 +300,21 @@ class TestAirfoil(unittest.TestCase):
         # should fail.
         # octowrap: on
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA9130")
+            ps.Airfoil(name="NACA9130")
 
         # NACA5115: camber_loc = 0.1, max_camber = 0.05, thickness = 0.15. Since 0.1 <
         # 0.05 + 0.075 = 0.125, this should fail.
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA5115")
+            ps.Airfoil(name="NACA5115")
 
         # NACA4212: camber_loc = 0.2, max_camber = 0.04, thickness = 0.12. Since 0.2 >=
         # 0.04 + 0.06 = 0.10, this should pass.
-        airfoil_valid_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA4212")
+        airfoil_valid_camber_pos = ps.Airfoil(name="NACA4212")
         self.assertIsNotNone(airfoil_valid_camber_pos.outline_A_Lp)
 
         # NACA2110: camber_loc = 0.1, max_camber = 0.02, thickness = 0.10. Since 0.1 >=
         # 0.02 + 0.05 = 0.07, this should pass.
-        airfoil_boundary_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA2110")
+        airfoil_boundary_camber_pos = ps.Airfoil(name="NACA2110")
         self.assertIsNotNone(airfoil_boundary_camber_pos.outline_A_Lp)
 
     def test_naca_airfoil_thickness(self) -> None:
@@ -384,7 +380,7 @@ class TestAirfoil(unittest.TestCase):
         rotated_outline = (rotation_matrix @ valid_outline.T).T
 
         with self.assertRaises(ValueError) as context:
-            ps.geometry.airfoil.Airfoil(
+            ps.Airfoil(
                 name="Excessively Rotated",
                 outline_A_Lp=rotated_outline,
                 resample=False,
@@ -415,7 +411,7 @@ class TestAirfoil(unittest.TestCase):
         rotated_outline = (rotation_matrix @ valid_outline.T).T
 
         # Should succeed and normalize the rotation.
-        airfoil = ps.geometry.airfoil.Airfoil(
+        airfoil = ps.Airfoil(
             name="Minor Rotation",
             outline_A_Lp=rotated_outline,
             resample=False,
@@ -451,7 +447,7 @@ class TestAirfoil(unittest.TestCase):
         # Scale by 2x and translate by (5.0, 3.0).
         scaled_translated = base_outline * 2.0 + np.array([5.0, 3.0])
 
-        airfoil = ps.geometry.airfoil.Airfoil(
+        airfoil = ps.Airfoil(
             name="Scaled and Translated",
             outline_A_Lp=scaled_translated,
             resample=False,
@@ -489,7 +485,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError) as context:
-            ps.geometry.airfoil.Airfoil(
+            ps.Airfoil(
                 name="Self Intersecting",
                 outline_A_Lp=self_intersecting_outline,
                 resample=False,
@@ -518,7 +514,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         # Should succeed - open trailing edges are allowed.
-        airfoil = ps.geometry.airfoil.Airfoil(
+        airfoil = ps.Airfoil(
             name="Open TE",
             outline_A_Lp=open_te_outline,
             resample=False,
@@ -554,7 +550,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError) as context:
-            ps.geometry.airfoil.Airfoil(
+            ps.Airfoil(
                 name="Invalid Upper",
                 outline_A_Lp=invalid_upper_outline,
                 resample=False,
@@ -582,7 +578,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError) as context:
-            ps.geometry.airfoil.Airfoil(
+            ps.Airfoil(
                 name="Invalid Lower",
                 outline_A_Lp=invalid_lower_outline,
                 resample=False,
@@ -602,7 +598,7 @@ class TestAirfoil(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError) as context:
-            ps.geometry.airfoil.Airfoil(
+            ps.Airfoil(
                 name="Too Few Points",
                 outline_A_Lp=too_few_points,
                 resample=False,
@@ -644,7 +640,7 @@ class TestAirfoil(unittest.TestCase):
                     # Build the NACA name and try to load.
                     name = f"NACA{first_digit}{second_digit}{thickness:02d}"
                     try:
-                        airfoil = ps.geometry.airfoil.Airfoil(name=name)
+                        airfoil = ps.Airfoil(name=name)
                         # Run basic sanity checks.
                         self.assertIsNotNone(airfoil.outline_A_Lp)
                         self.assertIsNotNone(airfoil.mcl_A_Lp)
@@ -663,7 +659,7 @@ class TestAirfoil(unittest.TestCase):
     def test_all_database_airfoils_load(self) -> None:
         """Test that all airfoils in the database load without errors."""
         # Get all airfoil names from the database.
-        airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
+        airfoils_dir = importlib.resources.files("pterasoftware._geometry").joinpath(
             "_airfoils"
         )
         airfoil_names = []
@@ -676,7 +672,7 @@ class TestAirfoil(unittest.TestCase):
         failed_airfoils = []
         for name in sorted(airfoil_names):
             try:
-                airfoil = ps.geometry.airfoil.Airfoil(name=name)
+                airfoil = ps.Airfoil(name=name)
                 # Run basic sanity checks.
                 self.assertIsNotNone(airfoil.outline_A_Lp)
                 self.assertIsNotNone(airfoil.mcl_A_Lp)
@@ -760,7 +756,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         original = self.naca0012_airfoil
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(copied, ps.Airfoil)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_all_attributes(self) -> None:
@@ -897,7 +893,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
             deflection=5.0, hinge_point=0.75
         )
 
-        self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(modified, ps.Airfoil)
         self.assertIn("flapped", modified.name)
 
     def test_add_control_surface_negative_deflection(self) -> None:
@@ -906,7 +902,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
             deflection=-5.0, hinge_point=0.75
         )
 
-        self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(modified, ps.Airfoil)
         self.assertIn("flapped", modified.name)
 
     def test_add_control_surface_various_hinge_points(self) -> None:
@@ -917,7 +913,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
                 modified = self.naca0012_airfoil.add_control_surface(
                     deflection=3.0, hinge_point=hinge_point
                 )
-                self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
+                self.assertIsInstance(modified, ps.Airfoil)
 
     def test_add_control_surface_invalid_deflection(self) -> None:
         """Test that invalid deflection values raise errors."""
@@ -949,7 +945,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         modified = self.naca0012_airfoil.add_control_surface(
             deflection=3, hinge_point=0.75  # This passes the deflection as an int.
         )
-        self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(modified, ps.Airfoil)
 
     def test_add_control_surface_preserves_name_base(self) -> None:
         """Test that modified Airfoil name includes original name."""
@@ -964,7 +960,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         modified = self.naca2412_airfoil.add_control_surface(
             deflection=4.0, hinge_point=0.8
         )
-        self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
+        self.assertIsInstance(modified, ps.Airfoil)
         self.assertIsNotNone(modified.outline_A_Lp)
         self.assertIsNotNone(modified.mcl_A_Lp)
 
@@ -1079,10 +1075,10 @@ class TestAirfoilEdgeCases(unittest.TestCase):
     def test_invalid_n_points_per_side_too_low(self) -> None:
         """Test that n_points_per_side below 3 raises error."""
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="naca0012", n_points_per_side=2)
+            ps.Airfoil(name="naca0012", n_points_per_side=2)
 
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="naca0012", n_points_per_side=1)
+            ps.Airfoil(name="naca0012", n_points_per_side=1)
 
     def test_thick_naca_airfoil(self) -> None:
         """Test a thick NACA airfoil (30% thickness)."""
@@ -1120,7 +1116,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
 
     def test_whitespace_in_name(self) -> None:
         """Test that leading and trailing whitespace in name is handled."""
-        airfoil = ps.geometry.airfoil.Airfoil(name="  naca0012  ")
+        airfoil = ps.Airfoil(name="  naca0012  ")
 
         self.assertIsNotNone(airfoil.outline_A_Lp)
         self.assertIsNotNone(airfoil.mcl_A_Lp)
@@ -1128,30 +1124,28 @@ class TestAirfoilEdgeCases(unittest.TestCase):
     def test_invalid_airfoil_name(self) -> None:
         """Test that invalid airfoil name raises error."""
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="not_a_valid_airfoil_name")
+            ps.Airfoil(name="not_a_valid_airfoil_name")
 
     def test_invalid_name_type(self) -> None:
         """Test that invalid name type raises error."""
         bad_name: Any = 12345
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(name=bad_name)
+            ps.Airfoil(name=bad_name)
 
     def test_invalid_resample_type(self) -> None:
         """Test that invalid resample type raises error."""
         bad_resample: Any = "yes"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(name="naca0012", resample=bad_resample)
+            ps.Airfoil(name="naca0012", resample=bad_resample)
 
     def test_invalid_n_points_per_side_type(self) -> None:
         """Test that invalid n_points_per_side type raises error."""
         bad_n_points_per_side: Any = 100.5
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(
-                name="naca0012", n_points_per_side=bad_n_points_per_side
-            )
+            ps.Airfoil(name="naca0012", n_points_per_side=bad_n_points_per_side)
 
     def test_outline_with_different_array_types(self) -> None:
         """Test that outline_A_Lp accepts different array like types."""
@@ -1167,14 +1161,14 @@ class TestAirfoilEdgeCases(unittest.TestCase):
             [0.75, -0.05],
             [1.00, 0.00],
         ]
-        airfoil_list = ps.geometry.airfoil.Airfoil(
+        airfoil_list = ps.Airfoil(
             name="list_outline", outline_A_Lp=outline_list, resample=False
         )
         self.assertIsNotNone(airfoil_list.outline_A_Lp)
 
         # Test with tuple of tuples.
         outline_tuple = tuple(tuple(row) for row in outline_list)
-        airfoil_tuple = ps.geometry.airfoil.Airfoil(
+        airfoil_tuple = ps.Airfoil(
             name="tuple_outline", outline_A_Lp=outline_tuple, resample=False
         )
         self.assertIsNotNone(airfoil_tuple.outline_A_Lp)
@@ -1191,9 +1185,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         )
         # This will fail validation due to too few points, but type should be accepted.
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(
-                name="int_outline", outline_A_Lp=outline_int, resample=False
-            )
+            ps.Airfoil(name="int_outline", outline_A_Lp=outline_int, resample=False)
 
 
 class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
@@ -1220,12 +1212,8 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
         outline_A_Lp."""
         points = self.naca2412_airfoil.outline_A_Lp.copy()
         with self.assertWarns(DeprecationWarning):
-            deprecated_airfoil = ps.geometry.airfoil.Airfoil(
-                name="deprecated", outline_A_lp=points
-            )
-        canonical_airfoil = ps.geometry.airfoil.Airfoil(
-            name="canonical", outline_A_Lp=points
-        )
+            deprecated_airfoil = ps.Airfoil(name="deprecated", outline_A_lp=points)
+        canonical_airfoil = ps.Airfoil(name="canonical", outline_A_Lp=points)
         npt.assert_array_equal(
             deprecated_airfoil.outline_A_Lp, canonical_airfoil.outline_A_Lp
         )
@@ -1235,9 +1223,7 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
         points = self.naca2412_airfoil.outline_A_Lp.copy()
         with self.assertWarns(DeprecationWarning):
             with self.assertRaises(ValueError):
-                ps.geometry.airfoil.Airfoil(
-                    name="both", outline_A_Lp=points, outline_A_lp=points
-                )
+                ps.Airfoil(name="both", outline_A_Lp=points, outline_A_lp=points)
 
 
 class TestAirfoilDeprecatedPlottingMethods(unittest.TestCase):

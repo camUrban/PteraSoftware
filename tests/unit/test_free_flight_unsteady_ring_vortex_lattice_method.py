@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 import pterasoftware as ps
-from pterasoftware.free_flight_unsteady_ring_vortex_lattice_method import (
+from pterasoftware._free_flight_unsteady_ring_vortex_lattice_method import (
     FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 )
 from tests.unit.fixtures import (
@@ -33,10 +33,10 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         )
         self.assertIsInstance(
             self.solver,
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
         )
         self.assertIsInstance(
-            self.solver.unsteady_problem, ps.problems.FreeFlightUnsteadyProblem
+            self.solver.unsteady_problem, ps.FreeFlightUnsteadyProblem
         )
 
     def test_initialization_rejects_non_free_flight_problem(self) -> None:
@@ -72,7 +72,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         )
         self.assertIsInstance(
             self.solver._free_flight_unsteady_problem,
-            ps.problems.FreeFlightUnsteadyProblem,
+            ps.FreeFlightUnsteadyProblem,
         )
 
     def test_models_body_rates_is_true(self) -> None:
@@ -276,7 +276,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.solver._substep_gamma_n_minus_1 = np.zeros(3, dtype=float)
 
         with patch.object(
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
             "_evaluate_step_aerodynamics",
         ) as mock_evaluate_step_aerodynamics:
             self.solver.restore_substep(step=0)

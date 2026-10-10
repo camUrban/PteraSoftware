@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-from pterasoftware import _core, _mujoco_model, _panel, _serialization
+from pterasoftware import _core, _mujoco_model, _panel, _problems, _serialization
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
     aeroelastic_wing_cross_section_movement_fixtures,
@@ -43,7 +43,7 @@ class TestAirfoilSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Airfoil."""
-        self.assertTrue(hasattr(ps.geometry.airfoil.Airfoil, "__slots__"))
+        self.assertTrue(hasattr(ps.Airfoil, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that Airfoil instances have no __dict__."""
@@ -98,7 +98,7 @@ class TestOperatingPointSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on OperatingPoint."""
-        self.assertTrue(hasattr(ps.operating_point.OperatingPoint, "__slots__"))
+        self.assertTrue(hasattr(ps.OperatingPoint, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that OperatingPoint instances have no __dict__."""
@@ -247,9 +247,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on WingCrossSection."""
-        self.assertTrue(
-            hasattr(ps.geometry.wing_cross_section.WingCrossSection, "__slots__")
-        )
+        self.assertTrue(hasattr(ps.WingCrossSection, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that WingCrossSection instances have no __dict__."""
@@ -263,9 +261,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
     def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
-        self.assertIsInstance(
-            self.wing_cross_section.airfoil, ps.geometry.airfoil.Airfoil
-        )
+        self.assertIsInstance(self.wing_cross_section.airfoil, ps.Airfoil)
         self.assertEqual(self.wing_cross_section.num_spanwise_panels, 8)
         self.assertEqual(self.wing_cross_section.chord, 1.5)
         npt.assert_array_equal(
@@ -453,7 +449,7 @@ class TestWingSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Wing."""
-        self.assertTrue(hasattr(ps.geometry.wing.Wing, "__slots__"))
+        self.assertTrue(hasattr(ps.Wing, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that Wing instances have no __dict__."""
@@ -492,11 +488,11 @@ class TestWingSlots(unittest.TestCase):
         zeros = np.zeros_like(ys)
         leading = np.column_stack((0.5 * ys, ys, zeros))
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
-        edge_wing = ps.geometry.wing.Wing.from_edge_points(
+        edge_wing = ps.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leading,
             trailingEdgePoints_Wn_Ler=trailing,
             num_wing_cross_sections=5,
-            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            airfoil=ps.Airfoil(name="naca0012"),
             tip_trim_fraction=0.1,
         )
         self.assertFalse(hasattr(edge_wing, "__dict__"))
@@ -590,7 +586,7 @@ class TestAirplaneSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Airplane."""
-        self.assertTrue(hasattr(ps.geometry.airplane.Airplane, "__slots__"))
+        self.assertTrue(hasattr(ps.Airplane, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that Airplane instances have no __dict__."""
@@ -709,7 +705,7 @@ class TestSteadyProblemSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on SteadyProblem."""
-        self.assertTrue(hasattr(ps.problems.SteadyProblem, "__slots__"))
+        self.assertTrue(hasattr(ps.SteadyProblem, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that SteadyProblem instances have no __dict__."""
@@ -727,7 +723,7 @@ class TestSteadyProblemSlots(unittest.TestCase):
         self.assertGreaterEqual(len(self.steady_problem.airplanes), 1)
         self.assertIsInstance(
             self.steady_problem.operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
 
         # This is a cached computed property.
@@ -773,7 +769,7 @@ class TestUnsteadyProblemSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on UnsteadyProblem."""
-        self.assertTrue(hasattr(ps.problems.UnsteadyProblem, "__slots__"))
+        self.assertTrue(hasattr(ps.UnsteadyProblem, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that UnsteadyProblem instances have no __dict__."""
@@ -790,9 +786,7 @@ class TestUnsteadyProblemSlots(unittest.TestCase):
 
     def test_property_access(self) -> None:
         """Test that UnsteadyProblem-specific properties are accessible."""
-        self.assertIsInstance(
-            self.unsteady_problem.movement, ps.movements.movement.Movement
-        )
+        self.assertIsInstance(self.unsteady_problem.movement, ps.Movement)
         self.assertIsInstance(self.unsteady_problem.steady_problems, tuple)
         self.assertEqual(
             len(self.unsteady_problem.steady_problems),
@@ -823,8 +817,8 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     Core-owned properties (only_final_results, num_steps, delta_time,
     first_averaging_step, first_results_step, and the mutable load lists) are tested at
     the CoreUnsteadyProblem level. Coupled-owned properties (movement, steady_problems,
-    get_steady_problem) are tested at the _CoupledUnsteadyProblem level. This class
-    tests FreeFlightUnsteadyProblem-specific slots.
+    get_steady_problem) are tested at the CoupledUnsteadyProblem level. This class tests
+    FreeFlightUnsteadyProblem-specific slots.
     """
 
     def setUp(self) -> None:
@@ -835,7 +829,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on FreeFlightUnsteadyProblem."""
-        self.assertTrue(hasattr(ps.problems.FreeFlightUnsteadyProblem, "__slots__"))
+        self.assertTrue(hasattr(ps.FreeFlightUnsteadyProblem, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that FreeFlightUnsteadyProblem instances have no __dict__."""
@@ -848,8 +842,8 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        CoupledUnsteadyProblem."""
+        self.assertIsInstance(self.problem, _problems.CoupledUnsteadyProblem)
 
     def test_property_access(self) -> None:
         """Test that FreeFlightUnsteadyProblem-specific properties are accessible."""
@@ -891,7 +885,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
         # These are immutable properties on the sine fixture.
         self.assertIsInstance(
             self.sine_copm.base_operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertEqual(self.sine_copm.ampVCg__E, 10.0)
         self.assertEqual(self.sine_copm.periodVCg__E, 1.0)
@@ -955,7 +949,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
         # These properties are immutable.
         self.assertIsInstance(
             self.core_wing_cross_section_movement.base_wing_cross_section,
-            ps.geometry.wing_cross_section.WingCrossSection,
+            ps.WingCrossSection,
         )
         self.assertEqual(
             self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp.shape, (3,)
@@ -1078,7 +1072,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
     def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
-        self.assertIsInstance(self.core_wing_movement.base_wing, ps.geometry.wing.Wing)
+        self.assertIsInstance(self.core_wing_movement.base_wing, ps.Wing)
         self.assertIsInstance(
             self.core_wing_movement.wing_cross_section_movements, tuple
         )
@@ -1182,7 +1176,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
         # These properties are immutable.
         self.assertIsInstance(
             self.core_airplane_movement.base_airplane,
-            ps.geometry.airplane.Airplane,
+            ps.Airplane,
         )
         self.assertIsInstance(self.core_airplane_movement.wing_movements, tuple)
         self.assertEqual(self.core_airplane_movement.ampCg_GP1_CgP1.shape, (3,))
@@ -1406,7 +1400,7 @@ class TestOperatingPointMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on OperatingPointMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.operating_point_movement.OperatingPointMovement,
+                ps.OperatingPointMovement,
                 "__slots__",
             )
         )
@@ -1444,7 +1438,7 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on WingCrossSectionMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement,
+                ps.WingCrossSectionMovement,
                 "__slots__",
             )
         )
@@ -1479,7 +1473,7 @@ class TestWingMovementSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on WingMovement."""
-        self.assertTrue(hasattr(ps.movements.wing_movement.WingMovement, "__slots__"))
+        self.assertTrue(hasattr(ps.WingMovement, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that WingMovement instances have no __dict__."""
@@ -1510,9 +1504,7 @@ class TestAirplaneMovementSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AirplaneMovement."""
-        self.assertTrue(
-            hasattr(ps.movements.airplane_movement.AirplaneMovement, "__slots__")
-        )
+        self.assertTrue(hasattr(ps.AirplaneMovement, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that AirplaneMovement instances have no __dict__."""
@@ -1542,7 +1534,7 @@ class TestMovementSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Movement."""
-        self.assertTrue(hasattr(ps.movements.movement.Movement, "__slots__"))
+        self.assertTrue(hasattr(ps.Movement, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that Movement instances have no __dict__."""
@@ -1637,7 +1629,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         SteadyHorseshoeVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
-                ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+                ps.SteadyHorseshoeVortexLatticeMethodSolver,
                 "__slots__",
             )
         )
@@ -1658,7 +1650,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         self.assertGreaterEqual(len(self.solver.airplanes), 1)
         self.assertIsInstance(
             self.solver.operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertIsInstance(self.solver.reynolds_numbers, tuple)
         self.assertIsInstance(self.solver.num_airplanes, int)
@@ -1700,7 +1692,7 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         """Test that __slots__ is defined on SteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
-                ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+                ps.SteadyRingVortexLatticeMethodSolver,
                 "__slots__",
             )
         )
@@ -1720,7 +1712,7 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         self.assertGreaterEqual(len(self.solver.airplanes), 1)
         self.assertIsInstance(
             self.solver.operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertIsInstance(self.solver.reynolds_numbers, tuple)
         self.assertIsInstance(self.solver.num_airplanes, int)
@@ -1773,7 +1765,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         """Test that __slots__ is defined on UnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
-                ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                ps.UnsteadyRingVortexLatticeMethodSolver,
                 "__slots__",
             )
         )
@@ -1792,7 +1784,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         """Test that all attributes remain accessible after adding __slots__."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
-            ps.problems.UnsteadyProblem,
+            ps.UnsteadyProblem,
         )
         self.assertIsInstance(self.solver.num_steps, int)
         self.assertIsInstance(self.solver.delta_time, float)
@@ -1803,7 +1795,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertEqual(len(self.solver.steady_problems), self.solver.num_steps)
         self.assertIsInstance(
             self.solver.current_operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertIsInstance(self.solver.panels, np.ndarray)
         self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
@@ -1861,7 +1853,7 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on AeroelasticWingCrossSectionMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement,
+                ps.AeroelasticWingCrossSectionMovement,
                 "__slots__",
             )
         )
@@ -1909,7 +1901,7 @@ class TestAeroelasticWingMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on AeroelasticWingMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+                ps.AeroelasticWingMovement,
                 "__slots__",
             )
         )
@@ -1946,7 +1938,7 @@ class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on AeroelasticAirplaneMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
+                ps.AeroelasticAirplaneMovement,
                 "__slots__",
             )
         )
@@ -1983,9 +1975,7 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticMovement."""
-        self.assertTrue(
-            hasattr(ps.movements.aeroelastic_movement.AeroelasticMovement, "__slots__")
-        )
+        self.assertTrue(hasattr(ps.AeroelasticMovement, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that AeroelasticMovement instances have no __dict__."""
@@ -2054,7 +2044,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticUnsteadyProblem."""
-        self.assertTrue(hasattr(ps.problems.AeroelasticUnsteadyProblem, "__slots__"))
+        self.assertTrue(hasattr(ps.AeroelasticUnsteadyProblem, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that AeroelasticUnsteadyProblem instances have no __dict__."""
@@ -2067,8 +2057,8 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem."""
-        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+        CoupledUnsteadyProblem."""
+        self.assertIsInstance(self.problem, _problems.CoupledUnsteadyProblem)
 
     def test_config_property_access(self) -> None:
         """Test that the immutable structural config properties are accessible."""
@@ -2081,11 +2071,11 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         """Test that the movement properties are accessible and correctly typed."""
         self.assertIsInstance(
             self.problem.movement,
-            ps.movements.aeroelastic_movement.AeroelasticMovement,
+            ps.AeroelasticMovement,
         )
         self.assertIsInstance(
             self.problem._aeroelastic_movement,
-            ps.movements.aeroelastic_movement.AeroelasticMovement,
+            ps.AeroelasticMovement,
         )
         self.assertIsInstance(self.problem.steady_problems, tuple)
 
@@ -2128,7 +2118,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
         AeroelasticUnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
-                ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+                ps.AeroelasticUnsteadyRingVortexLatticeMethodSolver,
                 "__slots__",
             )
         )
@@ -2147,7 +2137,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
         """Test that the SLEP attributes remain accessible after adding __slots__."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
-            ps.problems.AeroelasticUnsteadyProblem,
+            ps.AeroelasticUnsteadyProblem,
         )
         self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
@@ -2187,7 +2177,7 @@ class TestFreeFlightOperatingPointMovementSlots(unittest.TestCase):
         """Test that __slots__ is defined on FreeFlightOperatingPointMovement."""
         self.assertTrue(
             hasattr(
-                ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
+                ps.FreeFlightOperatingPointMovement,
                 "__slots__",
             )
         )
@@ -2222,9 +2212,7 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on FreeFlightMovement."""
-        self.assertTrue(
-            hasattr(ps.movements.free_flight_movement.FreeFlightMovement, "__slots__")
-        )
+        self.assertTrue(hasattr(ps.FreeFlightMovement, "__slots__"))
 
     def test_no_instance_dict(self) -> None:
         """Test that FreeFlightMovement instances have no __dict__."""
@@ -2294,7 +2282,7 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
         FreeFlightUnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
-                ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+                ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
                 "__slots__",
             )
         )
@@ -2313,7 +2301,7 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
         """Test that the inherited unsteady_problem remains accessible."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
-            ps.problems.FreeFlightUnsteadyProblem,
+            ps.FreeFlightUnsteadyProblem,
         )
 
     def test_deepcopy(self) -> None:

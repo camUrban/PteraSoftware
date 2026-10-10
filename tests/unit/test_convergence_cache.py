@@ -148,7 +148,7 @@ class TestSolveCache(unittest.TestCase):
             _convergence_cache.write_cache(path, cache, {})
             with open(path) as cache_file:
                 data = json.load(cache_file)
-            data["_cache_version"] = _convergence_cache._SOLVE_CACHE_VERSION + 1
+            data["_cache_version"] = _convergence_cache.SOLVE_CACHE_VERSION + 1
             with open(path, "w") as cache_file:
                 json.dump(data, cache_file)
             self.assertEqual(_convergence_cache.load_solve_cache(path), {})
@@ -199,7 +199,7 @@ class TestSolveCache(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                 "memos": {},
             }
             with open(path, "w") as cache_file:
@@ -212,7 +212,7 @@ class TestSolveCache(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                 "entries": [1, 2, 3],
             }
             with open(path, "w") as cache_file:
@@ -237,7 +237,7 @@ class TestSolveCache(unittest.TestCase):
             for entries in malformed_entries:
                 with self.subTest(entries=entries):
                     data = {
-                        "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                        "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                         "entries": entries,
                     }
                     with open(path, "w") as cache_file:
@@ -460,7 +460,7 @@ class TestMemoCacheDisk(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION + 1,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION + 1,
                 "entries": {},
                 "memos": {key: 0.0125},
             }
@@ -477,7 +477,7 @@ class TestMemoCacheDisk(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                 "entries": {},
                 "memos": {key: 0.0125},
             }
@@ -494,7 +494,7 @@ class TestMemoCacheDisk(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                 "entries": {},
             }
             with open(path, "w") as cache_file:
@@ -522,7 +522,7 @@ class TestMemoCacheDisk(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
-                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                 "entries": {},
                 "memos": [1, 2, 3],
             }
@@ -543,7 +543,7 @@ class TestMemoCacheDisk(unittest.TestCase):
             for value in ("junk", None, [0.0125]):
                 with self.subTest(value=value):
                     data = {
-                        "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                        "_cache_version": _convergence_cache.SOLVE_CACHE_VERSION,
                         "entries": {},
                         "memos": {key: value},
                     }

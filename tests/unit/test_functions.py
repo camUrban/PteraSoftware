@@ -418,8 +418,8 @@ class TestFormatDuration(unittest.TestCase):
         for duration in durations:
             unpadded = _functions.format_duration(duration)
             padded = _functions.format_duration(duration, left_pad=True)
-            self.assertEqual(padded, unpadded.rjust(_functions._DURATION_PAD_WIDTH))
-            self.assertEqual(len(padded), _functions._DURATION_PAD_WIDTH)
+            self.assertEqual(padded, unpadded.rjust(_functions.DURATION_PAD_WIDTH))
+            self.assertEqual(len(padded), _functions.DURATION_PAD_WIDTH)
 
 
 class TestSolveLoopThreadLimits(unittest.TestCase):
@@ -438,9 +438,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
     def test_below_threshold_limits_blas_to_one_thread(self) -> None:
         """Inside the below-threshold context, every controllable BLAS library should be
         limited to 1 thread."""
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             for library in threadpoolctl.threadpool_info():
                 if library["user_api"] == "blas":
                     self.assertEqual(library["num_threads"], 1)
@@ -454,9 +452,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
             if library["user_api"] != "blas"
         }
 
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             inside_num_threads = {
                 library["filepath"]: library["num_threads"]
                 for library in threadpoolctl.threadpool_info()
@@ -470,9 +466,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         thread count when it exits."""
         outside_num_threads = self._blas_num_threads()
 
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             pass
 
         self.assertEqual(self._blas_num_threads(), outside_num_threads)
@@ -482,7 +476,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         untouched."""
         outside_num_threads = self._blas_num_threads()
 
-        with _functions.solve_loop_thread_limits(_functions._SOLVE_THREAD_THRESHOLD):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD):
             inside_num_threads = self._blas_num_threads()
 
         self.assertEqual(inside_num_threads, outside_num_threads)
@@ -492,9 +486,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         count untouched."""
         outside_num_threads = self._blas_num_threads()
 
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD + 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD + 1):
             inside_num_threads = self._blas_num_threads()
 
         self.assertEqual(inside_num_threads, outside_num_threads)
@@ -511,7 +503,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
             first_entered.wait(5)
             try:
                 with _functions.solve_loop_thread_limits(
-                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                    _functions.SOLVE_THREAD_THRESHOLD - 1
                 ):
                     pass
             except RuntimeError as error:
@@ -524,9 +516,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
 
         # Hold the first solve loop open until the second one has tried to start its
         # own, so the two genuinely overlap.
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             first_entered.set()
             second_may_exit.wait(5)
 
@@ -548,7 +538,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
             first_entered.wait(5)
             try:
                 with _functions.solve_loop_thread_limits(
-                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                    _functions.SOLVE_THREAD_THRESHOLD - 1
                 ):
                     pass
             except RuntimeError:
@@ -559,9 +549,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         second_thread = threading.Thread(target=run_second, name="SecondSolveLoop")
         second_thread.start()
 
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             first_entered.set()
             second_may_exit.wait(5)
 
@@ -572,9 +560,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
     def test_sequential_solve_loops_in_different_threads_are_allowed(self) -> None:
         """The guard should reject only overlapping solve loops, so a solve loop that
         starts after another has finished should run even from a different thread."""
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             pass
 
         errors = []
@@ -582,7 +568,7 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         def run_after() -> None:
             try:
                 with _functions.solve_loop_thread_limits(
-                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                    _functions.SOLVE_THREAD_THRESHOLD - 1
                 ):
                     pass
             except RuntimeError as error:
@@ -599,63 +585,61 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         not rejected forever."""
         with self.assertRaises(ZeroDivisionError):
             with _functions.solve_loop_thread_limits(
-                _functions._SOLVE_THREAD_THRESHOLD - 1
+                _functions.SOLVE_THREAD_THRESHOLD - 1
             ):
                 raise ZeroDivisionError
 
         # The guard is free again, so this must not raise.
-        with _functions.solve_loop_thread_limits(
-            _functions._SOLVE_THREAD_THRESHOLD - 1
-        ):
+        with _functions.solve_loop_thread_limits(_functions.SOLVE_THREAD_THRESHOLD - 1):
             pass
 
     def test_forked_child_with_omp_layer_raises(self) -> None:
         """A forked child that inherited a live omp layer should be rejected."""
-        original = _functions._forked_from_omp_process
+        original = _functions.forked_from_omp_process
         try:
-            _functions._forked_from_omp_process = True
+            _functions.forked_from_omp_process = True
             with self.assertRaises(RuntimeError) as ctx:
                 with _functions.solve_loop_thread_limits(
-                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                    _functions.SOLVE_THREAD_THRESHOLD - 1
                 ):
                     pass
             self.assertIn("forked child", str(ctx.exception).lower())
             self.assertIn("spawn", str(ctx.exception).lower())
         finally:
-            _functions._forked_from_omp_process = original
+            _functions.forked_from_omp_process = original
 
     def test_flag_forked_child_sets_flag_only_for_omp(self) -> None:
         """The after_in_child hook should flag only when the layer is omp."""
-        original = _functions._forked_from_omp_process
+        original = _functions.forked_from_omp_process
         try:
-            _functions._forked_from_omp_process = False
+            _functions.forked_from_omp_process = False
             with patch.object(_functions.numba, "threading_layer", return_value="omp"):
-                _functions._flag_forked_child()
-            self.assertTrue(_functions._forked_from_omp_process)
+                _functions.flag_forked_child()
+            self.assertTrue(_functions.forked_from_omp_process)
 
-            _functions._forked_from_omp_process = False
+            _functions.forked_from_omp_process = False
             with patch.object(
                 _functions.numba, "threading_layer", return_value="workqueue"
             ):
-                _functions._flag_forked_child()
-            self.assertFalse(_functions._forked_from_omp_process)
+                _functions.flag_forked_child()
+            self.assertFalse(_functions.forked_from_omp_process)
 
-            _functions._forked_from_omp_process = False
+            _functions.forked_from_omp_process = False
             with patch.object(
                 _functions.numba, "threading_layer", side_effect=ValueError("no layer")
             ):
-                _functions._flag_forked_child()
-            self.assertFalse(_functions._forked_from_omp_process)
+                _functions.flag_forked_child()
+            self.assertFalse(_functions.forked_from_omp_process)
         finally:
-            _functions._forked_from_omp_process = original
+            _functions.forked_from_omp_process = original
 
 
 class TestProcessSolverLoads(unittest.TestCase):
     """Tests for the process_solver_loads function."""
 
     secondCg_GP1_CgP1: np.ndarray
-    first_airplane: ps.geometry.airplane.Airplane
-    second_airplane: ps.geometry.airplane.Airplane
+    first_airplane: ps.Airplane
+    second_airplane: ps.Airplane
     qInf__E: float
     T_pas_GP1_CgP1_to_W_CgP1: np.ndarray
     firstStackPanelForces_GP1: np.ndarray
@@ -675,13 +659,11 @@ class TestProcessSolverLoads(unittest.TestCase):
             cls.secondCg_GP1_CgP1
         )
         operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
-        steady_problem = ps.problems.SteadyProblem(
+        steady_problem = ps.SteadyProblem(
             airplanes=[first_airplane, second_airplane],
             operating_point=operating_point,
         )
-        solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem
-        )
+        solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem)
 
         # Populate the solver's Panels in the same order as its geometry collapsing
         # step: each Airplane's Wings' Panels, unraveled.

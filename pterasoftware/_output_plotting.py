@@ -16,19 +16,20 @@ import matplotlib.pyplot as plt
 import matplotlib.text
 import numpy as np
 
-from . import _fonts, _output_rendering, _transformations
-from . import operating_point as operating_point_mod
+from . import _fonts
+from . import _operating_point as operating_point_mod
+from . import _output_rendering, _transformations
 
 # Define the file formats the results plots can be saved in.
 VALID_FILE_FORMATS = ("png", "svg", "pdf")
 
 # Define the namespace that the elements of an SVG are qualified with.
-_SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
+SVG_NAMESPACE = "{http://www.w3.org/2000/svg}"
 
 # Define the colors and line widths used by the results plots. The text color matches
 # the one the rendered visualizations use, so the two kinds of output look related.
-_FIGURE_BACKGROUND_COLOR = "None"
-_TEXT_COLOR_NORMALIZED: tuple[float, float, float] = (
+FIGURE_BACKGROUND_COLOR = "None"
+TEXT_COLOR_NORMALIZED: tuple[float, float, float] = (
     _output_rendering.TEXT_COLOR[0] / 255,
     _output_rendering.TEXT_COLOR[1] / 255,
     _output_rendering.TEXT_COLOR[2] / 255,
@@ -37,13 +38,13 @@ _TEXT_COLOR_NORMALIZED: tuple[float, float, float] = (
 # Lines are drawn from thickest to thinnest so that all remain visible even when they
 # overlap. The widths are spread evenly about a middle width, reaching this fraction of
 # it above and below, and the legend draws every line at the middle width.
-_LINE_WIDTH = 2.5
-_LINE_WIDTH_SPREAD = 0.4
+LINE_WIDTH = 2.5
+LINE_WIDTH_SPREAD = 0.4
 
 # The fraction of the data's span added as padding on each side of the y axis. It is
 # three times matplotlib's default so the legend, which sits inside the axes at its
 # best-effort position, usually has empty space to land in.
-_Y_AXIS_MARGIN = 0.15
+Y_AXIS_MARGIN = 0.15
 
 
 def get_operating_point_velocity(
@@ -162,7 +163,7 @@ def embed_font_in_svg(svg: str) -> str:
     root = xml.etree.ElementTree.fromstring(svg)
     used_text = "".join(
         "".join(text_element.itertext())
-        for text_element in root.iter(_SVG_NAMESPACE + "text")
+        for text_element in root.iter(SVG_NAMESPACE + "text")
     )
 
     # The font file carries an FFTM table, which is FontForge's record of when the font
@@ -241,15 +242,15 @@ def plot_time_history(
         text, the axis spines, and the ticks. Pass None to use the color the rendered
         visualizations' text uses. The default is None.
     :param line_width: The middle line width, in points. The lines' widths are spread
-        evenly from _LINE_WIDTH_SPREAD times it above this width to the same amount
+        evenly from LINE_WIDTH_SPREAD times it above this width to the same amount
         below, and the legend draws every line at this width. Pass None to use
-        _LINE_WIDTH. The default is None.
+        LINE_WIDTH. The default is None.
     :return: None
     """
     if text_color is None:
-        text_color = _TEXT_COLOR_NORMALIZED
+        text_color = TEXT_COLOR_NORMALIZED
     if line_width is None:
-        line_width = _LINE_WIDTH
+        line_width = LINE_WIDTH
 
     figure, axes = plt.subplots(figsize=figure_size_in, layout="constrained")
 
@@ -268,14 +269,14 @@ def plot_time_history(
     axes.tick_params(axis="y", colors=text_color)
 
     # Format the plot's background colors.
-    figure.patch.set_facecolor(_FIGURE_BACKGROUND_COLOR)
-    axes.set_facecolor(_FIGURE_BACKGROUND_COLOR)
+    figure.patch.set_facecolor(FIGURE_BACKGROUND_COLOR)
+    axes.set_facecolor(FIGURE_BACKGROUND_COLOR)
 
     # Populate the plot. Lines are drawn from thickest to thinnest so that all remain
     # visible even when the curves overlap.
     num_series = len(series)
     widths = line_width * np.linspace(
-        1.0 + _LINE_WIDTH_SPREAD, 1.0 - _LINE_WIDTH_SPREAD, num_series
+        1.0 + LINE_WIDTH_SPREAD, 1.0 - LINE_WIDTH_SPREAD, num_series
     )
     for series_id, (this_series, label, color) in enumerate(
         zip(series, labels, colors)
@@ -291,7 +292,7 @@ def plot_time_history(
 
     # Pad the y axis beyond matplotlib's default so the legend usually has empty space
     # to land in.
-    axes.margins(y=_Y_AXIS_MARGIN)
+    axes.margins(y=Y_AXIS_MARGIN)
 
     # Name the plot's axis labels, title, and subtitle.
     axes.set_xlabel("Time (s)", color=text_color)
@@ -303,8 +304,8 @@ def plot_time_history(
 
     # Format the plot's legend.
     axes.legend(
-        facecolor=_FIGURE_BACKGROUND_COLOR,
-        edgecolor=_FIGURE_BACKGROUND_COLOR,
+        facecolor=FIGURE_BACKGROUND_COLOR,
+        edgecolor=FIGURE_BACKGROUND_COLOR,
         labelcolor=text_color,
         handler_map={
             plt.Line2D: matplotlib.legend_handler.HandlerLine2D(

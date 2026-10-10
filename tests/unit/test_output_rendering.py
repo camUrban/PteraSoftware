@@ -79,12 +79,8 @@ class TestGetWindowScale(unittest.TestCase):
 class TestResolvePlayback(unittest.TestCase):
     """This class contains methods for testing _output_rendering.resolve_playback."""
 
-    playback_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    long_step_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    playback_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    long_step_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -137,7 +133,7 @@ class TestResolvePlayback(unittest.TestCase):
         playback = _output_rendering.resolve_playback(self.playback_solver, 0.25, True)
         self.assertEqual(
             playback.overlay_texts[0],
-            ("Speed: 25.00%", _output_rendering._TEXT_SPEED_POSITION),
+            ("Speed: 25.00%", _output_rendering.TEXT_SPEED_POSITION),
         )
 
     def test_only_the_speed_overlay_appears_when_no_frames_are_dropped(self) -> None:
@@ -150,7 +146,7 @@ class TestResolvePlayback(unittest.TestCase):
         playback = _output_rendering.resolve_playback(self.playback_solver, 1.0, True)
         self.assertEqual(
             playback.overlay_texts[1],
-            ("Frames: Every 1 of 2", _output_rendering._TEXT_DROPPED_FRAMES_POSITION),
+            ("Frames: Every 1 of 2", _output_rendering.TEXT_DROPPED_FRAMES_POSITION),
         )
 
     def test_rejects_a_speed_that_saves_less_than_one_frame_per_second(self) -> None:
@@ -174,12 +170,8 @@ class TestResolvePlayback(unittest.TestCase):
 class TestResolvePlaybackAliasingWarning(unittest.TestCase):
     """This class contains methods for testing resolve_playback's aliasing warning."""
 
-    fast_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    static_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    fast_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    static_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -293,7 +285,7 @@ class TestAnimationWriter(unittest.TestCase):
             1, width=32, height=24
         )[0]
         trailing_frames = output_rendering_fixtures.make_animation_frames_fixture(
-            _output_rendering._ANIMATION_WRITER_QUEUE_DEPTH + 2
+            _output_rendering.ANIMATION_WRITER_QUEUE_DEPTH + 2
         )
 
         writer = _output_rendering.AnimationWriter(self.animation_path, 25.0, 75.0)
@@ -863,7 +855,7 @@ class TestGetImageSurfaceMeshAndTexture(unittest.TestCase):
         self.assertIsNotNone(result)
         assert result is not None
         mesh, _ = result
-        expected_size = float(_output_rendering._IMAGE_SURFACE_SCALE * np.sqrt(56.0))
+        expected_size = float(_output_rendering.IMAGE_SURFACE_SCALE * np.sqrt(56.0))
         self.assertAlmostEqual(
             mesh.bounds.x_max - mesh.bounds.x_min, expected_size, places=4
         )
@@ -880,12 +872,12 @@ class TestGetImageSurfaceMeshAndTexture(unittest.TestCase):
         assert result is not None
         _, texture = result
         image = texture.to_array()
-        checker_size = _output_rendering._IMAGE_SURFACE_CHECKER_SIZE
+        checker_size = _output_rendering.IMAGE_SURFACE_CHECKER_SIZE
         self.assertEqual(image.shape, (checker_size, checker_size, 3))
-        npt.assert_array_equal(image[0, 0], _output_rendering._IMAGE_SURFACE_COLOR_A)
-        npt.assert_array_equal(image[0, 1], _output_rendering._IMAGE_SURFACE_COLOR_B)
-        npt.assert_array_equal(image[1, 0], _output_rendering._IMAGE_SURFACE_COLOR_B)
-        npt.assert_array_equal(image[1, 1], _output_rendering._IMAGE_SURFACE_COLOR_A)
+        npt.assert_array_equal(image[0, 0], _output_rendering.IMAGE_SURFACE_COLOR_A)
+        npt.assert_array_equal(image[0, 1], _output_rendering.IMAGE_SURFACE_COLOR_B)
+        npt.assert_array_equal(image[1, 0], _output_rendering.IMAGE_SURFACE_COLOR_B)
+        npt.assert_array_equal(image[1, 1], _output_rendering.IMAGE_SURFACE_COLOR_A)
 
 
 class TestTransformMesh(unittest.TestCase):
@@ -1153,7 +1145,7 @@ class TestChooseColorMap(unittest.TestCase):
         self.assertAlmostEqual(c_min, -c_max, places=12)
         self.assertAlmostEqual(
             c_max,
-            _output_rendering._COLOR_MAP_NUM_SIG * float(np.std(scalars)),
+            _output_rendering.COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             places=12,
         )
 
@@ -1181,7 +1173,7 @@ class TestChooseColorMap(unittest.TestCase):
         self.assertAlmostEqual(
             c_max,
             float(np.mean(scalars))
-            + _output_rendering._COLOR_MAP_NUM_SIG * float(np.std(scalars)),
+            + _output_rendering.COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             places=12,
         )
         self.assertEqual(c_min, float(np.min(scalars)))
@@ -1191,12 +1183,8 @@ class TestGetAnimationImageSurface(unittest.TestCase):
     """This class contains methods for testing
     _output_rendering.get_animation_image_surface."""
 
-    image_surface_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    plain_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    image_surface_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    plain_solver: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1493,12 +1481,12 @@ class TestAddVortices(unittest.TestCase):
         bound_mesh, bound_actor = line_actors[0]
         wake_mesh, wake_actor = line_actors[1]
         self.assertEqual(bound_mesh.n_cells, 2)
-        self.assertEqual(bound_actor.prop.color, _output_rendering._VORTEX_COLOR)
+        self.assertEqual(bound_actor.prop.color, _output_rendering.VORTEX_COLOR)
         self.assertEqual(
-            bound_actor.prop.line_width, _output_rendering._VORTEX_LINE_WIDTH
+            bound_actor.prop.line_width, _output_rendering.VORTEX_LINE_WIDTH
         )
         self.assertEqual(wake_mesh.n_cells, 1)
-        self.assertEqual(wake_actor.prop.color, _output_rendering._VORTEX_WAKE_COLOR)
+        self.assertEqual(wake_actor.prop.color, _output_rendering.VORTEX_WAKE_COLOR)
 
     def test_ends_trailing_legs_a_fixed_overhang_past_the_bounding_box(self) -> None:
         """Test that an exact horseshoe vortex's solid polyline runs from its right
@@ -1627,7 +1615,7 @@ class TestAddVortices(unittest.TestCase):
             horseshoe_vortices_are_wake=False,
         )
         for _, actor in _get_line_actors(self.plotter):
-            self.assertEqual(actor.prop.color, _output_rendering._VORTEX_COLOR)
+            self.assertEqual(actor.prop.color, _output_rendering.VORTEX_COLOR)
 
     def test_draws_wake_horseshoe_vortices_in_the_wake_vortex_color(self) -> None:
         """Test that wake horseshoe vortices' solid polylines and dashes are drawn in
@@ -1648,12 +1636,12 @@ class TestAddVortices(unittest.TestCase):
         )
         line_actors = _get_line_actors(self.plotter)
         self.assertEqual(len(line_actors), 3)
-        self.assertEqual(line_actors[0][1].prop.color, _output_rendering._VORTEX_COLOR)
+        self.assertEqual(line_actors[0][1].prop.color, _output_rendering.VORTEX_COLOR)
         self.assertEqual(
-            line_actors[1][1].prop.color, _output_rendering._VORTEX_WAKE_COLOR
+            line_actors[1][1].prop.color, _output_rendering.VORTEX_WAKE_COLOR
         )
         self.assertEqual(
-            line_actors[2][1].prop.color, _output_rendering._VORTEX_WAKE_COLOR
+            line_actors[2][1].prop.color, _output_rendering.VORTEX_WAKE_COLOR
         )
 
     def test_simplified_vortices_use_the_simplified_colors(self) -> None:
@@ -1669,11 +1657,11 @@ class TestAddVortices(unittest.TestCase):
         )
         line_actors = _get_line_actors(self.plotter)
         self.assertEqual(
-            line_actors[0][1].prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
+            line_actors[0][1].prop.color, _output_rendering.VORTEX_SIMPLIFIED_COLOR
         )
         self.assertEqual(
             line_actors[1][1].prop.color,
-            _output_rendering._VORTEX_WAKE_SIMPLIFIED_COLOR,
+            _output_rendering.VORTEX_WAKE_SIMPLIFIED_COLOR,
         )
 
     def test_shrinks_and_rounds_a_simplified_ring_vortex(self) -> None:
@@ -1691,7 +1679,7 @@ class TestAddVortices(unittest.TestCase):
             simplify=True,
         )
         solid_mesh, _ = _get_line_actors(self.plotter)[0]
-        num_corner_points = _output_rendering._VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+        num_corner_points = _output_rendering.VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
         self.assertEqual(solid_mesh.n_points, 4 * num_corner_points + 1)
         npt.assert_allclose(solid_mesh.points[0], solid_mesh.points[-1], atol=1e-12)
         npt.assert_allclose(
@@ -1729,11 +1717,11 @@ class TestAddVortices(unittest.TestCase):
         arc_mesh, arc_actor = line_actors[1]
         self.assertEqual(arc_mesh.n_cells, 4)
         self.assertEqual(
-            arc_mesh.n_points, 4 * _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+            arc_mesh.n_points, 4 * _output_rendering.VORTEX_VORTICITY_ARROW_NUM_POINTS
         )
-        self.assertEqual(arc_actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH)
+        self.assertEqual(arc_actor.prop.line_width, _output_rendering.AXES_LINE_WIDTH)
         self.assertEqual(
-            arc_actor.prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
+            arc_actor.prop.color, _output_rendering.VORTEX_SIMPLIFIED_COLOR
         )
         self.assertEqual(len(self.plotter.actors), 2 + 2)
 
@@ -1751,10 +1739,10 @@ class TestAddVortices(unittest.TestCase):
             simplify=True,
         )
         arc_mesh, _ = _get_line_actors(self.plotter)[1]
-        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        num_arc_points = _output_rendering.VORTEX_VORTICITY_ARROW_NUM_POINTS
         firstArcPoints_D_Do = arc_mesh.points[:num_arc_points]
         legMidpoint_D_Do = np.array([0.05, 0.5, 0.0], dtype=float)
-        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        arrow_radius = _output_rendering.VORTEX_VORTICITY_ARROW_RADIUS * 0.9
         npt.assert_allclose(
             np.linalg.norm(firstArcPoints_D_Do - legMidpoint_D_Do, axis=1),
             arrow_radius,
@@ -1778,11 +1766,11 @@ class TestAddVortices(unittest.TestCase):
             simplify=True,
         )
         arc_mesh, _ = _get_line_actors(self.plotter)[1]
-        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        num_arc_points = _output_rendering.VORTEX_VORTICITY_ARROW_NUM_POINTS
         firstArcPoints_D_Do = arc_mesh.points[:num_arc_points]
         legMidpoint_D_Do = np.array([0.05, 0.5, 0.0], dtype=float)
-        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
-        shaft_end_angle = math.pi - _output_rendering._AXES_TIP_LENGTH * math.pi
+        arrow_radius = _output_rendering.VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        shaft_end_angle = math.pi - _output_rendering.AXES_TIP_LENGTH * math.pi
         npt.assert_allclose(
             firstArcPoints_D_Do[0],
             legMidpoint_D_Do + arrow_radius * np.array([0.0, 0.0, 1.0]),
@@ -1817,7 +1805,7 @@ class TestAddVortices(unittest.TestCase):
             simplify=True,
         )
         solid_mesh, _ = _get_line_actors(self.plotter)[0]
-        num_corner_points = _output_rendering._VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+        num_corner_points = _output_rendering.VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
         self.assertEqual(solid_mesh.n_points, 2 * num_corner_points + 2)
         npt.assert_allclose(solid_mesh.points[0], [0.5, 0.95, 0.0], atol=1e-6)
         npt.assert_allclose(solid_mesh.points[-1], [0.5, 0.05, 0.0], atol=1e-6)
@@ -1844,9 +1832,9 @@ class TestAddVortices(unittest.TestCase):
         self.assertEqual(len(line_actors), 3)
         arc_mesh, _ = line_actors[2]
         self.assertEqual(arc_mesh.n_cells, 3)
-        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        num_arc_points = _output_rendering.VORTEX_VORTICITY_ARROW_NUM_POINTS
         finiteLegArcPoints_D_Do = arc_mesh.points[:num_arc_points]
-        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        arrow_radius = _output_rendering.VORTEX_VORTICITY_ARROW_RADIUS * 0.9
         npt.assert_allclose(
             finiteLegArcPoints_D_Do[0], [0.0, 0.5, arrow_radius], atol=1e-6
         )
@@ -2076,7 +2064,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         )
         self.assertEqual(
             self.plotter.background_color,
-            pv.Color(_output_rendering._DIAGRAM_BACKGROUND_COLOR),
+            pv.Color(_output_rendering.DIAGRAM_BACKGROUND_COLOR),
         )
 
     def test_draws_one_colored_shaft_per_basis_direction(self) -> None:
@@ -2101,7 +2089,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         line_actors = _get_line_actors(self.plotter)
         self.assertEqual(len(line_actors), 3)
         Cg_D_Do = T_pas_G_Cg_to_D_Do[:3, 3]
-        shaft_length = (1.0 - _output_rendering._AXES_TIP_LENGTH) * axes_scale
+        shaft_length = (1.0 - _output_rendering.AXES_TIP_LENGTH) * axes_scale
         for component_id, (mesh, actor) in enumerate(line_actors):
             with self.subTest(component_id=component_id):
                 npt.assert_allclose(
@@ -2114,10 +2102,10 @@ class TestAddAxesAndPoints(unittest.TestCase):
                 )
                 self.assertEqual(
                     actor.prop.color,
-                    pv.Color(_output_rendering._AXES_COLORS[component_id]),
+                    pv.Color(_output_rendering.AXES_COLORS[component_id]),
                 )
                 self.assertEqual(
-                    actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH
+                    actor.prop.line_width, _output_rendering.AXES_LINE_WIDTH
                 )
 
     def test_draws_only_the_x_and_y_arrows_of_two_dimensional_axes(self) -> None:
@@ -2203,7 +2191,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
             axes_scale=axes_scale,
         )
         labels = _get_labels(self.plotter)
-        label_distance = (1.0 + _output_rendering._AXES_ARROW_LABEL_OFFSET) * axes_scale
+        label_distance = (1.0 + _output_rendering.AXES_ARROW_LABEL_OFFSET) * axes_scale
         for component_id, component_letter in enumerate(["X", "Y", "Z"]):
             with self.subTest(component_letter=component_letter):
                 npt.assert_allclose(
@@ -2236,9 +2224,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         npt.assert_allclose(
             _get_labels(self.plotter)["point label Cg"].position,
             T_pas_G_Cg_to_D_Do[:3, 3]
-            + _output_rendering._AXES_POINT_LABEL_OFFSET
-            * axes_scale
-            * labelDirection_D,
+            + _output_rendering.AXES_POINT_LABEL_OFFSET * axes_scale * labelDirection_D,
             atol=1e-12,
         )
 
@@ -2264,7 +2250,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
             atol=1e-6,
         )
         self.assertEqual(dot_actor.prop.color, pv.Color("black"))
-        self.assertEqual(dot_actor.prop.point_size, _output_rendering._AXES_POINT_SIZE)
+        self.assertEqual(dot_actor.prop.point_size, _output_rendering.AXES_POINT_SIZE)
         self.assertTrue(dot_actor.prop.render_points_as_spheres)
 
     def test_marks_each_extra_point_with_a_cross(self) -> None:
@@ -2292,7 +2278,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         line_actors = _get_line_actors(self.plotter)
         self.assertEqual(len(line_actors), 1)
         cross_mesh, cross_actor = line_actors[0]
-        cross_half_length = 0.5 * _output_rendering._AXES_CROSS_SIZE * axes_scale
+        cross_half_length = 0.5 * _output_rendering.AXES_CROSS_SIZE * axes_scale
         npt.assert_allclose(
             cross_mesh.points,
             [
@@ -2305,9 +2291,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         )
         npt.assert_array_equal(cross_mesh.lines, [2, 0, 1, 2, 2, 3])
         self.assertEqual(cross_actor.prop.color, pv.Color("black"))
-        self.assertEqual(
-            cross_actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH
-        )
+        self.assertEqual(cross_actor.prop.line_width, _output_rendering.AXES_LINE_WIDTH)
         self.assertEqual(len(_get_dot_actors(self.plotter)), 0)
         self.assertEqual(len(_get_tip_fill_actors(self.plotter)), 0)
 
@@ -2341,9 +2325,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         npt.assert_allclose(
             _get_labels(self.plotter)["point label Lp"].position,
             Lp_D_Do
-            + _output_rendering._AXES_CROSS_LABEL_OFFSET
-            * axes_scale
-            * labelDirection_D,
+            + _output_rendering.AXES_CROSS_LABEL_OFFSET * axes_scale * labelDirection_D,
             atol=1e-12,
         )
 
@@ -2380,7 +2362,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         npt.assert_allclose(
             labels["point label Cg/Lp"].position,
             T_pas_G_Cg_to_D_Do[:3, 3]
-            + _output_rendering._AXES_POINT_LABEL_OFFSET * labelDirection_D,
+            + _output_rendering.AXES_POINT_LABEL_OFFSET * labelDirection_D,
             atol=1e-12,
         )
 
@@ -2410,7 +2392,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         line_actors = _get_line_actors(self.plotter)
         self.assertEqual(len(line_actors), 1)
         cross_mesh, _ = line_actors[0]
-        cross_half_length = 0.5 * _output_rendering._AXES_CROSS_SIZE * axes_scale
+        cross_half_length = 0.5 * _output_rendering.AXES_CROSS_SIZE * axes_scale
         npt.assert_allclose(
             cross_mesh.points,
             [
@@ -2472,7 +2454,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         for name, label in labels.items():
             with self.subTest(name=name):
                 self.assertEqual(label.input, name.split(" ")[-1])
-                self.assertEqual(label.size, _output_rendering._AXES_LABEL_FONT_SIZE)
+                self.assertEqual(label.size, _output_rendering.AXES_LABEL_FONT_SIZE)
                 self.assertEqual(label.prop.color, pv.Color("black"))
                 self.assertEqual(
                     label.prop.background_color, self.plotter.background_color
@@ -2508,7 +2490,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         for name, label in labels.items():
             with self.subTest(name=name):
                 self.assertEqual(
-                    label.size, _output_rendering._AXES_MATH_LABEL_FONT_SIZE
+                    label.size, _output_rendering.AXES_MATH_LABEL_FONT_SIZE
                 )
                 self.assertEqual(label.prop.font_family, "times")
 
@@ -2555,7 +2537,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         )
         tip_fill_actors = _get_tip_fill_actors(self.plotter)
         self.assertEqual(len(tip_fill_actors), 3)
-        tip_length = _output_rendering._AXES_TIP_LENGTH * axes_scale
+        tip_length = _output_rendering.AXES_TIP_LENGTH * axes_scale
         for component_id, (tip_mesh, _) in enumerate(tip_fill_actors):
             with self.subTest(component_id=component_id):
                 cones = [
@@ -2565,8 +2547,8 @@ class TestAddAxesAndPoints(unittest.TestCase):
                         * transformation[:3, component_id],
                         direction=transformation[:3, component_id],
                         height=tip_length,
-                        radius=_output_rendering._AXES_TIP_RADIUS * axes_scale,
-                        resolution=_output_rendering._AXES_TIP_RESOLUTION,
+                        radius=_output_rendering.AXES_TIP_RADIUS * axes_scale,
+                        resolution=_output_rendering.AXES_TIP_RESOLUTION,
                     )
                     for transformation in transformations
                 ]
@@ -2603,10 +2585,10 @@ class TestAddAxesAndPoints(unittest.TestCase):
                     offset_factor, offset_units
                 )
                 self.assertEqual(
-                    offset_factor, _output_rendering._AXES_TIP_FILL_OFFSET_FACTOR
+                    offset_factor, _output_rendering.AXES_TIP_FILL_OFFSET_FACTOR
                 )
                 self.assertEqual(
-                    offset_units, _output_rendering._AXES_TIP_FILL_OFFSET_UNITS
+                    offset_units, _output_rendering.AXES_TIP_FILL_OFFSET_UNITS
                 )
 
     def test_turns_on_polygon_offset_only_while_rendering(self) -> None:
@@ -2776,7 +2758,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.plotter.screenshot(return_img=True)
         npt.assert_allclose(
             label.position,
-            [1.0 + _output_rendering._AXES_ARROW_LABEL_OFFSET, 0.0, 0.0],
+            [1.0 + _output_rendering.AXES_ARROW_LABEL_OFFSET, 0.0, 0.0],
             atol=1e-12,
         )
 
@@ -2818,7 +2800,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         )
         self.assertEqual(label.prop.GetFontFile(), str(_fonts.MONO_FONT_PATH))
         caret_label = _get_labels(self.plotter)["label caret"]
-        self.assertEqual(caret_label.input, _output_rendering._AXES_LABEL_CARET_TEXT)
+        self.assertEqual(caret_label.input, _output_rendering.AXES_LABEL_CARET_TEXT)
         self.assertTrue(caret_label.GetVisibility())
         assert self.plotter.iren is not None
         self.assertEqual(len(self.plotter.iren._key_press_event_callbacks), 0)
@@ -2857,7 +2839,7 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.plotter.camera_position = "xy"
         self.plotter.screenshot(return_img=True)
         label = _get_labels(self.plotter)["arrow label GX"]
-        press_times = [0.0, 2.0 * _output_rendering._AXES_LABEL_DOUBLE_CLICK_TIME]
+        press_times = [0.0, 2.0 * _output_rendering.AXES_LABEL_DOUBLE_CLICK_TIME]
         with patch.object(_output_rendering.time, "monotonic", side_effect=press_times):
             _double_click(self.plotter, _get_label_center_display(self.plotter, label))
         _type_text(self.plotter, "a")

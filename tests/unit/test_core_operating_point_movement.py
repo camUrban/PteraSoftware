@@ -8,6 +8,7 @@ import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     core_operating_point_movement_fixtures,
     operating_point_fixtures,
@@ -17,14 +18,14 @@ from tests.unit.fixtures import (
 class TestCoreOperatingPointMovement(unittest.TestCase):
     """This is a class with functions to test CoreOperatingPointMovements."""
 
-    static_core_op_movement: ps._core.CoreOperatingPointMovement
-    sine_spacing_core_op_movement: ps._core.CoreOperatingPointMovement
-    uniform_spacing_core_op_movement: ps._core.CoreOperatingPointMovement
-    phase_offset_core_op_movement: ps._core.CoreOperatingPointMovement
-    custom_spacing_core_op_movement: ps._core.CoreOperatingPointMovement
-    basic_core_op_movement: ps._core.CoreOperatingPointMovement
-    large_amplitude_core_op_movement: ps._core.CoreOperatingPointMovement
-    long_period_core_op_movement: ps._core.CoreOperatingPointMovement
+    static_core_op_movement: _core.CoreOperatingPointMovement
+    sine_spacing_core_op_movement: _core.CoreOperatingPointMovement
+    uniform_spacing_core_op_movement: _core.CoreOperatingPointMovement
+    phase_offset_core_op_movement: _core.CoreOperatingPointMovement
+    custom_spacing_core_op_movement: _core.CoreOperatingPointMovement
+    basic_core_op_movement: _core.CoreOperatingPointMovement
+    large_amplitude_core_op_movement: _core.CoreOperatingPointMovement
+    long_period_core_op_movement: _core.CoreOperatingPointMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -60,11 +61,11 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         core_op_movement = self.basic_core_op_movement
         self.assertIsInstance(
             core_op_movement,
-            ps._core.CoreOperatingPointMovement,
+            _core.CoreOperatingPointMovement,
         )
         self.assertIsInstance(
             core_op_movement.base_operating_point,
-            ps.operating_point.OperatingPoint,
+            ps.OperatingPoint,
         )
         self.assertEqual(core_op_movement.ampVCg__E, 5.0)
         self.assertEqual(core_op_movement.periodVCg__E, 2.0)
@@ -76,7 +77,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_operating_point
         )
 
@@ -90,20 +91,20 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         # Test with invalid type.
         bad_base_operating_point: Any = "not an operating point"
         with self.assertRaises(TypeError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=bad_base_operating_point
             )
 
         # Test with None.
         none_base_operating_point: Any = None
         with self.assertRaises(TypeError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=none_base_operating_point
             )
 
         # Test with valid OperatingPoint works.
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op
         )
         self.assertEqual(core_op_movement.base_operating_point, base_op)
@@ -116,14 +117,14 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         valid_amps = [0.0, 1.0, 5.0, 100.0]
         for amp in valid_amps:
             with self.subTest(amp=amp):
-                core_op_movement = ps._core.CoreOperatingPointMovement(
+                core_op_movement = _core.CoreOperatingPointMovement(
                     base_operating_point=base_op, ampVCg__E=amp
                 )
                 self.assertEqual(core_op_movement.ampVCg__E, amp)
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op, ampVCg__E=-1.0
             )
 
@@ -131,7 +132,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         bad_amp: Any = "invalid"
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op, ampVCg__E=bad_amp
             )
 
@@ -144,7 +145,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         for period in valid_periods:
             with self.subTest(period=period):
                 amp = 1.0 if period > 0 else 0.0
-                core_op_movement = ps._core.CoreOperatingPointMovement(
+                core_op_movement = _core.CoreOperatingPointMovement(
                     base_operating_point=base_op,
                     ampVCg__E=amp,
                     periodVCg__E=period,
@@ -153,7 +154,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=-1.0,
@@ -167,14 +168,14 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         valid_spacings = ["sine", "uniform"]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                core_op_movement = ps._core.CoreOperatingPointMovement(
+                core_op_movement = _core.CoreOperatingPointMovement(
                     base_operating_point=base_op, spacingVCg__E=spacing
                 )
                 self.assertEqual(core_op_movement.spacingVCg__E, spacing)
 
         # Test invalid string raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op, spacingVCg__E="invalid"
             )
 
@@ -182,7 +183,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         def custom_func(x: float) -> float:
             return float(np.sin(x))
 
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op, spacingVCg__E=custom_func
         )
         self.assertTrue(callable(core_op_movement.spacingVCg__E))
@@ -190,7 +191,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         # Test non-callable, non-string raises error.
         bad_spacing: Any = 123
         with self.assertRaises(TypeError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op, spacingVCg__E=bad_spacing
             )
 
@@ -204,7 +205,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             with self.subTest(phase=phase):
                 amp = 1.0 if phase != 0 else 0.0
                 period = 1.0 if phase != 0 else 0.0
-                core_op_movement = ps._core.CoreOperatingPointMovement(
+                core_op_movement = _core.CoreOperatingPointMovement(
                     base_operating_point=base_op,
                     ampVCg__E=amp,
                     periodVCg__E=period,
@@ -214,7 +215,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Test phase > 180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -223,7 +224,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Test phase <= -180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -235,7 +236,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
         # Test amp=0 with period=0 works.
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=0.0,
             periodVCg__E=0.0,
@@ -244,7 +245,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Test amp=0 with period!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=0.0,
                 periodVCg__E=1.0,
@@ -255,7 +256,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
         # Test amp=0 with phase=0 works.
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=0.0,
             periodVCg__E=0.0,
@@ -265,7 +266,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Test amp=0 with phase!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreOperatingPointMovement(
+            _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=0.0,
                 periodVCg__E=0.0,
@@ -387,7 +388,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Verify all elements are OperatingPoints.
         for op in operating_points:
-            self.assertIsInstance(op, ps.operating_point.OperatingPoint)
+            self.assertIsInstance(op, ps.OperatingPoint)
 
     def test_generate_operating_points_preserves_non_changing_attributes(self) -> None:
         """Test that generate_operating_points preserves non-changing attributes."""
@@ -478,7 +479,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Should raise error during generation.
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -495,7 +496,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return float(np.sin(x) + 0.1)
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -512,7 +513,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return float(np.sin(x) + 0.5)
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -529,7 +530,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return float(2.0 * np.sin(x))
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -546,7 +547,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return float(np.tanh(x))
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -563,7 +564,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return float(np.where(x < np.pi, np.sin(x), np.nan))
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -580,7 +581,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             return np.sin(x)[: len(x) // 2]
 
         with self.assertRaises(ValueError):
-            core_op_movement = ps._core.CoreOperatingPointMovement(
+            core_op_movement = _core.CoreOperatingPointMovement(
                 base_operating_point=base_op,
                 ampVCg__E=1.0,
                 periodVCg__E=1.0,
@@ -596,7 +597,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Create CoreOperatingPointMovement with amplitude that will drive vCg__E
         # negative.
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=15.0,
             periodVCg__E=1.0,
@@ -632,7 +633,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         """Test that integer parameters are converted to float internally."""
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
-        core_op_movement = ps._core.CoreOperatingPointMovement(
+        core_op_movement = _core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=5,
             periodVCg__E=2,

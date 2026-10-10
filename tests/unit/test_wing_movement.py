@@ -4,6 +4,7 @@ import unittest
 from typing import Any
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     core_wing_cross_section_movement_fixtures,
     geometry_fixtures,
@@ -19,8 +20,8 @@ class TestWingMovement(unittest.TestCase):
         """Test that WingMovement is a subclass of CoreWingMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.wing_movement.WingMovement,
-                ps._core.CoreWingMovement,
+                ps.WingMovement,
+                _core.CoreWingMovement,
             )
         )
 
@@ -35,13 +36,13 @@ class TestWingMovement(unittest.TestCase):
                 base_wing.wing_cross_sections[1]
             ),
         ]
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
         self.assertIsInstance(
             wing_movement,
-            ps.movements.wing_movement.WingMovement,
+            ps.WingMovement,
         )
 
     def test_rejects_core_wing_cross_section_movement_children(self) -> None:
@@ -52,7 +53,7 @@ class TestWingMovement(unittest.TestCase):
             core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
         ]
         with self.assertRaises(TypeError):
-            ps.movements.wing_movement.WingMovement(
+            ps.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
@@ -66,5 +67,5 @@ class TestWingMovement(unittest.TestCase):
         for wing in wings:
             self.assertIsInstance(
                 wing,
-                ps.geometry.wing.Wing,
+                ps.Wing,
             )

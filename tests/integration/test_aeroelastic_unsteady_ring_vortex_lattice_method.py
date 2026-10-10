@@ -55,9 +55,7 @@ def _make_aeroelastic_solver(
     wing_density: float,
     spring_constant_rad: float = 20.0,
     damping_constant_rad: float = 1.0,
-) -> (
-    ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver
-):
+) -> ps.AeroelasticUnsteadyRingVortexLatticeMethodSolver:
     """Create a minimal AeroelasticUnsteadyRingVortexLatticeMethodSolver.
 
     Uses a symmetric two-strip wing with sinusoidal flapping to produce measurable
@@ -77,12 +75,12 @@ def _make_aeroelastic_solver(
         is 1.0.
     :return: A configured AeroelasticUnsteadyRingVortexLatticeMethodSolver ready to run.
     """
-    airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+    airfoil = ps.Airfoil(name="naca2412")
 
     # Three WingCrossSections: root, one intermediate, and tip. Each non-tip
     # WingCrossSection has num_spanwise_panels=1 so each strip is modeled as a single
     # torsional spring element.
-    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.WingCrossSection(
         num_spanwise_panels=1,
         chord=1.0,
         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -93,7 +91,7 @@ def _make_aeroelastic_solver(
         spanwise_spacing="uniform",
         airfoil=airfoil,
     )
-    mid_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    mid_wing_cross_section = ps.WingCrossSection(
         num_spanwise_panels=1,
         chord=0.8,
         Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
@@ -104,7 +102,7 @@ def _make_aeroelastic_solver(
         spanwise_spacing="uniform",
         airfoil=airfoil,
     )
-    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.WingCrossSection(
         num_spanwise_panels=None,
         chord=0.6,
         Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
@@ -120,7 +118,7 @@ def _make_aeroelastic_solver(
     # (non-coincident) symmetry and causes the Airplane constructor to generate a
     # reflected Wing at airplane.wings[1]. AeroelasticUnsteadyProblem requires at least
     # two WingMovements so that wings[0] and wings[1] both receive deformation.
-    main_wing = ps.geometry.wing.Wing(
+    main_wing = ps.Wing(
         wing_cross_sections=[
             root_wing_cross_section,
             mid_wing_cross_section,
@@ -138,7 +136,7 @@ def _make_aeroelastic_solver(
         chordwise_spacing="uniform",
     )
 
-    airplane = ps.geometry.airplane.Airplane(
+    airplane = ps.Airplane(
         wings=[main_wing],
         name="Test Airplane",
         Cg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -149,19 +147,19 @@ def _make_aeroelastic_solver(
     # WingCrossSections. The reflected Wing (wings[1]) has its own WingCrossSections, so
     # it needs its own movements even though both halves flap symmetrically.
     main_wing_cross_section_movements = [
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+        ps.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in airplane.wings[0].wing_cross_sections
     ]
     reflected_wing_cross_section_movements = [
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+        ps.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in airplane.wings[1].wing_cross_sections
     ]
 
-    main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+    main_wing_movement = ps.AeroelasticWingMovement(
         base_wing=airplane.wings[0],
         wing_cross_section_movements=main_wing_cross_section_movements,
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
@@ -170,55 +168,49 @@ def _make_aeroelastic_solver(
         phaseAngles_Gs_to_Wn_ixyz=(169.0, 0.0, 0.0),
     )
 
-    reflected_wing_movement = (
-        ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-            base_wing=airplane.wings[1],
-            wing_cross_section_movements=reflected_wing_cross_section_movements,
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
-            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-            spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Gs_to_Wn_ixyz=(169.0, 0.0, 0.0),
-        )
+    reflected_wing_movement = ps.AeroelasticWingMovement(
+        base_wing=airplane.wings[1],
+        wing_cross_section_movements=reflected_wing_cross_section_movements,
+        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Gs_to_Wn_ixyz=(169.0, 0.0, 0.0),
     )
 
-    airplane_movement = (
-        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
-            base_airplane=airplane,
-            wing_movements=[main_wing_movement, reflected_wing_movement],
-        )
+    airplane_movement = ps.AeroelasticAirplaneMovement(
+        base_airplane=airplane,
+        wing_movements=[main_wing_movement, reflected_wing_movement],
     )
 
-    operating_point = ps.operating_point.OperatingPoint(
+    operating_point = ps.OperatingPoint(
         rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
     )
 
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point,
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=operating_point,
     )
 
-    movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
+    movement = ps.AeroelasticMovement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         delta_time=0.05,
         num_steps=20,
     )
 
-    problem = ps.problems.AeroelasticUnsteadyProblem(
+    problem = ps.AeroelasticUnsteadyProblem(
         movement=movement,
         wing_density=wing_density,
         spring_constant_rad=spring_constant_rad,
         damping_constant_rad=damping_constant_rad,
     )
 
-    return ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
+    return ps.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         aeroelastic_unsteady_problem=problem,
     )
 
 
 def _per_strip_torsional_aero_moments(
-    problem: ps.problems.AeroelasticUnsteadyProblem, wing_idx: int
+    problem: ps.AeroelasticUnsteadyProblem, wing_idx: int
 ) -> np.ndarray:
     """Derive each strip's torsional aerodynamic moment from the per-step Panels.
 
@@ -293,7 +285,7 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
         :return: None
         """
         self.assertIsInstance(
-            self.solver.unsteady_problem, ps.problems.AeroelasticUnsteadyProblem
+            self.solver.unsteady_problem, ps.AeroelasticUnsteadyProblem
         )
         problem = self.solver._aeroelastic_unsteady_problem
         # One seed entry plus one entry for steps 1 through num_steps - 1.

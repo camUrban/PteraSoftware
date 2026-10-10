@@ -5,6 +5,7 @@ from collections.abc import Callable
 import numpy as np
 
 import pterasoftware as ps
+from pterasoftware import _problems
 
 from . import (
     airplane_movement_fixtures,
@@ -15,9 +16,7 @@ from . import (
 )
 
 
-def make_basic_aeroelastic_unsteady_problem_fixture() -> (
-    ps.problems.AeroelasticUnsteadyProblem
-):
+def make_basic_aeroelastic_unsteady_problem_fixture() -> ps.AeroelasticUnsteadyProblem:
     """This method makes a fixture that is an AeroelasticUnsteadyProblem for testing.
 
     :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem This
@@ -27,7 +26,7 @@ def make_basic_aeroelastic_unsteady_problem_fixture() -> (
     aeroelastic_movement = movement_fixtures.make_basic_aeroelastic_movement_fixture()
 
     # Create and return the AeroelasticUnsteadyProblem.
-    basic_aeroelastic_unsteady_problem_fixture = ps.problems.AeroelasticUnsteadyProblem(
+    basic_aeroelastic_unsteady_problem_fixture = ps.AeroelasticUnsteadyProblem(
         movement=aeroelastic_movement,
         wing_density=0.01,
         spring_constant_rad=10.0,
@@ -38,7 +37,7 @@ def make_basic_aeroelastic_unsteady_problem_fixture() -> (
 
 
 def make_aeroelastic_unsteady_problem_with_standard_wing_fixture() -> (
-    ps.problems.AeroelasticUnsteadyProblem
+    ps.AeroelasticUnsteadyProblem
 ):
     """This method makes a fixture that is an AeroelasticUnsteadyProblem whose Wing is
     backed by a standard WingMovement rather than an AeroelasticWingMovement.
@@ -52,7 +51,7 @@ def make_aeroelastic_unsteady_problem_with_standard_wing_fixture() -> (
 
     # Create and return the AeroelasticUnsteadyProblem.
     aeroelastic_unsteady_problem_with_standard_wing_fixture = (
-        ps.problems.AeroelasticUnsteadyProblem(
+        ps.AeroelasticUnsteadyProblem(
             movement=movement,
             wing_density=0.01,
             spring_constant_rad=10.0,
@@ -63,7 +62,7 @@ def make_aeroelastic_unsteady_problem_with_standard_wing_fixture() -> (
     return aeroelastic_unsteady_problem_with_standard_wing_fixture
 
 
-def make_basic_steady_problem_fixture() -> ps.problems.SteadyProblem:
+def make_basic_steady_problem_fixture() -> ps.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem for general testing.
 
     :return basic_steady_problem_fixture: SteadyProblem This is the SteadyProblem
@@ -78,7 +77,7 @@ def make_basic_steady_problem_fixture() -> ps.problems.SteadyProblem:
     )
 
     # Create the SteadyProblem.
-    basic_steady_problem_fixture = ps.problems.SteadyProblem(
+    basic_steady_problem_fixture = ps.SteadyProblem(
         airplanes=[first_airplane],
         operating_point=basic_operating_point,
     )
@@ -86,7 +85,7 @@ def make_basic_steady_problem_fixture() -> ps.problems.SteadyProblem:
     return basic_steady_problem_fixture
 
 
-def make_multi_airplane_steady_problem_fixture() -> ps.problems.SteadyProblem:
+def make_multi_airplane_steady_problem_fixture() -> ps.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem with multiple Airplanes.
 
     :return multi_airplane_steady_problem_fixture: SteadyProblem This is the
@@ -100,7 +99,7 @@ def make_multi_airplane_steady_problem_fixture() -> ps.problems.SteadyProblem:
     operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
 
     # Create the SteadyProblem with multiple Airplanes.
-    multi_airplane_steady_problem_fixture = ps.problems.SteadyProblem(
+    multi_airplane_steady_problem_fixture = ps.SteadyProblem(
         airplanes=[airplane1, airplane2],
         operating_point=operating_point,
     )
@@ -108,7 +107,7 @@ def make_multi_airplane_steady_problem_fixture() -> ps.problems.SteadyProblem:
     return multi_airplane_steady_problem_fixture
 
 
-def make_basic_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+def make_basic_unsteady_problem_fixture() -> ps.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem for general testing.
 
     :return basic_unsteady_problem_fixture: UnsteadyProblem This is the UnsteadyProblem
@@ -118,7 +117,7 @@ def make_basic_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
     basic_movement = movement_fixtures.make_basic_movement_fixture()
 
     # Create the UnsteadyProblem.
-    basic_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
+    basic_unsteady_problem_fixture = ps.UnsteadyProblem(
         movement=basic_movement,
         only_final_results=False,
     )
@@ -126,7 +125,7 @@ def make_basic_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
     return basic_unsteady_problem_fixture
 
 
-def make_only_final_results_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+def make_only_final_results_unsteady_problem_fixture() -> ps.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with only_final_results
     set to True.
 
@@ -137,7 +136,7 @@ def make_only_final_results_unsteady_problem_fixture() -> ps.problems.UnsteadyPr
     basic_movement = movement_fixtures.make_basic_movement_fixture()
 
     # Create the UnsteadyProblem with only_final_results=True.
-    only_final_results_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
+    only_final_results_unsteady_problem_fixture = ps.UnsteadyProblem(
         movement=basic_movement,
         only_final_results=True,
     )
@@ -145,7 +144,7 @@ def make_only_final_results_unsteady_problem_fixture() -> ps.problems.UnsteadyPr
     return only_final_results_unsteady_problem_fixture
 
 
-def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+def make_multi_airplane_unsteady_problem_fixture() -> ps.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with multiple Airplanes.
 
     :return multi_airplane_unsteady_problem_fixture: UnsteadyProblem This is the
@@ -157,7 +156,7 @@ def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProble
     )
 
     # Create the UnsteadyProblem with multiple Airplanes.
-    multi_airplane_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
+    multi_airplane_unsteady_problem_fixture = ps.UnsteadyProblem(
         movement=multi_airplane_movement,
         only_final_results=False,
     )
@@ -165,7 +164,7 @@ def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProble
     return multi_airplane_unsteady_problem_fixture
 
 
-def make_pitching_tip_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+def make_pitching_tip_unsteady_problem_fixture() -> ps.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem whose Wing's standard mean
     chord changes every time step, for testing that each wake ring vortex keeps the
     initial core radius it was shed with.
@@ -178,29 +177,25 @@ def make_pitching_tip_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
     :return pitching_tip_unsteady_problem_fixture: UnsteadyProblem This is the
         UnsteadyProblem with a pitching tip, 4 time steps, and 2 x 2 Panels.
     """
-    wing_cross_section_movement_root = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=ps.geometry.wing_cross_section.WingCrossSection(
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
-                num_spanwise_panels=2,
-                chord=1.0,
-            ),
-        )
+    wing_cross_section_movement_root = ps.WingCrossSectionMovement(
+        base_wing_cross_section=ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca0012"),
+            num_spanwise_panels=2,
+            chord=1.0,
+        ),
     )
-    wing_cross_section_movement_tip = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=ps.geometry.wing_cross_section.WingCrossSection(
-                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
-                num_spanwise_panels=None,
-                chord=1.0,
-                Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
-            ),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 30.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
-        )
+    wing_cross_section_movement_tip = ps.WingCrossSectionMovement(
+        base_wing_cross_section=ps.WingCrossSection(
+            airfoil=ps.Airfoil(name="naca0012"),
+            num_spanwise_panels=None,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+        ),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 30.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
     )
-    wing_movement = ps.movements.wing_movement.WingMovement(
-        base_wing=ps.geometry.wing.Wing(
+    wing_movement = ps.WingMovement(
+        base_wing=ps.Wing(
             wing_cross_sections=[
                 wing_cross_section_movement_root.base_wing_cross_section,
                 wing_cross_section_movement_tip.base_wing_cross_section,
@@ -213,36 +208,36 @@ def make_pitching_tip_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
             wing_cross_section_movement_tip,
         ],
     )
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-        base_airplane=ps.geometry.airplane.Airplane(wings=[wing_movement.base_wing]),
+    airplane_movement = ps.AirplaneMovement(
+        base_airplane=ps.Airplane(wings=[wing_movement.base_wing]),
         wing_movements=[wing_movement],
     )
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
-    movement = ps.movements.movement.Movement(
+    movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         num_steps=4,
         delta_time=0.15,
     )
-    return ps.problems.UnsteadyProblem(movement=movement)
+    return ps.UnsteadyProblem(movement=movement)
 
 
-def make_with_body_rates_steady_problem_fixture() -> ps.problems.SteadyProblem:
+def make_with_body_rates_steady_problem_fixture() -> ps.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem with a non zero omegas_BP1__E
     for testing that the steady solvers reject body rotation.
 
     :return with_body_rates_steady_problem_fixture: SteadyProblem This is the
         SteadyProblem whose OperatingPoint has a non zero body angular velocity.
     """
-    return ps.problems.SteadyProblem(
+    return ps.SteadyProblem(
         airplanes=[geometry_fixtures.make_first_airplane_fixture()],
         operating_point=operating_point_fixtures.make_with_body_rates_operating_point_fixture(),
     )
 
 
-def make_with_body_rates_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+def make_with_body_rates_unsteady_problem_fixture() -> ps.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem whose Movement carries a
     non zero omegas_BP1__E on its base OperatingPoint, for testing that the unsteady
     solver rejects body rotation.
@@ -254,27 +249,27 @@ def make_with_body_rates_unsteady_problem_fixture() -> ps.problems.UnsteadyProbl
     airplane_movement = (
         airplane_movement_fixtures.make_basic_airplane_movement_fixture()
     )
-    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    operating_point_movement = ps.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_with_body_rates_operating_point_fixture()
     )
-    movement = ps.movements.movement.Movement(
+    movement = ps.Movement(
         airplane_movements=[airplane_movement],
         operating_point_movement=operating_point_movement,
         num_cycles=1,
     )
-    return ps.problems.UnsteadyProblem(
+    return ps.UnsteadyProblem(
         movement=movement,
         only_final_results=False,
     )
 
 
 def make_basic_free_flight_unsteady_problem_fixture(
-    base_operating_point: ps.operating_point.OperatingPoint | None = None,
+    base_operating_point: ps.OperatingPoint | None = None,
     external_loads_fn: (
         Callable[
             [
-                ps.operating_point.OperatingPoint,
-                ps.geometry.airplane.Airplane,
+                ps.OperatingPoint,
+                ps.Airplane,
             ],
             tuple[np.ndarray, np.ndarray],
         ]
@@ -282,7 +277,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
     ) = None,
     mujoco_assets: dict[str, bytes] | None = None,
     extra_xml: dict[str, str] | None = None,
-) -> ps.problems.FreeFlightUnsteadyProblem:
+) -> ps.FreeFlightUnsteadyProblem:
     """This method makes a fixture that is a FreeFlightUnsteadyProblem for general
     testing.
 
@@ -309,19 +304,19 @@ def make_basic_free_flight_unsteady_problem_fixture(
     wing_cross_section_movements = []
     for wing_cross_section in base_wing.wing_cross_sections:
         wing_cross_section_movements.append(
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            ps.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section,
             )
         )
 
     # Create the WingMovement.
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wing_cross_section_movements,
     )
 
     # Create the AirplaneMovement.
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=[wing_movement],
     )
@@ -335,7 +330,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-    base_operating_point = ps.operating_point.OperatingPoint(
+    base_operating_point = ps.OperatingPoint(
         rho=base_operating_point.rho,
         vCg__E=base_operating_point.vCg__E,
         alpha=base_operating_point.alpha,
@@ -350,12 +345,12 @@ def make_basic_free_flight_unsteady_problem_fixture(
         omegas_BP1__E=base_operating_point.omegas_BP1__E,
     )
     mass = base_airplane.weight / 9.80665
-    op_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+    op_movement = ps.FreeFlightOperatingPointMovement(
         base_operating_point=base_operating_point,
     )
 
     # Create the FreeFlightMovement.
-    movement = ps.movements.free_flight_movement.FreeFlightMovement(
+    movement = ps.FreeFlightMovement(
         airplane_movements=[airplane_movement],
         operating_point_movement=op_movement,
         delta_time=0.01,
@@ -365,7 +360,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
 
     # Create the FreeFlightUnsteadyProblem. The initial geometry and operating point are
     # derived from the movement at the first time step.
-    basic_free_flight_unsteady_problem_fixture = ps.problems.FreeFlightUnsteadyProblem(
+    basic_free_flight_unsteady_problem_fixture = ps.FreeFlightUnsteadyProblem(
         movement=movement,
         mass=mass,
         I_BP1_CgP1=np.diag([1.0, 1.0, 1.0]),
@@ -378,7 +373,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
 
 
 def make_with_body_rates_free_flight_unsteady_problem_fixture() -> (
-    ps.problems.FreeFlightUnsteadyProblem
+    ps.FreeFlightUnsteadyProblem
 ):
     """This method makes a fixture that is a FreeFlightUnsteadyProblem whose base
     OperatingPoint carries a non zero omegas_BP1__E, for testing that the free-flight
@@ -393,18 +388,15 @@ def make_with_body_rates_free_flight_unsteady_problem_fixture() -> (
     )
 
 
-def make_basic_coupled_unsteady_problem_fixture() -> (
-    ps.problems._CoupledUnsteadyProblem
-):
-    """This method makes a fixture that is a _CoupledUnsteadyProblem for general
-    testing.
+def make_basic_coupled_unsteady_problem_fixture() -> _problems.CoupledUnsteadyProblem:
+    """This method makes a fixture that is a CoupledUnsteadyProblem for general testing.
 
-    :return basic_coupled_unsteady_problem_fixture: _CoupledUnsteadyProblem This is the
-        _CoupledUnsteadyProblem configured for general testing.
+    :return basic_coupled_unsteady_problem_fixture: CoupledUnsteadyProblem This is the
+        CoupledUnsteadyProblem configured for general testing.
     """
     # SteadyProblem sets GP1_CgP1 attributes on each Panel exactly once, so a fresh
-    # Airplane is required for every _CoupledUnsteadyProblem instance.
-    basic_coupled_unsteady_problem_fixture = ps.problems._CoupledUnsteadyProblem(
+    # Airplane is required for every CoupledUnsteadyProblem instance.
+    basic_coupled_unsteady_problem_fixture = _problems.CoupledUnsteadyProblem(
         movement=core_movement_fixtures.make_static_core_movement_fixture(),
         initial_airplanes=[geometry_fixtures.make_first_airplane_fixture()],
         initial_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),

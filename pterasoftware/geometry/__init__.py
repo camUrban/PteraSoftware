@@ -1,6 +1,7 @@
-"""Contains the geometry classes."""
+"""Contains the deprecated module paths for the geometry classes.
 
-import pterasoftware.geometry.airfoil
-import pterasoftware.geometry.airplane
-import pterasoftware.geometry.wing
-import pterasoftware.geometry.wing_cross_section
+The geometry classes are now available at the package top level. Accessing one through
+these modules emits a DeprecationWarning, and these modules will be removed in v6.0.0.
+"""
+
+from . import airfoil, airplane, wing, wing_cross_section

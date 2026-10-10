@@ -20,11 +20,11 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"
 # purposes, but keep in mind that it makes the code much longer than it needs to be. For
 # details about each parameter, read the detailed class docstring. The same caveats
 # apply to the other classes, methods, and functions I call in this script.
-example_airplane = ps.geometry.airplane.Airplane(
+example_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=8,
                     chord=1.75,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -33,14 +33,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.5,
                     Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
@@ -49,7 +49,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                         outline_A_Lp=None,
                         resample=True,
@@ -67,9 +67,9 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_chordwise_panels=6,
             chordwise_spacing="cosine",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=8,
                     chord=1.5,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -78,14 +78,14 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
+                ps.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
@@ -94,7 +94,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                         outline_A_Lp=None,
                         resample=True,
@@ -122,13 +122,13 @@ example_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Define a new OperatingPoint, which we'll pass into the SteadyProblem.
-example_operating_point = ps.operating_point.OperatingPoint(
+example_operating_point = ps.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
 # Define a new SteadyProblem, which contains the OperatingPoint and a list of one or
 # more Airplanes.
-example_problem = ps.problems.SteadyProblem(
+example_problem = ps.SteadyProblem(
     airplanes=[example_airplane],
     operating_point=example_operating_point,
 )
@@ -142,10 +142,8 @@ del example_operating_point
 # SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
 # UnsteadyRingVortexLatticeMethodSolver. We'll create a
 # SteadyHorseshoeVortexLatticeMethodSolver, which requires a SteadyProblem.
-example_solver = (
-    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-        steady_problem=example_problem
-    )
+example_solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(
+    steady_problem=example_problem
 )
 
 del example_problem
@@ -153,8 +151,8 @@ del example_problem
 # Run the solver.
 example_solver.run()
 
-# Call this function from the output module to log the results.
-ps.output.log_results(example_solver)
+# Call this function to log the results.
+ps.log_results(example_solver)
 
 # Save the solved solver to a .psz file. This allows us to load the results later
 # without re-running the simulation.
@@ -169,11 +167,11 @@ loaded_solver = ps.load("example_solver.psz")
 # against loading the wrong file.
 assert isinstance(
     loaded_solver,
-    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+    ps.SteadyHorseshoeVortexLatticeMethodSolver,
 )
 
-# Call the output module's draw function on the loaded solver.
-ps.output.draw(
+# Call the draw function on the loaded solver.
+ps.draw(
     solver=loaded_solver,
     scalar_type="lift",
     show_streamlines=True,

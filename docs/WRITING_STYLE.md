@@ -56,7 +56,7 @@ The same name is marked up differently depending on where it appears. Comments a
 
 ### Markdown Files, Issue Bodies, and Pull Request Descriptions
 
-- Put every code token in a code span (single backticks): shell commands (`pre-commit run --all-files codespell`), CLI flags (`--all-files`), keyword assignments (`dtype=float`), slash paths (`examples/`, `tests/unit/`), class names (`WingCrossSection`), variable names of every form (`wing_cross_section`, `omegasRad_BP1__E`, `_UNSET`), file names (`AXES_POINTS_AND_FRAMES.md`, `_meshing.py`), an extension used as a file-type reference (a `.psz` file), and any other code, including in headers.
+- Put every code token in a code span (single backticks): shell commands (`pre-commit run --all-files codespell`), CLI flags (`--all-files`), keyword assignments (`dtype=float`), slash paths (`examples/`, `tests/unit/`), class names (`WingCrossSection`), variable names of every form (`wing_cross_section`, `omegasRad_BP1__E`, `UNSET`), file names (`AXES_POINTS_AND_FRAMES.md`, `meshing.py`), an extension used as a file-type reference (a `.psz` file), and any other code, including in headers.
 - A str value is code too, so its double quotes go inside the code span: `"sine"`, `"edge_defined"`, and `".webp"` when the extension is itself the str being passed or checked.
 - Attach plurals and possessives outside the code span: `WingMovement`s, `OperatingPoint`'s.
 - Numerals, array shapes, and inline math stay bare and follow the Math and Numbers section: 1.0e-10, (M, 4), and r1 * r2.

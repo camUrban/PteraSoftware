@@ -166,6 +166,10 @@ draw.webp
 # This folder contains built documentation files that shouldn't be uploaded.
 /docs/website/_build/
 
+# The notebook extension writes this folder next to the build output folder, so it lands
+# here when the docs are built into docs/website/_build/.
+/docs/website/jupyter_execute/
+
 # This folder contains a copy of the Furo theme to use as a reference for customization.
 /docs/website/furo_src/
 
@@ -173,6 +177,9 @@ draw.webp
 /docs/website/tutorials/*.ipynb
 /docs/website/tutorials/*.png
 /docs/website/tutorials/*.webp
+
+# The docs build writes one API reference page per public name here.
+/docs/website/api/
 
 # These are serialization output files to ignore.
 *.json

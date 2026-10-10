@@ -30,7 +30,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         this_airplane = (
             airplane_fixtures.make_multiple_wing_steady_validation_airplane()
         )
-        this_operating_point = ps.operating_point.OperatingPoint(
+        this_operating_point = ps.OperatingPoint(
             vCg__E=corrupted_v_x,
             alpha=corrupted_alpha,
             beta=corrupted_beta,
@@ -39,7 +39,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         )
 
         # Create the SteadyProblem.
-        self.steady_validation_problem = ps.problems.SteadyProblem(
+        self.steady_validation_problem = ps.SteadyProblem(
             airplanes=[this_airplane],
             operating_point=this_operating_point,
         )
@@ -50,15 +50,15 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-        problem = ps.problems.SteadyProblem(
+        problem = ps.SteadyProblem(
             airplanes=[
                 airplane_fixtures.make_multiple_wing_steady_validation_airplane()
             ],
-            operating_point=ps.operating_point.OperatingPoint(),
+            operating_point=ps.OperatingPoint(),
         )
 
         with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
-            ps.trim.analyze_steady_trim(
+            ps.analyze_steady_trim(
                 problem=problem,
                 solver_type="steady horseshoe vortex lattice method",
                 boundsVCg__E=(1.0, 100.0),
@@ -77,7 +77,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         for bad_alpha_bounds in [(-180.0, 20.0), (-20.0, 180.001)]:
             with self.subTest(alpha_bounds=bad_alpha_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
-                    ps.trim.analyze_steady_trim(
+                    ps.analyze_steady_trim(
                         problem=self.steady_validation_problem,
                         solver_type="steady horseshoe vortex lattice method",
                         boundsVCg__E=(1.0, 100.0),
@@ -89,7 +89,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         for bad_beta_bounds in [(-90.0, 20.0), (-20.0, 90.0), (-180.0, 180.0)]:
             with self.subTest(beta_bounds=bad_beta_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
-                    ps.trim.analyze_steady_trim(
+                    ps.analyze_steady_trim(
                         problem=self.steady_validation_problem,
                         solver_type="steady horseshoe vortex lattice method",
                         boundsVCg__E=(1.0, 100.0),
@@ -105,17 +105,17 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-        problem = ps.problems.SteadyProblem(
+        problem = ps.SteadyProblem(
             airplanes=[
                 airplane_fixtures.make_multiple_wing_steady_validation_airplane()
             ],
-            operating_point=ps.operating_point.OperatingPoint(
+            operating_point=ps.OperatingPoint(
                 angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
             ),
         )
 
         with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
-            ps.trim.analyze_steady_trim(
+            ps.analyze_steady_trim(
                 problem=problem,
                 solver_type="steady horseshoe vortex lattice method",
                 boundsVCg__E=(1.0, 100.0),
@@ -144,7 +144,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             self.thrust_ans + thrust_delta,
         )
 
-        trim_conditions = ps.trim.analyze_steady_trim(
+        trim_conditions = ps.analyze_steady_trim(
             problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
             boundsVCg__E=v_x_bounds,

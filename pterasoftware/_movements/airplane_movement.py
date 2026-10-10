@@ -1,0 +1,104 @@
+"""Contains the AirplaneMovement class."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
+from typing import cast
+
+import numpy as np
+
+from .. import _core, _geometry
+from . import wing_movement as wing_movement_mod
+
+
+class AirplaneMovement(_core.CoreAirplaneMovement):
+    """A class used to contain an Airplane's movement."""
+
+    __slots__ = ()
+
+    def __init__(
+        self,
+        base_airplane: _geometry.airplane.Airplane,
+        wing_movements: list[wing_movement_mod.WingMovement],
+        ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1: np.ndarray | Sequence[str | Callable[[float], float]] = (
+            "sine",
+            "sine",
+            "sine",
+        ),
+        phaseCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+    ) -> None:
+        """The initialization method.
+
+        :param base_airplane: The base Airplane from which the Airplane at each time
+            step will be created.
+        :param wing_movements: A list of the WingMovements associated with each of the
+            base Airplane's Wings. It must have the same length as the base Airplane's
+            list of Wings, and element i's base Wing must be the base Airplane's Wing at
+            index i itself (the same object, not just an equal one). Build each
+            WingMovement around the corresponding element of the base Airplane's wings,
+            which includes any reflected Wing the base Airplane created from a Wing with
+            type 5 symmetry.
+        :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
+            float) with shape (3,) representing the amplitudes of the AirplaneMovement's
+            changes in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or
+            ndarray. Values are converted to floats internally. Each amplitude must be
+            low enough that it doesn't drive its base value out of the range of valid
+            values. Otherwise, this AirplaneMovement will try to create Airplanes with
+            invalid parameter values. Because the first Airplane's Cg_GP1_CgP1 parameter
+            must be all zeros, this means that the first Airplane's ampCg_GP1_CgP1
+            parameter must also be all zeros. The units are in meters. The default is
+            (0.0, 0.0, 0.0).
+        :param periodCg_GP1_CgP1: An array-like object of non negative numbers (int or
+            float) with shape (3,) representing the periods of the AirplaneMovement's
+            changes in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or
+            ndarray. Values are converted to floats internally. Each element must be 0.0
+            if the corresponding element in ampCg_GP1_CgP1 is 0.0 and non zero if not.
+            The units are in seconds. The default is (0.0, 0.0, 0.0).
+        :param spacingCg_GP1_CgP1: An array-like object of strs or callables with shape
+            (3,) representing the spacing of the AirplaneMovement's changes in its
+            Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or ndarray. Each
+            element can be the str "sine", the str "uniform", or a callable custom
+            spacing function. Custom spacing functions are for advanced users and must
+            start at 0.0, return to 0.0 after one period of 2.0 * pi radians, have
+            amplitude of 1.0, be periodic, return finite values only, and accept a float
+            as input and return a float. Custom functions are scaled by ampCg_GP1_CgP1,
+            shifted horizontally and vertically by phaseCg_GP1_CgP1 and the base value,
+            and have a period set by periodCg_GP1_CgP1. The default is ("sine", "sine",
+            "sine").
+        :param phaseCg_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (3,) representing the phase offsets of the elements in the first time
+            step's Airplane's Cg_GP1_CgP1 parameter relative to the base Airplane's
+            Cg_GP1_CgP1 parameter. Can be a tuple, list, or ndarray. Elements must lie
+            in the range (-180.0, 180.0]. Each element must be 0.0 if the corresponding
+            element in ampCg_GP1_CgP1 is 0.0 and non zero if not. Values are converted
+            to floats internally. The units are in degrees. The default is (0.0, 0.0,
+            0.0).
+        :return: None
+        """
+        # Validate that every element is a WingMovement, not just a CoreWingMovement.
+        # CoreAirplaneMovement.__init__() validates at the Core level, but
+        # AirplaneMovement enforces the stricter type.
+        for wing_movement in wing_movements:
+            if not isinstance(wing_movement, wing_movement_mod.WingMovement):
+                raise TypeError(
+                    "Every element in wing_movements must be a " "WingMovement."
+                )
+
+        super().__init__(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCg_GP1_CgP1=ampCg_GP1_CgP1,
+            periodCg_GP1_CgP1=periodCg_GP1_CgP1,
+            spacingCg_GP1_CgP1=spacingCg_GP1_CgP1,
+            phaseCg_GP1_CgP1=phaseCg_GP1_CgP1,
+        )
+
+    # --- Immutable: read only properties ---
+    @property
+    def wing_movements(self) -> tuple[wing_movement_mod.WingMovement, ...]:
+        return cast(
+            tuple[wing_movement_mod.WingMovement, ...],
+            self._wing_movements,
+        )

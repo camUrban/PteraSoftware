@@ -18,12 +18,8 @@ class TestForceMethodsComparison(unittest.TestCase):
     """This is a class for comparing the Joukowski and Katz force calculation
     methods."""
 
-    static_solver_joukowski: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    static_solver_katz: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    static_solver_joukowski: ps.UnsteadyRingVortexLatticeMethodSolver
+    static_solver_katz: ps.UnsteadyRingVortexLatticeMethodSolver
 
     @classmethod
     def setUpClass(cls) -> None:

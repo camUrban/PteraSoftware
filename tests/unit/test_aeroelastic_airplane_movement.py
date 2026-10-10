@@ -7,6 +7,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
     core_wing_movement_fixtures,
@@ -23,8 +24,8 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         CoreAirplaneMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
-                ps._core.CoreAirplaneMovement,
+                ps.AeroelasticAirplaneMovement,
+                _core.CoreAirplaneMovement,
             )
         )
 
@@ -36,7 +37,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             aeroelastic_airplane_movement,
-            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
+            ps.AeroelasticAirplaneMovement,
         )
 
     def test_rejects_core_wing_movement_children(self) -> None:
@@ -47,7 +48,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
             core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
         ]
         with self.assertRaises(TypeError):
-            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+            ps.AeroelasticAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
             )
@@ -62,19 +63,19 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         # symmetry type is still None.
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
         wing_cross_section_movements = [
-            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+            ps.AeroelasticWingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section
             )
             for wing_cross_section in base_wing.wing_cross_sections
         ]
-        wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+        wing_movement = ps.AeroelasticWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
         # Constructing the base Airplane meshes the same Wing object in place,
         # determining its type 4 symmetry.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[base_wing],
             name="Type 4 Test Airplane",
             Cg_GP1_CgP1=[0.0, 0.0, 0.0],
@@ -83,7 +84,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         self.assertEqual(base_wing.symmetry_type, 4)
 
         with self.assertRaises(ValueError):
-            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+            ps.AeroelasticAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=[wing_movement],
             )
@@ -102,17 +103,17 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         # Airplane's Wing but is a different object, so it is never meshed.
         unshared_wing = geometry_fixtures.make_type_4_wing_fixture()
         wing_cross_section_movements = [
-            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+            ps.AeroelasticWingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section
             )
             for wing_cross_section in unshared_wing.wing_cross_sections
         ]
-        wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+        wing_movement = ps.AeroelasticWingMovement(
             base_wing=unshared_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
 
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[geometry_fixtures.make_type_4_wing_fixture()],
             name="Type 4 Test Airplane",
             Cg_GP1_CgP1=[0.0, 0.0, 0.0],
@@ -124,7 +125,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "must be base_airplane.wings\\[0\\] itself"
         ):
-            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+            ps.AeroelasticAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=[wing_movement],
             )
@@ -151,7 +152,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         for airplane in airplanes:
             self.assertIsInstance(
                 airplane,
-                ps.geometry.airplane.Airplane,
+                ps.Airplane,
             )
 
     def test_generate_airplane_at_time_step_returns_airplane(self) -> None:
@@ -165,7 +166,7 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         )
         self.assertIsInstance(
             airplane,
-            ps.geometry.airplane.Airplane,
+            ps.Airplane,
         )
 
 
@@ -190,7 +191,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
             step=0, delta_time=self.delta_time
         )
 
-        self.assertIsInstance(result, ps.geometry.airplane.Airplane)
+        self.assertIsInstance(result, ps.Airplane)
 
     def test_generate_airplane_at_time_step_standard_wing_returns_one_wing(
         self,
@@ -271,7 +272,7 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
         # Wing measures, so that a generated Airplane which recalculated them would fail
         # the comparison. The movements are built from the Airplane's own Wing and
         # WingCrossSections, as AeroelasticAirplaneMovement requires.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[geometry_fixtures.make_origin_wing_fixture()],
             s_ref=15.0,
             c_ref=2.0,
@@ -283,20 +284,18 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
         self.assertNotEqual(base_airplane.b_ref, base_wing.span)
 
         wing_cross_section_movements = [
-            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+            ps.AeroelasticWingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section
             )
             for wing_cross_section in base_wing.wing_cross_sections
         ]
-        wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+        wing_movement = ps.AeroelasticWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
-        aeroelastic_airplane_movement = (
-            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
-                base_airplane=base_airplane,
-                wing_movements=[wing_movement],
-            )
+        aeroelastic_airplane_movement = ps.AeroelasticAirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
         )
 
         # The root (index 0) deformation must stay zero, since the clamped root

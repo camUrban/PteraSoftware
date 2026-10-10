@@ -31,7 +31,7 @@ class TestTextColorNormalized(unittest.TestCase):
         plots' normalized color stays the rendered color divided by 255.0.
         """
         npt.assert_allclose(
-            _output_plotting._TEXT_COLOR_NORMALIZED,
+            _output_plotting.TEXT_COLOR_NORMALIZED,
             np.array(_output_rendering.TEXT_COLOR, dtype=float) / 255.0,
         )
 
@@ -589,7 +589,7 @@ class TestPlotTimeHistory(unittest.TestCase):
         )
         self.assertEqual(
             plt.gcf().axes[0].margins(),
-            (plt.rcParams["axes.xmargin"], _output_plotting._Y_AXIS_MARGIN),
+            (plt.rcParams["axes.xmargin"], _output_plotting.Y_AXIS_MARGIN),
         )
 
     def test_centers_the_title_over_the_axes(self) -> None:
@@ -660,7 +660,7 @@ class TestPlotTimeHistory(unittest.TestCase):
             300.0,
         )
         axes = plt.gcf().axes[0]
-        text_color = matplotlib.colors.to_rgba(_output_plotting._TEXT_COLOR_NORMALIZED)
+        text_color = matplotlib.colors.to_rgba(_output_plotting.TEXT_COLOR_NORMALIZED)
         self.assertEqual(
             matplotlib.colors.to_rgba(axes.xaxis.label.get_color()), text_color
         )

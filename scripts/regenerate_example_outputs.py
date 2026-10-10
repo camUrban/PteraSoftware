@@ -35,35 +35,35 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES_DIR = PROJECT_ROOT / "examples"
 OUTPUT_DIR = PROJECT_ROOT / "docs" / "examples_expected_output"
 
-_MAX_WEBP_BYTES = 5 * 1024 * 1024
-_INITIAL_QUALITY = 75.0
-_QUALITY_STEP = 25.0
+MAX_WEBP_BYTES = 5 * 1024 * 1024
+INITIAL_QUALITY = 75.0
+QUALITY_STEP = 25.0
 # The lowest quality a re-render will try. Below this, WebP compression makes the
 # visualizations' overlay text hard to read. The floor was chosen by inspecting the
 # aeroelastic example's animation rendered at qualities from 5 to 95.
-_MIN_QUALITY = 25.0
-_MAX_RERENDER_ATTEMPTS = 2
+MIN_QUALITY = 25.0
+MAX_RERENDER_ATTEMPTS = 2
 
 # The keyword arguments this script supplies itself, which override whatever an example
 # passes. Every other keyword is forwarded to the re-render so that it reproduces the
 # example's output. path is deliberately absent: a re-render has to write back over the
 # file it is shrinking, so it needs the destination the example chose.
-_MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
+MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
 
 # The destinations draw and animate write to when an example names none.
-_DEFAULT_DRAW_PATH = "draw.webp"
-_DEFAULT_ANIMATE_PATH = "animate.webp"
+DEFAULT_DRAW_PATH = "draw.webp"
+DEFAULT_ANIMATE_PATH = "animate.webp"
 
 # The log values that vary between otherwise identical runs, paired with their
 # replacements. Every run time is logged at the end of its line, so each duration
 # pattern masks through the end of the line.
-_LOG_MASKS = (
+LOG_MASKS = (
     (re.compile(r"(completed in ).*$", re.MULTILINE), r"\1<time>"),
     (re.compile(r"(Simulation time: ).*$", re.MULTILINE), r"\1<time>"),
     (re.compile(r"\(\d+ bytes\)"), "(<size> bytes)"),
 )
 
-_SUBPROCESS_WRAPPER = """\
+SUBPROCESS_WRAPPER = """\
 import runpy
 import sys
 from unittest.mock import patch
@@ -71,33 +71,33 @@ from unittest.mock import patch
 import matplotlib.pyplot as plt
 import pterasoftware as ps
 
-ORIGINAL_DRAW = ps.output.draw
-ORIGINAL_ANIMATE = ps.output.animate
+ORIGINAL_DRAW = ps.draw
+ORIGINAL_ANIMATE = ps.animate
 
 
-def _draw_testing(*args, **kwargs):
+def draw_testing(*args, **kwargs):
     kwargs["testing"] = True
     ORIGINAL_DRAW(*args, **kwargs)
 
 
-def _animate_testing(*args, **kwargs):
+def animate_testing(*args, **kwargs):
     kwargs["testing"] = True
     ORIGINAL_ANIMATE(*args, **kwargs)
 
 
 with (
-    patch.object(ps.output, "draw", _draw_testing),
-    patch.object(ps.output, "animate", _animate_testing),
+    patch.object(ps, "draw", draw_testing),
+    patch.object(ps, "animate", animate_testing),
     patch.object(plt, "show", lambda *_args, **_kwargs: None),
 ):
     runpy.run_path(sys.argv[1], run_name="__main__")
 """
 
 
-def _extract_output_kwargs(
+def extract_output_kwargs(
     script_path: Path,
 ) -> tuple[dict[str, object] | None, dict[str, object] | None]:
-    """Extracts the keyword arguments from ps.output.draw and ps.output.animate calls.
+    """Extracts the keyword arguments from ps.draw and ps.animate calls.
 
     Parses the example script's AST and returns the keyword arguments (excluding the
     managed kwargs solver, unsteady_solver, save, quality, and testing) for each call.
@@ -120,10 +120,8 @@ def _extract_output_kwargs(
         func = node.func
         if not (
             isinstance(func, ast.Attribute)
-            and isinstance(func.value, ast.Attribute)
-            and func.value.attr == "output"
-            and isinstance(func.value.value, ast.Name)
-            and func.value.value.id == "ps"
+            and isinstance(func.value, ast.Name)
+            and func.value.id == "ps"
         ):
             continue
 
@@ -132,7 +130,7 @@ def _extract_output_kwargs(
 
         kwargs: dict[str, object] = {}
         for kw in node.keywords:
-            if kw.arg is None or kw.arg in _MANAGED_KWARGS:
+            if kw.arg is None or kw.arg in MANAGED_KWARGS:
                 continue
             try:
                 kwargs[kw.arg] = ast.literal_eval(kw.value)
@@ -147,7 +145,7 @@ def _extract_output_kwargs(
     return draw_kwargs, animate_kwargs
 
 
-def _find_solver_file(directory: Path) -> Path | None:
+def find_solver_file(directory: Path) -> Path | None:
     """Finds the saved solver .psz file in a directory or any of its subdirectories.
 
     :param directory: The directory to search.
@@ -160,7 +158,7 @@ def _find_solver_file(directory: Path) -> Path | None:
     return None
 
 
-def _output_destination(
+def output_destination(
     output_subdir: Path, kwargs: dict[str, object], default_path: str
 ) -> Path:
     """Returns the absolute path an output call writes its file to.
@@ -175,9 +173,9 @@ def _output_destination(
     return (output_subdir / Path(str(kwargs.get("path", default_path)))).resolve()
 
 
-def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
+def rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     """Re-renders any oversized WebP files by loading the saved solver and calling draw
-    or animate at progressively lower quality, no lower than _MIN_QUALITY.
+    or animate at progressively lower quality, no lower than MIN_QUALITY.
 
     :param output_subdir: The directory containing the example's output files.
     :param script_path: The path to the example script, used to extract the original
@@ -187,17 +185,17 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     oversized = [
         p
         for p in sorted(output_subdir.rglob("*.webp"))
-        if p.stat().st_size > _MAX_WEBP_BYTES
+        if p.stat().st_size > MAX_WEBP_BYTES
     ]
     if not oversized:
         return
 
-    solver_file = _find_solver_file(output_subdir)
+    solver_file = find_solver_file(output_subdir)
     if solver_file is None:
         print("    Cannot re-render: no saved solver found.")
         return
 
-    draw_kwargs, animate_kwargs = _extract_output_kwargs(script_path)
+    draw_kwargs, animate_kwargs = extract_output_kwargs(script_path)
 
     import pterasoftware as ps
 
@@ -209,19 +207,19 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     # under a name it never used.
     renderers: dict[Path, tuple[Callable[..., None], dict[str, Any]]] = {}
     if draw_kwargs is not None:
-        draw_destination = _output_destination(
-            output_subdir, draw_kwargs, _DEFAULT_DRAW_PATH
+        draw_destination = output_destination(
+            output_subdir, draw_kwargs, DEFAULT_DRAW_PATH
         )
         renderers[draw_destination] = (
-            ps.output.draw,
+            ps.draw,
             {**draw_kwargs, "solver": loaded_solver},
         )
     if animate_kwargs is not None:
-        animate_destination = _output_destination(
-            output_subdir, animate_kwargs, _DEFAULT_ANIMATE_PATH
+        animate_destination = output_destination(
+            output_subdir, animate_kwargs, DEFAULT_ANIMATE_PATH
         )
         renderers[animate_destination] = (
-            ps.output.animate,
+            ps.animate,
             {**animate_kwargs, "unsteady_solver": loaded_solver},
         )
 
@@ -236,21 +234,21 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
         render_func, render_kwargs = renderer
 
         original_cwd = os.getcwd()
-        quality = _INITIAL_QUALITY
+        quality = INITIAL_QUALITY
 
         try:
             os.chdir(output_subdir)
 
-            for _ in range(_MAX_RERENDER_ATTEMPTS):
-                quality = max(quality - _QUALITY_STEP, _MIN_QUALITY)
+            for _ in range(MAX_RERENDER_ATTEMPTS):
+                quality = max(quality - QUALITY_STEP, MIN_QUALITY)
                 render_func(**render_kwargs, save=True, quality=quality, testing=True)
 
                 new_bytes = webp_path.stat().st_size
-                if new_bytes <= _MAX_WEBP_BYTES or quality == _MIN_QUALITY:
+                if new_bytes <= MAX_WEBP_BYTES or quality == MIN_QUALITY:
                     break
 
             new_bytes = webp_path.stat().st_size
-            if new_bytes <= _MAX_WEBP_BYTES:
+            if new_bytes <= MAX_WEBP_BYTES:
                 print(
                     f"    Re-rendered {name}: "
                     f"{original_bytes / 1024:.0f} KB -> "
@@ -262,13 +260,13 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
                     f"    Warning: {name} is still "
                     f"{new_bytes / 1024:.0f} KB after re-rendering down to "
                     f"quality={quality:.1f}. Quality is never reduced below "
-                    f"{_MIN_QUALITY:.1f}, where the text stops being readable."
+                    f"{MIN_QUALITY:.1f}, where the text stops being readable."
                 )
         finally:
             os.chdir(original_cwd)
 
 
-def _mask_log_files(output_subdir: Path) -> None:
+def mask_log_files(output_subdir: Path) -> None:
     """Replaces the run times and saved file sizes in an example's log files with
     placeholders.
 
@@ -277,12 +275,12 @@ def _mask_log_files(output_subdir: Path) -> None:
     """
     for log_path in sorted(output_subdir.rglob("*.log")):
         text = log_path.read_text()
-        for pattern, replacement in _LOG_MASKS:
+        for pattern, replacement in LOG_MASKS:
             text = pattern.sub(replacement, text)
         log_path.write_text(text)
 
 
-def _discover_examples() -> list[Path]:
+def discover_examples() -> list[Path]:
     """Discovers all example scripts in the examples directory.
 
     :return: A sorted list of Paths to example scripts, excluding __init__.py.
@@ -290,14 +288,14 @@ def _discover_examples() -> list[Path]:
     return sorted(p for p in EXAMPLES_DIR.glob("*.py") if p.name != "__init__.py")
 
 
-def _run_example(script_path: Path, output_subdir: Path) -> bool:
+def run_example(script_path: Path, output_subdir: Path) -> bool:
     """Runs a single example script in a subprocess with its outputs directed to a
     subdirectory.
 
     Each example runs in its own process so memory is fully reclaimed between examples.
-    The subprocess patches ps.output.draw and ps.output.animate to force testing=True so
-    PyVista windows close automatically, and patches plt.show to prevent blocking. The
-    working directory is set to the output subdirectory so all saved files land there.
+    The subprocess patches ps.draw and ps.animate to force testing=True so PyVista
+    windows close automatically, and patches plt.show to prevent blocking. The working
+    directory is set to the output subdirectory so all saved files land there.
 
     :param script_path: The path to the example script to run.
     :param output_subdir: The directory in which to collect the script's outputs.
@@ -306,7 +304,7 @@ def _run_example(script_path: Path, output_subdir: Path) -> bool:
     output_subdir.mkdir(parents=True, exist_ok=True)
 
     result = subprocess.run(
-        [sys.executable, "-u", "-c", _SUBPROCESS_WRAPPER, str(script_path)],
+        [sys.executable, "-u", "-c", SUBPROCESS_WRAPPER, str(script_path)],
         cwd=output_subdir,
     )
 
@@ -343,7 +341,7 @@ def main() -> int:
             return 1
         examples = [script_path]
     else:
-        examples = _discover_examples()
+        examples = discover_examples()
         if not examples:
             print("No example scripts found.")
             return 1
@@ -365,15 +363,15 @@ def main() -> int:
             shutil.rmtree(output_subdir)
 
         print(f"Running {script_path.name}...", flush=True)
-        if _run_example(script_path, output_subdir):
+        if run_example(script_path, output_subdir):
             n_files = sum(1 for p in output_subdir.rglob("*") if p.is_file())
             if n_files > 0:
                 print(
                     f"  Saved {n_files} file(s) to {output_subdir.relative_to(PROJECT_ROOT)}"
                 )
-                _rerender_oversized_webps(output_subdir, script_path)
-                _mask_log_files(output_subdir)
-                solver_file = _find_solver_file(output_subdir)
+                rerender_oversized_webps(output_subdir, script_path)
+                mask_log_files(output_subdir)
+                solver_file = find_solver_file(output_subdir)
                 if solver_file is not None:
                     solver_file.unlink()
                 succeeded.append(name)

@@ -153,7 +153,7 @@ def oscillating_custom_at_time(
         will match those of amp and base.
     """
     # Validate the custom function before using it.
-    _validate_custom_spacing_function(custom_function)
+    validate_custom_spacing_function(custom_function)
 
     # Convert the function characteristics into classic wave function constants.
     a = amp
@@ -173,7 +173,7 @@ def oscillating_custom_at_time(
         )
 
 
-def _validate_custom_spacing_function(
+def validate_custom_spacing_function(
     custom_function: Callable[[float], float],
 ) -> None:
     """Validates that a custom spacing function meets requirements for use in

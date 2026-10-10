@@ -153,7 +153,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     ...
 
 
-def _get_mcl_points(
+def get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
     outer_airfoil: airfoil_mod.Airfoil,
     ...
@@ -225,7 +225,7 @@ mypy cannot see attributes assigned through `cls` inside `setUpClass`, so every 
 class TestUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test UnsteadyProblems."""
 
-    basic_unsteady_problem: ps.problems.UnsteadyProblem
+    basic_unsteady_problem: ps.UnsteadyProblem
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -244,7 +244,7 @@ def test_wings_validation(self) -> None:
     """Test that non-list wings inputs are rejected."""
     bad_wings: Any = "not a list"
     with self.assertRaises(TypeError):
-        ps.geometry.airplane.Airplane(wings=bad_wings)
+        ps.Airplane(wings=bad_wings)
 ```
 
 Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`. Annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
@@ -587,30 +587,30 @@ When multiple public classes share the same private parent (e.g., `Movement`, `F
 
 ### Private Names in Public Docstrings and Signatures
 
-The API reference documents only the public modules. Anything defined in a private module has no page, and that includes classes whose own names carry no underscore, such as `Panel` in `_panel.py` and `CoupledUnsteadyRingVortexLatticeMethodSolver` in `_coupled_unsteady_ring_vortex_lattice_method.py`. A public docstring or signature that names one of them therefore renders as dead text: a class name the reader cannot look up, or a fully qualified path such as `pterasoftware._core.CoreUnsteadyProblem` in a signature. The rules below cover every way a private name can reach a rendered page. "Rendered" means the docstring of a public module, class, function, method, or property, including methods and properties inherited from a private parent (see "Private Parent Method and Property Docstrings").
+The API reference documents only the names in `pterasoftware.__all__`. Every other class has no page, and that includes classes whose own names carry no underscore, such as `Panel` in `_panel.py` and `CoupledUnsteadyRingVortexLatticeMethodSolver` in `_coupled_unsteady_ring_vortex_lattice_method.py`. A public docstring or signature that names one of them therefore renders as dead text: a class name the reader cannot look up, such as `CoreUnsteadyProblem` in a signature. The rules below cover every way a private name can reach a rendered page. "Rendered" means the docstring of a public class, function, method, or property, including methods and properties inherited from a private parent (see "Private Parent Method and Property Docstrings").
 
 #### Prose
 
 1. **Never name a private class in rendered prose.** Point at the referent instead of naming its type: "The list of Wings associated with this movement", not "associated with this CoreWingMovement", and "The solver driving this problem, which provides the aerodynamic data from the current time step", not "The CoupledUnsteadyRingVortexLatticeMethodSolver instance providing aerodynamic data". Where the private class is a parent, describe what the public class adds rather than what it extends: "A class used to solve AeroelasticUnsteadyProblems with the unsteady ring vortex lattice method" and "**Key additions over the unsteady ring vortex lattice method:**", not "A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver".
 2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
 3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
-4. **Do not defer to a private parent.** "See _CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
+4. **Do not defer to a private parent.** "See CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
 5. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
 6. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
 
 #### Signatures
 
-1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked fully qualified path.
-2. **When an annotation must be a private type, add an override.** Two shapes force this: a hook method whose override cannot narrow the parameter type, so the hook is annotated with the shared parent solver, and a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For those, add an entry to `_ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method, then by parameter name, giving the one public type that actually works. The build resolves each key against AutoAPI's object tree and fails on a stale key, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
-3. **Private bases are hidden automatically.** The class template drops any base whose path contains a private module or underscore prefixed name from the Bases line, so a public class extending a private parent shows no Bases line at all. Its docstring must stand on its own for that reason.
-4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `_UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
+1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked class name.
+2. **When an annotation must be a private type, add an override.** Two shapes force this: a hook method whose override cannot narrow the parameter type, so the hook is annotated with the shared parent solver, and a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For those, add an entry to `ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method where it is defined, such as `pterasoftware._problems.FreeFlightUnsteadyProblem.initialize_next_problem`, then by parameter name, giving the one public type that actually works. The build checks each key and parameter against the package source and fails on a stale one, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
+3. **Bases are not shown.** The reference shows no Bases line for any class, so a public class extending a private parent never mentions it. Its docstring must stand on its own for that reason.
+4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
 
 #### Deprecated API
 
 Deprecated functions, methods, properties, and parameters are filtered out of the API reference, so they need no docstring marker. The build detects them from the source, and the detection only works when the deprecation takes this exact shape:
 
 - A function, method, or property is deprecated when a top-level statement of its body is `warnings.warn(..., DeprecationWarning)` (positional or `category=` keyword). Deprecated members are omitted from the reference entirely.
-- A parameter is deprecated when such a call sits inside a top-level `if` statement whose test names the parameter, as in `if outline_A_lp is not _UNSET:`. Deprecated parameters are removed from the rendered signature along with their `:param:` field, while the rest of the signature and docstring render unchanged.
+- A parameter is deprecated when such a call sits inside a top-level `if` statement whose test names the parameter, as in `if outline_A_lp is not UNSET:`. Deprecated parameters are removed from the rendered signature along with their `:param:` field, while the rest of the signature and docstring render unchanged.
 
 Do not move the `warnings.warn` call into a helper function, since the detection reads the deprecated member's own body. For a member, the call must be a top-level statement of that body, not nested in a block. For a parameter, the call may sit anywhere inside the guarding `if`, but the `if` itself must be top-level and its test must name the parameter. The docstring still documents the deprecated member or parameter for source readers and `help()`, in the form "A deprecated alias for outline_A_Lp. Passing it emits a DeprecationWarning, and it will be removed in v6.0.0."
 
@@ -750,7 +750,7 @@ def function_name() -> None:
 ### Example 2: Function with Array Parameters (Internal)
 
 ```python
-def _get_mcl_points(
+def get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
@@ -780,7 +780,7 @@ def _get_mcl_points(
 ### Example 3: Function with Transformation Matrices
 
 ```python
-def _get_mcs_points(
+def get_mcs_points(
     T_pas_Wcsi_Lpi_Wn_Ler: np.ndarray,
     T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
     inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,

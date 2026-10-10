@@ -41,7 +41,7 @@ DPI = 110.0
 SHEET_TILE_WIDTH_INCHES = 6.0
 
 
-def _decode_frames(webp_bytes: bytes) -> list[tuple[np.ndarray, float]]:
+def decode_frames(webp_bytes: bytes) -> list[tuple[np.ndarray, float]]:
     """Decodes a WebP file's bytes into a list of RGBA frames with timestamps.
 
     :param webp_bytes: The raw bytes of the WebP file.
@@ -54,7 +54,7 @@ def _decode_frames(webp_bytes: bytes) -> list[tuple[np.ndarray, float]]:
     return [(frame, timestamp_ms / 1000.0) for frame, timestamp_ms in decoder.frames()]
 
 
-def _sample_indices(first: int, last: int, count: int) -> list[int]:
+def sample_indices(first: int, last: int, count: int) -> list[int]:
     """Returns evenly spaced frame indices spanning a range, without duplicates.
 
     The first and last indices of the range are always included.
@@ -74,7 +74,7 @@ def _sample_indices(first: int, last: int, count: int) -> list[int]:
     return sorted(set(positions))
 
 
-def _render_tiles(
+def render_tiles(
     tiles: list[tuple[int, np.ndarray, float]],
     n_frames: int,
     columns: int,
@@ -161,10 +161,10 @@ def _render_tiles(
     mpimg.imsave(out_path, np.clip(out, 0.0, 1.0))
 
 
-def _run_info(frames: list[tuple[np.ndarray, float]], file_path: Path) -> None:
+def run_info(frames: list[tuple[np.ndarray, float]], file_path: Path) -> None:
     """Prints metadata about a decoded WebP file.
 
-    :param frames: The decoded frames, as returned by _decode_frames.
+    :param frames: The decoded frames, as returned by decode_frames.
     :param file_path: The path of the source WebP file, used for display only.
     :return: None
     """
@@ -292,11 +292,11 @@ def main(argv: list[str]) -> int:
     except OSError as exc:
         print(f"error: could not read {args.file} ({exc})", file=sys.stderr)
         return 1
-    frames = _decode_frames(webp_bytes)
+    frames = decode_frames(webp_bytes)
     n_frames = len(frames)
 
     if args.mode == "info":
-        _run_info(frames, args.file)
+        run_info(frames, args.file)
         return 0
 
     if args.mode == "sheet":
@@ -312,12 +312,12 @@ def main(argv: list[str]) -> int:
         if args.count < 1 or args.columns < 1:
             print("error: --count and --columns must be positive", file=sys.stderr)
             return 1
-        indices = _sample_indices(first, last, args.count)
+        indices = sample_indices(first, last, args.count)
         out_path = args.out
         if out_path is None:
             out_path = Path(tempfile.gettempdir()) / f"{args.file.stem}_sheet.png"
         tiles = [(index, frames[index][0], frames[index][1]) for index in indices]
-        _render_tiles(
+        render_tiles(
             tiles,
             n_frames,
             args.columns,
@@ -346,7 +346,7 @@ def main(argv: list[str]) -> int:
         frame, timestamp = frames[index]
         frame_width = frame.shape[1]
         out_path = out_dir / f"frame_{index:04d}.png"
-        _render_tiles(
+        render_tiles(
             [(index, frame, timestamp)],
             n_frames,
             1,

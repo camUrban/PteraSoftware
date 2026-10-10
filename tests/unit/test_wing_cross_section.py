@@ -34,7 +34,7 @@ class TestWingCrossSection(unittest.TestCase):
         # Test that basic WingCrossSection initializes correctly.
         self.assertIsInstance(
             self.basic_wing_cross_section,
-            ps.geometry.wing_cross_section.WingCrossSection,
+            ps.WingCrossSection,
         )
         self.assertEqual(self.basic_wing_cross_section.airfoil, self.test_airfoil)
         self.assertEqual(self.basic_wing_cross_section.num_spanwise_panels, 8)
@@ -58,7 +58,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_initialization_default_parameters(self) -> None:
         """Test WingCrossSection initialization with default parameters."""
-        wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=5,
         )
@@ -81,7 +81,7 @@ class TestWingCrossSection(unittest.TestCase):
         bad_airfoil: Any = "not_an_airfoil"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing_cross_section.WingCrossSection(
+            ps.WingCrossSection(
                 airfoil=bad_airfoil,
                 num_spanwise_panels=8,
             )
@@ -89,14 +89,14 @@ class TestWingCrossSection(unittest.TestCase):
     def test_num_spanwise_panels_validation(self) -> None:
         """Test num_spanwise_panels parameter validation."""
         # Test with valid positive integer.
-        wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=15,
         )
         self.assertEqual(wing_cross_section.num_spanwise_panels, 15)
 
         # Test with None (valid for tip WingCrossSections).
-        wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=None,
         )
@@ -109,7 +109,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=invalid_value,
                     )
@@ -120,7 +120,7 @@ class TestWingCrossSection(unittest.TestCase):
         valid_chords = [0.1, 1.0, 2.5, 10.0]
         for chord in valid_chords:
             with self.subTest(chord=chord):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     chord=chord,
@@ -133,7 +133,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_chord=invalid_chord):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         chord=invalid_chord,
@@ -152,7 +152,7 @@ class TestWingCrossSection(unittest.TestCase):
         for vector in valid_vectors:
             # noinspection PyUnresolvedReferences
             with self.subTest(vector=vector):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     Lp_Wcsp_Lpp=vector,
@@ -161,7 +161,7 @@ class TestWingCrossSection(unittest.TestCase):
 
         # Test that second component must be non-negative.
         with self.assertRaises(ValueError):
-            ps.geometry.wing_cross_section.WingCrossSection(
+            ps.WingCrossSection(
                 airfoil=self.test_airfoil,
                 num_spanwise_panels=8,
                 Lp_Wcsp_Lpp=np.array(
@@ -179,7 +179,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_vector=invalid_vector):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         Lp_Wcsp_Lpp=invalid_vector,
@@ -199,7 +199,7 @@ class TestWingCrossSection(unittest.TestCase):
         ]
         for angles in valid_angles:
             with self.subTest(angles=angles):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     angles_Wcsp_to_Wcs_ixyz=angles,
@@ -220,7 +220,7 @@ class TestWingCrossSection(unittest.TestCase):
         for invalid_angle in invalid_angles:
             with self.subTest(invalid_angle=invalid_angle):
                 with self.assertRaises(ValueError):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         angles_Wcsp_to_Wcs_ixyz=invalid_angle,
@@ -232,7 +232,7 @@ class TestWingCrossSection(unittest.TestCase):
         valid_types = ["symmetric", "asymmetric"]
         for control_type in valid_types:
             with self.subTest(control_type=control_type):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     control_surface_symmetry_type=control_type,
@@ -247,7 +247,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         control_surface_symmetry_type=invalid_type,
@@ -259,7 +259,7 @@ class TestWingCrossSection(unittest.TestCase):
         valid_hinge_points = [0.1, 0.5, 0.75, 0.9, 0.999]
         for hinge_point in valid_hinge_points:
             with self.subTest(hinge_point=hinge_point):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     control_surface_hinge_point=hinge_point,
@@ -274,7 +274,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_hinge_point=invalid_hinge_point):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         control_surface_hinge_point=invalid_hinge_point,
@@ -286,7 +286,7 @@ class TestWingCrossSection(unittest.TestCase):
         valid_deflections = [0.0, 1.0, -5.0, 5.0, -4.1, 4]
         for deflection in valid_deflections:
             with self.subTest(deflection=deflection):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
                     control_surface_deflection=deflection,
@@ -301,7 +301,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_deflection=invalid_deflection):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         control_surface_deflection=invalid_deflection,
@@ -313,7 +313,7 @@ class TestWingCrossSection(unittest.TestCase):
         valid_spacings = ["cosine", "uniform", None]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+                wing_cross_section = ps.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8 if spacing is not None else None,
                     spanwise_spacing=spacing,
@@ -326,7 +326,7 @@ class TestWingCrossSection(unittest.TestCase):
             with self.subTest(invalid_spacing=invalid_spacing):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
                         spanwise_spacing=invalid_spacing,
@@ -402,7 +402,7 @@ class TestWingCrossSection(unittest.TestCase):
     def test_validate_mid_constraints_zero_y_offset(self) -> None:
         """Test that validate_mid_constraints rejects zero y component of
         Lp_Wcsp_Lpp."""
-        zero_y_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        zero_y_wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=8,
             chord=1.0,
@@ -415,7 +415,7 @@ class TestWingCrossSection(unittest.TestCase):
     def test_validate_tip_constraints_zero_y_offset(self) -> None:
         """Test that validate_tip_constraints rejects zero y component of
         Lp_Wcsp_Lpp."""
-        zero_y_tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        zero_y_tip_wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=None,
             chord=0.75,
@@ -471,7 +471,7 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(minimal_wing_cross_section.num_spanwise_panels, 1)
 
         # Test with maximum reasonable values.
-        max_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        max_wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=100,
             chord=50.0,
@@ -646,7 +646,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         original = self.basic_wing_cross_section
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps.geometry.wing_cross_section.WingCrossSection)
+        self.assertIsInstance(copied, ps.WingCrossSection)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_all_attributes(self) -> None:

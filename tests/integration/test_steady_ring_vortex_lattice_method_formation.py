@@ -21,7 +21,7 @@ class TestSteadyRingVortexLatticeMethodFormation(unittest.TestCase):
     Airplane formation."""
 
     steady_ring_vortex_lattice_method_formation_solver: (
-        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        ps.SteadyRingVortexLatticeMethodSolver
     )
 
     @classmethod

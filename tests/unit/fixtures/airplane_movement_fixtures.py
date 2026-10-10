@@ -5,9 +5,7 @@ import pterasoftware as ps
 from . import geometry_fixtures, wing_movement_fixtures
 
 
-def make_static_airplane_movement_fixture() -> (
-    ps.movements.airplane_movement.AirplaneMovement
-):
+def make_static_airplane_movement_fixture() -> ps.AirplaneMovement:
     """This method makes a fixture that is an AirplaneMovement with all parameters zero
     (no movement).
 
@@ -22,7 +20,7 @@ def make_static_airplane_movement_fixture() -> (
     ]
 
     # Create the static AirplaneMovement.
-    static_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
+    static_airplane_movement_fixture = ps.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=wing_movements,
         ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -35,9 +33,7 @@ def make_static_airplane_movement_fixture() -> (
     return static_airplane_movement_fixture
 
 
-def make_basic_airplane_movement_fixture() -> (
-    ps.movements.airplane_movement.AirplaneMovement
-):
+def make_basic_airplane_movement_fixture() -> ps.AirplaneMovement:
     """This method makes a fixture that is an AirplaneMovement with general-purpose
     moderate values.
 
@@ -52,7 +48,7 @@ def make_basic_airplane_movement_fixture() -> (
     ]
 
     # Create the basic AirplaneMovement.
-    basic_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
+    basic_airplane_movement_fixture = ps.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=wing_movements,
         ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
@@ -65,9 +61,7 @@ def make_basic_airplane_movement_fixture() -> (
     return basic_airplane_movement_fixture
 
 
-def make_periodic_geometry_airplane_movement_fixture() -> (
-    ps.movements.airplane_movement.AirplaneMovement
-):
+def make_periodic_geometry_airplane_movement_fixture() -> ps.AirplaneMovement:
     """This method makes a fixture that is an AirplaneMovement with periodic geometry
     motion suitable for testing the variable geometry optimization.
 
@@ -87,15 +81,13 @@ def make_periodic_geometry_airplane_movement_fixture() -> (
     ]
 
     # Create the periodic geometry AirplaneMovement.
-    periodic_geometry_airplane_movement_fixture = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements,
-            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
-            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
+    periodic_geometry_airplane_movement_fixture = ps.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=wing_movements,
+        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
     )
 
     # Return the AirplaneMovement fixture.

@@ -3,6 +3,7 @@
 import unittest
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     free_flight_operating_point_movement_fixtures,
     operating_point_fixtures,
@@ -17,8 +18,8 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         CoreOperatingPointMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
-                ps._core.CoreOperatingPointMovement,
+                ps.FreeFlightOperatingPointMovement,
+                _core.CoreOperatingPointMovement,
             )
         )
 
@@ -28,12 +29,12 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        free_flight_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+        free_flight_operating_point_movement = ps.FreeFlightOperatingPointMovement(
             base_operating_point=base_operating_point,
         )
         self.assertIsInstance(
             free_flight_operating_point_movement,
-            ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
+            ps.FreeFlightOperatingPointMovement,
         )
 
     def test_operating_points_initialized_with_base_operating_point(self) -> None:
@@ -42,7 +43,7 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        free_flight_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+        free_flight_operating_point_movement = ps.FreeFlightOperatingPointMovement(
             base_operating_point=base_operating_point,
         )
         self.assertEqual(len(free_flight_operating_point_movement.operating_points), 1)
@@ -84,5 +85,5 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         for operating_point in operating_points:
             self.assertIsInstance(
                 operating_point,
-                ps.operating_point.OperatingPoint,
+                ps.OperatingPoint,
             )

@@ -8,6 +8,7 @@ import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     core_wing_cross_section_movement_fixtures,
     core_wing_movement_fixtures,
@@ -18,22 +19,22 @@ from tests.unit.fixtures import (
 class TestCoreWingMovement(unittest.TestCase):
     """This is a class with functions to test CoreWingMovements."""
 
-    sine_spacing_Ler_wing_movement: ps._core.CoreWingMovement
-    uniform_spacing_Ler_wing_movement: ps._core.CoreWingMovement
-    mixed_spacing_Ler_wing_movement: ps._core.CoreWingMovement
-    sine_spacing_angles_wing_movement: ps._core.CoreWingMovement
-    uniform_spacing_angles_wing_movement: ps._core.CoreWingMovement
-    mixed_spacing_angles_wing_movement: ps._core.CoreWingMovement
-    static_wing_movement: ps._core.CoreWingMovement
-    basic_wing_movement: ps._core.CoreWingMovement
-    Ler_only_wing_movement: ps._core.CoreWingMovement
-    angles_only_wing_movement: ps._core.CoreWingMovement
-    phase_offset_Ler_wing_movement: ps._core.CoreWingMovement
-    phase_offset_angles_wing_movement: ps._core.CoreWingMovement
-    multiple_periods_wing_movement: ps._core.CoreWingMovement
-    custom_spacing_Ler_wing_movement: ps._core.CoreWingMovement
-    custom_spacing_angles_wing_movement: ps._core.CoreWingMovement
-    rotation_point_offset_wing_movement: ps._core.CoreWingMovement
+    sine_spacing_Ler_wing_movement: _core.CoreWingMovement
+    uniform_spacing_Ler_wing_movement: _core.CoreWingMovement
+    mixed_spacing_Ler_wing_movement: _core.CoreWingMovement
+    sine_spacing_angles_wing_movement: _core.CoreWingMovement
+    uniform_spacing_angles_wing_movement: _core.CoreWingMovement
+    mixed_spacing_angles_wing_movement: _core.CoreWingMovement
+    static_wing_movement: _core.CoreWingMovement
+    basic_wing_movement: _core.CoreWingMovement
+    Ler_only_wing_movement: _core.CoreWingMovement
+    angles_only_wing_movement: _core.CoreWingMovement
+    phase_offset_Ler_wing_movement: _core.CoreWingMovement
+    phase_offset_angles_wing_movement: _core.CoreWingMovement
+    multiple_periods_wing_movement: _core.CoreWingMovement
+    custom_spacing_Ler_wing_movement: _core.CoreWingMovement
+    custom_spacing_angles_wing_movement: _core.CoreWingMovement
+    rotation_point_offset_wing_movement: _core.CoreWingMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -372,7 +373,7 @@ class TestCoreWingMovement(unittest.TestCase):
             for wing_cross_section in base_wing.wing_cross_sections
         ]
 
-        wing_movement = ps._core.CoreWingMovement(
+        wing_movement = _core.CoreWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampLer_Gs_Cgs=(0.1, 0.05, 0.02),
@@ -385,7 +386,7 @@ class TestCoreWingMovement(unittest.TestCase):
             phaseAngles_Gs_to_Wn_ixyz=(30.0, 0.0, -45.0),
         )
 
-        self.assertIsInstance(wing_movement, ps._core.CoreWingMovement)
+        self.assertIsInstance(wing_movement, _core.CoreWingMovement)
         self.assertEqual(wing_movement.base_wing, base_wing)
         self.assertEqual(
             len(wing_movement.wing_cross_section_movements),
@@ -421,7 +422,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         bad_base_wing: Any = "not_a_wing"
         with self.assertRaises(TypeError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=bad_base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
@@ -433,7 +434,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         bad_wing_cross_section_movements: Any = "not_a_list"
         with self.assertRaises(TypeError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=bad_wing_cross_section_movements,
             )
@@ -447,7 +448,7 @@ class TestCoreWingMovement(unittest.TestCase):
         ]
 
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
@@ -470,7 +471,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "must be base_wing.wing_cross_sections\\[0\\] itself"
         ):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
@@ -487,7 +488,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with negative amplitude.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(-0.1, 0.0, 0.0),
@@ -506,7 +507,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with zero amplitude but non-zero period.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -525,7 +526,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with phase out of valid range.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.1, 0.0, 0.0),
@@ -535,7 +536,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with zero amplitude but non-zero phase.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -555,7 +556,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with amplitude > 180 degrees.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(180.1, 0.0, 0.0),
@@ -564,7 +565,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with negative amplitude.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(-10.0, 0.0, 0.0),
@@ -583,7 +584,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with zero amplitude but non-zero period.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -602,7 +603,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with phase out of valid range.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
@@ -612,7 +613,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Test with zero amplitude but non-zero phase.
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -686,14 +687,14 @@ class TestCoreWingMovement(unittest.TestCase):
             ),
         ]
 
-        movement_default = ps._core.CoreWingMovement(
+        movement_default = _core.CoreWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         )
 
-        movement_zero_offset = ps._core.CoreWingMovement(
+        movement_zero_offset = _core.CoreWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=[
                 core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
@@ -787,7 +788,7 @@ class TestCoreWingMovement(unittest.TestCase):
             for wing_cross_section in base_wing.wing_cross_sections
         ]
 
-        wing_movement = ps._core.CoreWingMovement(
+        wing_movement = _core.CoreWingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wing_cross_section_movements,
             rotationPointOffset_Gs_Ler=(0.25, 0.1, -0.05),
@@ -808,7 +809,7 @@ class TestCoreWingMovement(unittest.TestCase):
         ]
 
         with self.assertRaises(ValueError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 rotationPointOffset_Gs_Ler=(0.1, 0.2),
@@ -826,7 +827,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         bad_rotation_point_offset: Any = ("a", "b", "c")
         with self.assertRaises(TypeError):
-            ps._core.CoreWingMovement(
+            _core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 rotationPointOffset_Gs_Ler=bad_rotation_point_offset,
@@ -1064,7 +1065,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         original = self.core_wing_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps._core.CoreWingMovement)
+        self.assertIsInstance(copied, _core.CoreWingMovement)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_attribute_values(self) -> None:

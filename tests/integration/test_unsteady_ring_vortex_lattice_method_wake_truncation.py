@@ -13,8 +13,8 @@ from tests.integration.fixtures import airplane_fixtures, operating_point_fixtur
 
 
 def _make_static_movement_components() -> tuple[
-    ps.movements.airplane_movement.AirplaneMovement,
-    ps.movements.operating_point_movement.OperatingPointMovement,
+    ps.AirplaneMovement,
+    ps.OperatingPointMovement,
 ]:
     """Creates the shared AirplaneMovement and OperatingPointMovement components for the
     wake truncation tests.
@@ -24,19 +24,15 @@ def _make_static_movement_components() -> tuple[
     airplane = airplane_fixtures.make_symmetric_unsteady_validation_airplane()
     operating_point = operating_point_fixtures.make_validation_operating_point()
 
-    root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=airplane.wings[0].wing_cross_sections[0]
-        )
+    root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[0].wing_cross_sections[0]
     )
 
-    tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=airplane.wings[0].wing_cross_sections[1]
-        )
+    tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[0].wing_cross_sections[1]
     )
 
-    wing_movement = ps.movements.wing_movement.WingMovement(
+    wing_movement = ps.WingMovement(
         base_wing=airplane.wings[0],
         wing_cross_section_movements=[
             root_wing_cross_section_movement,
@@ -44,15 +40,13 @@ def _make_static_movement_components() -> tuple[
         ],
     )
 
-    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    airplane_movement = ps.AirplaneMovement(
         base_airplane=airplane,
         wing_movements=[wing_movement],
     )
 
-    operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point
-        )
+    operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=operating_point
     )
 
     return airplane_movement, operating_point_movement
@@ -62,12 +56,8 @@ class TestWakeTruncation(unittest.TestCase):
     """This is a class for testing wake truncation in the
     UnsteadyRingVortexLatticeMethodSolver."""
 
-    non_truncated_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
-    truncated_solver: (
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-    )
+    non_truncated_solver: ps.UnsteadyRingVortexLatticeMethodSolver
+    truncated_solver: ps.UnsteadyRingVortexLatticeMethodSolver
     max_wake_rows: int
 
     @classmethod
@@ -76,15 +66,13 @@ class TestWakeTruncation(unittest.TestCase):
         airplane_movement, operating_point_movement = _make_static_movement_components()
 
         # Non truncated: 6 chord lengths of wake.
-        non_truncated_movement = ps.movements.movement.Movement(
+        non_truncated_movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             num_chords=6,
         )
-        non_truncated_problem = ps.problems.UnsteadyProblem(
-            movement=non_truncated_movement
-        )
-        cls.non_truncated_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        non_truncated_problem = ps.UnsteadyProblem(movement=non_truncated_movement)
+        cls.non_truncated_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
             non_truncated_problem
         )
         cls.non_truncated_solver.run(
@@ -95,15 +83,15 @@ class TestWakeTruncation(unittest.TestCase):
 
         # Truncated: uses the same num_steps and delta_time but caps the wake at 3 chord
         # lengths.
-        truncated_movement = ps.movements.movement.Movement(
+        truncated_movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             delta_time=non_truncated_movement.delta_time,
             num_steps=non_truncated_movement.num_steps,
             max_wake_chords=3,
         )
-        truncated_problem = ps.problems.UnsteadyProblem(movement=truncated_movement)
-        cls.truncated_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        truncated_problem = ps.UnsteadyProblem(movement=truncated_movement)
+        cls.truncated_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
             truncated_problem
         )
         cls.truncated_solver.run(

@@ -1,0 +1,716 @@
+"""Contains the SteadyHorseshoeVortexLatticeMethodSolver class."""
+
+from __future__ import annotations
+
+import logging
+import time
+from collections.abc import Sequence
+from pathlib import Path
+from typing import cast
+
+import numpy as np
+import pyvista as pv
+
+from . import (
+    _aerodynamics_functions,
+    _functions,
+    _geometry,
+    _logging,
+    _operating_point,
+    _output_rendering,
+    _panel,
+    _parameter_validation,
+    _problems,
+    _transformations,
+)
+
+logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
+
+
+# TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
+class SteadyHorseshoeVortexLatticeMethodSolver:
+    """A class used to solve SteadyProblems with the horseshoe vortex lattice method.
+
+    **Citation:**
+
+    Adapted from: aerodynamics.vlm3.py in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/28/2020
+    """
+
+    __slots__ = (
+        "_steady_problem",
+        "airplanes",
+        "operating_point",
+        "reynolds_numbers",
+        "num_airplanes",
+        "num_panels",
+        "_gridWingWingInfluences__E",
+        "vInf_GP1__E",
+        "stackFreestreamWingInfluences__E",
+        "_vortex_strengths",
+        "stackUnitNormals_GP1",
+        "_panel_areas",
+        "_stackCpp_GP1_CgP1",
+        "_stackBrhvp_GP1_CgP1",
+        "_stackFrhvp_GP1_CgP1",
+        "_stackFlhvp_GP1_CgP1",
+        "_stackBlhvp_GP1_CgP1",
+        "panels",
+        "_stackBoundVortexCenters_GP1_CgP1",
+        "_stackBoundVortexVectors_GP1",
+        "_r_c0s",
+        "stackSeedPoints_GP1_CgP1",
+        "gridStreamlinePoints_GP1_CgP1",
+        "_ran",
+    )
+
+    def __init__(self, steady_problem: _problems.SteadyProblem) -> None:
+        """The initialization method.
+
+        :param steady_problem: The SteadyProblem to be solved.
+        :return: None
+        """
+        if not isinstance(steady_problem, _problems.SteadyProblem):
+            raise TypeError("steady_problem must be a SteadyProblem.")
+        self._steady_problem: _problems.SteadyProblem = steady_problem
+
+        self.airplanes = self._steady_problem.airplanes
+        self.operating_point: _operating_point.OperatingPoint = (
+            self._steady_problem.operating_point
+        )
+        if np.any(self.operating_point.omegas_BP1__E != 0.0):
+            raise ValueError(
+                "operating_point.omegas_BP1__E must be all zeros for the steady "
+                "horseshoe vortex lattice method solver."
+            )
+        self.reynolds_numbers = self._steady_problem.reynolds_numbers
+        self.num_airplanes = len(self.airplanes)
+
+        # Calculate the total number of Panels for all of this SteadyProblem's
+        # Airplanes.
+        self.num_panels = 0
+        airplane: _geometry.airplane.Airplane
+        for airplane in self.airplanes:
+            self.num_panels += airplane.num_panels
+
+        # Initialize attributes to hold aerodynamic data that pertains to this
+        # SteadyProblem.
+        self._gridWingWingInfluences__E = np.zeros(
+            (self.num_panels, self.num_panels), dtype=float
+        )
+        self.vInf_GP1__E = self.operating_point.vInf_GP1__E
+        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+
+        # Initialize the vortex strengths to ones so that they can be passed in to find
+        # the normalized wing wing influence coefficients.
+        self._vortex_strengths = np.ones(self.num_panels, dtype=float)
+
+        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._panel_areas = np.zeros(self.num_panels, dtype=float)
+        self._stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        self._stackBrhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackFrhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackFlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackBlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        self.panels = np.empty(self.num_panels, dtype=object)
+        self._stackBoundVortexCenters_GP1_CgP1 = np.zeros(
+            (self.num_panels, 3), dtype=float
+        )
+        self._stackBoundVortexVectors_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        # Initial core radii of the horseshoe vortices' right, front, and left legs. The
+        # front legs' are zero so they take the kernels' numerical floor, and the right
+        # and left legs' take the wake's value.
+        self._r_c0s = np.zeros((self.num_panels, 3), dtype=float)
+
+        self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+        self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+
+        self._ran: bool = False
+
+    @property
+    def ran(self) -> bool:
+        """Whether the solver has been run.
+
+        :return: True if a call to run has completed on this solver and False otherwise.
+        """
+        return self._ran
+
+    def run(self, calculate_streamlines: bool | np.bool = True) -> None:
+        """Runs the solver on the SteadyProblem.
+
+        :param calculate_streamlines: Determines whether to calculate the streamlines
+            emanating from the back of the wing after running the solver. Can be a bool
+            or a numpy bool and will be converted internally to a bool. The default is
+            True.
+        :return: None
+        """
+        calculate_streamlines = _parameter_validation.boolLike_return_bool(
+            calculate_streamlines, "calculate_streamlines"
+        )
+
+        run_start_time = time.time()
+
+        # Report the thread dispatch settings this run's kernel launches will operate
+        # under, and warn if Numba's threading layer will make them slow.
+        _aerodynamics_functions.report_thread_settings()
+
+        # Run the solve with the BLAS threading appropriate for this run's size.
+        with _functions.solve_loop_thread_limits(self.num_panels):
+            # Compute the horseshoe vortex geometries and collapse them, along with each
+            # Panel's per Panel scalars, into 1D ndarrays of attributes.
+            logger.debug(_logging.indent() + "Collapsing the geometry")
+            self._collapse_geometry()
+
+            # Find the matrix of Wing-Wing influence coefficients associated with this
+            # SteadyProblem's geometry.
+            logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
+            self._calculate_wing_wing_influences()
+
+            # Find the normal velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at every collocation point due solely to the
+            # freestream.
+            logger.debug(
+                _logging.indent() + "Calculating the freestream Wing influences"
+            )
+            _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
+
+            # Solve for each Panel's horseshoe vortex's strength.
+            logger.debug(
+                _logging.indent() + "Calculating the horseshoe vortex strengths"
+            )
+            self._calculate_vortex_strengths()
+
+            # Solve for the forces (in the first Airplane's geometry axes) and moments
+            # (in the first Airplane's geometry axes, relative to the first Airplane's
+            # CG) on each Panel.
+            logger.debug(_logging.indent() + "Calculating the forces and moments")
+            self._calculate_loads()
+
+        # Solve for the location of the streamlines coming off the Wings' trailing
+        # edges, if requested.
+        if calculate_streamlines:
+            logger.debug(_logging.indent() + "Calculating streamlines")
+            _functions.calculate_streamlines(self)
+
+        logger.info(
+            _logging.indent()
+            + "Solver completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
+
+        # Mark that the solver has run.
+        self._ran = True
+
+    def diagram(
+        self,
+        *,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = False,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        simplify_vortices: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this solver's SteadyProblem's Airplanes' Wings' Panels,
+        along with their axes and points and the vortices this solver placed on them.
+
+        The diagram is drawn in the first Airplane's geometry axes, relative to the
+        first Airplane's CG. It shows the Earth axes at the Earth origin, every Wing's
+        Panels, and every Panel's bound horseshoe vortex. The vortices are drawn from
+        the placement this solver used during its run, so the solver must have run. The
+        horseshoe vortices' trailing legs are drawn shorter than the solver's, and their
+        ends are dashed to show that they continue. The units are in meters.
+
+        A label can be edited by double-clicking it in the diagram's window. Its raw
+        text is then shown in a monospaced font with a caret, which the left and right
+        arrow keys move. Enter keeps the new text, Escape restores the old text, and
+        entering empty text deletes the label. Text between pairs of dollar signs is
+        written as math in Matplotlib's mathtext syntax, and the label is shown in red
+        while that math isn't valid.
+
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param simplify_vortices: Determines whether to simplify the vortices' drawing.
+            If True, each horseshoe vortex's finite leg is shrunk toward its midpoint,
+            which separates the legs that neighboring vortices share. Their corners are
+            also rounded, they are drawn in a different color, and each of their legs
+            gets an arrow showing its vorticity's direction for positive lift. Can be a
+            bool or a numpy bool and will be converted internally to a bool. The default
+            is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airplane_axes_and_points, "show_airplane_axes_and_points"
+        )
+        show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_wing_axes_and_points, "show_wing_axes_and_points"
+        )
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+        simplify_vortices = _parameter_validation.boolLike_return_bool(
+            simplify_vortices, "simplify_vortices"
+        )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        if not self._ran:
+            raise RuntimeError("The solver must have run before drawing its diagram.")
+
+        plotter = pv.Plotter()
+        _output_rendering.add_steady_problem(
+            plotter,
+            self._steady_problem,
+            show_airplane_axes_and_points=show_airplane_axes_and_points,
+            show_wing_axes_and_points=show_wing_axes_and_points,
+            show_wing_cross_section_axes_and_points=(
+                show_wing_cross_section_axes_and_points
+            ),
+            show_airfoil_axes_and_points=show_airfoil_axes_and_points,
+            show_airfoils=show_airfoils,
+            show_mcls=show_mcls,
+            show_collocation_points=show_collocation_points,
+            label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
+        )
+
+        # The vortex stacks are already in the diagram axes, relative to the diagram
+        # origin. This solver places no ring vortices or wake ring vortices.
+        noVortexPoints_D_Do = np.empty((0, 3), dtype=float)
+        _output_rendering.add_vortices(
+            plotter,
+            stackFrrvp_D_Do=noVortexPoints_D_Do,
+            stackFlrvp_D_Do=noVortexPoints_D_Do,
+            stackBlrvp_D_Do=noVortexPoints_D_Do,
+            stackBrrvp_D_Do=noVortexPoints_D_Do,
+            stackRingUnitNormals_D=noVortexPoints_D_Do,
+            stackFrwrvp_D_Do=noVortexPoints_D_Do,
+            stackFlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBrwrvp_D_Do=noVortexPoints_D_Do,
+            stackWakeRingUnitNormals_D=noVortexPoints_D_Do,
+            stackFrhvp_D_Do=self._stackFrhvp_GP1_CgP1,
+            stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
+            stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
+            stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
+            stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1,
+            horseshoe_vortices_are_wake=False,
+            largest_chord=max(
+                wing_cross_section.chord
+                for airplane in self.airplanes
+                for wing in airplane.wings
+                for wing_cross_section in wing.wing_cross_sections
+            ),
+            simplify=simplify_vortices,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
+
+    def _collapse_geometry(self) -> None:
+        """Computes the horseshoe vortex geometries and collapses them, along with each
+        Panel's per panel scalars, into the solver's 1D ndarrays of attributes.
+
+        Every Panel carries a horseshoe vortex. The finite leg runs along the Panel's
+        quarter chord from right to left. The semi infinite legs extend downstream from
+        the front corners along the freestream direction.
+
+        :return: None
+        """
+        # Find the freestream direction (in the first Airplane's geometry axes, observed
+        # from the Earth frame).
+        vInfHat_GP1__E = self.operating_point.vInfHat_GP1__E
+
+        # Initialize a variable to hold the global position of the current Panel as we
+        # iterate through them.
+        global_panel_position = 0
+
+        # Iterate through each Airplane's Wings.
+        airplane: _geometry.airplane.Airplane
+        for airplane in self.airplanes:
+            wing: _geometry.wing.Wing
+            for wing in airplane.wings:
+                _span = wing.span
+                assert _span is not None
+                # At twenty times the Wing's span, the horseshoe vortex legs are
+                # essentially infinite.
+                infinite_leg_offset_GP1 = vInfHat_GP1__E * (_span * 20)
+
+                _panels = wing.panels
+                assert _panels is not None
+
+                # Based on results from Ramasamy and Leishman (2007), the streamwise
+                # legs' initial core radius is 3.0% of this Wing's standard mean chord.
+                _standard_mean_chord = wing.standard_mean_chord
+                assert _standard_mean_chord is not None
+                wing_streamwise_r_c0 = 0.03 * _standard_mean_chord
+
+                # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
+                panels = np.ravel(_panels)
+
+                # Iterate through the 1D ndarray of this Wing's Panels.
+                panel: _panel.Panel
+                for panel in panels:
+                    Frhvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
+                    assert Frhvp_GP1_CgP1 is not None
+
+                    Flhvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
+                    assert Flhvp_GP1_CgP1 is not None
+
+                    # The semi infinite legs trail downstream from the front corners
+                    # along the freestream direction.
+                    Brhvp_GP1_CgP1 = Frhvp_GP1_CgP1 + infinite_leg_offset_GP1
+                    Blhvp_GP1_CgP1 = Flhvp_GP1_CgP1 + infinite_leg_offset_GP1
+
+                    # Update the solver's list of attributes with this Panel's
+                    # attributes (in the first Airplane's geometry axes, relative to the
+                    # first Airplane's CG).
+                    self.panels[global_panel_position] = panel
+                    self.stackUnitNormals_GP1[global_panel_position, :] = (
+                        panel.unitNormal_GP1
+                    )
+                    self._panel_areas[global_panel_position] = panel.area
+                    self._stackCpp_GP1_CgP1[global_panel_position, :] = (
+                        panel.Cpp_GP1_CgP1
+                    )
+
+                    self._stackBrhvp_GP1_CgP1[global_panel_position, :] = Brhvp_GP1_CgP1
+                    self._stackFrhvp_GP1_CgP1[global_panel_position, :] = Frhvp_GP1_CgP1
+                    self._stackFlhvp_GP1_CgP1[global_panel_position, :] = Flhvp_GP1_CgP1
+                    self._stackBlhvp_GP1_CgP1[global_panel_position, :] = Blhvp_GP1_CgP1
+
+                    # The finite leg runs from the front right to the front left.
+                    self._stackBoundVortexCenters_GP1_CgP1[global_panel_position, :] = (
+                        0.5 * (Frhvp_GP1_CgP1 + Flhvp_GP1_CgP1)
+                    )
+                    self._stackBoundVortexVectors_GP1[global_panel_position, :] = (
+                        Flhvp_GP1_CgP1 - Frhvp_GP1_CgP1
+                    )
+                    self._r_c0s[global_panel_position, 0] = wing_streamwise_r_c0
+                    self._r_c0s[global_panel_position, 2] = wing_streamwise_r_c0
+
+                    if panel.is_trailing_edge:
+                        _Blpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
+                        assert _Blpp_GP1_CgP1 is not None
+
+                        _Brpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
+                        assert _Brpp_GP1_CgP1 is not None
+
+                        # Calculate this Panel's streamline seed point (in the first
+                        # Airplane's geometry axes, relative to the first Airplane's
+                        # CG). Add it to the solver's 1D ndarray of seed points.
+                        self.stackSeedPoints_GP1_CgP1 = np.vstack(
+                            (
+                                self.stackSeedPoints_GP1_CgP1,
+                                _Blpp_GP1_CgP1
+                                + 0.5 * (_Brpp_GP1_CgP1 - _Blpp_GP1_CgP1),
+                            )
+                        )
+
+                    # Increment the global Panel position variable.
+                    global_panel_position += 1
+
+    def _calculate_wing_wing_influences(self) -> None:
+        """Finds this SteadyProblem's 2D ndarray of Wing Wing influence coefficients
+        (observed from the Earth frame).
+
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image horseshoe vortices
+        reflected across that surface.
+
+        :return: None
+        """
+        # Find the 2D ndarray of normalized velocities (in the first Airplane's geometry
+        # axes, observed from the Earth frame) induced at each Panel's collocation point
+        # by each horseshoe vortex.
+        singularity_counts = np.zeros(3, dtype=np.int64)
+        gridNormVIndCpp_GP1__E = (
+            _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                strengths=self._vortex_strengths,
+                r_c0s=self._r_c0s,
+                singularity_counts=singularity_counts,
+                nu=self.operating_point.nu,
+            )
+        )
+
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                self._stackCpp_GP1_CgP1,
+                is_position=True,
+            )
+            gridImageVIndCpp_GP1__E = (
+                _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+                    stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                    stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                    stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                    stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                    stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                    strengths=self._vortex_strengths,
+                    r_c0s=self._r_c0s,
+                    singularity_counts=singularity_counts,
+                    nu=self.operating_point.nu,
+                )
+            )
+            gridNormVIndCpp_GP1__E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                gridImageVIndCpp_GP1__E,
+                is_position=False,
+            )
+
+        unexpected_singularity_counts = np.copy(singularity_counts)
+
+        _functions.log_unexpected_singularity_counts(
+            logger,
+            logging.ERROR,
+            "_calculate_wing_wing_influences",
+            unexpected_singularity_counts,
+        )
+
+        # Take the batch dot product of the normalized induced velocities (in the first
+        # Airplane's geometry axes, observed from the Earth frame) with each Panel's
+        # unit normal direction (in the first Airplane's geometry axes). This is now the
+        # SteadyProblem's 2D ndarray of Wing-Wing influence coefficients (observed from
+        # the Earth frame).
+        self._gridWingWingInfluences__E = np.einsum(
+            "...k,...k->...",
+            gridNormVIndCpp_GP1__E,
+            np.expand_dims(self.stackUnitNormals_GP1, axis=1),
+        )
+
+    def _calculate_vortex_strengths(self) -> None:
+        """Solves for the strength of each Panel's horseshoe vortex.
+
+        :return: None
+        """
+        self._vortex_strengths = np.linalg.solve(
+            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
+        )
+
+    def calculate_solution_velocity(
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """Finds the fluid velocity (in the first Airplane's geometry axes, observed
+        from the Earth frame) at one or more points (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG) due to the freestream velocity and
+        the induced velocity from every horseshoe vortex.
+
+        When an image surface is defined on the OperatingPoint, the returned velocity
+        also includes the induced velocity from image horseshoe vortices reflected
+        across that surface.
+
+        This method assumes that the correct strengths for the horseshoe vortices have
+        already been calculated and set.
+
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list,or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :param bound_singularity_counts: An optional (3,) ndarray of int64 for
+            accumulating singularity event counts from bound horseshoe vortices. If
+            None, counts are discarded.
+        :return: A (N,3) ndarray of floats representing the velocity (in the first
+            Airplane's geometry axes, observed from the Earth frame) at each evaluation
+            point due to the summed effects of the freestream velocity and the induced
+            velocity from every horseshoe vortex. The units are in meters per second.
+        """
+        stackP_GP1_CgP1 = (
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+                stackP_GP1_CgP1, "stackP_GP1_CgP1"
+            )
+        )
+
+        if bound_singularity_counts is None:
+            bound_singularity_counts = np.zeros(3, dtype=np.int64)
+
+        stackVInd_GP1__E = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                strengths=self._vortex_strengths,
+                r_c0s=self._r_c0s,
+                singularity_counts=bound_singularity_counts,
+                nu=self.operating_point.nu,
+            )
+        )
+
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedP_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackP_GP1_CgP1,
+                is_position=True,
+            )
+            stackImageVInd_GP1__E = (
+                _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                    stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                    stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                    stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                    strengths=self._vortex_strengths,
+                    r_c0s=self._r_c0s,
+                    singularity_counts=bound_singularity_counts,
+                    nu=self.operating_point.nu,
+                )
+            )
+            stackVInd_GP1__E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageVInd_GP1__E,
+                is_position=False,
+            )
+
+        return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)
+
+    def _calculate_loads(self) -> None:
+        """Calculates the forces (in the first Airplane's geometry axes) and moments (in
+        the first Airplane's geometry axes, relative to the first Airplane's CG) on
+        every Panel.
+
+        This method assumes that the correct strengths for the horseshoe vortices have
+        already been calculated and set.
+
+        After finding the loads on every Panel, this method passes them to
+        process_solver_loads, which finds and sets each Airplane's total loads and their
+        coefficients, including the total moments in the Airplane's geometry axes and in
+        wind axes, both relative to the Airplane's CG.
+
+        :return: None
+        """
+        # Calculate the velocity (in the first Airplane's geometry axes, observed from
+        # the Earth frame) at the center of every Panel's horseshoe vortex's finite leg.
+        bound_singularity_counts = np.zeros(3, dtype=np.int64)
+        stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
+            stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
+        )
+
+        _functions.log_unexpected_singularity_counts(
+            logger,
+            logging.ERROR,
+            "_calculate_loads (bound)",
+            bound_singularity_counts,
+        )
+
+        # Calculate the force (in the first Airplane's geometry axes) on each Panel's
+        # horseshoe vortex's finite leg using the Kutta-Joukowski theorem.
+        forces_GP1 = (
+            self.operating_point.rho
+            * np.expand_dims(self._vortex_strengths, axis=1)
+            * np.cross(
+                stackVelocityBoundVortexCenters_GP1__E,
+                self._stackBoundVortexVectors_GP1,
+                axis=-1,
+            )
+        )
+
+        # TODO: Determine if we get any performance gains by switching to the
+        #  functions.numba1d_explicit_cross function here.
+        # Calculate the moment (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG) on each Panel's horseshoe vortex's finite leg.
+        moments_GP1_CgP1 = np.cross(
+            self._stackBoundVortexCenters_GP1_CgP1,
+            forces_GP1,
+            axis=-1,
+        )
+
+        _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextvars
 import logging
+import re
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -20,9 +21,13 @@ PACKAGE_LOGGER_NAME = "pterasoftware"
 # through to Python's handler of last resort, which prints them bare to stderr.
 logging.getLogger(PACKAGE_LOGGER_NAME).addHandler(logging.NullHandler())
 
+# Matches a module logger definition's get_logger call and captures the literal logger
+# name it passes.
+LOGGER_DEFINITION_PATTERN = re.compile(r'_logging\.get_logger\("([\w.]+)"\)')
+
 # The current log-message nesting level. Each level indents messages formatted with
 # indent() by two spaces.
-_indent_level: contextvars.ContextVar[int] = contextvars.ContextVar(
+indent_level: contextvars.ContextVar[int] = contextvars.ContextVar(
     "indent_level", default=0
 )
 
@@ -34,7 +39,7 @@ def indent(levels: int = 0) -> str:
         level. It must be a non negative int. The default is 0.
     :return: The leading whitespace, two spaces per level.
     """
-    return "  " * (_indent_level.get() + levels)
+    return "  " * (indent_level.get() + levels)
 
 
 @contextmanager
@@ -50,14 +55,14 @@ def nested(levels: int = 1) -> Iterator[None]:
         positive int. The default is 1.
     :return: None
     """
-    token = _indent_level.set(_indent_level.get() + levels)
+    token = indent_level.set(indent_level.get() + levels)
     try:
         yield
     finally:
-        _indent_level.reset(token)
+        indent_level.reset(token)
 
 
-class _TqdmLoggingHandler(logging.Handler):
+class TqdmLoggingHandler(logging.Handler):
     """A logging handler that writes messages through tqdm.write().
 
     This prevents log messages from breaking TQDM progress bars by using tqdm's write
@@ -97,35 +102,31 @@ class _TqdmLoggingHandler(logging.Handler):
             self.stream.flush()
 
 
-def _max_module_logger_display_name_length() -> int:
+def max_module_logger_display_name_length() -> int:
     """Returns the length of the longest possible module logger display name in the
     package.
 
     A logger's display name is its name with the package prefix stripped (see
-    _PackageLogFormatter). Loggers are named after their modules via get_logger, so the
-    package's module file names determine every display name it can create. The modules
-    are found by walking the package's source tree rather than by importing them, which
-    keeps this compatible with the package's lazy imports and free of import side
-    effects. Only modules that create a logger contribute to the width, and a module is
-    detected as creating one by its source containing the "_logging.get_logger(" call
-    form, which every module logger definition uses.
+    PackageLogFormatter). Each module names its logger with a literal string passed to
+    get_logger, and that literal need not match the module's file path, so the display
+    names are read from the literals themselves. The modules are found by walking the
+    package's source tree rather than by importing them, which keeps this compatible
+    with the package's lazy imports and free of import side effects. Each literal is
+    found in the "_logging.get_logger(...)" call form, which every module logger
+    definition uses.
 
     :return: The length of the longest possible module logger display name.
     """
     package_dir = Path(__file__).parent
     name_lengths = [len(PACKAGE_LOGGER_NAME)]
     for module_path in package_dir.rglob("*.py"):
-        relative_path = module_path.relative_to(package_dir)
-        if relative_path.name == "__init__.py":
-            continue
-        if "_logging.get_logger(" not in module_path.read_text():
-            continue
-        display_name = ".".join((*relative_path.parts[:-1], relative_path.stem))
-        name_lengths.append(len(display_name))
+        for logger_name in LOGGER_DEFINITION_PATTERN.findall(module_path.read_text()):
+            display_name = logger_name.removeprefix(f"{PACKAGE_LOGGER_NAME}.")
+            name_lengths.append(len(display_name))
     return max(name_lengths)
 
 
-class _PackageLogFormatter(logging.Formatter):
+class PackageLogFormatter(logging.Formatter):
     """A logging formatter that adds each record's display name.
 
     The display name is the logger's name with the leading "pterasoftware." stripped.
@@ -198,7 +199,7 @@ def set_up_logging(
     """
     # Validate level.
     if isinstance(level, str):
-        level = _convert_logging_level_name_to_value(level)
+        level = convert_logging_level_name_to_value(level)
     elif not isinstance(level, int):
         raise TypeError("level must be an int or a str.")
 
@@ -221,7 +222,7 @@ def set_up_logging(
 
     # Create handler if not provided.
     if handler is None:
-        handler = _TqdmLoggingHandler()
+        handler = TqdmLoggingHandler()
 
     # Set up formatting. The level name is right padded to the width of the longest
     # standard level name (CRITICAL) and the display name to the width of the package's
@@ -229,10 +230,10 @@ def set_up_logging(
     # and modules. Aligned messages let the indentation of nested messages read as one
     # continuous tree.
     if format_string is None:
-        name_width = _max_module_logger_display_name_length()
+        name_width = max_module_logger_display_name_length()
         format_string = f"%(levelname)-8s|%(display_name)-{name_width}s|%(message)s"
 
-    formatter = _PackageLogFormatter(format_string)
+    formatter = PackageLogFormatter(format_string)
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
@@ -245,7 +246,7 @@ def set_up_logging(
     return logger
 
 
-def _convert_logging_level_name_to_value(name: str) -> int:
+def convert_logging_level_name_to_value(name: str) -> int:
     """Converts a logging level name string to its integer value.
 
     :param name: The string representation of the logging level. The options are

@@ -15,20 +15,20 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_convergence
 
 # Create two Airplanes. Read through the solver and formation examples for more details
 # on creating these Airplanes.
-leading_airplane = ps.geometry.airplane.Airplane(
+leading_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="asymmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
@@ -36,8 +36,8 @@ leading_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -51,18 +51,18 @@ leading_airplane = ps.geometry.airplane.Airplane(
             symmetryPoint_G_Cg=(0, 0, 0),
             chordwise_spacing="uniform",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -81,20 +81,20 @@ leading_airplane = ps.geometry.airplane.Airplane(
     name="Leading Airplane",
 )
 
-trailing_airplane = ps.geometry.airplane.Airplane(
+trailing_airplane = ps.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="asymmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=8,
@@ -102,8 +102,8 @@ trailing_airplane = ps.geometry.airplane.Airplane(
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca2412",
                     ),
                     num_spanwise_panels=None,
@@ -117,18 +117,18 @@ trailing_airplane = ps.geometry.airplane.Airplane(
             symmetryPoint_G_Cg=(0, 0, 0),
             chordwise_spacing="uniform",
         ),
-        ps.geometry.wing.Wing(
+        ps.Wing(
             wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=8,
                     control_surface_symmetry_type="symmetric",
                     spanwise_spacing="cosine",
                 ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(
+                ps.WingCrossSection(
+                    airfoil=ps.Airfoil(
                         name="naca0012",
                     ),
                     num_spanwise_panels=None,
@@ -149,10 +149,10 @@ trailing_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create an OperatingPoint.
-operating_point = ps.operating_point.OperatingPoint()
+operating_point = ps.OperatingPoint()
 
 # Create a SteadyProblem. We will pass this into the convergence function.
-steady_problem = ps.problems.SteadyProblem(
+steady_problem = ps.SteadyProblem(
     airplanes=[leading_airplane, trailing_airplane],
     operating_point=operating_point,
 )
@@ -167,7 +167,7 @@ del operating_point
 # tolerance (rtol) plus the absolute tolerance (atol) between successive meshes, it will
 # return the parameters it found to result in a converged solution. See the
 # analyze_steady_convergence function docstring for more details.
-ps.convergence.analyze_steady_convergence(
+ps.analyze_steady_convergence(
     ref_problem=steady_problem,
     solver_type="steady ring vortex lattice method",
     panel_aspect_ratio_bounds=(4, 1),

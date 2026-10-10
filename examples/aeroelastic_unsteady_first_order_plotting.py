@@ -37,7 +37,7 @@ def run_aeroelastic(
     spring_constant_rad: float = DEFAULT_K_RAD,
     damping_constant_rad: float = DEFAULT_B_RAD,
     wing_density: float = DEFAULT_DENSITY,
-) -> tuple[list[np.ndarray], ps.problems.AeroelasticUnsteadyProblem]:
+) -> tuple[list[np.ndarray], ps.AeroelasticUnsteadyProblem]:
     """Run the aeroelastic solver and return the first Wing's deformation angle time
     series.
 
@@ -56,7 +56,7 @@ def run_aeroelastic(
 
     for i in range(len(cross_section_chords)):
         wing_cross_sections.append(
-            ps.geometry.wing_cross_section.WingCrossSection(
+            ps.WingCrossSection(
                 num_spanwise_panels=(
                     num_spanwise_panels if i < len(cross_section_chords) - 1 else None
                 ),
@@ -69,7 +69,7 @@ def run_aeroelastic(
                 spanwise_spacing=(
                     "uniform" if i < len(cross_section_chords) - 1 else None
                 ),
-                airfoil=ps.geometry.airfoil.Airfoil(
+                airfoil=ps.Airfoil(
                     name="naca2412",
                     outline_A_Lp=None,
                     resample=True,
@@ -78,7 +78,7 @@ def run_aeroelastic(
             )
         )
 
-    wing_1 = ps.geometry.wing.Wing(
+    wing_1 = ps.Wing(
         wing_cross_sections=wing_cross_sections,
         name="Main Wing",
         Ler_Gs_Cgs=(0.0, 0.5, 0.0),
@@ -92,12 +92,12 @@ def run_aeroelastic(
         chordwise_spacing="uniform",
     )
 
-    example_airplane = ps.geometry.airplane.Airplane(
+    example_airplane = ps.Airplane(
         wings=[
             wing_1,
-            ps.geometry.wing.Wing(
+            ps.Wing(
                 wing_cross_sections=[
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         num_spanwise_panels=8,
                         chord=1.5,
                         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -106,14 +106,14 @@ def run_aeroelastic(
                         control_surface_hinge_point=0.75,
                         control_surface_deflection=0.0,
                         spanwise_spacing="uniform",
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                        airfoil=ps.Airfoil(
                             name="naca0012",
                             outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=400,
                         ),
                     ),
-                    ps.geometry.wing_cross_section.WingCrossSection(
+                    ps.WingCrossSection(
                         num_spanwise_panels=None,
                         chord=1.0,
                         Lp_Wcsp_Lpp=(0.5, 2.0, 0.0),
@@ -122,7 +122,7 @@ def run_aeroelastic(
                         control_surface_hinge_point=0.75,
                         control_surface_deflection=0.0,
                         spanwise_spacing=None,
-                        airfoil=ps.geometry.airfoil.Airfoil(
+                        airfoil=ps.Airfoil(
                             name="naca0012",
                             outline_A_Lp=None,
                             resample=True,
@@ -163,10 +163,10 @@ def run_aeroelastic(
     amplitude_z = 0.0
 
     main_wing_cross_section_movements_list: list[
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+        ps.AeroelasticWingCrossSectionMovement
     ] = []
     reflected_wing_cross_section_movements_list: list[
-        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+        ps.AeroelasticWingCrossSectionMovement
     ] = []
 
     # The reflected Wing has its own WingCrossSections, so its movements must be built
@@ -178,13 +178,13 @@ def run_aeroelastic(
     ):
         for i in range(len(wing.wing_cross_sections)):
             if i == 0:
-                wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                wing_cross_section_movement = ps.AeroelasticWingCrossSectionMovement(
                     base_wing_cross_section=wing.wing_cross_sections[i],
                 )
                 wing_cross_section_movements_list.append(wing_cross_section_movement)
 
             else:
-                wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                wing_cross_section_movement = ps.AeroelasticWingCrossSectionMovement(
                     base_wing_cross_section=wing.wing_cross_sections[i],
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -201,33 +201,29 @@ def run_aeroelastic(
                 )
                 wing_cross_section_movements_list.append(wing_cross_section_movement)
 
-    v_tail_root_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    v_tail_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
-    v_tail_tip_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
+    v_tail_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
-    main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+    main_wing_movement = ps.AeroelasticWingMovement(
         base_wing=example_airplane.wings[0],
         wing_cross_section_movements=main_wing_cross_section_movements_list,
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -240,22 +236,20 @@ def run_aeroelastic(
         phaseAngles_Gs_to_Wn_ixyz=(FLAP_PHASE, 0.0, 0.0),
     )
 
-    reflected_main_wing_movement = (
-        ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-            base_wing=example_airplane.wings[1],
-            wing_cross_section_movements=reflected_wing_cross_section_movements_list,
-            ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-            phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            ampAngles_Gs_to_Wn_ixyz=(FLAP_AMPLITUDE, 0.0, 0.0),
-            periodAngles_Gs_to_Wn_ixyz=(FLAP_PERIOD, 0.0, 0.0),
-            spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Gs_to_Wn_ixyz=(FLAP_PHASE, 0.0, 0.0),
-        )
+    reflected_main_wing_movement = ps.AeroelasticWingMovement(
+        base_wing=example_airplane.wings[1],
+        wing_cross_section_movements=reflected_wing_cross_section_movements_list,
+        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(FLAP_AMPLITUDE, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(FLAP_PERIOD, 0.0, 0.0),
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Gs_to_Wn_ixyz=(FLAP_PHASE, 0.0, 0.0),
     )
 
-    v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
+    v_tail_wing_movement = ps.WingMovement(
         base_wing=example_airplane.wings[2],
         wing_cross_section_movements=[
             v_tail_root_wing_cross_section_movement,
@@ -271,42 +265,38 @@ def run_aeroelastic(
         phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
 
-    example_airplane_movement = (
-        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
-            base_airplane=example_airplane,
-            wing_movements=[
-                main_wing_movement,
-                reflected_main_wing_movement,
-                v_tail_wing_movement,
-            ],
-            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
-            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
+    example_airplane_movement = ps.AeroelasticAirplaneMovement(
+        base_airplane=example_airplane,
+        wing_movements=[
+            main_wing_movement,
+            reflected_main_wing_movement,
+            v_tail_wing_movement,
+        ],
+        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
     )
 
-    example_operating_point = ps.operating_point.OperatingPoint(
+    example_operating_point = ps.OperatingPoint(
         rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
     )
 
-    example_operating_point_movement = (
-        ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=example_operating_point,
-            ampVCg__E=0.0,
-            periodVCg__E=0.0,
-            spacingVCg__E="sine",
-        )
+    example_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=example_operating_point,
+        ampVCg__E=0.0,
+        periodVCg__E=0.0,
+        spacingVCg__E="sine",
     )
 
-    example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
+    example_movement = ps.AeroelasticMovement(
         airplane_movements=[example_airplane_movement],
         operating_point_movement=example_operating_point_movement,
         delta_time=0.03,
         num_steps=100,
     )
 
-    example_problem = ps.problems.AeroelasticUnsteadyProblem(
+    example_problem = ps.AeroelasticUnsteadyProblem(
         movement=example_movement,
         wing_density=wing_density,
         spring_constant_rad=spring_constant_rad,
@@ -314,7 +304,7 @@ def run_aeroelastic(
         step_discards=5,
     )
 
-    example_solver = ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
+    example_solver = ps.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         aeroelastic_unsteady_problem=example_problem,
     )
 
@@ -323,7 +313,7 @@ def run_aeroelastic(
     )
 
     solved_problem = example_solver.unsteady_problem
-    assert isinstance(solved_problem, ps.problems.AeroelasticUnsteadyProblem)
+    assert isinstance(solved_problem, ps.AeroelasticUnsteadyProblem)
 
     return solved_problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0], solved_problem
 

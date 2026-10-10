@@ -20,38 +20,32 @@ import numpy as np
 import pyvista as pv
 import webp
 
-from . import (
-    _colormaps,
-    _fonts,
-    _logging,
-    _mujoco_model,
-    _transformations,
-    geometry,
-)
-from . import operating_point as operating_point_mod
-from . import problems
+from . import _colormaps, _fonts, _geometry, _logging, _mujoco_model
+from . import _operating_point as operating_point_mod
+from . import _transformations
 
 if TYPE_CHECKING:
     from . import (
-        free_flight_unsteady_ring_vortex_lattice_method,
-        unsteady_ring_vortex_lattice_method,
+        _free_flight_unsteady_ring_vortex_lattice_method,
+        _problems,
+        _unsteady_ring_vortex_lattice_method,
     )
 
-_logger = _logging.get_logger("output")
+logger = _logging.get_logger("output")
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
 # maps live in the _colormaps module. The edge line widths are in pixels, so they are
 # tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale wherever they are used,
 # as the font sizes below are.
-_WAKE_VORTEX_COLOR = "white"
-_WAKE_VORTEX_EDGE_LINE_WIDTH = 1.0
-_PANEL_COLOR = "chartreuse"
-_PANEL_EDGE_LINE_WIDTH = 1.0
-_IMAGE_SURFACE_SCALE = 5.0
+WAKE_VORTEX_COLOR = "white"
+WAKE_VORTEX_EDGE_LINE_WIDTH = 1.0
+PANEL_COLOR = "chartreuse"
+PANEL_EDGE_LINE_WIDTH = 1.0
+IMAGE_SURFACE_SCALE = 5.0
 IMAGE_REFLECTION_MUTE_FACTOR = 0.5
-_IMAGE_SURFACE_CHECKER_SIZE = 25
-_IMAGE_SURFACE_COLOR_A = np.array([40, 40, 40], dtype=np.uint8)
-_IMAGE_SURFACE_COLOR_B = np.array([80, 80, 80], dtype=np.uint8)
+IMAGE_SURFACE_CHECKER_SIZE = 25
+IMAGE_SURFACE_COLOR_A = np.array([40, 40, 40], dtype=np.uint8)
+IMAGE_SURFACE_COLOR_B = np.array([80, 80, 80], dtype=np.uint8)
 TEXT_COLOR = (129, 129, 129)
 TEXT_COLOR_SURFACE = (220, 220, 220)
 PLOTTER_BACKGROUND_COLOR = "black"
@@ -66,61 +60,61 @@ VALID_SCALAR_TYPES = ("induced drag", "crosswind force", "lift")
 # disabled renders identically whether or not the scene holds a light, so the geoms'
 # shading leaves every other actor's appearance untouched. The ambient floor keeps the
 # faces the headlight misses from going black.
-_MUJOCO_GEOMETRY_AMBIENT = 0.3
-_MUJOCO_GEOMETRY_DIFFUSE = 0.7
+MUJOCO_GEOMETRY_AMBIENT = 0.3
+MUJOCO_GEOMETRY_DIFFUSE = 0.7
 
 # Set constants for the color maps, scalar bars, and text boxes. The positions are
 # fractions of the render window, so they track its size on their own. The font sizes
 # are in pixels and do not, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by
 # get_window_scale wherever they are used.
-_COLOR_MAP_NUM_SIG = 3
-_BAR_TITLE_FONT_SIZE = 30
-_BAR_LABEL_FONT_SIZE = 21
-_BAR_WIDTH = 0.5
-_BAR_POSITION_X = 0.25
-_BAR_POSITION_Y = 0.05
-_BAR_N_LABELS = 2
+COLOR_MAP_NUM_SIG = 3
+BAR_TITLE_FONT_SIZE = 30
+BAR_LABEL_FONT_SIZE = 21
+BAR_WIDTH = 0.5
+BAR_POSITION_X = 0.25
+BAR_POSITION_Y = 0.05
+BAR_N_LABELS = 2
 # The maximum and minimum scalar labels are right justified, so these positions anchor
 # their right edges against the right margin and the text grows leftward. No label
 # length can overflow the window that way.
-_TEXT_MAX_POSITION = (0.99, 0.080)
-_TEXT_MIN_POSITION = (0.99, 0.045)
+TEXT_MAX_POSITION = (0.99, 0.080)
+TEXT_MIN_POSITION = (0.99, 0.045)
 TEXT_FONT_SIZE = 10
 
 # An animation's playback overlays sit against the left margin, a step apart, mirroring
 # the maximum and minimum scalar text on the other side of the window. The scalar bar
 # occupies the lower of the two rows as well, and its widget's box hides anything drawn
 # behind it, so both overlays are held close to the margin to leave the lower one as
-# much room as _BAR_POSITION_X allows.
-_TEXT_SPEED_POSITION = (0.01, 0.080)
-_TEXT_DROPPED_FRAMES_POSITION = (0.01, 0.045)
+# much room as BAR_POSITION_X allows.
+TEXT_SPEED_POSITION = (0.01, 0.080)
+TEXT_DROPPED_FRAMES_POSITION = (0.01, 0.045)
 
 # Define the colors of the x, y, and z basis direction arrows drawn by
 # add_axes_and_points, the arrows' proportions as fractions of their length, the number
 # of sides on their tips, the width of their lines, the size of the dots marking their
 # origins, and the length of each line in the crosses marking points without axes, as a
 # fraction of the arrows' length. The line width, font size, and dot size are in pixels.
-_AXES_COLORS = ("red", "green", "blue")
-_AXES_TIP_LENGTH = 0.2
-_AXES_TIP_RADIUS = 0.1
-_AXES_TIP_RESOLUTION = 20
-_AXES_LINE_WIDTH = 2.0
-_AXES_LABEL_FONT_SIZE = 15
-_AXES_POINT_SIZE = 10.0
-_AXES_CROSS_SIZE = 0.1
+AXES_COLORS = ("red", "green", "blue")
+AXES_TIP_LENGTH = 0.2
+AXES_TIP_RADIUS = 0.1
+AXES_TIP_RESOLUTION = 20
+AXES_LINE_WIDTH = 2.0
+AXES_LABEL_FONT_SIZE = 15
+AXES_POINT_SIZE = 10.0
+AXES_CROSS_SIZE = 0.1
 
 # Define the font size, in pixels, of the axes and point labels when they are written as
-# math. It is larger than _AXES_LABEL_FONT_SIZE because the math font's glyphs render
+# math. It is larger than AXES_LABEL_FONT_SIZE because the math font's glyphs render
 # smaller than the monospaced font's at the same size, and its subscripts and
 # superscripts are smaller still.
-_AXES_MATH_LABEL_FONT_SIZE = 20
+AXES_MATH_LABEL_FONT_SIZE = 20
 
 # Define how the axes and point IDs are written as math. Each ID is a run of
 # abbreviations, each followed by an optional number or, for a Panel point, by its row
 # and column (such as "r3c2"). A point ID's first abbreviation names the point, which is
 # written in math with the name it maps to here. Every other abbreviation in a point ID,
 # and every abbreviation in an axes ID, must be one of the axes and owner abbreviations.
-_MATH_POINT_NAMES = {
+MATH_POINT_NAMES = {
     "Cg": "CG",
     "Cpp": "CPP",
     "Eo": "EO",
@@ -128,76 +122,76 @@ _MATH_POINT_NAMES = {
     "Lp": "LP",
     "Lpp": "LPP",
 }
-_MATH_AXES_AND_OWNER_ABBREVIATIONS = ("A", "E", "G", "P", "Wcs", "Wcsp", "Wn")
-_ID_TOKEN_PATTERN = re.compile(r"([A-Z][a-z]*?)(r\d+c\d+|\d*)(?=[A-Z]|$)")
+MATH_AXES_AND_OWNER_ABBREVIATIONS = ("A", "E", "G", "P", "Wcs", "Wcsp", "Wn")
+ID_TOKEN_PATTERN = re.compile(r"([A-Z][a-z]*?)(r\d+c\d+|\d*)(?=[A-Z]|$)")
 
 # Define the angle, in degrees, between neighboring faces of an arrow's tip above which
 # their shared edge is always outlined, not just where it is on the tip's silhouette.
 # The rim between the tip's base and its sides is well above this angle, so it stays
 # outlined even when the base faces the camera, while the edges between the tip's side
 # faces are well below it.
-_AXES_TIP_FEATURE_ANGLE = 60.0
+AXES_TIP_FEATURE_ANGLE = 60.0
 
 # Define the polygon offset factor and units that push each arrow tip's filled faces
 # slightly away from the camera in the depth buffer, so they don't cover half of the
 # width of the outline drawn along their edges. The factor scales with the faces' depth
 # slope and the units are in the depth buffer's smallest resolvable steps.
-_AXES_TIP_FILL_OFFSET_FACTOR = 2.0
-_AXES_TIP_FILL_OFFSET_UNITS = 8.0
+AXES_TIP_FILL_OFFSET_FACTOR = 2.0
+AXES_TIP_FILL_OFFSET_UNITS = 8.0
 
 # Define how far each arrow's label is anchored beyond its tip, along the arrow's
 # direction, as a fraction of the arrows' length.
-_AXES_ARROW_LABEL_OFFSET = 0.15
+AXES_ARROW_LABEL_OFFSET = 0.15
 
 # Define how far each point's label is anchored from its point, as a fraction of the
 # arrows' length, for points with axes and for points marked with crosses. For a point
 # with axes, the anchor lies along the negative sum of its axes' basis directions, in
 # the octant that none of that axes set's arrows enter.
-_AXES_POINT_LABEL_OFFSET = 0.3
-_AXES_CROSS_LABEL_OFFSET = 0.15
+AXES_POINT_LABEL_OFFSET = 0.3
+AXES_CROSS_LABEL_OFFSET = 0.15
 
 # Define the fraction of an arrow's on screen length that its horizontal or vertical
 # extent must exceed for its label to be justified away from it along that direction,
 # rather than centered on its tip. This value, the sine of 22.5 degrees, splits the
 # screen directions into eight equal sectors.
-_AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
+AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
 
 # Define the longest time, in seconds, between two presses on the same label for them to
 # count as a double-click, which starts editing that label.
-_AXES_LABEL_DOUBLE_CLICK_TIME = 0.5
+AXES_LABEL_DOUBLE_CLICK_TIME = 0.5
 
 # Define the text of the caret drawn over a label while it is edited, which is
 # Liberation Mono's box drawing light vertical character (U+2502). It spans the font's
 # full line height. It is built from its code point so that this file stays ASCII, and
 # since it isn't the ASCII vertical bar, VTK doesn't split the caret's Label into table
 # cells at it.
-_AXES_LABEL_CARET_TEXT = chr(0x2502)
+AXES_LABEL_CARET_TEXT = chr(0x2502)
 
 # Define the patterns that find, in a label's text, a vertical bar that doesn't follow a
 # backslash, which VTK treats as a table cell separator, and a dollar sign that doesn't
 # follow a backslash, which opens or closes math.
-_BARE_VERTICAL_BAR_PATTERN = re.compile(r"(?<!\\)\|")
-_UNESCAPED_DOLLAR_SIGN_PATTERN = re.compile(r"(?<!\\)\$")
+BARE_VERTICAL_BAR_PATTERN = re.compile(r"(?<!\\)\|")
+UNESCAPED_DOLLAR_SIGN_PATTERN = re.compile(r"(?<!\\)\$")
 
 # Define the text inserted when a vertical bar is typed inside math while editing a
 # label, which is the math command for a single vertical bar. A letter typed right after
 # it merges into the command and makes the text invalid, which the label shows by
 # turning red until a space or another separator is typed between them.
-_MATH_VERTICAL_BAR_TEXT = "\\vert"
+MATH_VERTICAL_BAR_TEXT = "\\vert"
 
 # Define the parser that checks whether an edited label's text is valid math. VTK draws
 # a label's math with Matplotlib's mathtext, so text this parser accepts is text VTK can
 # draw.
-_MATH_TEXT_PARSER = matplotlib.mathtext.MathTextParser("path")
+MATH_TEXT_PARSER = matplotlib.mathtext.MathTextParser("path")
 
 # Define the background color of the diagrams, the colors of the Airfoil outlines, mean
 # camber lines, and Panel edges drawn by add_airfoil and add_panels, and the width of
 # their lines, which is in pixels.
-_DIAGRAM_BACKGROUND_COLOR = "white"
-_DIAGRAM_AIRFOIL_OUTLINE_COLOR = "black"
-_DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
-_DIAGRAM_PANEL_COLOR = "black"
-_DIAGRAM_LINE_WIDTH = 1.0
+DIAGRAM_BACKGROUND_COLOR = "white"
+DIAGRAM_AIRFOIL_OUTLINE_COLOR = "black"
+DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
+DIAGRAM_PANEL_COLOR = "black"
+DIAGRAM_LINE_WIDTH = 1.0
 
 # Define the style of the vortices drawn by add_vortices: the colors of the bound
 # vortices and the wake vortices, both when drawn exactly and when simplified, their
@@ -205,29 +199,29 @@ _DIAGRAM_LINE_WIDTH = 1.0
 # bounding box, how much of that overhang at the end of each trailing leg is dashed, and
 # the length of each dash and each gap. The last four are fractions of the largest
 # chord.
-_VORTEX_COLOR = "darkorange"
-_VORTEX_SIMPLIFIED_COLOR = "teal"
-_VORTEX_WAKE_COLOR = "royalblue"
-_VORTEX_WAKE_SIMPLIFIED_COLOR = "mediumpurple"
-_VORTEX_LINE_WIDTH = 1.0
-_VORTEX_TRAILING_LEG_OVERHANG = 1.0
-_VORTEX_TRAILING_LEG_DASHED_LENGTH = 0.5
-_VORTEX_DASH_LENGTH = 0.05
-_VORTEX_GAP_LENGTH = 0.05
+VORTEX_COLOR = "darkorange"
+VORTEX_SIMPLIFIED_COLOR = "teal"
+VORTEX_WAKE_COLOR = "royalblue"
+VORTEX_WAKE_SIMPLIFIED_COLOR = "mediumpurple"
+VORTEX_LINE_WIDTH = 1.0
+VORTEX_TRAILING_LEG_OVERHANG = 1.0
+VORTEX_TRAILING_LEG_DASHED_LENGTH = 0.5
+VORTEX_DASH_LENGTH = 0.05
+VORTEX_GAP_LENGTH = 0.05
 
 # Define how add_vortices simplifies the vortices when asked to: the fraction of the way
 # each ring vortex's corners move toward its center, and each horseshoe vortex's finite
 # leg's ends move toward that leg's midpoint, the radius of each rounded corner, as a
 # fraction of the shorter of the corner's two legs, and the number of points along each
 # rounded corner.
-_VORTEX_SIMPLIFIED_SHRINK = 0.1
-_VORTEX_SIMPLIFIED_CORNER_RADIUS = 0.2
-_VORTEX_SIMPLIFIED_CORNER_NUM_POINTS = 8
+VORTEX_SIMPLIFIED_SHRINK = 0.1
+VORTEX_SIMPLIFIED_CORNER_RADIUS = 0.2
+VORTEX_SIMPLIFIED_CORNER_NUM_POINTS = 8
 
 # Define the radius of each simplified vortex's vorticity arrows, as a fraction of that
 # vortex's shortest bound leg, and the number of points along each arrow's half circle.
-_VORTEX_VORTICITY_ARROW_RADIUS = 0.15
-_VORTEX_VORTICITY_ARROW_NUM_POINTS = 24
+VORTEX_VORTICITY_ARROW_RADIUS = 0.15
+VORTEX_VORTICITY_ARROW_NUM_POINTS = 24
 
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
@@ -235,7 +229,7 @@ REFERENCE_WINDOW_SIZE = (1024, 768)
 
 # Define the highest frame rate, in frames per second, that an animation is saved at.
 # Some programs will not render a WebP any faster than this.
-_MAX_FRAME_RATE = 50.0
+MAX_FRAME_RATE = 50.0
 
 # Define the libwebp compression method that every saved WebP is encoded with, from 0
 # (the fastest) to 6 (the slowest). The method sets how hard the encoder works to shrink
@@ -251,14 +245,14 @@ WEBP_METHOD = 0
 # many time steps an animation has. Each slot costs one raw frame of memory, and the
 # slower of the two stages sets the pace whatever the depth, so a deeper queue buys
 # nothing. Two slots let one frame wait while another is encoded.
-_ANIMATION_WRITER_QUEUE_DEPTH = 2
+ANIMATION_WRITER_QUEUE_DEPTH = 2
 
 # Define the fewest frames per cycle of the fastest prescribed motion that a saved
 # animation can show before it stops resolving that motion. The Nyquist floor is 2.0
 # frames per cycle, below which the apparent motion can reverse direction or stand
 # still, but an animation is already jerky and misleading well above that floor. One
 # threshold here covers both regimes.
-_MIN_FRAMES_PER_PERIOD = 10.0
+MIN_FRAMES_PER_PERIOD = 10.0
 
 
 def get_window_scale(window_width: int, window_height: int) -> float:
@@ -301,7 +295,7 @@ class Playback(NamedTuple):
 
 
 def resolve_playback(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     speed: float | None,
     save: bool,
 ) -> Playback:
@@ -332,12 +326,12 @@ def resolve_playback(
     delta_time = unsteady_solver.delta_time
     num_steps = unsteady_solver.num_steps
     if speed is None:
-        speed = min(1.0, _MAX_FRAME_RATE * delta_time)
+        speed = min(1.0, MAX_FRAME_RATE * delta_time)
 
     # The clamp only guards against the division landing an ulp above the maximum, since
     # the stride already holds the quotient at or below it.
-    keep_every = math.ceil(speed / (_MAX_FRAME_RATE * delta_time))
-    frame_rate = min(_MAX_FRAME_RATE, speed / (keep_every * delta_time))
+    keep_every = math.ceil(speed / (MAX_FRAME_RATE * delta_time))
+    frame_rate = min(MAX_FRAME_RATE, speed / (keep_every * delta_time))
     achieved_speed = frame_rate * keep_every * delta_time
 
     # Frames are saved at every time step that is a multiple of the stride, so time step
@@ -355,7 +349,7 @@ def resolve_playback(
             f"{delta_time}."
         )
     if num_saved_frames < 2:
-        largest_speed = (num_steps - 1) * _MAX_FRAME_RATE * delta_time
+        largest_speed = (num_steps - 1) * MAX_FRAME_RATE * delta_time
         raise ValueError(
             f"speed is too fast to animate a simulation of {num_steps} time steps, "
             f"because it saves fewer than two frames. The fastest speed this "
@@ -365,10 +359,10 @@ def resolve_playback(
     # The speed overlay reports the speed the animation achieves, which is the requested
     # speed wherever the clamp above leaves the frame rate alone. The second overlay
     # appears only when frames are actually dropped.
-    overlay_texts = [(f"Speed: {100 * achieved_speed:#.4G}%", _TEXT_SPEED_POSITION)]
+    overlay_texts = [(f"Speed: {100 * achieved_speed:#.4G}%", TEXT_SPEED_POSITION)]
     if keep_every > 1:
         overlay_texts.append(
-            (f"Frames: Every 1 of {keep_every}", _TEXT_DROPPED_FRAMES_POSITION)
+            (f"Frames: Every 1 of {keep_every}", TEXT_DROPPED_FRAMES_POSITION)
         )
 
     # A static geometry has nothing to alias, a stride of 1 drops nothing, and an
@@ -376,11 +370,11 @@ def resolve_playback(
     movement = unsteady_solver.unsteady_problem.movement
     if save and keep_every > 1 and not movement.static:
         frames_per_period = movement.min_period / (keep_every * delta_time)
-        if frames_per_period < _MIN_FRAMES_PER_PERIOD:
-            _logger.warning(
+        if frames_per_period < MIN_FRAMES_PER_PERIOD:
+            logger.warning(
                 _logging.indent() + f"The animation saves {frames_per_period:.1f} "
                 f"frames per cycle of its fastest motion, whose period is "
-                f"{movement.min_period} seconds. Below {_MIN_FRAMES_PER_PERIOD} frames "
+                f"{movement.min_period} seconds. Below {MIN_FRAMES_PER_PERIOD} frames "
                 f"per cycle the motion looks jerky, and below the Nyquist floor of 2.0 "
                 f"it can appear to reverse direction or stand still. Animate at a "
                 f"slower speed to save more frames."
@@ -416,7 +410,7 @@ def add_playback_overlays(
         overlay.prop.set_font_file(str(_fonts.FONT_PATH))
 
 
-def _split_id(diagram_id: str) -> list[tuple[str, str]]:
+def split_id(diagram_id: str) -> list[tuple[str, str]]:
     """Splits an axes or point ID into its abbreviations and their suffixes.
 
     :param diagram_id: The axes or point ID to split (such as "Cppr3c2Wn1P2").
@@ -427,7 +421,7 @@ def _split_id(diagram_id: str) -> list[tuple[str, str]]:
     """
     # The pattern skips any characters it can't match, so check that the tokens it found
     # rebuild the whole ID.
-    tokens: list[tuple[str, str]] = _ID_TOKEN_PATTERN.findall(diagram_id)
+    tokens: list[tuple[str, str]] = ID_TOKEN_PATTERN.findall(diagram_id)
     rebuilt_id = "".join(abbreviation + suffix for abbreviation, suffix in tokens)
     if not tokens or rebuilt_id != diagram_id:
         raise ValueError(f'"{diagram_id}" is not a valid axes or point ID.')
@@ -445,9 +439,9 @@ def get_math_axes_label(axes_id: str, component_letter: str) -> str:
     :param component_letter: The basis direction's letter, which is "X", "Y", or "Z".
     :return: The label as math, without the dollar signs that delimit it.
     """
-    tokens = _split_id(axes_id)
+    tokens = split_id(axes_id)
     for abbreviation, suffix in tokens:
-        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+        if abbreviation not in MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
             suffix == "" or suffix.isdigit()
         ):
             raise ValueError(f'"{axes_id}" is not a valid axes ID.')
@@ -469,17 +463,17 @@ def get_math_point_label(point_id: str) -> str:
     :param point_id: The point's ID (such as "Cppr3c2Wn1P2").
     :return: The label as math, without the dollar signs that delimit it.
     """
-    tokens = _split_id(point_id)
+    tokens = split_id(point_id)
     name_abbreviation, name_suffix = tokens[0]
-    if name_abbreviation not in _MATH_POINT_NAMES:
+    if name_abbreviation not in MATH_POINT_NAMES:
         raise ValueError(f'"{point_id}" is not a valid point ID.')
     for abbreviation, suffix in tokens[1:]:
-        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+        if abbreviation not in MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
             suffix == "" or suffix.isdigit()
         ):
             raise ValueError(f'"{point_id}" is not a valid point ID.')
 
-    label = rf"\mathrm{{{_MATH_POINT_NAMES[name_abbreviation]}}}"
+    label = rf"\mathrm{{{MATH_POINT_NAMES[name_abbreviation]}}}"
     row_and_column = ""
     if name_suffix.startswith("r"):
         row, column = name_suffix[1:].split("c")
@@ -586,7 +580,7 @@ def add_axes_and_points(
     :return: None
     """
     # Set the background before labels and arrow-tip fills copy its color.
-    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+    plotter.background_color = pv.Color(DIAGRAM_BACKGROUND_COLOR)
 
     # Each axes set's point has its label offset along the negative sum of that axes
     # set's basis directions, which is the unit vector (-1, -1, -1) / sqrt(3) in that
@@ -602,14 +596,14 @@ def add_axes_and_points(
     ]
     listAllLabelOffsets_D = [
         *(
-            _AXES_POINT_LABEL_OFFSET
+            AXES_POINT_LABEL_OFFSET
             * transformation[:3, :3]
             @ np.array([-1.0, -1.0, -1.0])
             / math.sqrt(3.0)
             for transformation in transformations
         ),
         *(
-            _AXES_CROSS_LABEL_OFFSET
+            AXES_CROSS_LABEL_OFFSET
             * extraPointBasisDirections_D
             @ np.array([-1.0, 1.0, 1.0])
             / math.sqrt(3.0)
@@ -680,7 +674,7 @@ def add_axes_and_points(
             ("X", "Y") if axes_id in two_dimensional_axes_ids else ("X", "Y", "Z")
         )
         for component_id, (component_letter, color) in enumerate(
-            zip(component_letters, _AXES_COLORS)
+            zip(component_letters, AXES_COLORS)
         ):
             thisArrowDirection_D = transformation[:3, component_id]
             label = f"{axes_id}{component_letter}"
@@ -707,13 +701,13 @@ def add_axes_and_points(
         listArrowStarts_D_Do, listArrowDirections_D, arrow_colors
     ):
         shaftEnd_D_Do = (
-            arrowStart_D_Do + (1.0 - _AXES_TIP_LENGTH) * axes_scale * arrowDirection_D
+            arrowStart_D_Do + (1.0 - AXES_TIP_LENGTH) * axes_scale * arrowDirection_D
         )
         listShaftEnds_D_Do.append(shaftEnd_D_Do)
         plotter.add_mesh(
             pv.Line(arrowStart_D_Do, shaftEnd_D_Do),
             color=arrow_color,
-            line_width=_AXES_LINE_WIDTH,
+            line_width=AXES_LINE_WIDTH,
         )
     for tip_color in dict.fromkeys(arrow_colors):
         color_tip_ids = [
@@ -721,7 +715,7 @@ def add_axes_and_points(
             for arrow_id, arrow_color in enumerate(arrow_colors)
             if arrow_color == tip_color
         ]
-        _add_arrow_tips(
+        add_arrow_tips(
             plotter,
             stackTipBases_D_Do=np.array(
                 [listShaftEnds_D_Do[arrow_id] for arrow_id in color_tip_ids],
@@ -731,8 +725,8 @@ def add_axes_and_points(
                 [listArrowDirections_D[arrow_id] for arrow_id in color_tip_ids],
                 dtype=float,
             ),
-            lengths=np.full(len(color_tip_ids), _AXES_TIP_LENGTH * axes_scale),
-            radii=np.full(len(color_tip_ids), _AXES_TIP_RADIUS * axes_scale),
+            lengths=np.full(len(color_tip_ids), AXES_TIP_LENGTH * axes_scale),
+            radii=np.full(len(color_tip_ids), AXES_TIP_RADIUS * axes_scale),
             color=tip_color,
         )
 
@@ -782,10 +776,10 @@ def add_axes_and_points(
         plotter.add_points(
             np.array(listDotPoints_D_Do, dtype=float),
             color="black",
-            point_size=_AXES_POINT_SIZE,
+            point_size=AXES_POINT_SIZE,
             render_points_as_spheres=True,
         )
-    cross_half_length = 0.5 * _AXES_CROSS_SIZE * axes_scale
+    cross_half_length = 0.5 * AXES_CROSS_SIZE * axes_scale
     listCrossVertices_D_Do = [
         point_D_Do + sign * cross_half_length * crossDirection_D
         for point_D_Do, has_axes, crossDirections_D in zip(
@@ -809,7 +803,7 @@ def add_axes_and_points(
                 np.array(listCrossVertices_D_Do, dtype=float), lines=cross_lines
             ),
             color="black",
-            line_width=_AXES_LINE_WIDTH,
+            line_width=AXES_LINE_WIDTH,
         )
 
     # Label the arrow tips and the points, with one Label per text. Unlike
@@ -827,16 +821,14 @@ def add_axes_and_points(
     # STIX fonts for the Times family. Merged math labels are joined inside one pair of
     # dollar signs. Each arrow's plain label is its axes ID followed by its one letter
     # basis direction, which is split back off to write it as math.
-    label_font_size = (
-        _AXES_MATH_LABEL_FONT_SIZE if math_labels else _AXES_LABEL_FONT_SIZE
-    )
+    label_font_size = AXES_MATH_LABEL_FONT_SIZE if math_labels else AXES_LABEL_FONT_SIZE
     label_entries: list[tuple[pv.Label, np.ndarray, np.ndarray]] = []
     for arrowStart_D_Do, arrowDirection_D, labels in zip(
         listArrowStarts_D_Do, listArrowDirections_D, arrow_labels
     ):
         arrowLabelAnchor_D_Do = (
             arrowStart_D_Do
-            + (1.0 + _AXES_ARROW_LABEL_OFFSET) * axes_scale * arrowDirection_D
+            + (1.0 + AXES_ARROW_LABEL_OFFSET) * axes_scale * arrowDirection_D
         )
         arrow_label_text = "/".join(labels)
         if math_labels:
@@ -960,7 +952,7 @@ def add_axes_and_points(
             otherwise.
         """
         try:
-            _MATH_TEXT_PARSER.parse(text)
+            MATH_TEXT_PARSER.parse(text)
         except ValueError:
             return False
         return True
@@ -1004,7 +996,7 @@ def add_axes_and_points(
         # anchor, so its bar lands there, and its background is transparent, so it never
         # hides the characters it sits between.
         if caret_label is None:
-            caret_label = pv.Label(text=_AXES_LABEL_CARET_TEXT, name="label caret")
+            caret_label = pv.Label(text=AXES_LABEL_CARET_TEXT, name="label caret")
             caret_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
             caret_label.prop.background_opacity = 0.0
             caret_label.prop.justification_horizontal = "center"
@@ -1046,7 +1038,7 @@ def add_axes_and_points(
         # the STIX fonts for the Times family, which it maps to Matplotlib's serif
         # family. show_diagram fills that serif family with Liberation Mono, which isn't
         # a serif font, so the text outside the math is drawn in Liberation Mono anyway.
-        if _UNESCAPED_DOLLAR_SIGN_PATTERN.search(new_text):
+        if UNESCAPED_DOLLAR_SIGN_PATTERN.search(new_text):
             label.prop.font_family = "times"
         else:
             label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
@@ -1156,16 +1148,16 @@ def add_axes_and_points(
             if length_display > 0.0:
                 direction_display /= length_display
 
-            if direction_display[0] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+            if direction_display[0] > AXES_LABEL_JUSTIFICATION_THRESHOLD:
                 label.prop.justification_horizontal = "left"
-            elif direction_display[0] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+            elif direction_display[0] < -AXES_LABEL_JUSTIFICATION_THRESHOLD:
                 label.prop.justification_horizontal = "right"
             else:
                 label.prop.justification_horizontal = "center"
 
-            if direction_display[1] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+            if direction_display[1] > AXES_LABEL_JUSTIFICATION_THRESHOLD:
                 label.prop.justification_vertical = "bottom"
-            elif direction_display[1] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+            elif direction_display[1] < -AXES_LABEL_JUSTIFICATION_THRESHOLD:
                 label.prop.justification_vertical = "top"
             else:
                 label.prop.justification_vertical = "center"
@@ -1226,7 +1218,7 @@ def add_axes_and_points(
         is_double_click = (
             pressed_label_id is not None
             and pressed_label_id == last_pressed_label_id
-            and press_time - last_press_time < _AXES_LABEL_DOUBLE_CLICK_TIME
+            and press_time - last_press_time < AXES_LABEL_DOUBLE_CLICK_TIME
         )
         last_pressed_label_id = pressed_label_id
         last_press_time = 0.0 if is_double_click else press_time
@@ -1314,7 +1306,7 @@ def add_axes_and_points(
 
             # The text never holds a bare vertical bar, so the only one this can leave
             # is a bar whose escaping backslash was just deleted, which goes with it.
-            if _BARE_VERTICAL_BAR_PATTERN.search(new_text):
+            if BARE_VERTICAL_BAR_PATTERN.search(new_text):
                 new_text = new_text[:caret_index] + new_text[caret_index + 1 :]
             editing_text = new_text
         elif key_sym == "Left":
@@ -1351,19 +1343,19 @@ def add_axes_and_points(
         inserted_text = key_code
         if key_code == "|":
             num_dollar_signs = len(
-                _UNESCAPED_DOLLAR_SIGN_PATTERN.findall(editing_text[:caret_index])
+                UNESCAPED_DOLLAR_SIGN_PATTERN.findall(editing_text[:caret_index])
             )
             if num_dollar_signs % 2 == 0:
                 return
             if not editing_text[:caret_index].endswith("\\"):
-                inserted_text = _MATH_VERTICAL_BAR_TEXT
+                inserted_text = MATH_VERTICAL_BAR_TEXT
 
         # Ignore any insertion that would leave a bare vertical bar, such as typing
         # between a backslash and the bar it escapes.
         new_text = (
             editing_text[:caret_index] + inserted_text + editing_text[caret_index:]
         )
-        if _BARE_VERTICAL_BAR_PATTERN.search(new_text):
+        if BARE_VERTICAL_BAR_PATTERN.search(new_text):
             return
         editing_text = new_text
         caret_index += len(inserted_text)
@@ -1373,7 +1365,7 @@ def add_axes_and_points(
     interactor_style.AddObserver("CharEvent", type_into_label)
 
 
-def _add_arrow_tips(
+def add_arrow_tips(
     plotter: pv.Plotter,
     stackTipBases_D_Do: np.ndarray,
     stackTipDirections_D: np.ndarray,
@@ -1418,7 +1410,7 @@ def _add_arrow_tips(
         direction=(1.0, 0.0, 0.0),
         height=1.0,
         radius=1.0,
-        resolution=_AXES_TIP_RESOLUTION,
+        resolution=AXES_TIP_RESOLUTION,
     )
     stackTemplatePoints_D_Do = np.array(template_tip.points, dtype=float)
     template_faces = np.array(template_tip.faces, dtype=int)
@@ -1475,8 +1467,8 @@ def _add_arrow_tips(
     plotter.add_silhouette(
         tips,
         color=color,
-        line_width=_AXES_LINE_WIDTH,
-        feature_angle=_AXES_TIP_FEATURE_ANGLE,
+        line_width=AXES_LINE_WIDTH,
+        feature_angle=AXES_TIP_FEATURE_ANGLE,
     )
 
     tip_fill_actor = plotter.add_mesh(
@@ -1485,12 +1477,12 @@ def _add_arrow_tips(
         lighting=False,
     )
     tip_fill_actor.mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(
-        _AXES_TIP_FILL_OFFSET_FACTOR, _AXES_TIP_FILL_OFFSET_UNITS
+        AXES_TIP_FILL_OFFSET_FACTOR, AXES_TIP_FILL_OFFSET_UNITS
     )
 
 
 def get_wing_cross_section_airfoil_lines(
-    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Returns the points on a WingCrossSection's Airfoil's outline and mean camber line
     (in wing cross section axes, relative to the leading point).
@@ -1559,7 +1551,7 @@ def get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do: np.ndarray) -> np.ndar
 
 def add_airfoil(
     plotter: pv.Plotter,
-    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    wing_cross_section: _geometry.wing_cross_section.WingCrossSection,
     T_pas_Wcs_Lp_to_D_Do: np.ndarray,
     show_mcl: bool = True,
 ) -> None:
@@ -1619,21 +1611,21 @@ def add_airfoil_lines(
             airfoilOutline_D_Do,
             lines=np.hstack([num_outline_points + 1, np.arange(num_outline_points), 0]),
         ),
-        color=_DIAGRAM_AIRFOIL_OUTLINE_COLOR,
-        line_width=_DIAGRAM_LINE_WIDTH,
+        color=DIAGRAM_AIRFOIL_OUTLINE_COLOR,
+        line_width=DIAGRAM_LINE_WIDTH,
     )
     if airfoilMcl_D_Do is None:
         return
     plotter.add_mesh(
         pv.lines_from_points(airfoilMcl_D_Do),
-        color=_DIAGRAM_AIRFOIL_MCL_COLOR,
-        line_width=_DIAGRAM_LINE_WIDTH,
+        color=DIAGRAM_AIRFOIL_MCL_COLOR,
+        line_width=DIAGRAM_LINE_WIDTH,
     )
 
 
 def add_airfoils(
     plotter: pv.Plotter,
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
     show_mcls: bool = True,
 ) -> None:
@@ -1663,7 +1655,7 @@ def add_airfoils(
 
 def add_panels(
     plotter: pv.Plotter,
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
 ) -> None:
     """Adds a Wing's Panels to a Plotter as a wireframe.
@@ -1698,15 +1690,15 @@ def add_panels(
     )
 
     plotter.add_mesh(
-        pv.PolyData(panelVertices_D_Do, _get_quadrilateral_faces(panels.size)),
+        pv.PolyData(panelVertices_D_Do, get_quadrilateral_faces(panels.size)),
         style="wireframe",
-        color=_DIAGRAM_PANEL_COLOR,
-        line_width=_DIAGRAM_LINE_WIDTH,
+        color=DIAGRAM_PANEL_COLOR,
+        line_width=DIAGRAM_LINE_WIDTH,
     )
 
 
 def get_collocation_points(
-    wing: geometry.wing.Wing,
+    wing: _geometry.wing.Wing,
     id_suffix: str,
     T_pas_G_Cg_to_D_Do: np.ndarray,
 ) -> tuple[list[str], list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
@@ -1790,7 +1782,7 @@ def get_collocation_points(
 
 def add_steady_problem(
     plotter: pv.Plotter,
-    steady_problem: problems.SteadyProblem,
+    steady_problem: _problems.SteadyProblem,
     show_airplane_axes_and_points: bool,
     show_wing_axes_and_points: bool,
     show_wing_cross_section_axes_and_points: bool,
@@ -1990,7 +1982,7 @@ def show_diagram(
     """
     # Set the background explicitly, since the diagram's black lines and labels rely on
     # it being white, and a PyVista theme could change the default.
-    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+    plotter.background_color = pv.Color(DIAGRAM_BACKGROUND_COLOR)
     plotter.camera.parallel_projection = True
 
     # Matplotlib only finds a font by its family name once the font is registered with
@@ -2142,10 +2134,8 @@ def add_vortices(
     """
     # Draw the simplified vortices in their own colors, to set them apart from the exact
     # vortices, and the wake vortices in colors apart from the bound vortices'.
-    vortex_color = _VORTEX_SIMPLIFIED_COLOR if simplify else _VORTEX_COLOR
-    wake_vortex_color = (
-        _VORTEX_WAKE_SIMPLIFIED_COLOR if simplify else _VORTEX_WAKE_COLOR
-    )
+    vortex_color = VORTEX_SIMPLIFIED_COLOR if simplify else VORTEX_COLOR
+    wake_vortex_color = VORTEX_WAKE_SIMPLIFIED_COLOR if simplify else VORTEX_WAKE_COLOR
     horseshoe_color = wake_vortex_color if horseshoe_vortices_are_wake else vortex_color
 
     # Gather each ring vortex's and then each wake ring vortex's four corners, in front
@@ -2200,13 +2190,13 @@ def add_vortices(
     if simplify:
         listRingCorners_D_Do = [
             ringCorners_D_Do.mean(axis=0)
-            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            + (1.0 - VORTEX_SIMPLIFIED_SHRINK)
             * (ringCorners_D_Do - ringCorners_D_Do.mean(axis=0))
             for ringCorners_D_Do in listRingCorners_D_Do
         ]
         listFiniteLegEnds_D_Do = [
             finiteLegEnds_D_Do.mean(axis=0)
-            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            + (1.0 - VORTEX_SIMPLIFIED_SHRINK)
             * (finiteLegEnds_D_Do - finiteLegEnds_D_Do.mean(axis=0))
             for finiteLegEnds_D_Do in listFiniteLegEnds_D_Do
         ]
@@ -2239,13 +2229,13 @@ def add_vortices(
         solid_polyline_colors.append(ring_color)
         if simplify:
             listSolidPolylines_D_Do.append(
-                _round_polyline_corners(ringCorners_D_Do, closed=True)
+                round_polyline_corners(ringCorners_D_Do, closed=True)
             )
             ring_legs = [
                 (ringCorners_D_Do[leg_id], ringCorners_D_Do[(leg_id + 1) % 4])
                 for leg_id in range(4)
             ]
-            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * min(
+            arrow_radius = VORTEX_VORTICITY_ARROW_RADIUS * min(
                 float(np.linalg.norm(legEnd_D_Do - legStart_D_Do))
                 for legStart_D_Do, legEnd_D_Do in ring_legs
             )
@@ -2269,10 +2259,10 @@ def add_vortices(
     ):
         end_distance = (
             float(np.max(stackBoundingBoxCorners_D_Do @ trailingDirection_D))
-            + _VORTEX_TRAILING_LEG_OVERHANG * largest_chord
+            + VORTEX_TRAILING_LEG_OVERHANG * largest_chord
         )
         dashed_start_distance = (
-            end_distance - _VORTEX_TRAILING_LEG_DASHED_LENGTH * largest_chord
+            end_distance - VORTEX_TRAILING_LEG_DASHED_LENGTH * largest_chord
         )
         listSolidEnds_D_Do = []
         for finiteLegEnd_D_Do in finiteLegEnds_D_Do:
@@ -2302,13 +2292,13 @@ def add_vortices(
             ]
         )
         if simplify:
-            horseshoePolyline_D_Do = _round_polyline_corners(
+            horseshoePolyline_D_Do = round_polyline_corners(
                 horseshoePolyline_D_Do, closed=False
             )
             finite_leg_length = float(
                 np.linalg.norm(finiteLegEnds_D_Do[1] - finiteLegEnds_D_Do[0])
             )
-            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * finite_leg_length
+            arrow_radius = VORTEX_VORTICITY_ARROW_RADIUS * finite_leg_length
             insidePoint_D_Do = (
                 finiteLegEnds_D_Do.mean(axis=0)
                 + finite_leg_length * trailingDirection_D
@@ -2335,8 +2325,8 @@ def add_vortices(
     # Build each trailing leg's dashed part. Each dash starts at a whole multiple of the
     # dash pattern's period in distance along the trailing leg's direction, which lines
     # up the dashes of trailing legs that lie on top of each other.
-    dash_length = _VORTEX_DASH_LENGTH * largest_chord
-    dash_period = dash_length + _VORTEX_GAP_LENGTH * largest_chord
+    dash_length = VORTEX_DASH_LENGTH * largest_chord
+    dash_period = dash_length + VORTEX_GAP_LENGTH * largest_chord
     listDashVertices_D_Do: list[np.ndarray] = []
     for (
         trailingLegStart_D_Do,
@@ -2388,7 +2378,7 @@ def add_vortices(
                 np.vstack(listColorPolylines_D_Do), lines=np.array(polyline_lines)
             ),
             color=polyline_color,
-            line_width=_VORTEX_LINE_WIDTH,
+            line_width=VORTEX_LINE_WIDTH,
         )
 
     # Draw the trailing legs' dashed parts, which only horseshoe vortices have.
@@ -2404,7 +2394,7 @@ def add_vortices(
         plotter.add_mesh(
             pv.PolyData(np.array(listDashVertices_D_Do, dtype=float), lines=dash_lines),
             color=horseshoe_color,
-            line_width=_VORTEX_LINE_WIDTH,
+            line_width=VORTEX_LINE_WIDTH,
         )
 
     # Draw each line vortex's vorticity arrow, a half circle centered on the line
@@ -2418,7 +2408,7 @@ def add_vortices(
     # proportions match the axes arrows' as fractions of the half circle's length. The
     # shaft stops where the tip's base begins. Each arrow takes its vortex's color. The
     # shafts and the tips are each added together, one set for each color.
-    arc_parameters = np.linspace(0.0, 1.0, _VORTEX_VORTICITY_ARROW_NUM_POINTS)
+    arc_parameters = np.linspace(0.0, 1.0, VORTEX_VORTICITY_ARROW_NUM_POINTS)
     listArcPolylines_D_Do: list[np.ndarray] = []
     arc_colors: list[str] = []
     listTipDirections_D: list[np.ndarray] = []
@@ -2459,7 +2449,7 @@ def add_vortices(
         secondDirection_D = np.cross(vorticityDirection_D, firstDirection_D)
 
         arc_length = math.pi * arrow_radius
-        tip_length = _AXES_TIP_LENGTH * arc_length
+        tip_length = AXES_TIP_LENGTH * arc_length
         shaft_end_angle = math.pi - tip_length / arrow_radius
         angles = (shaft_end_angle * arc_parameters).reshape(-1, 1)
         listArcPolylines_D_Do.append(
@@ -2473,8 +2463,8 @@ def add_vortices(
             + math.cos(shaft_end_angle) * secondDirection_D
         )
         tip_lengths.append(tip_length)
-        tip_radii.append(_AXES_TIP_RADIUS * arc_length)
-    num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
+        tip_radii.append(AXES_TIP_RADIUS * arc_length)
+    num_arc_points = VORTEX_VORTICITY_ARROW_NUM_POINTS
     for arc_color in dict.fromkeys(arc_colors):
         color_arc_ids = [
             arc_id
@@ -2495,11 +2485,11 @@ def add_vortices(
         plotter.add_mesh(
             pv.PolyData(np.vstack(listColorArcPolylines_D_Do), lines=arc_lines),
             color=arc_color,
-            line_width=_AXES_LINE_WIDTH,
+            line_width=AXES_LINE_WIDTH,
         )
 
         # Each tip's base is where its arrow's shaft ends.
-        _add_arrow_tips(
+        add_arrow_tips(
             plotter,
             stackTipBases_D_Do=np.array(
                 [listArcPolylines_D_Do[arc_id][-1] for arc_id in color_arc_ids],
@@ -2518,7 +2508,7 @@ def add_vortices(
         )
 
 
-def _round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
+def round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
     """Returns a polyline with its corners rounded.
 
     Each corner is replaced by a quadratic Bezier curve that leaves the corner's
@@ -2538,16 +2528,16 @@ def _round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
     """
     num_points = points.shape[0]
     corner_ids = range(num_points) if closed else range(1, num_points - 1)
-    arc_parameters = np.linspace(
-        0.0, 1.0, _VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
-    ).reshape(-1, 1)
+    arc_parameters = np.linspace(0.0, 1.0, VORTEX_SIMPLIFIED_CORNER_NUM_POINTS).reshape(
+        -1, 1
+    )
 
     rounded_points = [] if closed else [points[:1]]
     for corner_id in corner_ids:
         corner = points[corner_id]
         incoming_leg = points[corner_id - 1] - corner
         outgoing_leg = points[(corner_id + 1) % num_points] - corner
-        radius = _VORTEX_SIMPLIFIED_CORNER_RADIUS * min(
+        radius = VORTEX_SIMPLIFIED_CORNER_RADIUS * min(
             float(np.linalg.norm(incoming_leg)), float(np.linalg.norm(outgoing_leg))
         )
         arc_start = corner + radius * incoming_leg / np.linalg.norm(incoming_leg)
@@ -2565,7 +2555,7 @@ def _round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
 
 
 def get_panel_surfaces(
-    airplanes: tuple[geometry.airplane.Airplane, ...],
+    airplanes: tuple[_geometry.airplane.Airplane, ...],
 ) -> pv.PolyData:
     """Returns a PolyData representation of the Wings' Panels' surfaces associated with
     all the Airplanes in a tuple of Airplanes.
@@ -2599,10 +2589,10 @@ def get_panel_surfaces(
             panel_num += 1
 
     # Return the Panels' surfaces.
-    return pv.PolyData(panel_vertices, _get_quadrilateral_faces(num_panels))
+    return pv.PolyData(panel_vertices, get_quadrilateral_faces(num_panels))
 
 
-def _get_quadrilateral_faces(num_quadrilaterals: int) -> np.ndarray:
+def get_quadrilateral_faces(num_quadrilaterals: int) -> np.ndarray:
     """Returns the faces ndarray of a PolyData made of consecutive quadrilaterals.
 
     The faces are in PolyData's padded form, where each face is its vertex count
@@ -2704,7 +2694,7 @@ def get_image_surface_mesh_and_texture(
     plane_center = bbox_center - offset * surface_normal
 
     # Size the plane proportionally to the bounding box diagonal.
-    plane_size = _IMAGE_SURFACE_SCALE * bbox_diagonal
+    plane_size = IMAGE_SURFACE_SCALE * bbox_diagonal
 
     mesh = pv.Plane(
         center=plane_center,
@@ -2715,13 +2705,13 @@ def get_image_surface_mesh_and_texture(
 
     # Build a checkerboard texture image. Each cell is one pixel, so a 25 x 25
     # checkerboard is a 25 x 25 x 3 RGB image.
-    n = _IMAGE_SURFACE_CHECKER_SIZE
+    n = IMAGE_SURFACE_CHECKER_SIZE
     row = np.arange(n, dtype=int)
     col = np.arange(n, dtype=int)
     rr, cc = np.meshgrid(row, col, indexing="ij")
     is_dark = (rr + cc) % 2 == 0
     image = np.where(
-        is_dark[:, :, np.newaxis], _IMAGE_SURFACE_COLOR_A, _IMAGE_SURFACE_COLOR_B
+        is_dark[:, :, np.newaxis], IMAGE_SURFACE_COLOR_A, IMAGE_SURFACE_COLOR_B
     )
     texture = pv.numpy_to_texture(image)
 
@@ -2729,8 +2719,8 @@ def get_image_surface_mesh_and_texture(
 
 
 def get_animation_image_surface(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    step_airplanes: list[tuple[geometry.airplane.Airplane, ...]],
+    unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    step_airplanes: list[tuple[_geometry.airplane.Airplane, ...]],
     step_transforms: list[np.ndarray],
     is_free_flight: bool,
     show_wake_vortices: bool,
@@ -2805,7 +2795,7 @@ def get_animation_image_surface(
 
     # Size the plane to the last step's geometry together with its reflected copy, so
     # that it spans both sides of the surface.
-    reflected_last_step_panel_surfaces = _reflect_mesh(
+    reflected_last_step_panel_surfaces = reflect_mesh(
         last_step_panel_surfaces, T_reflect
     )
     if show_wake_vortices:
@@ -2815,7 +2805,7 @@ def get_animation_image_surface(
         combined = (
             last_step_panel_surfaces.merge(last_step_wake_surfaces)
             .merge(reflected_last_step_panel_surfaces)
-            .merge(_reflect_mesh(last_step_wake_surfaces, T_reflect))
+            .merge(reflect_mesh(last_step_wake_surfaces, T_reflect))
         )
     else:
         combined = last_step_panel_surfaces.merge(reflected_last_step_panel_surfaces)
@@ -2893,7 +2883,7 @@ def get_free_flight_body_transformation(
 
 
 def get_mujoco_render_geometry(
-    free_flight_solver: free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    free_flight_solver: _free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
 ) -> tuple[list[_mujoco_model.RenderGeom], list[_mujoco_model.RenderGeom]]:
     """Returns a free flight solver's MuJoCo render geometry, split into worldbody geoms
     and body geoms.
@@ -2912,7 +2902,7 @@ def get_mujoco_render_geometry(
     # validates that the problem is a FreeFlightUnsteadyProblem, so the cast narrows
     # without a runtime check.
     free_flight_unsteady_problem = cast(
-        problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
+        "_problems.FreeFlightUnsteadyProblem", free_flight_solver.unsteady_problem
     )
     extracted_render_geoms = (
         free_flight_unsteady_problem._mujoco_model.get_render_geometry()
@@ -2986,7 +2976,7 @@ def transform_mesh(
     return transformed
 
 
-def _reflect_mesh(
+def reflect_mesh(
     mesh: pv.PolyData,
     T_reflect: np.ndarray,
 ) -> pv.PolyData:
@@ -3005,7 +2995,7 @@ def _reflect_mesh(
 def get_free_flight_fit_parallel_scale(
     meshes: list[pv.PolyData],
     focalPoint_E_Eo: np.ndarray,
-    viewDirection_E: np.ndarray,
+    cameraOffsetDirection_E: np.ndarray,
     viewUp_E: np.ndarray,
     margin: float = 1.15,
 ) -> float:
@@ -3022,8 +3012,9 @@ def get_free_flight_fit_parallel_scale(
     :param focalPoint_E_Eo: A (3,) ndarray of floats locating the camera's focal point
         (in Earth axes, relative to the Earth origin). Extents are measured from this
         point, since it projects to the center of the viewport.
-    :param viewDirection_E: A (3,) ndarray of floats giving the offset from the focal
-        point to the camera position (in Earth axes). The camera looks back along it.
+    :param cameraOffsetDirection_E: A (3,) ndarray of floats giving the direction from
+        the focal point toward the camera position (in Earth axes). The camera looks
+        back along it.
     :param viewUp_E: A (3,) ndarray of floats giving the camera's up direction (in Earth
         axes).
     :param margin: A factor (at least 1.0) by which to pad the fitted scale. The default
@@ -3031,9 +3022,9 @@ def get_free_flight_fit_parallel_scale(
     :return: The parallel-projection scale.
     """
     # Build the camera's screen right and up axes in Earth axes. The camera looks from
-    # its position back toward the focal point, i.e. along the negative view direction.
-    # The up axis is the supplied up made orthogonal to that look direction.
-    lookDirection_E = -viewDirection_E
+    # its position back toward the focal point, i.e. along the negative camera offset
+    # direction. The up axis is the supplied up made orthogonal to that look direction.
+    lookDirection_E = -cameraOffsetDirection_E
     lookDirection_E = lookDirection_E / np.linalg.norm(lookDirection_E)
     upDirection_E = viewUp_E - np.dot(viewUp_E, lookDirection_E) * lookDirection_E
     upDirection_E = upDirection_E / np.linalg.norm(upDirection_E)
@@ -3097,7 +3088,7 @@ def mute_colormap(
 
 
 def get_wake_ring_vortex_surfaces(
-    solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
 ) -> pv.PolyData:
     """Returns the PolyData representation of the surfaces of an
@@ -3127,12 +3118,12 @@ def get_wake_ring_vortex_surfaces(
 
     # Return the wake ring vortex surfaces.
     return pv.PolyData(
-        wake_ring_vortex_vertices, _get_quadrilateral_faces(num_wake_ring_vortices)
+        wake_ring_vortex_vertices, get_quadrilateral_faces(num_wake_ring_vortices)
     )
 
 
 def get_scalars(
-    airplanes: tuple[geometry.airplane.Airplane, ...],
+    airplanes: tuple[_geometry.airplane.Airplane, ...],
     scalar_type: str,
     qInf__E: float,
 ) -> np.ndarray:
@@ -3205,17 +3196,17 @@ def choose_color_map(
     if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
         color_map: matplotlib.colors.Colormap = _colormaps.SEQUENTIAL_COLOR_MAP
         c_min = max(
-            float(np.mean(scalars)) - _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
+            float(np.mean(scalars)) - COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.min(scalars)),
         )
         c_max = min(
-            float(np.mean(scalars)) + _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
+            float(np.mean(scalars)) + COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.max(scalars)),
         )
     else:
         color_map = _colormaps.DIVERGING_COLOR_MAP
-        c_min = -_COLOR_MAP_NUM_SIG * float(np.std(scalars))
-        c_max = _COLOR_MAP_NUM_SIG * float(np.std(scalars))
+        c_min = -COLOR_MAP_NUM_SIG * float(np.std(scalars))
+        c_max = COLOR_MAP_NUM_SIG * float(np.std(scalars))
 
     return color_map, c_min, c_max
 
@@ -3271,24 +3262,24 @@ class AnimationWriter:
             fewest.
         :return: None
         """
-        self._path = path
-        self._frame_rate = frame_rate
-        self._quality = quality
+        self.path = path
+        self.frame_rate = frame_rate
+        self.quality = quality
 
         # The queue carries the captured frames to the encoding thread, and None marks
         # the end of the animation.
-        self._queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
-            maxsize=_ANIMATION_WRITER_QUEUE_DEPTH
+        self.queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
+            maxsize=ANIMATION_WRITER_QUEUE_DEPTH
         )
 
         # An exception the encoding thread raises is held here until close re-raises it
         # on the calling thread.
-        self._error: Exception | None = None
+        self.error: Exception | None = None
 
-        self._thread = threading.Thread(
+        self.thread = threading.Thread(
             target=self.encode, name="animation-writer", daemon=True
         )
-        self._thread.start()
+        self.thread.start()
 
     def add_frame(self, image: webp.Image.Image) -> None:
         """Hands a captured frame to the writer.
@@ -3299,7 +3290,7 @@ class AnimationWriter:
         :param image: The frame as an Image with a transparent background.
         :return: None
         """
-        self._queue.put(image)
+        self.queue.put(image)
 
     def close(self) -> None:
         """Finishes the animation and writes it to its file.
@@ -3309,10 +3300,10 @@ class AnimationWriter:
 
         :return: None
         """
-        self._queue.put(None)
-        self._thread.join()
-        if self._error is not None:
-            raise self._error
+        self.queue.put(None)
+        self.thread.join()
+        if self.error is not None:
+            raise self.error
 
     def encode(self) -> None:
         """Encodes the frames from the queue into the WebP file, on the background
@@ -3327,13 +3318,13 @@ class AnimationWriter:
         ended = False
         try:
             config = webp.WebPConfig.new(
-                lossless=False, quality=self._quality, method=WEBP_METHOD
+                lossless=False, quality=self.quality, method=WEBP_METHOD
             )
             encoder = None
             frame_size: tuple[int, int] | None = None
             num_frames = 0
             while True:
-                image = self._queue.get()
+                image = self.queue.get()
                 if image is None:
                     ended = True
                     break
@@ -3362,20 +3353,20 @@ class AnimationWriter:
                 # rather than lasting a fixed duration, which plays a fractional frame
                 # rate back to within a small fraction of a percent.
                 encoder.encode_frame(
-                    picture, round((num_frames * 1000) / self._frame_rate), config
+                    picture, round((num_frames * 1000) / self.frame_rate), config
                 )
                 num_frames += 1
 
             if encoder is None:
                 raise ValueError("An animation must have at least one frame.")
 
-            animation = encoder.assemble(round((num_frames * 1000) / self._frame_rate))
-            with open(self._path, "wb") as animation_file:
+            animation = encoder.assemble(round((num_frames * 1000) / self.frame_rate))
+            with open(self.path, "wb") as animation_file:
                 animation_file.write(animation.buffer())
         except Exception as error:
-            self._error = error
+            self.error = error
             while not ended:
-                ended = self._queue.get() is None
+                ended = self.queue.get() is None
 
 
 def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:
@@ -3409,7 +3400,7 @@ def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:
     render_window.SwapBuffersOn()
 
 
-def _plot_scalars(
+def plot_scalars(
     plotter: pv.Plotter,
     these_scalars: np.ndarray,
     scalar_type: str,
@@ -3445,12 +3436,12 @@ def _plot_scalars(
     scalar_bar_title = scalar_type.title() + " Coefficient"
     scalar_bar_args = dict(
         title=scalar_bar_title,
-        title_font_size=round(_BAR_TITLE_FONT_SIZE * window_scale),
-        label_font_size=round(_BAR_LABEL_FONT_SIZE * window_scale),
-        width=_BAR_WIDTH,
-        position_x=_BAR_POSITION_X,
-        position_y=_BAR_POSITION_Y,
-        n_labels=_BAR_N_LABELS,
+        title_font_size=round(BAR_TITLE_FONT_SIZE * window_scale),
+        label_font_size=round(BAR_LABEL_FONT_SIZE * window_scale),
+        width=BAR_WIDTH,
+        position_x=BAR_POSITION_X,
+        position_y=BAR_POSITION_Y,
+        n_labels=BAR_N_LABELS,
         fmt="%#.3G",
         color=text_color,
         # Suppress the render that adding the scalar bar would otherwise trigger. The
@@ -3464,7 +3455,7 @@ def _plot_scalars(
     panel_actor = plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+        line_width=PANEL_EDGE_LINE_WIDTH * window_scale,
         cmap=color_map,
         clim=[c_min, c_max],
         scalars=these_scalars,
@@ -3487,7 +3478,7 @@ def _plot_scalars(
 
     max_label = plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
-        position=_TEXT_MAX_POSITION,
+        position=TEXT_MAX_POSITION,
         font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
@@ -3495,7 +3486,7 @@ def _plot_scalars(
     )
     min_label = plotter.add_text(
         text=f"Min: {min_scalar:#.3G}",
-        position=_TEXT_MIN_POSITION,
+        position=TEXT_MIN_POSITION,
         font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
@@ -3570,9 +3561,9 @@ def add_frame_geometry(
             plotter.add_mesh(
                 wake_surfaces,
                 show_edges=True,
-                line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
+                line_width=WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
-                color=_WAKE_VORTEX_COLOR,
+                color=WAKE_VORTEX_COLOR,
                 lighting=False,
                 render=False,
             )
@@ -3581,7 +3572,7 @@ def add_frame_geometry(
     # Plot the Panels either with scalar coloring or with a uniform color.
     if coloring is not None:
         actors.extend(
-            _plot_scalars(
+            plot_scalars(
                 plotter,
                 coloring.scalars,
                 coloring.scalar_type,
@@ -3600,8 +3591,8 @@ def add_frame_geometry(
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,
-                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
-                color=_PANEL_COLOR,
+                line_width=PANEL_EDGE_LINE_WIDTH * window_scale,
+                color=PANEL_COLOR,
                 smooth_shading=False,
                 lighting=False,
                 render=False,
@@ -3617,13 +3608,13 @@ def add_frame_geometry(
     muted_edge_color = mute_color("black", mute)
 
     # Add reflected Panel surfaces with muted coloring.
-    reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
+    reflected_panel_surfaces = reflect_mesh(panel_surfaces, T_reflect)
     if coloring is not None:
         actors.append(
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+                line_width=PANEL_EDGE_LINE_WIDTH * window_scale,
                 edge_color=muted_edge_color,
                 cmap=coloring.muted_color_map,
                 clim=[coloring.c_min, coloring.c_max],
@@ -3640,9 +3631,9 @@ def add_frame_geometry(
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+                line_width=PANEL_EDGE_LINE_WIDTH * window_scale,
                 edge_color=muted_edge_color,
-                color=mute_color(_PANEL_COLOR, mute),
+                color=mute_color(PANEL_COLOR, mute),
                 smooth_shading=False,
                 lighting=False,
                 render=False,
@@ -3653,12 +3644,12 @@ def add_frame_geometry(
     if wake_surfaces is not None:
         actors.append(
             plotter.add_mesh(
-                _reflect_mesh(wake_surfaces, T_reflect),
+                reflect_mesh(wake_surfaces, T_reflect),
                 show_edges=True,
-                line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
+                line_width=WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
                 edge_color=muted_edge_color,
                 smooth_shading=False,
-                color=mute_color(_WAKE_VORTEX_COLOR, mute),
+                color=mute_color(WAKE_VORTEX_COLOR, mute),
                 lighting=False,
                 render=False,
             )
@@ -3732,8 +3723,8 @@ def add_mujoco_geometry(
             color=color,
             opacity=opacity,
             smooth_shading=True,
-            ambient=_MUJOCO_GEOMETRY_AMBIENT,
-            diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
+            ambient=MUJOCO_GEOMETRY_AMBIENT,
+            diffuse=MUJOCO_GEOMETRY_DIFFUSE,
             render=False,
         )
         actors.append(actor)
@@ -3742,12 +3733,12 @@ def add_mujoco_geometry(
             # so they wind outward again, which the shading needs even though the
             # reflected normals it carries already point outward.
             actor = plotter.add_mesh(
-                _reflect_mesh(posed_mesh, T_reflect).flip_faces(),
+                reflect_mesh(posed_mesh, T_reflect).flip_faces(),
                 color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
                 opacity=opacity,
                 smooth_shading=True,
-                ambient=_MUJOCO_GEOMETRY_AMBIENT,
-                diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
+                ambient=MUJOCO_GEOMETRY_AMBIENT,
+                diffuse=MUJOCO_GEOMETRY_DIFFUSE,
                 render=False,
             )
             actors.append(actor)

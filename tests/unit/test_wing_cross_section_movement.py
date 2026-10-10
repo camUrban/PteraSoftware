@@ -3,6 +3,7 @@
 import unittest
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     geometry_fixtures,
     wing_cross_section_movement_fixtures,
@@ -17,8 +18,8 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         CoreWingCrossSectionMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.wing_cross_section_movement.WingCrossSectionMovement,
-                ps._core.CoreWingCrossSectionMovement,
+                ps.WingCrossSectionMovement,
+                _core.CoreWingCrossSectionMovement,
             )
         )
 
@@ -28,14 +29,12 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         base_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
-        wing_cross_section_movement = (
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_cross_section,
-            )
+        wing_cross_section_movement = ps.WingCrossSectionMovement(
+            base_wing_cross_section=base_wing_cross_section,
         )
         self.assertIsInstance(
             wing_cross_section_movement,
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement,
+            ps.WingCrossSectionMovement,
         )
 
     def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
@@ -51,5 +50,5 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         for wing_cross_section in wing_cross_sections:
             self.assertIsInstance(
                 wing_cross_section,
-                ps.geometry.wing_cross_section.WingCrossSection,
+                ps.WingCrossSection,
             )

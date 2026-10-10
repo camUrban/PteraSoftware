@@ -634,27 +634,6 @@ tr:hover {
   background-color: var(--color-background-secondary);
 }
 
-/* AutoAPI summary tables - keep proper table display */
-table.autosummary,
-table.longtable {
-  display: table;
-}
-
-table.autosummary td:first-child,
-table.longtable td:first-child {
-  white-space: nowrap;
-  font-family: var(--font-stack-code);
-}
-
-/* AutoAPI module "Classes" summary table.
- * The table is generated with fixed 40/60 column widths, so long class names
- * like AeroelasticUnsteadyRingVortexLatticeMethodSolver wrap in column 1.
- * Shrink the table font slightly so the class names fit on one line at all
- * desktop breakpoints. */
-#classes table {
-  font-size: 0.88rem;
-}
-
 /* --------------------------------------------------------------------------
    API Documentation - Wrap Long Signatures
    -------------------------------------------------------------------------- */

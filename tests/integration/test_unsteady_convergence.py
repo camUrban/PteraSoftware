@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 import pterasoftware as ps
-from pterasoftware import _convergence_cache
+from pterasoftware import _convergence_cache, _movements
 from tests.integration.fixtures import (
     airplane_fixtures,
     operating_point_fixtures,
@@ -33,7 +33,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         :return: None
         """
-        converged_parameters = ps.convergence.analyze_unsteady_convergence(
+        converged_parameters = ps.analyze_unsteady_convergence(
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=True,
@@ -84,7 +84,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         previous_level = movement_logger.level
         movement_logger.setLevel(logging.ERROR)
         try:
-            converged_parameters = ps.convergence.analyze_unsteady_convergence(
+            converged_parameters = ps.analyze_unsteady_convergence(
                 ref_problem=variable_geometry_problem,
                 prescribed_wake=True,
                 free_wake=False,
@@ -109,7 +109,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cache_path = Path(tmp) / "cache.json"
 
-            converged_parameters = ps.convergence.analyze_unsteady_convergence(
+            converged_parameters = ps.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=True,
@@ -140,7 +140,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cache_path = Path(tmp) / "cache.json"
 
-            cold_parameters = ps.convergence.analyze_unsteady_convergence(
+            cold_parameters = ps.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
@@ -155,15 +155,13 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
             # On the warm run every mesh should be a cache hit, so the solver must never
             # run. Patching run to raise turns any solve into a test failure.
-            solver_class = (
-                ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-            )
+            solver_class = ps.UnsteadyRingVortexLatticeMethodSolver
             with mock.patch.object(
                 solver_class,
                 "run",
                 side_effect=AssertionError("The solver ran despite a warm cache."),
             ):
-                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                warm_parameters = ps.analyze_unsteady_convergence(
                     ref_problem=self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
@@ -190,7 +188,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cache_path = Path(tmp) / "cache.json"
 
-            cold_parameters = ps.convergence.analyze_unsteady_convergence(
+            cold_parameters = ps.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
@@ -207,13 +205,13 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # iterative optimizer must never run. Patching it to raise turns any
             # optimization into a test failure.
             with mock.patch.object(
-                ps.movements.movement,
-                "_optimize_delta_time",
+                _movements.movement,
+                "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."
                 ),
             ):
-                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                warm_parameters = ps.analyze_unsteady_convergence(
                     ref_problem=self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
@@ -239,7 +237,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         :return: None
         """
         # An uncached run over the narrower bounds gives the reference result.
-        uncached_parameters = ps.convergence.analyze_unsteady_convergence(
+        uncached_parameters = ps.analyze_unsteady_convergence(
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=False,
@@ -258,7 +256,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # every mesh the narrower run below will need. The memos are keyed on
             # absolute mesh values, so they carry over even though the two runs index
             # their sweeps differently.
-            ps.convergence.analyze_unsteady_convergence(
+            ps.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
@@ -275,13 +273,13 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # must never run despite the different bounds. Patching it to raise turns
             # any optimization into a test failure.
             with mock.patch.object(
-                ps.movements.movement,
-                "_optimize_delta_time",
+                _movements.movement,
+                "optimize_delta_time",
                 side_effect=AssertionError(
                     "The delta_time optimizer ran despite a warm cache."
                 ),
             ):
-                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                warm_parameters = ps.analyze_unsteady_convergence(
                     ref_problem=self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
@@ -306,7 +304,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         :return: None
         """
         with self.assertRaises(ValueError):
-            ps.convergence.analyze_unsteady_convergence(
+            ps.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
@@ -330,7 +328,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             cache_path.mkdir()
 
             with self.assertRaises(ValueError):
-                ps.convergence.analyze_unsteady_convergence(
+                ps.analyze_unsteady_convergence(
                     ref_problem=self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
@@ -353,35 +351,31 @@ class TestUnsteadyConvergence(unittest.TestCase):
         exploded_wing = exploded_airplane.wings[0]
 
         wing_cross_section_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wing_cross_section
-            )
+            ps.WingCrossSectionMovement(base_wing_cross_section=wing_cross_section)
             for wing_cross_section in exploded_wing.wing_cross_sections
         ]
-        wing_movement = ps.movements.wing_movement.WingMovement(
+        wing_movement = ps.WingMovement(
             base_wing=exploded_wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        airplane_movement = ps.AirplaneMovement(
             base_airplane=exploded_airplane,
             wing_movements=[wing_movement],
         )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=(
-                    operating_point_fixtures.make_validation_operating_point()
-                )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=(
+                operating_point_fixtures.make_validation_operating_point()
             )
         )
-        movement = ps.movements.movement.Movement(
+        movement = ps.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
             num_chords=1,
         )
-        exploded_problem = ps.problems.UnsteadyProblem(movement=movement)
+        exploded_problem = ps.UnsteadyProblem(movement=movement)
 
         with self.assertRaises(ValueError):
-            ps.convergence.analyze_unsteady_convergence(
+            ps.analyze_unsteady_convergence(
                 ref_problem=exploded_problem,
                 prescribed_wake=True,
                 free_wake=True,
@@ -409,7 +403,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         # Panels needs many WingCrossSections, which makes the unsteady solves
         # expensive. These bounds still span enough of each parameter direction to
         # detect convergence.
-        converged_parameters = ps.convergence.analyze_unsteady_convergence(
+        converged_parameters = ps.analyze_unsteady_convergence(
             ref_problem=edge_defined_unsteady_problem,
             prescribed_wake=True,
             free_wake=True,
@@ -452,7 +446,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(ValueError, "static"):
-            ps.convergence.analyze_unsteady_convergence(
+            ps.analyze_unsteady_convergence(
                 ref_problem=edge_defined_non_static_problem,
                 prescribed_wake=True,
                 free_wake=True,
@@ -470,7 +464,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         :return: None
         """
-        converged_parameters = ps.convergence.analyze_unsteady_convergence(
+        converged_parameters = ps.analyze_unsteady_convergence(
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=True,
@@ -500,7 +494,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsInstance(
             converged_solver,
-            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ps.UnsteadyRingVortexLatticeMethodSolver,
         )
         assert converged_solver is not None
         self.assertGreater(

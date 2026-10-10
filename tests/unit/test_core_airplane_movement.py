@@ -10,6 +10,7 @@ import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     core_airplane_movement_fixtures,
     core_wing_movement_fixtures,
@@ -20,15 +21,15 @@ from tests.unit.fixtures import (
 class TestCoreAirplaneMovement(unittest.TestCase):
     """This is a class with functions to test CoreAirplaneMovements."""
 
-    sine_spacing_Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    uniform_spacing_Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    mixed_spacing_Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    static_airplane_movement: ps._core.CoreAirplaneMovement
-    basic_airplane_movement: ps._core.CoreAirplaneMovement
-    Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    phase_offset_Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    custom_spacing_Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    mixed_custom_and_standard_spacing_airplane_movement: ps._core.CoreAirplaneMovement
+    sine_spacing_Cg_airplane_movement: _core.CoreAirplaneMovement
+    uniform_spacing_Cg_airplane_movement: _core.CoreAirplaneMovement
+    mixed_spacing_Cg_airplane_movement: _core.CoreAirplaneMovement
+    static_airplane_movement: _core.CoreAirplaneMovement
+    basic_airplane_movement: _core.CoreAirplaneMovement
+    Cg_airplane_movement: _core.CoreAirplaneMovement
+    phase_offset_Cg_airplane_movement: _core.CoreAirplaneMovement
+    custom_spacing_Cg_airplane_movement: _core.CoreAirplaneMovement
+    mixed_custom_and_standard_spacing_airplane_movement: _core.CoreAirplaneMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -137,7 +138,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Test non-Airplane raises error.
         bad_base_airplane: Any = "not an airplane"
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=bad_base_airplane,
                 wing_movements=[
                     core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
@@ -147,7 +148,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Test None raises error.
         none_base_airplane: Any = None
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=none_base_airplane,
                 wing_movements=[
                     core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
@@ -161,7 +162,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
                 base_airplane.wings[0]
             )
         ]
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane, wing_movements=wing_movements
         )
         self.assertEqual(airplane_movement.base_airplane, base_airplane)
@@ -184,7 +185,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         ]
         for amp in valid_amps:
             with self.subTest(amp=amp):
-                airplane_movement = ps._core.CoreAirplaneMovement(
+                airplane_movement = _core.CoreAirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=wing_movements,
                     ampCg_GP1_CgP1=amp,
@@ -193,7 +194,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(-1.0, 0.0, 0.0),
@@ -203,7 +204,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         bad_amp: Any = "invalid"
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=bad_amp,
@@ -224,7 +225,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             with self.subTest(period=period):
                 # Need matching amps for non-zero periods.
                 amp = tuple(1.0 if p > 0 else 0.0 for p in period)
-                airplane_movement = ps._core.CoreAirplaneMovement(
+                airplane_movement = _core.CoreAirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=wing_movements,
                     ampCg_GP1_CgP1=amp,
@@ -234,7 +235,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test negative values raise error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(1.0, 1.0, 1.0),
@@ -258,7 +259,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         ]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                airplane_movement = ps._core.CoreAirplaneMovement(
+                airplane_movement = _core.CoreAirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=wing_movements,
                     spacingCg_GP1_CgP1=spacing,
@@ -267,7 +268,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test invalid string raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 spacingCg_GP1_CgP1=("invalid", "sine", "sine"),
@@ -293,7 +294,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
                 # Need non-zero amps for non-zero phases.
                 amp = tuple(1.0 if p != 0 else 0.0 for p in phase)
                 period = tuple(1.0 if p != 0 else 0.0 for p in phase)
-                airplane_movement = ps._core.CoreAirplaneMovement(
+                airplane_movement = _core.CoreAirplaneMovement(
                     base_airplane=base_airplane,
                     wing_movements=wing_movements,
                     ampCg_GP1_CgP1=amp,
@@ -304,7 +305,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test phase > 180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(1.0, 1.0, 1.0),
@@ -314,7 +315,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test phase <= -180.0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(1.0, 1.0, 1.0),
@@ -332,7 +333,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         ]
 
         # Test amp=0 with period=0 works.
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
             ampCg_GP1_CgP1=(0.0, 1.0, 0.0),
@@ -342,7 +343,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test amp=0 with period!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(0.0, 1.0, 0.0),
@@ -359,7 +360,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         ]
 
         # Test amp=0 with phase=0 works.
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
             ampCg_GP1_CgP1=(0.0, 1.0, 0.0),
@@ -370,7 +371,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Test amp=0 with phase!=0 raises error.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
                 ampCg_GP1_CgP1=(0.0, 1.0, 0.0),
@@ -442,7 +443,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         # Verify all elements are Airplanes.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
     def test_generate_airplanes_preserves_non_changing_attributes(self) -> None:
         """Test that generate_airplanes preserves non-changing attributes."""
@@ -468,7 +469,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Wing measures, so that a generated Airplane which recalculated them would fail
         # the comparison. Then build a moving CoreWingMovement around its own Wing, so
         # that each time step's Airplane is generated afresh rather than deep copied.
-        base_airplane = ps.geometry.airplane.Airplane(
+        base_airplane = ps.Airplane(
             wings=[geometry_fixtures.make_origin_wing_fixture()],
             s_ref=15.0,
             c_ref=2.0,
@@ -479,7 +480,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         self.assertNotEqual(base_airplane.c_ref, base_wing.mean_aerodynamic_chord)
         self.assertNotEqual(base_airplane.b_ref, base_wing.span)
 
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=[
                 core_wing_movement_fixtures.make_basic_core_wing_movement_fixture(
@@ -570,15 +571,15 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Verify that Airplanes are generated successfully.
         self.assertEqual(len(airplanes), 100)
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
     """This is a class with functions to test variable geometry optimization."""
 
-    static_airplane_movement: ps._core.CoreAirplaneMovement
-    periodic_geometry_airplane_movement: ps._core.CoreAirplaneMovement
-    basic_airplane_movement: ps._core.CoreAirplaneMovement
+    static_airplane_movement: _core.CoreAirplaneMovement
+    periodic_geometry_airplane_movement: _core.CoreAirplaneMovement
+    basic_airplane_movement: _core.CoreAirplaneMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -615,7 +616,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         wings_array = np.array(wings)
 
         # Identical Wings should match.
-        result = ps._core.CoreAirplaneMovement._geometry_matches(
+        result = _core.CoreAirplaneMovement._geometry_matches(
             wings_step_a=wings_array,
             wings_step_b=wings_array,
             tolerance=1e-9,
@@ -638,7 +639,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         wings_array_5 = np.array(wings_step_5)
 
         # Different Wings should not match.
-        result = ps._core.CoreAirplaneMovement._geometry_matches(
+        result = _core.CoreAirplaneMovement._geometry_matches(
             wings_step_a=wings_array_0,
             wings_step_b=wings_array_5,
             tolerance=1e-9,
@@ -657,7 +658,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         # Create a shorter array.
         wings_array_short = wings_array[:0]
 
-        result = ps._core.CoreAirplaneMovement._geometry_matches(
+        result = _core.CoreAirplaneMovement._geometry_matches(
             wings_step_a=wings_array,
             wings_step_b=wings_array_short,
             tolerance=1e-9,
@@ -682,7 +683,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
 
         # Verify all are Airplane instances.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
     def test_variable_geometry_periodicity(self) -> None:
         """Test that variable geometry produces periodic results."""
@@ -737,7 +738,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
             )
         ]
 
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
             ampCg_GP1_CgP1=(0.05, 0.0, 0.0),
@@ -766,7 +767,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
                 base_airplane.wings[0]
             )
         ]
-        airplane_movement = ps._core.CoreAirplaneMovement(
+        airplane_movement = _core.CoreAirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
         )
@@ -797,14 +798,14 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         # Should still work correctly.
         self.assertEqual(len(airplanes), num_steps)
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestGeometryMatchesEdgeCases(unittest.TestCase):
     """Tests for _geometry_matches edge cases and panel comparison code."""
 
-    static_airplane_movement: ps._core.CoreAirplaneMovement
-    angles_only_airplane_movement: ps._core.CoreAirplaneMovement
+    static_airplane_movement: _core.CoreAirplaneMovement
+    angles_only_airplane_movement: _core.CoreAirplaneMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -855,7 +856,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         self.assertTrue(angles_differ, "Angles should differ between steps")
 
         # _geometry_matches should return False due to angle mismatch.
-        result = ps._core.CoreAirplaneMovement._geometry_matches(
+        result = _core.CoreAirplaneMovement._geometry_matches(
             wings_step_a=wings_array_0,
             wings_step_b=wings_array_5,
             tolerance=1e-9,
@@ -899,7 +900,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         self.assertNotEqual(panels_2.shape, panels_3.shape)
 
         # _geometry_matches should return False due to panel shape mismatch.
-        result = ps._core.CoreAirplaneMovement._geometry_matches(
+        result = _core.CoreAirplaneMovement._geometry_matches(
             wings_step_a=wings_array_2,
             wings_step_b=wings_array_3,
             tolerance=1e-9,
@@ -908,7 +909,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
 
     def _get_meshed_wings(
         self,
-    ) -> tuple[list[ps.geometry.wing.Wing], list[ps.geometry.wing.Wing]]:
+    ) -> tuple[list[ps.Wing], list[ps.Wing]]:
         """Helper to get two copies of meshed Wings for panel corner tests."""
         # Use static airplane movement to generate Airplanes with meshed Wings.
         airplane_movement = self.static_airplane_movement
@@ -948,7 +949,7 @@ class TestVariableGeometryFallback(unittest.TestCase):
 
         # Mock _geometry_matches to return False, triggering fallback.
         with patch.object(
-            ps._core.CoreAirplaneMovement,
+            _core.CoreAirplaneMovement,
             "_geometry_matches",
             return_value=False,
         ):
@@ -961,7 +962,7 @@ class TestVariableGeometryFallback(unittest.TestCase):
 
         # Verify all are valid Airplane instances.
         for airplane in airplanes:
-            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+            self.assertIsInstance(airplane, ps.Airplane)
 
 
 class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
@@ -976,7 +977,7 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
 
         # Test tuple raises TypeError.
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=(wing_movement,),
             )
@@ -984,7 +985,7 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
         # Test single WingMovement (not in list) raises TypeError.
         bare_wing_movement: Any = wing_movement
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=bare_wing_movement,
             )
@@ -998,14 +999,14 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
 
         # base_airplane has 1 Wing, so 2 WingMovements should raise ValueError.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=[wing_movement, wing_movement],
             )
 
         # Empty list should raise ValueError.
         with self.assertRaises(ValueError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=[],
             )
@@ -1024,7 +1025,7 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "must be base_airplane.wings\\[0\\] itself"
         ):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=wing_movements,
             )
@@ -1036,7 +1037,7 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
         # Test string raises TypeError.
         bad_wing_movements: Any = ["not a wing movement"]
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=bad_wing_movements,
             )
@@ -1044,7 +1045,7 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
         # Test None raises TypeError.
         none_wing_movements: Any = [None]
         with self.assertRaises(TypeError):
-            ps._core.CoreAirplaneMovement(
+            _core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=none_wing_movements,
             )
@@ -1161,9 +1162,9 @@ class TestCoreAirplaneMovementCaching(unittest.TestCase):
 class TestCoreAirplaneMovementAllPeriods(unittest.TestCase):
     """Tests for CoreAirplaneMovement.all_periods property."""
 
-    static_airplane_movement: ps._core.CoreAirplaneMovement
-    Cg_airplane_movement: ps._core.CoreAirplaneMovement
-    multiple_periods_airplane_movement: ps._core.CoreAirplaneMovement
+    static_airplane_movement: _core.CoreAirplaneMovement
+    Cg_airplane_movement: _core.CoreAirplaneMovement
+    multiple_periods_airplane_movement: _core.CoreAirplaneMovement
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1221,7 +1222,7 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         original = self.core_airplane_movement
         copied = copy.deepcopy(original)
 
-        self.assertIsInstance(copied, ps._core.CoreAirplaneMovement)
+        self.assertIsInstance(copied, _core.CoreAirplaneMovement)
         self.assertIsNot(original, copied)
 
     def test_deepcopy_preserves_attribute_values(self) -> None:

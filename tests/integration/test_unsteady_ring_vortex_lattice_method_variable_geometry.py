@@ -36,7 +36,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             show_progress=False,
         )
 
-        ps.output.animate(
+        ps.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             scalar_type="lift",
             show_wake_vortices=True,
@@ -44,7 +44,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             testing=True,
         )
 
-        ps.output.plot_results_versus_time(
+        ps.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show=False,
             save=False,

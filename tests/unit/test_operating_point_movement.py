@@ -3,6 +3,7 @@
 import unittest
 
 import pterasoftware as ps
+from pterasoftware import _core
 from tests.unit.fixtures import (
     operating_point_fixtures,
     operating_point_movement_fixtures,
@@ -17,8 +18,8 @@ class TestOperatingPointMovement(unittest.TestCase):
         CoreOperatingPointMovement."""
         self.assertTrue(
             issubclass(
-                ps.movements.operating_point_movement.OperatingPointMovement,
-                ps._core.CoreOperatingPointMovement,
+                ps.OperatingPointMovement,
+                _core.CoreOperatingPointMovement,
             )
         )
 
@@ -28,14 +29,12 @@ class TestOperatingPointMovement(unittest.TestCase):
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point,
-            )
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=base_operating_point,
         )
         self.assertIsInstance(
             operating_point_movement,
-            ps.movements.operating_point_movement.OperatingPointMovement,
+            ps.OperatingPointMovement,
         )
 
     def test_generate_operating_points_returns_operating_points(self) -> None:
@@ -51,5 +50,5 @@ class TestOperatingPointMovement(unittest.TestCase):
         for operating_point in operating_points:
             self.assertIsInstance(
                 operating_point,
-                ps.operating_point.OperatingPoint,
+                ps.OperatingPoint,
             )

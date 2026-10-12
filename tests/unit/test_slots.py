@@ -282,7 +282,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
         )
 
         # These are set once attributes that have not yet been set by a parent Wing.
-        self.assertFalse(self.wing_cross_section.validated)
+        self.assertFalse(self.wing_cross_section._validated)
         self.assertIsNone(self.wing_cross_section.symmetry_type)
 
         # Cached transformation properties return None when not validated.
@@ -509,7 +509,7 @@ class TestWingSlots(unittest.TestCase):
         self.assertIsNone(self.unmeshed_wing.symmetry_type)
         self.assertIsNone(self.unmeshed_wing.num_spanwise_panels)
         self.assertIsNone(self.unmeshed_wing.num_panels)
-        self.assertIsNone(self.unmeshed_wing.panels)
+        self.assertIsNone(self.unmeshed_wing._panels)
 
     def test_property_access_cached(self) -> None:
         """Test that cached transformation properties are accessible."""
@@ -674,8 +674,8 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deep_copy_with_cg(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
-        copied = self.airplane.deep_copy_with_Cg_GP1_CgP1([2.0, 1.0, 0.5])
+        """Test that _deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
+        copied = self.airplane._deep_copy_with_Cg_GP1_CgP1([2.0, 1.0, 0.5])
 
         # Verify the copy is a separate instance.
         self.assertIsNot(copied, self.airplane)

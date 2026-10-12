@@ -147,10 +147,10 @@ class TestAirfoil(unittest.TestCase):
             self.assertAlmostEqual(np.max(mclX_A_Lp), 1.0, places=2)
 
     def test_get_resampled_mcl_method(self) -> None:
-        """Test the get_resampled_mcl method."""
+        """Test the _get_resampled_mcl method."""
         num_points = 50
         mcl_fractions = np.linspace(0, 1, num_points)
-        mcl_A_Lp = self.naca2412_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        mcl_A_Lp = self.naca2412_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
         self.assertEqual(mcl_A_Lp.shape[0], num_points)
 
         # Check x values are still approximately in the range [0.0, 1.0].
@@ -159,12 +159,12 @@ class TestAirfoil(unittest.TestCase):
         self.assertAlmostEqual(np.max(mclX_A_Lp), 1.0, places=2)
 
     def test_add_control_surface_method(self) -> None:
-        """Test the add_control_surface method."""
+        """Test the _add_control_surface method."""
         # Test adding control surface at 75% chord.
         hinge_point = 0.75
         deflection = 5.0
 
-        modified_airfoil = self.naca0012_airfoil.add_control_surface(
+        modified_airfoil = self.naca0012_airfoil._add_control_surface(
             deflection=deflection,
             hinge_point=hinge_point,
         )
@@ -184,7 +184,7 @@ class TestAirfoil(unittest.TestCase):
     def test_add_control_surface_zero_deflection_returns_self(self) -> None:
         """Verify that zero deflection returns the same Airfoil instance
         (optimization)."""
-        result = self.naca0012_airfoil.add_control_surface(
+        result = self.naca0012_airfoil._add_control_surface(
             deflection=0.0,
             hinge_point=0.75,
         )
@@ -210,10 +210,10 @@ class TestAirfoil(unittest.TestCase):
             np.argmax(airfoil.mcl_A_Lp[:, 0]), 1
         ]
 
-        deflected_down_airfoil = airfoil.add_control_surface(
+        deflected_down_airfoil = airfoil._add_control_surface(
             deflection=deflection, hinge_point=hinge_point
         )
-        deflected_up_airfoil = airfoil.add_control_surface(
+        deflected_up_airfoil = airfoil._add_control_surface(
             deflection=-deflection, hinge_point=hinge_point
         )
 
@@ -880,16 +880,16 @@ class TestAirfoilDiagram(unittest.TestCase):
 
 
 class TestAirfoilAddControlSurface(unittest.TestCase):
-    """Additional tests for Airfoil.add_control_surface method."""
+    """Additional tests for Airfoil._add_control_surface method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for add_control_surface tests."""
+        """Set up test fixtures for _add_control_surface tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
         self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
     def test_add_control_surface_positive_deflection(self) -> None:
-        """Test add_control_surface with positive (downward) deflection."""
-        modified = self.naca0012_airfoil.add_control_surface(
+        """Test _add_control_surface with positive (downward) deflection."""
+        modified = self.naca0012_airfoil._add_control_surface(
             deflection=5.0, hinge_point=0.75
         )
 
@@ -897,8 +897,8 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         self.assertIn("flapped", modified.name)
 
     def test_add_control_surface_negative_deflection(self) -> None:
-        """Test add_control_surface with negative (upward) deflection."""
-        modified = self.naca0012_airfoil.add_control_surface(
+        """Test _add_control_surface with negative (upward) deflection."""
+        modified = self.naca0012_airfoil._add_control_surface(
             deflection=-5.0, hinge_point=0.75
         )
 
@@ -906,11 +906,11 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         self.assertIn("flapped", modified.name)
 
     def test_add_control_surface_various_hinge_points(self) -> None:
-        """Test add_control_surface with various hinge point locations."""
+        """Test _add_control_surface with various hinge point locations."""
         hinge_points = [0.5, 0.6, 0.7, 0.8, 0.9]
         for hinge_point in hinge_points:
             with self.subTest(hinge_point=hinge_point):
-                modified = self.naca0012_airfoil.add_control_surface(
+                modified = self.naca0012_airfoil._add_control_surface(
                     deflection=3.0, hinge_point=hinge_point
                 )
                 self.assertIsInstance(modified, ps.Airfoil)
@@ -919,30 +919,32 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         """Test that invalid deflection values raise errors."""
         # The deflection is too large.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=6.0, hinge_point=0.75)
+            self.naca0012_airfoil._add_control_surface(deflection=6.0, hinge_point=0.75)
 
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=-6.0, hinge_point=0.75)
+            self.naca0012_airfoil._add_control_surface(
+                deflection=-6.0, hinge_point=0.75
+            )
 
     def test_add_control_surface_invalid_hinge_point(self) -> None:
         """Test that invalid hinge point values raise errors."""
         # The hinge point is at the edge (exclusive boundaries).
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=3.0, hinge_point=0.0)
+            self.naca0012_airfoil._add_control_surface(deflection=3.0, hinge_point=0.0)
 
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=3.0, hinge_point=1.0)
+            self.naca0012_airfoil._add_control_surface(deflection=3.0, hinge_point=1.0)
 
         # The hinge point is outside the valid range.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=3.0, hinge_point=-0.1)
+            self.naca0012_airfoil._add_control_surface(deflection=3.0, hinge_point=-0.1)
 
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.add_control_surface(deflection=3.0, hinge_point=1.1)
+            self.naca0012_airfoil._add_control_surface(deflection=3.0, hinge_point=1.1)
 
     def test_add_control_surface_accepts_int_parameters(self) -> None:
-        """Test that add_control_surface accepts integer parameters."""
-        modified = self.naca0012_airfoil.add_control_surface(
+        """Test that _add_control_surface accepts integer parameters."""
+        modified = self.naca0012_airfoil._add_control_surface(
             deflection=3, hinge_point=0.75  # This passes the deflection as an int.
         )
         self.assertIsInstance(modified, ps.Airfoil)
@@ -950,14 +952,14 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
     def test_add_control_surface_preserves_name_base(self) -> None:
         """Test that modified Airfoil name includes original name."""
         original_name = self.naca0012_airfoil.name
-        modified = self.naca0012_airfoil.add_control_surface(
+        modified = self.naca0012_airfoil._add_control_surface(
             deflection=3.0, hinge_point=0.75
         )
         self.assertIn(original_name, modified.name)
 
     def test_add_control_surface_cambered_airfoil(self) -> None:
-        """Test add_control_surface on a cambered airfoil."""
-        modified = self.naca2412_airfoil.add_control_surface(
+        """Test _add_control_surface on a cambered airfoil."""
+        modified = self.naca2412_airfoil._add_control_surface(
             deflection=4.0, hinge_point=0.8
         )
         self.assertIsInstance(modified, ps.Airfoil)
@@ -966,23 +968,23 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
 
 
 class TestAirfoilGetResampledMcl(unittest.TestCase):
-    """Additional tests for Airfoil.get_resampled_mcl method."""
+    """Additional tests for Airfoil._get_resampled_mcl method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for get_resampled_mcl tests."""
+        """Set up test fixtures for _get_resampled_mcl tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
 
     def test_get_resampled_mcl_returns_correct_shape(self) -> None:
-        """Test that get_resampled_mcl returns correct shape."""
+        """Test that _get_resampled_mcl returns correct shape."""
         mcl_fractions = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
-        result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        result = self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         self.assertEqual(result.shape, (5, 2))
 
     def test_get_resampled_mcl_endpoints(self) -> None:
-        """Test that get_resampled_mcl endpoints are at x=0 and x=1."""
+        """Test that _get_resampled_mcl endpoints are at x=0 and x=1."""
         mcl_fractions = np.array([0.0, 0.5, 1.0])
-        result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        result = self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         # First point should be at x ~ 0.0.
         self.assertAlmostEqual(result[0, 0], 0.0, places=4)
@@ -993,7 +995,7 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
     def test_get_resampled_mcl_monotonic_x(self) -> None:
         """Test that resampled MCL has monotonically increasing x values."""
         mcl_fractions = np.linspace(0, 1, 20)
-        result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        result = self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         x_values = result[:, 0]
         x_diffs = np.diff(x_values)
@@ -1005,53 +1007,53 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
         """Test that invalid first value in mcl_fractions raises error."""
         mcl_fractions = np.array([0.1, 0.5, 1.0])  # The first value is not 0.0.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
     def test_get_resampled_mcl_invalid_last_value(self) -> None:
         """Test that invalid last value in mcl_fractions raises error."""
         mcl_fractions = np.array([0.0, 0.5, 0.9])  # The last value is not 1.0.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
     def test_get_resampled_mcl_values_outside_range(self) -> None:
         """Test that values outside [0, 1] range raise error."""
         mcl_fractions_low = np.array([-0.1, 0.5, 1.0])
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions_low)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions_low)
 
         mcl_fractions_high = np.array([0.0, 0.5, 1.1])
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions_high)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions_high)
 
     def test_get_resampled_mcl_non_ascending_values(self) -> None:
         """Test that non-ascending values raise error."""
         mcl_fractions = np.array([0.0, 0.7, 0.5, 1.0])  # 0.7 > 0.5
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
     def test_get_resampled_mcl_duplicate_values(self) -> None:
         """Test that duplicate values raise error."""
         mcl_fractions = np.array([0.0, 0.5, 0.5, 1.0])  # The value 0.5 is a duplicate.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
     def test_get_resampled_mcl_too_few_values(self) -> None:
         """Test that too few values raise error."""
         mcl_fractions = np.array([0.5])  # There is only one value.
         with self.assertRaises(ValueError):
-            self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+            self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
     def test_get_resampled_mcl_accepts_list(self) -> None:
-        """Test that get_resampled_mcl accepts list input."""
+        """Test that _get_resampled_mcl accepts list input."""
         mcl_fractions = [0.0, 0.25, 0.5, 0.75, 1.0]
-        result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        result = self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         self.assertEqual(result.shape, (5, 2))
 
     def test_get_resampled_mcl_accepts_tuple(self) -> None:
-        """Test that get_resampled_mcl accepts tuple input."""
+        """Test that _get_resampled_mcl accepts tuple input."""
         mcl_fractions = (0.0, 0.5, 1.0)
-        result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
+        result = self.naca0012_airfoil._get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         self.assertEqual(result.shape, (3, 2))
 
@@ -1248,3 +1250,39 @@ class TestAirfoilDeprecatedPlottingMethods(unittest.TestCase):
         with patch.object(plt, "show"):
             with self.assertWarns(DeprecationWarning):
                 self.naca2412_airfoil.draw()
+
+
+class TestAirfoilDeprecatedInternalMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated aliases of the Airfoil methods
+    that are no longer public."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated alias tests."""
+        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
+
+    def test_add_control_surface_warns_and_matches(self) -> None:
+        """Test that calling add_control_surface warns and returns the same outline as
+        _add_control_surface."""
+        with self.assertWarns(DeprecationWarning):
+            deprecated_airfoil = self.naca2412_airfoil.add_control_surface(
+                deflection=3.0, hinge_point=0.75
+            )
+        internal_airfoil = self.naca2412_airfoil._add_control_surface(
+            deflection=3.0, hinge_point=0.75
+        )
+        npt.assert_array_equal(
+            deprecated_airfoil.outline_A_Lp, internal_airfoil.outline_A_Lp
+        )
+
+    def test_get_resampled_mcl_warns_and_matches(self) -> None:
+        """Test that calling get_resampled_mcl warns and returns the same points as
+        _get_resampled_mcl."""
+        mcl_fractions = np.linspace(0.0, 1.0, 11)
+        with self.assertWarns(DeprecationWarning):
+            deprecated_mcl_A_Lp = self.naca2412_airfoil.get_resampled_mcl(
+                mcl_fractions=mcl_fractions
+            )
+        internal_mcl_A_Lp = self.naca2412_airfoil._get_resampled_mcl(
+            mcl_fractions=mcl_fractions
+        )
+        npt.assert_array_equal(deprecated_mcl_A_Lp, internal_mcl_A_Lp)

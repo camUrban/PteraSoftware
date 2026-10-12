@@ -44,13 +44,13 @@ class Wing:
     wetted_area, average_panel_aspect_ratio, span, standard_mean_chord, and
     mean_aerodynamic_chord) are also lazily evaluated and cached.
 
-    The symmetry_type, num_spanwise_panels, num_panels, and panels attributes are set
-    once by generate_mesh and cannot be modified after being set.
+    The symmetry_type, num_spanwise_panels, and num_panels attributes are set once when
+    the Wing is meshed and cannot be modified after being set.
 
     The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
-    remain mutable as they may be modified by Airplane.process_wing_symmetry() for type
-    5 symmetry handling. The gridWrvp_GP1_CgP1 attribute is mutable as it is modified
-    during simulation.
+    remain mutable as they may be modified by the parent Airplane for type 5 symmetry
+    handling. The gridWrvp_GP1_CgP1 attribute is mutable as it is modified during
+    simulation.
 
     Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the Ler_Gs_Cgs and
@@ -230,14 +230,14 @@ class Wing:
                 )
             if wing_cross_section_id == 0:
                 # Validate root WingCrossSection constraints.
-                wing_cross_section.validate_root_constraints()
+                wing_cross_section._validate_root_constraints()
             elif wing_cross_section_id == num_wing_cross_sections - 1:
                 # Validate tip WingCrossSection constraints.
-                wing_cross_section.validate_tip_constraints()
+                wing_cross_section._validate_tip_constraints()
             else:
-                wing_cross_section.validate_mid_constraints()
+                wing_cross_section._validate_mid_constraints()
             # Set the validated flag for this WingCrossSection.
-            wing_cross_section.validated = True
+            wing_cross_section._mark_validated()
         # Store as tuple to prevent external mutation.
         self._wing_cross_sections: tuple[
             wing_cross_section_mod.WingCrossSection, ...
@@ -291,7 +291,7 @@ class Wing:
         self._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
         # Validate symmetric and mirror_only. These are mutable because
-        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
+        # Airplane._process_wing_symmetry modifies them for type 5 symmetry.
         symmetric = _parameter_validation.boolLike_return_bool(symmetric, "symmetric")
         mirror_only = _parameter_validation.boolLike_return_bool(
             mirror_only, "mirror_only"
@@ -302,7 +302,7 @@ class Wing:
         self.mirror_only = mirror_only
 
         # Validate symmetryNormal_G and symmetryPoint_G_Cg. These are mutable because
-        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
+        # Airplane._process_wing_symmetry modifies them for type 5 symmetry.
         if self.symmetric or self.mirror_only:
             if symmetryNormal_G is None:
                 raise ValueError(
@@ -350,7 +350,7 @@ class Wing:
         self._chordwise_spacing = chordwise_spacing
 
         # These are the set once attributes. They will be initialized or populated once
-        # this Wing's parent Airplane calls generate_mesh.
+        # this Wing's parent Airplane calls _generate_mesh.
         self._symmetry_type: int | None = None
         self._num_spanwise_panels: int | None = None
         self._num_panels: int | None = None
@@ -654,7 +654,7 @@ class Wing:
         new_wing._tip_trim_fraction = self._tip_trim_fraction
 
         # Copy mutable symmetry attributes (these may be modified by
-        # process_wing_symmetry for type 5 symmetry).
+        # _process_wing_symmetry for type 5 symmetry).
         new_wing.symmetric = self.symmetric
         new_wing.mirror_only = self.mirror_only
 
@@ -665,7 +665,7 @@ class Wing:
         new_wing._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
         # Copy mutable symmetry arrays (may be None, may be modified by
-        # process_wing_symmetry).
+        # _process_wing_symmetry).
         new_wing.symmetryNormal_G = (
             self.symmetryNormal_G.copy() if self.symmetryNormal_G is not None else None
         )
@@ -681,12 +681,14 @@ class Wing:
         new_wing._num_spanwise_panels = self._num_spanwise_panels
         new_wing._num_panels = self._num_panels
 
-        # Deep copy the Panels array if it exists (directly to private attribute).
+        # Deep copy the Panels array if it exists (directly to private attribute), and
+        # make the copy read only, as _attach_panels does.
         if self._panels is not None:
             new_wing._panels = np.empty_like(self._panels, dtype=object)
             for i in range(self._panels.shape[0]):
                 for j in range(self._panels.shape[1]):
                     new_wing._panels[i, j] = copy.deepcopy(self._panels[i, j], memo)
+            new_wing._panels.flags.writeable = False
         else:
             new_wing._panels = None
 
@@ -1147,8 +1149,15 @@ class Wing:
         """
         return self._symmetry_type
 
+    # Coverage ignores this setter because it is deprecated.
     @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:
+    def symmetry_type(self, value: int) -> None:  # pragma: no cover
+        warnings.warn(
+            "Setting the symmetry_type property is deprecated and will raise an "
+            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if self._symmetry_type is not None:
             raise AttributeError("symmetry_type can only be set once")
         self._symmetry_type = value
@@ -1162,8 +1171,15 @@ class Wing:
         """
         return self._num_spanwise_panels
 
+    # Coverage ignores this setter because it is deprecated.
     @num_spanwise_panels.setter
-    def num_spanwise_panels(self, value: int) -> None:
+    def num_spanwise_panels(self, value: int) -> None:  # pragma: no cover
+        warnings.warn(
+            "Setting the num_spanwise_panels property is deprecated and will raise an "
+            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if self._num_spanwise_panels is not None:
             raise AttributeError("num_spanwise_panels can only be set once")
         self._num_spanwise_panels = value
@@ -1177,26 +1193,32 @@ class Wing:
         """
         return self._num_panels
 
+    # Coverage ignores this setter because it is deprecated.
     @num_panels.setter
-    def num_panels(self, value: int) -> None:
+    def num_panels(self, value: int) -> None:  # pragma: no cover
+        warnings.warn(
+            "Setting the num_panels property is deprecated and will raise an "
+            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if self._num_panels is not None:
             raise AttributeError("num_panels can only be set once")
         self._num_panels = value
 
-    @property
-    def panels(self) -> np.ndarray | None:
-        """The 2D array of Panels on this Wing.
+    def _attach_panels(self, panels: np.ndarray) -> None:
+        """Attaches this Wing's 2D array of Panels and makes the array read only.
 
-        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
-            or None if the Wing hasn't been meshed yet.
+        It is called once, during meshing. Making the array read only prevents its
+        elements from being rebound, while each Panel's own attributes are unaffected.
+
+        :param panels: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panels.
+        :return: None
         """
-        return self._panels
-
-    @panels.setter
-    def panels(self, value: np.ndarray) -> None:
         if self._panels is not None:
             raise AttributeError("panels can only be set once")
-        self._panels = value
+        panels.flags.writeable = False
+        self._panels = panels
 
     # --- Set once derived: manual lazy caching ---
     @property
@@ -1504,8 +1526,57 @@ class Wing:
             self._mean_aerodynamic_chord = integral / _projected_area
         return self._mean_aerodynamic_chord
 
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panels(self) -> np.ndarray | None:  # pragma: no cover
+        """A deprecated property that returns the 2D array of Panels on this Wing.
+
+        Reading or setting it emits a DeprecationWarning, and it will be removed in
+        v6.0.0. It can only be set once.
+
+        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
+            or None if the Wing hasn't been meshed yet.
+        """
+        warnings.warn(
+            "The panels property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panels
+
+    # Coverage ignores this setter because it is deprecated.
+    @panels.setter
+    def panels(self, value: np.ndarray) -> None:  # pragma: no cover
+        warnings.warn(
+            "The panels property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._attach_panels(value)
+
+    # Coverage ignores this method because it is deprecated.
+    def generate_mesh(self, symmetry_type: int) -> None:  # pragma: no cover
+        """A deprecated method that generates this Wing's mesh.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param symmetry_type: The symmetry type of this Wing as an int from 1-4. See the
+            class docstring for details on how to interpret the symmetry types.
+        :return: None
+        """
+        warnings.warn(
+            "The generate_mesh method is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._generate_mesh(symmetry_type)
+
     # --- Other methods ---
-    def generate_mesh(self, symmetry_type: int) -> None:
+    def _generate_mesh(self, symmetry_type: int) -> None:
         """Generates this Wing's mesh, which finishes the process of preparing the Wing
         to be used in a simulation. It is called by the Wing's parent Airplane, after
         it's determined its symmetry type.
@@ -1526,11 +1597,13 @@ class Wing:
             max_val=4,
             max_inclusive=True,
         )
-        self.symmetry_type = validated_symmetry_type
+        if self._symmetry_type is not None:
+            raise AttributeError("symmetry_type can only be set once")
+        self._symmetry_type = validated_symmetry_type
 
         # Set this Wing's children WingCrossSections' symmetry type parameters.
         for wing_cross_section in self.wing_cross_sections:
-            wing_cross_section.symmetry_type = validated_symmetry_type
+            wing_cross_section._set_symmetry_type(validated_symmetry_type)
 
         # Find the number of spanwise Panels on this Wing by adding each
         # WingCrossSection's number of spanwise Panels. Exclude the last
@@ -1542,10 +1615,14 @@ class Wing:
             computed_num_spanwise_panels += wing_cross_section.num_spanwise_panels
         if validated_symmetry_type == 4:
             computed_num_spanwise_panels *= 2
-        self.num_spanwise_panels = computed_num_spanwise_panels
+        if self._num_spanwise_panels is not None:
+            raise AttributeError("num_spanwise_panels can only be set once")
+        self._num_spanwise_panels = computed_num_spanwise_panels
 
         # Calculate the number of Panels on this Wing.
-        self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
+        if self._num_panels is not None:
+            raise AttributeError("num_panels can only be set once")
+        self._num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize an empty array to hold this Wing's wake ring vortex points.
         self.gridWrvp_GP1_CgP1 = np.empty(
@@ -1650,7 +1727,7 @@ class Wing:
             quality, "quality", 0.0, True, 100.0, True
         )
 
-        if self.symmetry_type is None or self.panels is None:
+        if self.symmetry_type is None or self._panels is None:
             raise ValueError(
                 "A Wing can only be diagrammed after its parent Airplane has set its "
                 "symmetry type and meshed it."
@@ -1914,7 +1991,7 @@ class Wing:
 
                 plotter.add_actor(AxesWcsLp_G_Cg)
 
-        if self.panels is not None:
+        if self._panels is not None:
             # Initialize empty arrays to hold the Panels' vertices and faces.
             panel_vertices = np.empty((0, 3), dtype=float)
             panel_faces = np.empty(0, dtype=int)
@@ -1924,7 +2001,7 @@ class Wing:
             panel_num = 0
 
             # Unravel the Wing's Panel matrix and iterate through it.
-            panels = np.ravel(self.panels)
+            panels = np.ravel(self._panels)
             for panel in panels:
                 # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(

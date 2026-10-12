@@ -596,14 +596,16 @@ These read-only properties expose the named load components and coefficients def
 | `WnX_G`, `WnY_G`, `WnZ_G` | Above           | Basis vectors          |
 | `children_T_pas_*`        | Cross sections  | Child transformations  |
 
-#### Set Once (set by `generate_mesh`, never modified after)
+#### Set Once (set by `_generate_mesh`, never modified after)
 
-| Attribute             | Type                 | Set By          | Notes                |
-|-----------------------|----------------------|-----------------|----------------------|
-| `symmetry_type`       | `int \| None`        | `generate_mesh` | 1, 2, 3, or 4        |
-| `num_spanwise_panels` | `int \| None`        | `generate_mesh` | Total spanwise count |
-| `num_panels`          | `int \| None`        | `generate_mesh` | Total panel count    |
-| `panels`              | `np.ndarray \| None` | `generate_mesh` | Panel matrix         |
+| Attribute             | Type                 | Set By           | Notes                                                       |
+|-----------------------|----------------------|------------------|-------------------------------------------------------------|
+| `symmetry_type`       | `int \| None`        | `_generate_mesh` | 1, 2, 3, or 4                                               |
+| `num_spanwise_panels` | `int \| None`        | `_generate_mesh` | Total spanwise count                                        |
+| `num_panels`          | `int \| None`        | `_generate_mesh` | Total panel count                                           |
+| `_panels`             | `np.ndarray \| None` | `_attach_panels` | Panel matrix, called during meshing. The array is read only |
+
+**Note**: `_generate_mesh` writes the first three backing slots itself, and meshing attaches the Panels through `_attach_panels`, so each slot is written only by `Wing`. The `symmetry_type`, `num_spanwise_panels`, and `num_panels` setters, the `panels` property, and the `generate_mesh` method are deprecated aliases. Using any of them emits a `DeprecationWarning`, and they will be removed in v6.0.0. `__deepcopy__` makes the copied Panel matrix read only too.
 
 #### Derived from Set Once (use manual lazy caching)
 
@@ -620,7 +622,7 @@ These read-only properties expose the named load components and coefficients def
 
 **Note**: `wetted_area` is deprecated. Its value is the total area of the `Wing`'s `Panel`s, which lie on the mean camber surface, so it is not the `Wing`'s wetted area. Reading it emits a `DeprecationWarning`, and it will be removed in v6.0.0.
 
-#### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
+#### Mutable (modified by `_process_wing_symmetry` for type 5 symmetry)
 
 | Attribute            | Type                 | Notes                          |
 |----------------------|----------------------|--------------------------------|
@@ -629,7 +631,7 @@ These read-only properties expose the named load components and coefficients def
 | `symmetryNormal_G`   | `np.ndarray \| None` | Modified to `None` for type 5  |
 | `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to `None` for type 5  |
 
-**Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
+**Note**: These are modified by `Airplane._process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
 
 #### Mutable (modified during simulation for wake)
 
@@ -670,12 +672,14 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Set Once (set by parent `Wing`)
 
-| Attribute       | Type          | Set By               | Notes                   |
-|-----------------|---------------|----------------------|-------------------------|
-| `validated`     | `bool`        | `Wing.__init__`      | Validation flag         |
-| `symmetry_type` | `int \| None` | `Wing.generate_mesh` | Inherited symmetry type |
+| Attribute       | Type          | Set By                | Notes                   |
+|-----------------|---------------|-----------------------|-------------------------|
+| `_validated`    | `bool`        | `Wing.__init__`       | Validation flag         |
+| `symmetry_type` | `int \| None` | `Wing._generate_mesh` | Inherited symmetry type |
 
-#### Mutable (modified by `process_wing_symmetry`)
+**Note**: `Wing` sets these through `_mark_validated` and `_set_symmetry_type`, so each backing slot is written only by `WingCrossSection`. The `validated` property and the `symmetry_type` setter are deprecated aliases. Using either emits a `DeprecationWarning`, and both will be removed in v6.0.0.
+
+#### Mutable (modified by `_process_wing_symmetry`)
 
 | Attribute                       | Type          | Notes                             |
 |---------------------------------|---------------|-----------------------------------|
@@ -697,7 +701,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `n_points_per_side` | `int`        | Points per side for resampling |
 | `mcl_A_Lp`          | `np.ndarray` | Mean camber line coordinates   |
 
-**Note**: The `add_control_surface` method creates and returns a new `Airfoil` instance rather than modifying the existing one. This is the correct immutable pattern.
+**Note**: The `_add_control_surface` method creates and returns a new `Airfoil` instance rather than modifying the existing one. This is the correct immutable pattern.
 
 **Note**: `outline_A_lp` and `mcl_A_lp` are deprecated read-only aliases for `outline_A_Lp` and `mcl_A_Lp`, and the constructor accepts a deprecated `outline_A_lp` alias for its `outline_A_Lp` parameter. Using any of the aliases emits a `DeprecationWarning`, and all three will be removed in v6.0.0.
 

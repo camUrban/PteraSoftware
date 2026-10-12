@@ -230,18 +230,18 @@ def _per_strip_torsional_aero_moments(
     per_step_strip_moments = []
     for steady_problem in problem.steady_problems:
         wing = steady_problem.airplanes[0].wings[wing_idx]
-        assert wing.panels is not None
+        assert wing._panels is not None
         num_spanwise_panels = wing.num_spanwise_panels
         assert num_spanwise_panels is not None
         strip_moments = []
         for span in range(num_spanwise_panels):
-            first_row_panel = wing.panels[0][span]
+            first_row_panel = wing._panels[0][span]
             if wing.mirror_only:
                 Slep_GP1_CgP1 = first_row_panel.Flpp_GP1_CgP1
             else:
                 Slep_GP1_CgP1 = first_row_panel.Frpp_GP1_CgP1
             strip_moment = 0.0
-            for row in wing.panels:
+            for row in wing._panels:
                 panel = row[span]
                 assert panel.forces_GP1 is not None
                 assert panel.moments_GP1_CgP1 is not None

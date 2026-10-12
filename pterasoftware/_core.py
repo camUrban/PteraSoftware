@@ -1788,7 +1788,9 @@ class CoreAirplaneMovement:
                 else:
                     raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-            copied_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            copied_airplane = first_airplane._deep_copy_with_Cg_GP1_CgP1(
+                thisCg_GP1_CgP1
+            )
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -1901,7 +1903,7 @@ class CoreAirplaneMovement:
 
             copied_airplane = first_period_airplanes[
                 source_step
-            ].deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            ]._deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -1972,14 +1974,14 @@ class CoreAirplaneMovement:
                 return False
 
             # Check Panel corner positions if Wings are meshed.
-            if wing_a.panels is not None and wing_b.panels is not None:
-                if wing_a.panels.shape != wing_b.panels.shape:
+            if wing_a._panels is not None and wing_b._panels is not None:
+                if wing_a._panels.shape != wing_b._panels.shape:
                     return False
 
-                for i in range(wing_a.panels.shape[0]):
-                    for j in range(wing_a.panels.shape[1]):
-                        panel_a = wing_a.panels[i, j]
-                        panel_b = wing_b.panels[i, j]
+                for i in range(wing_a._panels.shape[0]):
+                    for j in range(wing_a._panels.shape[1]):
+                        panel_a = wing_a._panels[i, j]
+                        panel_b = wing_b._panels[i, j]
 
                         # Check all four corner positions.
                         if not np.allclose(

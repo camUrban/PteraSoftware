@@ -1395,7 +1395,7 @@ class TestMeanTrailingEdgePanelChord(unittest.TestCase):
         # positions, which only a problem sets.
         ps.Airplane(wings=[wing])
 
-        _panels = wing.panels
+        _panels = wing._panels
         assert _panels is not None
         self.assertIsNone(_panels[-1, 0].leftLeg_GP1)
 

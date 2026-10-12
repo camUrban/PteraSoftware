@@ -211,7 +211,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
             step=0, delta_time=self.delta_time
         )
 
-        self.assertIsNotNone(result.wings[0].panels)
+        self.assertIsNotNone(result.wings[0]._panels)
 
     def test_generate_airplane_at_time_step_standard_wing_deformation_ignored(
         self,
@@ -228,7 +228,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
         )
 
         self.assertEqual(len(result_no_kwarg.wings), len(result_none_kwarg.wings))
-        self.assertIsNotNone(result_none_kwarg.wings[0].panels)
+        self.assertIsNotNone(result_none_kwarg.wings[0]._panels)
 
 
 class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):

@@ -199,7 +199,7 @@ class Airplane:
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
-            wing_symmetry_wings = self.process_wing_symmetry(wing)
+            wing_symmetry_wings = self._process_wing_symmetry(wing)
             if not first_wings:
                 first_wings = wing_symmetry_wings
             processed_wings.extend(wing_symmetry_wings)
@@ -322,7 +322,7 @@ class Airplane:
 
         return new_airplane
 
-    def deep_copy_with_Cg_GP1_CgP1(
+    def _deep_copy_with_Cg_GP1_CgP1(
         self, new_Cg_GP1_CgP1: np.ndarray | Sequence[float | int]
     ) -> Airplane:
         """Creates a deep copy of this Airplane with a different Cg_GP1_CgP1 position.
@@ -638,6 +638,71 @@ class Airplane:
             return None
         return float(self.momentCoefficients_W_Cg[2])
 
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this method because it is deprecated.
+    def deep_copy_with_Cg_GP1_CgP1(  # pragma: no cover
+        self, new_Cg_GP1_CgP1: np.ndarray | Sequence[float | int]
+    ) -> Airplane:
+        """A deprecated method that creates a deep copy of this Airplane with a
+        different Cg_GP1_CgP1 position.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param new_Cg_GP1_CgP1: An array-like object of 3 numbers representing the
+            position of the new Airplane's CG (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). Can be a list, tuple, or ndarray.
+            Values are converted to floats internally. The units are in meters.
+        :return: A new Airplane with the specified position and deep copied geometry.
+        """
+        warnings.warn(
+            "The deep_copy_with_Cg_GP1_CgP1 method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._deep_copy_with_Cg_GP1_CgP1(new_Cg_GP1_CgP1)
+
+    # Coverage ignores this method because it is deprecated.
+    def validate_first_airplane_constraints(self) -> None:  # pragma: no cover
+        """A deprecated method that validates that the first Airplane in a simulation
+        has Cg_GP1_CgP1 set to zeros.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: None
+        """
+        warnings.warn(
+            "The validate_first_airplane_constraints method is deprecated and will be "
+            "removed in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._validate_first_airplane_constraints()
+
+    # Coverage ignores this method because it is deprecated.
+    @staticmethod
+    def process_wing_symmetry(  # pragma: no cover
+        wing: wing_mod.Wing,
+    ) -> list[wing_mod.Wing]:
+        """A deprecated method that processes a Wing to determine what type of symmetry
+        it has, and meshes it.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param wing: The Wing to process for symmetry analysis and potential
+            modification.
+        :return: The list of processed Wings. For types 1-4 symmetry it contains only
+            the one modified Wing, but for type 5 symmetry it contains the modified Wing
+            followed by the new reflected Wing.
+        """
+        warnings.warn(
+            "The process_wing_symmetry method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return Airplane._process_wing_symmetry(wing)
+
     # --- Other methods ---
     def diagram(
         self,
@@ -884,9 +949,9 @@ class Airplane:
         # Iterate through this Airplane's Wings.
         for wing in self._wings:
             # Unravel the Wing's Panel matrix and iterate through it.
-            if wing.panels is None:
+            if wing._panels is None:
                 continue
-            panels = np.ravel(wing.panels)
+            panels = np.ravel(wing._panels)
             for panel in panels:
                 # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(
@@ -1158,7 +1223,7 @@ class Airplane:
 
                     plotter.add_actor(AxesWcsLp_G_Cg)
 
-            if wing.panels is not None:
+            if wing._panels is not None:
                 # Initialize empty arrays to hold the Panels' vertices and faces.
                 panel_vertices = np.empty((0, 3), dtype=float)
                 panel_faces = np.empty(0, dtype=int)
@@ -1168,7 +1233,7 @@ class Airplane:
                 panel_num = 0
 
                 # Unravel the Wing's Panel matrix and iterate through it.
-                panels = np.ravel(wing.panels)
+                panels = np.ravel(wing._panels)
                 for panel in panels:
                     # Stack this Panel's vertices and faces.
                     panel_vertices_to_add = np.vstack(
@@ -1218,7 +1283,7 @@ class Airplane:
 
         return None
 
-    def validate_first_airplane_constraints(self) -> None:
+    def _validate_first_airplane_constraints(self) -> None:
         """Validates that the first Airplane in a simulation has Cg_GP1_CgP1 set to
         zeros.
 
@@ -1233,7 +1298,7 @@ class Airplane:
             )
 
     @staticmethod
-    def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
+    def _process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
         """Processes a Wing to determine what type of symmetry it has.
 
         If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
@@ -1244,7 +1309,7 @@ class Airplane:
         :return: The list of processed Wings. For types 1-4 symmetry it contains only
             the one modified Wing, but for type 5 symmetry it contains the modified Wing
             followed by the new reflected Wing. Before returning them, it also calls
-            each Wing's generate_mesh method, preparing them for use simulation.
+            each Wing's _generate_mesh method, preparing them for use simulation.
         """
         # Determine if the symmetry plane is coincident with the wing axes' xz plane. If
         # symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no symmetry and
@@ -1389,7 +1454,7 @@ class Airplane:
 
         # Based on symmetry type, generate the mesh and return the Wing(s).
         if symmetry_type in [1, 2, 3, 4]:
-            wing.generate_mesh(symmetry_type)
+            wing._generate_mesh(symmetry_type)
             return [wing]
         else:
             assert wing.symmetryNormal_G is not None
@@ -1480,8 +1545,8 @@ class Airplane:
             for wing_cross_section in wing.wing_cross_sections:
                 wing_cross_section.control_surface_symmetry_type = None
 
-            wing.generate_mesh(symmetry_type=1)
-            reflected_wing.generate_mesh(symmetry_type=3)
+            wing._generate_mesh(symmetry_type=1)
+            reflected_wing._generate_mesh(symmetry_type=3)
             return [wing, reflected_wing]
 
 
@@ -1496,7 +1561,7 @@ def get_planform_reference_dimensions(
     mirrored half is found by reflecting the original half, and for type 5 symmetry, the
     strip joining the two halves is called the bridge strip.
 
-    :param first_wings: The list of meshed Wings that process_wing_symmetry returns for
+    :param first_wings: The list of meshed Wings that _process_wing_symmetry returns for
         the first element of the wings passed to an Airplane. It holds one Wing, or two
         for type 5 symmetry.
     :return: A tuple of three floats, which are the reference area, the reference chord,

@@ -26,11 +26,11 @@ class WingCrossSection:
     Derived transformation matrices (T_pas_Wcsp_Lpp_to_Wcs_Lp and
     T_pas_Wcs_Lp_to_Wcsp_Lpp) are lazily evaluated and cached.
 
-    The validated and symmetry_type attributes are set once by the parent Wing and
-    cannot be modified after being set.
+    The symmetry_type attribute is set once by the parent Wing and cannot be modified
+    after being set.
 
     The control_surface_symmetry_type attribute remains mutable as it may be modified by
-    Airplane.process_wing_symmetry() for type 5 symmetry handling.
+    the parent Airplane for type 5 symmetry handling.
 
     The first WingCrossSection in a Wing's wing_cross_section list is known as the root
     WingCrossSection. The last is known as the tip WingCrossSection.
@@ -199,7 +199,7 @@ class WingCrossSection:
         self._angles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
         # Validate control surface symmetry type (mutable, may be modified by
-        # Airplane.process_wing_symmetry for type 5 symmetry).
+        # Airplane._process_wing_symmetry for type 5 symmetry).
         if control_surface_symmetry_type is not None:
             control_surface_symmetry_type = _parameter_validation.str_return_str(
                 control_surface_symmetry_type, "control_surface_symmetry_type"
@@ -378,9 +378,10 @@ class WingCrossSection:
         Is None if the WingCrossSection hasn't been fully validated yet.
 
         :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if self.validated=False.
+            None if the WingCrossSection hasn't been fully validated by its parent Wing
+            yet.
         """
-        if not self.validated:
+        if not self._validated:
             return None
 
         if self._T_pas_Wcsp_Lpp_to_Wcs_Lp is None:
@@ -413,9 +414,10 @@ class WingCrossSection:
         Is None if the WingCrossSection hasn't been fully validated yet.
 
         :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if self.validated=False.
+            None if the WingCrossSection hasn't been fully validated by its parent Wing
+            yet.
         """
-        if not self.validated:
+        if not self._validated:
             return None
 
         if self._T_pas_Wcs_Lp_to_Wcsp_Lpp is None:
@@ -430,21 +432,6 @@ class WingCrossSection:
 
     # --- Set once: properties with single assignment enforcement ---
     @property
-    def validated(self) -> bool:
-        """A flag indicating if this WingCrossSection has been fully validated by its
-        parent Wing.
-
-        :return: True if validated, False otherwise.
-        """
-        return self._validated
-
-    @validated.setter
-    def validated(self, value: bool) -> None:
-        if self._validated:
-            raise AttributeError("validated can only be set once")
-        self._validated = value
-
-    @property
     def symmetry_type(self) -> int | None:
         """The symmetry type inherited from the parent Wing.
 
@@ -452,11 +439,124 @@ class WingCrossSection:
         """
         return self._symmetry_type
 
+    # Coverage ignores this setter because it is deprecated.
     @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:
+    def symmetry_type(self, value: int) -> None:  # pragma: no cover
+        warnings.warn(
+            "Setting the symmetry_type property is deprecated and will raise an "
+            "AttributeError starting in v6.0.0. It is set by the parent Wing.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._set_symmetry_type(value)
+
+    def _mark_validated(self) -> None:
+        """Marks this WingCrossSection as fully validated by its parent Wing.
+
+        It can only be called once.
+
+        :return: None
+        """
+        if self._validated:
+            raise AttributeError("validated can only be set once")
+        self._validated = True
+
+    def _set_symmetry_type(self, value: int) -> None:
+        """Sets the symmetry type inherited from the parent Wing.
+
+        It can only be called once.
+
+        :param value: The symmetry type (1, 2, 3, or 4).
+        :return: None
+        """
         if self._symmetry_type is not None:
             raise AttributeError("symmetry_type can only be set once")
         self._symmetry_type = value
+
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def validated(self) -> bool:  # pragma: no cover
+        """A deprecated flag indicating if this WingCrossSection has been fully
+        validated by its parent Wing.
+
+        Reading or setting it emits a DeprecationWarning, and it will be removed in
+        v6.0.0. It can only be set once.
+
+        :return: True if validated, False otherwise.
+        """
+        warnings.warn(
+            "The validated property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._validated
+
+    # Coverage ignores this setter because it is deprecated.
+    @validated.setter
+    def validated(self, value: bool) -> None:  # pragma: no cover
+        warnings.warn(
+            "The validated property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if self._validated:
+            raise AttributeError("validated can only be set once")
+        if value:
+            self._mark_validated()
+
+    # Coverage ignores this method because it is deprecated.
+    def validate_root_constraints(self) -> None:  # pragma: no cover
+        """A deprecated method that validates the constraints specific to root
+        WingCrossSections.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: None
+        """
+        warnings.warn(
+            "The validate_root_constraints method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._validate_root_constraints()
+
+    # Coverage ignores this method because it is deprecated.
+    def validate_mid_constraints(self) -> None:  # pragma: no cover
+        """A deprecated method that validates the constraints specific to middle
+        WingCrossSections.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: None
+        """
+        warnings.warn(
+            "The validate_mid_constraints method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._validate_mid_constraints()
+
+    # Coverage ignores this method because it is deprecated.
+    def validate_tip_constraints(self) -> None:  # pragma: no cover
+        """A deprecated method that validates the constraints specific to tip
+        WingCrossSections.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: None
+        """
+        warnings.warn(
+            "The validate_tip_constraints method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._validate_tip_constraints()
 
     # --- Other methods ---
     def diagram(
@@ -533,7 +633,7 @@ class WingCrossSection:
             quality, "quality", 0.0, True, 100.0, True
         )
 
-        if self.symmetry_type is None or not self.validated:
+        if self.symmetry_type is None or not self._validated:
             raise ValueError(
                 "A WingCrossSection can only be diagrammed after its parent Wing has "
                 "validated it and set its symmetry type."
@@ -623,7 +723,7 @@ class WingCrossSection:
 
         # If this WingCrossSection hasn't been fully validated, or its symmetry type
         # hasn't been set, return None.
-        if self.symmetry_type is None or not self.validated:
+        if self.symmetry_type is None or not self._validated:
             return None
 
         plottable_data = self.airfoil.get_plottable_data(show=False)
@@ -817,7 +917,7 @@ class WingCrossSection:
 
         return None
 
-    def validate_root_constraints(self) -> None:
+    def _validate_root_constraints(self) -> None:
         """Called by the parent Wing to validate constraints specific to root
         WingCrossSections.
 
@@ -844,7 +944,7 @@ class WingCrossSection:
                 "The root WingCrossSection cannot have num_spanwise_panels set to None."
             )
 
-    def validate_mid_constraints(self) -> None:
+    def _validate_mid_constraints(self) -> None:
         """Called by the parent Wing to validate constraints specific to middle
         WingCrossSections.
 
@@ -868,7 +968,7 @@ class WingCrossSection:
                 "Middle WingCrossSections cannot have num_spanwise_panels set to None."
             )
 
-    def validate_tip_constraints(self) -> None:
+    def _validate_tip_constraints(self) -> None:
         """Called by the parent Wing to validate constraints specific to tip
         WingCrossSections.
 

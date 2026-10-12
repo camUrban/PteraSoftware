@@ -54,7 +54,7 @@ class TestWingCrossSection(unittest.TestCase):
         )
         self.assertEqual(self.basic_wing_cross_section.control_surface_deflection, 5.0)
         self.assertEqual(self.basic_wing_cross_section.spanwise_spacing, "cosine")
-        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.assertFalse(self.basic_wing_cross_section._validated)
 
     def test_initialization_default_parameters(self) -> None:
         """Test WingCrossSection initialization with default parameters."""
@@ -333,56 +333,56 @@ class TestWingCrossSection(unittest.TestCase):
                     )
 
     def test_validate_root_constraints(self) -> None:
-        """Test validate_root_constraints method."""
+        """Test _validate_root_constraints method."""
         # Test that root WingCrossSection passes validation.
         try:
-            self.root_wing_cross_section.validate_root_constraints()
+            self.root_wing_cross_section._validate_root_constraints()
         except Exception as e:
             self.fail(f"Root WingCrossSection validation failed unexpectedly: {e}")
 
         # Test that non-root WingCrossSections fail validation.
         with self.assertRaises(ValueError):
-            self.basic_wing_cross_section.validate_root_constraints()
+            self.basic_wing_cross_section._validate_root_constraints()
 
         with self.assertRaises(ValueError):
-            self.tip_wing_cross_section.validate_root_constraints()
+            self.tip_wing_cross_section._validate_root_constraints()
 
         # Test that root WingCrossSection with num_spanwise_panels=None fails.
         invalid_root_wing_cross_section = (
             geometry_fixtures.make_invalid_root_wing_cross_section_fixture()
         )
         with self.assertRaises(ValueError):
-            invalid_root_wing_cross_section.validate_root_constraints()
+            invalid_root_wing_cross_section._validate_root_constraints()
 
     def test_validate_tip_constraints(self) -> None:
-        """Test validate_tip_constraints method."""
+        """Test _validate_tip_constraints method."""
         # Test that tip WingCrossSection passes validation.
         try:
-            self.tip_wing_cross_section.validate_tip_constraints()
+            self.tip_wing_cross_section._validate_tip_constraints()
         except Exception as e:
             self.fail(f"Tip WingCrossSection validation failed unexpectedly: {e}")
 
         # Test that non-tip WingCrossSections fail validation.
         with self.assertRaises(ValueError):
-            self.basic_wing_cross_section.validate_tip_constraints()
+            self.basic_wing_cross_section._validate_tip_constraints()
 
         with self.assertRaises(ValueError):
-            self.root_wing_cross_section.validate_tip_constraints()
+            self.root_wing_cross_section._validate_tip_constraints()
 
     def test_validate_mid_constraints(self) -> None:
-        """Test validate_mid_constraints method."""
+        """Test _validate_mid_constraints method."""
         # Test that valid middle WingCrossSection passes validation.
         middle_wing_cross_section = (
             geometry_fixtures.make_middle_wing_cross_section_fixture()
         )
         try:
-            middle_wing_cross_section.validate_mid_constraints()
+            middle_wing_cross_section._validate_mid_constraints()
         except Exception as e:
             self.fail(f"Middle WingCrossSection validation failed unexpectedly: {e}")
 
         # Test that basic WingCrossSection (has num_spanwise_panels) passes validation.
         try:
-            self.basic_wing_cross_section.validate_mid_constraints()
+            self.basic_wing_cross_section._validate_mid_constraints()
         except Exception as e:
             self.fail(
                 f"Basic WingCrossSection validation as middle failed unexpectedly: {e}"
@@ -393,14 +393,14 @@ class TestWingCrossSection(unittest.TestCase):
             geometry_fixtures.make_invalid_middle_wing_cross_section_fixture()
         )
         with self.assertRaises(ValueError):
-            invalid_middle_wing_cross_section.validate_mid_constraints()
+            invalid_middle_wing_cross_section._validate_mid_constraints()
 
         # Test that tip WingCrossSection (has num_spanwise_panels=None) fails.
         with self.assertRaises(ValueError):
-            self.tip_wing_cross_section.validate_mid_constraints()
+            self.tip_wing_cross_section._validate_mid_constraints()
 
     def test_validate_mid_constraints_zero_y_offset(self) -> None:
-        """Test that validate_mid_constraints rejects zero y component of
+        """Test that _validate_mid_constraints rejects zero y component of
         Lp_Wcsp_Lpp."""
         zero_y_wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
@@ -410,10 +410,10 @@ class TestWingCrossSection(unittest.TestCase):
             spanwise_spacing="uniform",
         )
         with self.assertRaises(ValueError):
-            zero_y_wing_cross_section.validate_mid_constraints()
+            zero_y_wing_cross_section._validate_mid_constraints()
 
     def test_validate_tip_constraints_zero_y_offset(self) -> None:
-        """Test that validate_tip_constraints rejects zero y component of
+        """Test that _validate_tip_constraints rejects zero y component of
         Lp_Wcsp_Lpp."""
         zero_y_tip_wing_cross_section = ps.WingCrossSection(
             airfoil=self.test_airfoil,
@@ -423,7 +423,7 @@ class TestWingCrossSection(unittest.TestCase):
             spanwise_spacing=None,
         )
         with self.assertRaises(ValueError):
-            zero_y_tip_wing_cross_section.validate_tip_constraints()
+            zero_y_tip_wing_cross_section._validate_tip_constraints()
 
     def test_transformation_matrices_not_validated(self) -> None:
         """Test that transformation matrices return None when not validated."""
@@ -434,7 +434,7 @@ class TestWingCrossSection(unittest.TestCase):
     def test_transformation_matrices_validated(self) -> None:
         """Test that transformation matrices work correctly when validated."""
         # Manually set validated flag to True.
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
 
         # Test that matrices are returned.
         T_forward = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
@@ -453,7 +453,7 @@ class TestWingCrossSection(unittest.TestCase):
         np.testing.assert_allclose(identity, expected_identity, rtol=1e-10, atol=1e-14)
 
         # Test with root WingCrossSection (should be identity matrices).
-        self.root_wing_cross_section.validated = True
+        self.root_wing_cross_section._mark_validated()
         T_root_forward = self.root_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T_root_inverse = self.root_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
 
@@ -562,41 +562,31 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         self.basic_wing_cross_section.control_surface_symmetry_type = None
         self.assertIsNone(self.basic_wing_cross_section.control_surface_symmetry_type)
 
-    def test_set_once_validated_property(self) -> None:
-        """Test that validated can only be set once."""
-        # First set should succeed.
-        self.assertFalse(self.basic_wing_cross_section.validated)
-        self.basic_wing_cross_section.validated = True
-        self.assertTrue(self.basic_wing_cross_section.validated)
+    def test_mark_validated_can_only_be_called_once(self) -> None:
+        """Test that _mark_validated can only be called once."""
+        # The first call should succeed.
+        self.assertFalse(self.basic_wing_cross_section._validated)
+        self.basic_wing_cross_section._mark_validated()
+        self.assertTrue(self.basic_wing_cross_section._validated)
 
-        # Second set should raise AttributeError.
+        # The second call should raise an AttributeError.
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.validated = True
+            self.basic_wing_cross_section._mark_validated()
 
-    def test_set_once_symmetry_type_property(self) -> None:
-        """Test that symmetry_type can only be set once."""
-        # First set should succeed.
+    def test_set_symmetry_type_can_only_be_called_once(self) -> None:
+        """Test that _set_symmetry_type can only be called once."""
+        # The first call should succeed.
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
-        self.basic_wing_cross_section.symmetry_type = 4
+        self.basic_wing_cross_section._set_symmetry_type(4)
         self.assertEqual(self.basic_wing_cross_section.symmetry_type, 4)
 
-        # Second set should raise AttributeError.
+        # The second call should raise an AttributeError.
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.symmetry_type = 3
-
-    def test_validated_false_to_false_succeeds(self) -> None:
-        """Test that setting validated from False to False succeeds.
-
-        The set once logic only blocks when validated is already True. Setting from
-        False to False is allowed. This test documents this behavior.
-        """
-        self.assertFalse(self.basic_wing_cross_section.validated)
-        self.basic_wing_cross_section.validated = False
-        self.assertFalse(self.basic_wing_cross_section.validated)
+            self.basic_wing_cross_section._set_symmetry_type(3)
 
     def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_array_read_only(self) -> None:
         """Test that T_pas_Wcsp_Lpp_to_Wcs_Lp array cannot be modified in place."""
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
         T = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         self.assertIsNotNone(T)
         assert T is not None
@@ -605,7 +595,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
 
     def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that T_pas_Wcs_Lp_to_Wcsp_Lpp array cannot be modified in place."""
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
         T = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
         self.assertIsNotNone(T)
         assert T is not None
@@ -615,7 +605,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
     def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_caching_returns_same_object(self) -> None:
         """Test that repeated access to T_pas_Wcsp_Lpp_to_Wcs_Lp returns the same cached
         object."""
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
         T1 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T2 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         self.assertIs(T1, T2)
@@ -623,7 +613,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
     def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_caching_returns_same_object(self) -> None:
         """Test that repeated access to T_pas_Wcs_Lp_to_Wcsp_Lpp returns the same cached
         object."""
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
         T1 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
         T2 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
         self.assertIs(T1, T2)
@@ -654,8 +644,8 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         import copy
 
         original = self.basic_wing_cross_section
-        original.validated = True
-        original.symmetry_type = 4
+        original._mark_validated()
+        original._set_symmetry_type(4)
 
         copied = copy.deepcopy(original)
 
@@ -675,7 +665,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
             copied.control_surface_deflection, original.control_surface_deflection
         )
         self.assertEqual(copied.spanwise_spacing, original.spanwise_spacing)
-        self.assertEqual(copied.validated, original.validated)
+        self.assertEqual(copied._validated, original._validated)
         self.assertEqual(copied.symmetry_type, original.symmetry_type)
 
     def test_deepcopy_creates_independent_arrays(self) -> None:
@@ -741,7 +731,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         import copy
 
         original = self.basic_wing_cross_section
-        original.validated = True
+        original._mark_validated()
 
         copied = copy.deepcopy(original)
 
@@ -759,11 +749,11 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         import copy
 
         original = self.basic_wing_cross_section
-        self.assertFalse(original.validated)
+        self.assertFalse(original._validated)
 
         copied = copy.deepcopy(original)
 
-        self.assertFalse(copied.validated)
+        self.assertFalse(copied._validated)
         self.assertIsNone(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp)
 
     def test_deepcopy_airfoil_independence(self) -> None:
@@ -791,7 +781,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         import copy
 
         original = self.basic_wing_cross_section
-        original.validated = True
+        original._mark_validated()
 
         # Trigger caching on original.
         _ = original.T_pas_Wcsp_Lpp_to_Wcs_Lp
@@ -816,7 +806,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         import copy
 
         original = self.basic_wing_cross_section
-        original.validated = True
+        original._mark_validated()
 
         # Trigger caching on original.
         original_T_forward = original.T_pas_Wcsp_Lpp_to_Wcs_Lp
@@ -851,15 +841,15 @@ class TestWingCrossSectionDiagram(unittest.TestCase):
         # it, set its symmetry type, and set its transformation to its parent axes, so
         # take the meshed WingCrossSections from a meshed Wing.
         meshed_wing = geometry_fixtures.make_type_1_wing_fixture()
-        meshed_wing.generate_mesh(1)
+        meshed_wing._generate_mesh(1)
         self.meshed_root_wing_cross_section = meshed_wing.wing_cross_sections[0]
         self.meshed_tip_wing_cross_section = meshed_wing.wing_cross_sections[1]
 
     def test_diagram_raises_when_not_validated(self) -> None:
         """Test that diagram raises a ValueError when not validated."""
         # Set symmetry_type but not validated.
-        self.basic_wing_cross_section.symmetry_type = 1
-        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.basic_wing_cross_section._set_symmetry_type(1)
+        self.assertFalse(self.basic_wing_cross_section._validated)
 
         with self.assertRaises(ValueError):
             self.basic_wing_cross_section.diagram()
@@ -867,7 +857,7 @@ class TestWingCrossSectionDiagram(unittest.TestCase):
     def test_diagram_raises_when_symmetry_type_not_set(self) -> None:
         """Test that diagram raises a ValueError when symmetry_type not set."""
         # Set validated but not symmetry_type.
-        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section._mark_validated()
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
 
         with self.assertRaises(ValueError):
@@ -876,7 +866,7 @@ class TestWingCrossSectionDiagram(unittest.TestCase):
     def test_diagram_raises_when_neither_set(self) -> None:
         """Test that diagram raises a ValueError when neither validated nor
         symmetry_type is set."""
-        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.assertFalse(self.basic_wing_cross_section._validated)
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
 
         with self.assertRaises(ValueError):
@@ -934,3 +924,71 @@ class TestWingCrossSectionDeprecatedPlottingMethods(unittest.TestCase):
         """Test that calling get_plottable_data emits a DeprecationWarning."""
         with self.assertWarns(DeprecationWarning):
             self.basic_wing_cross_section.get_plottable_data(show=False)
+
+
+class TestWingCrossSectionDeprecatedInternalMembers(unittest.TestCase):
+    """This class contains unit tests for the deprecated aliases of the WingCrossSection
+    members that are no longer public."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated alias tests."""
+        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        self.basic_wing_cross_section = (
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
+        )
+        self.root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        self.tip_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_fixture()
+        )
+
+    def test_validated_getter_warns_and_matches(self) -> None:
+        """Test that reading validated warns and returns the validated flag."""
+        with self.assertWarns(DeprecationWarning):
+            validated = self.basic_wing_cross_section.validated
+        self.assertFalse(validated)
+
+    def test_validated_setter_warns_and_marks_validated(self) -> None:
+        """Test that setting validated to True warns and marks the WingCrossSection as
+        validated, and that it can only be set once."""
+        with self.assertWarns(DeprecationWarning):
+            self.basic_wing_cross_section.validated = True
+        self.assertTrue(self.basic_wing_cross_section._validated)
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(AttributeError):
+                self.basic_wing_cross_section.validated = True
+
+    def test_symmetry_type_setter_warns_and_sets(self) -> None:
+        """Test that setting symmetry_type warns and sets the symmetry type, and that it
+        can only be set once."""
+        with self.assertWarns(DeprecationWarning):
+            self.basic_wing_cross_section.symmetry_type = 4
+        self.assertEqual(self.basic_wing_cross_section.symmetry_type, 4)
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(AttributeError):
+                self.basic_wing_cross_section.symmetry_type = 3
+
+    def test_validate_root_constraints_warns(self) -> None:
+        """Test that calling validate_root_constraints warns and validates."""
+        with self.assertWarns(DeprecationWarning):
+            self.root_wing_cross_section.validate_root_constraints()
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(ValueError):
+                self.tip_wing_cross_section.validate_root_constraints()
+
+    def test_validate_mid_constraints_warns(self) -> None:
+        """Test that calling validate_mid_constraints warns and validates."""
+        with self.assertWarns(DeprecationWarning):
+            self.basic_wing_cross_section.validate_mid_constraints()
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(ValueError):
+                self.tip_wing_cross_section.validate_mid_constraints()
+
+    def test_validate_tip_constraints_warns(self) -> None:
+        """Test that calling validate_tip_constraints warns and validates."""
+        with self.assertWarns(DeprecationWarning):
+            self.tip_wing_cross_section.validate_tip_constraints()
+        with self.assertWarns(DeprecationWarning):
+            with self.assertRaises(ValueError):
+                self.root_wing_cross_section.validate_tip_constraints()

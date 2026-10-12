@@ -420,7 +420,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 # essentially infinite.
                 infinite_leg_offset_GP1 = vInfHat_GP1__E * (_span * 20)
 
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 # Based on results from Ramasamy and Leishman (2007), the streamwise

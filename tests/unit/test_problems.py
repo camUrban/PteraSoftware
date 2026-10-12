@@ -239,9 +239,9 @@ class TestSteadyProblemPanelCoordinates(unittest.TestCase):
         # Get the first Panel.
         first_airplane = steady_problem.airplanes[0]
         first_wing = first_airplane.wings[0]
-        self.assertIsNotNone(first_wing.panels)
-        assert first_wing.panels is not None
-        first_panel = first_wing.panels[0, 0]
+        self.assertIsNotNone(first_wing._panels)
+        assert first_wing._panels is not None
+        first_panel = first_wing._panels[0, 0]
 
         # Verify that the arrays are read only.
         with self.assertRaises(ValueError):
@@ -264,9 +264,9 @@ class TestSteadyProblemPanelCoordinates(unittest.TestCase):
         # Check that all Panels in all Airplanes have GP1_CgP1 coordinates set.
         for airplane in steady_problem.airplanes:
             for wing in airplane.wings:
-                self.assertIsNotNone(wing.panels)
-                assert wing.panels is not None
-                for panel in np.ravel(wing.panels):
+                self.assertIsNotNone(wing._panels)
+                assert wing._panels is not None
+                for panel in np.ravel(wing._panels):
                     self.assertIsNotNone(panel.Frpp_GP1_CgP1)
                     self.assertIsNotNone(panel.Flpp_GP1_CgP1)
                     self.assertIsNotNone(panel.Blpp_GP1_CgP1)

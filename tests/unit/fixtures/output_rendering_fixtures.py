@@ -176,8 +176,8 @@ def make_loaded_airplanes_fixture() -> tuple[ps.Airplane, ...]:
     """
     airplane = geometry_fixtures.make_basic_airplane_fixture()
     for wing in airplane.wings:
-        assert wing.panels is not None
-        panels = np.ravel(wing.panels)
+        assert wing._panels is not None
+        panels = np.ravel(wing._panels)
         for panel_num, panel in enumerate(panels):
             panel.forces_W = np.array(
                 [

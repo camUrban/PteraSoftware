@@ -567,15 +567,13 @@ def wing_cross_section_movements(self) -> tuple:
 
 
 # Uses deferral language
-def generate_wing_at_time_step(self, step: int, delta_time: float | int) -> Wing:
-    """Creates the Wing at a single time step.
+@property
+def max_period(self) -> float:
+    """The longest period of this Wing's motion.
 
     See WingMovement for full details.
 
-    :param step: The time step index. Must be a non negative int.
-    :param delta_time: The time between each time step in seconds. Must be a positive
-        number (int or float).
-    :return: The Wing at this time step.
+    :return: The longest period in seconds.
     """
 ```
 

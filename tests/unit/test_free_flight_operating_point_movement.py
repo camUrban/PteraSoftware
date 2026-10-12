@@ -71,13 +71,13 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
         )
 
     def test_generate_operating_points_returns_operating_points(self) -> None:
-        """Test that generate_operating_points returns OperatingPoints when called
+        """Test that _generate_operating_points returns OperatingPoints when called
         through the public class."""
         free_flight_operating_point_movement = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
         operating_points = (
-            free_flight_operating_point_movement.generate_operating_points(
+            free_flight_operating_point_movement._generate_operating_points(
                 num_steps=5, delta_time=0.01
             )
         )

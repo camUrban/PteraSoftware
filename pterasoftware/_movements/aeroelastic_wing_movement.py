@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable, Sequence
 from typing import cast
 
@@ -18,10 +19,10 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
     In aeroelastic simulations, wing geometry is prescribed via oscillation parameters
     (the same oscillation based generation as WingMovement), but the solver adds
-    structural deformation at each time step. This class overrides
-    generate_wing_at_time_step to accept per WingCrossSection deformation angles (which
-    perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to
-    its AeroelasticWingCrossSectionMovement children.
+    structural deformation at each time step. When generating each time step's Wing,
+    this class accepts per WingCrossSection deformation angles (which perturb the
+    WingCrossSections' angles_Wcsp_to_Wcs_ixyz) and threads them down to its
+    AeroelasticWingCrossSectionMovement children.
 
     Wings cannot undergo motion that causes them to switch symmetry types. A transition
     between types could change the number of Wings and the Panel structure, which is
@@ -314,7 +315,44 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     ) -> tuple[Callable[[float], float] | None, ...]:
         return self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
 
-    def generate_wing_at_time_step(
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this method because it is deprecated.
+    def generate_wing_at_time_step(  # pragma: no cover
+        self,
+        step: int,
+        delta_time: float | int,
+        deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
+    ) -> _geometry.wing.Wing:
+        """A deprecated method that creates the Wing at a single time step, optionally
+        applying structural deformation to each WingCrossSection.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param step: The time step index. Must be a non negative int.
+        :param delta_time: The time between each time step in seconds. Must be a
+            positive number (int or float).
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: An ndarray of floats with one row per
+            WingCrossSection in this Wing. Each row is a (3,) deformation angle vector
+            using an intrinsic xy'z" sequence that is added to the corresponding
+            WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The units are in
+            degrees. When None, no deformation is applied. The default is None.
+        :return: The Wing at this time step, with structural deformation applied to each
+            WingCrossSection if provided.
+        """
+        warnings.warn(
+            "The generate_wing_at_time_step method is deprecated and will be removed "
+            "in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._generate_wing_at_time_step(
+            step,
+            delta_time,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+        )
+
+    # --- Other methods ---
+    def _generate_wing_at_time_step(
         self,
         step: int,
         delta_time: float | int,
@@ -435,7 +473,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
                 )
 
             these_wing_cross_sections.append(
-                wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+                wing_cross_section_movement._generate_wing_cross_section_at_time_step(
                     step,
                     delta_time,
                     deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,

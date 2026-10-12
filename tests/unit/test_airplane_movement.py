@@ -56,12 +56,12 @@ class TestAirplaneMovement(unittest.TestCase):
             )
 
     def test_generate_airplanes_returns_airplanes(self) -> None:
-        """Test that generate_airplanes returns Airplanes when called through the public
-        class."""
+        """Test that _generate_airplanes returns Airplanes when called through the
+        public class."""
         airplane_movement = (
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         )
-        airplanes = airplane_movement.generate_airplanes(num_steps=5, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=5, delta_time=0.01)
         self.assertEqual(len(airplanes), 5)
         for airplane in airplanes:
             self.assertIsInstance(

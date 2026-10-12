@@ -309,7 +309,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `min_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
 | `static`     | `max_period`                                     | `CoreMovement` | Cached |
 
-**Note on `airplanes` and `operating_points`**: These are defined on `Movement` and generated during `__init__` by calling the child movements' `generate_*` methods. They are stored as nested tuples to prevent modification after generation.
+**Note on `airplanes` and `operating_points`**: These are defined on `Movement` and generated during `__init__` by calling the child movements' `_generate_*` methods. They are stored as nested tuples to prevent modification after generation.
 
 #### `FreeFlightMovement` and `AeroelasticMovement` variant additions
 

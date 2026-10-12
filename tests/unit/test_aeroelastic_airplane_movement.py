@@ -140,12 +140,12 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
         self.assertEqual(len(aeroelastic_airplane_movement.wing_movements), 1)
 
     def test_generate_airplanes_returns_airplanes(self) -> None:
-        """Test that generate_airplanes returns Airplanes when called through the public
-        class."""
+        """Test that _generate_airplanes returns Airplanes when called through the
+        public class."""
         aeroelastic_airplane_movement = (
             aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
         )
-        airplanes = aeroelastic_airplane_movement.generate_airplanes(
+        airplanes = aeroelastic_airplane_movement._generate_airplanes(
             num_steps=5, delta_time=0.01
         )
         self.assertEqual(len(airplanes), 5)
@@ -156,12 +156,12 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
             )
 
     def test_generate_airplane_at_time_step_returns_airplane(self) -> None:
-        """Test that generate_airplane_at_time_step returns an Airplane when the Wing is
-        backed by an AeroelasticWingMovement."""
+        """Test that _generate_airplane_at_time_step returns an Airplane when the Wing
+        is backed by an AeroelasticWingMovement."""
         aeroelastic_airplane_movement = (
             aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
         )
-        airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+        airplane = aeroelastic_airplane_movement._generate_airplane_at_time_step(
             step=2, delta_time=0.01
         )
         self.assertIsInstance(
@@ -172,7 +172,8 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
 
 class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
     """This class contains unit tests for AeroelasticAirplaneMovement with a standard
-    WingMovement child, exercising the else branch in generate_airplane_at_time_step."""
+    WingMovement child, exercising the else branch in
+    _generate_airplane_at_time_step."""
 
     def setUp(self) -> None:
         """Set up an AeroelasticAirplaneMovement backed by a standard WingMovement."""
@@ -185,9 +186,9 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
     def test_generate_airplane_at_time_step_standard_wing_returns_airplane(
         self,
     ) -> None:
-        """Test that generate_airplane_at_time_step returns an Airplane when the wing is
-        backed by a standard WingMovement (the else branch)."""
-        result = self.airplane_movement.generate_airplane_at_time_step(
+        """Test that _generate_airplane_at_time_step returns an Airplane when the wing
+        is backed by a standard WingMovement (the else branch)."""
+        result = self.airplane_movement._generate_airplane_at_time_step(
             step=0, delta_time=self.delta_time
         )
 
@@ -198,7 +199,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
     ) -> None:
         """Test that the Airplane returned via the standard WingMovement path contains
         exactly one Wing."""
-        result = self.airplane_movement.generate_airplane_at_time_step(
+        result = self.airplane_movement._generate_airplane_at_time_step(
             step=0, delta_time=self.delta_time
         )
 
@@ -207,7 +208,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
     def test_generate_airplane_at_time_step_standard_wing_wing_has_panels(self) -> None:
         """Test that the Wing produced via the standard WingMovement path has its panels
         populated (not None)."""
-        result = self.airplane_movement.generate_airplane_at_time_step(
+        result = self.airplane_movement._generate_airplane_at_time_step(
             step=0, delta_time=self.delta_time
         )
 
@@ -218,10 +219,10 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
     ) -> None:
         """Test that passing deformationAngles_Wcsp_to_Wcs_ixyz=None produces the same
         Airplane as calling without deformation for a standard WingMovement."""
-        result_no_kwarg = self.airplane_movement.generate_airplane_at_time_step(
+        result_no_kwarg = self.airplane_movement._generate_airplane_at_time_step(
             step=1, delta_time=self.delta_time
         )
-        result_none_kwarg = self.airplane_movement.generate_airplane_at_time_step(
+        result_none_kwarg = self.airplane_movement._generate_airplane_at_time_step(
             step=1,
             delta_time=self.delta_time,
             deformationAngles_Wcsp_to_Wcs_ixyz=None,
@@ -233,7 +234,7 @@ class TestAeroelasticAirplaneMovementStandardWing(unittest.TestCase):
 
 class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
     """This is a class with functions to test the structural deformation behavior of
-    AeroelasticAirplaneMovement.generate_airplane_at_time_step."""
+    AeroelasticAirplaneMovement._generate_airplane_at_time_step."""
 
     def test_default_deformation_matches_explicit_none(self) -> None:
         """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same
@@ -242,11 +243,13 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
             aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
         )
 
-        default_airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
-            step=2, delta_time=0.01
+        default_airplane = (
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
+                step=2, delta_time=0.01
+            )
         )
         explicit_none_airplane = (
-            aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
                 step=2, delta_time=0.01, deformationAngles_Wcsp_to_Wcs_ixyz=None
             )
         )
@@ -303,7 +306,7 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
         deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] = [
             np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
         ]
-        airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+        airplane = aeroelastic_airplane_movement._generate_airplane_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -326,7 +329,7 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
             np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
         ]
 
-        airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+        airplane = aeroelastic_airplane_movement._generate_airplane_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -358,12 +361,12 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
         )
 
         no_deformation_airplane = (
-            aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
                 step=2, delta_time=0.01
             )
         )
         zero_deformation_airplane = (
-            aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
                 step=2,
                 delta_time=0.01,
                 deformationAngles_Wcsp_to_Wcs_ixyz=[np.zeros((2, 3), dtype=float)],
@@ -397,12 +400,12 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
         ]
 
         prescribed_airplane = (
-            aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
                 step=3, delta_time=0.01
             )
         )
         deformed_airplane = (
-            aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            aeroelastic_airplane_movement._generate_airplane_at_time_step(
                 step=3,
                 delta_time=0.01,
                 deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -447,7 +450,7 @@ class TestAeroelasticAirplaneMovementMixedWings(unittest.TestCase):
             None,
         ]
 
-        airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+        airplane = aeroelastic_airplane_movement._generate_airplane_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -483,4 +486,42 @@ class TestAeroelasticAirplaneMovementMixedWings(unittest.TestCase):
                 base_standard_wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
                 rtol=1e-10,
                 atol=1e-14,
+            )
+
+
+class TestAeroelasticAirplaneMovementDeprecatedInternalMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated aliases of the
+    AeroelasticAirplaneMovement methods that are no longer public."""
+
+    def test_generate_airplane_at_time_step_warns_and_delegates(self) -> None:
+        """Test that calling generate_airplane_at_time_step warns and returns the same
+        deformed Airplane as _generate_airplane_at_time_step."""
+        aeroelastic_airplane_movement = (
+            aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
+        )
+        # The root (index 0) deformation must stay zero, since the clamped root
+        # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] = [
+            np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
+        ]
+
+        with self.assertWarns(DeprecationWarning):
+            airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+                1,
+                0.01,
+                deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+            )
+        expected = aeroelastic_airplane_movement._generate_airplane_at_time_step(
+            1,
+            0.01,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+        )
+
+        npt.assert_array_equal(airplane.Cg_GP1_CgP1, expected.Cg_GP1_CgP1)
+        wing_cross_sections = airplane.wings[0].wing_cross_sections
+        expected_wing_cross_sections = expected.wings[0].wing_cross_sections
+        for index in range(len(expected_wing_cross_sections)):
+            npt.assert_array_equal(
+                wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
+                expected_wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
             )

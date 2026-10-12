@@ -81,12 +81,12 @@ class TestAeroelasticWingMovement(unittest.TestCase):
             )
 
     def test_generate_wings_returns_wings(self) -> None:
-        """Test that generate_wings returns Wings when called through the public
+        """Test that _generate_wings returns Wings when called through the public
         class."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
-        wings = aeroelastic_wing_movement.generate_wings(num_steps=5, delta_time=0.01)
+        wings = aeroelastic_wing_movement._generate_wings(num_steps=5, delta_time=0.01)
         self.assertEqual(len(wings), 5)
         for wing in wings:
             self.assertIsInstance(
@@ -95,11 +95,11 @@ class TestAeroelasticWingMovement(unittest.TestCase):
             )
 
     def test_generate_wing_at_time_step_returns_wing(self) -> None:
-        """Test that generate_wing_at_time_step returns a Wing."""
+        """Test that _generate_wing_at_time_step returns a Wing."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
-        wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=2, delta_time=0.01
         )
         self.assertIsInstance(
@@ -110,7 +110,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
 
 class TestAeroelasticWingMovementDeformation(unittest.TestCase):
     """This is a class with functions to test the structural deformation behavior of
-    AeroelasticWingMovement.generate_wing_at_time_step."""
+    AeroelasticWingMovement._generate_wing_at_time_step."""
 
     def test_no_deformation_matches_static_base(self) -> None:
         """Test that, with no prescribed movement and no deformation, the generated Wing
@@ -120,7 +120,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         )
         base_wing = aeroelastic_wing_movement.base_wing
 
-        wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=3, delta_time=0.01
         )
 
@@ -151,10 +151,10 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
 
-        default_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        default_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=2, delta_time=0.01
         )
-        explicit_none_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        explicit_none_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=2, delta_time=0.01, deformationAngles_Wcsp_to_Wcs_ixyz=None
         )
 
@@ -181,7 +181,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             [[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float
         )
 
-        wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -208,10 +208,10 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
 
-        no_deformation_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        no_deformation_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=2, delta_time=0.01
         )
-        zero_deformation_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        zero_deformation_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=2,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=np.zeros((2, 3), dtype=float),
@@ -239,10 +239,10 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             [[0.0, 0.0, 0.0], [-1.0, 4.0, -3.0]], dtype=float
         )
 
-        prescribed_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        prescribed_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=3, delta_time=0.01
         )
-        deformed_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+        deformed_wing = aeroelastic_wing_movement._generate_wing_at_time_step(
             step=3,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -277,10 +277,10 @@ class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
 
         # At step 0 the sine spaced angular motion is zero, so the rotation matrix is
         # the identity and the offset adjustment vanishes.
-        basic_wing = basic_wing_movement.generate_wing_at_time_step(
+        basic_wing = basic_wing_movement._generate_wing_at_time_step(
             step=0, delta_time=0.1
         )
-        offset_wing = offset_wing_movement.generate_wing_at_time_step(
+        offset_wing = offset_wing_movement._generate_wing_at_time_step(
             step=0, delta_time=0.1
         )
 
@@ -304,10 +304,10 @@ class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
 
         # At step 1 the sine spaced angular motion is non zero, so the offset adjustment
         # shifts Ler_Gs_Cgs.
-        basic_wing = basic_wing_movement.generate_wing_at_time_step(
+        basic_wing = basic_wing_movement._generate_wing_at_time_step(
             step=1, delta_time=0.1
         )
-        offset_wing = offset_wing_movement.generate_wing_at_time_step(
+        offset_wing = offset_wing_movement._generate_wing_at_time_step(
             step=1, delta_time=0.1
         )
 
@@ -524,3 +524,39 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
             ],
             deriv_func,
         )
+
+
+class TestAeroelasticWingMovementDeprecatedInternalMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated aliases of the
+    AeroelasticWingMovement methods that are no longer public."""
+
+    def test_generate_wing_at_time_step_warns_and_delegates(self) -> None:
+        """Test that calling generate_wing_at_time_step warns and returns the same
+        deformed Wing as _generate_wing_at_time_step."""
+        aeroelastic_wing_movement = (
+            aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
+        )
+        # The root (index 0) deformation must stay zero, since the clamped root
+        # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array(
+            [[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float
+        )
+
+        with self.assertWarns(DeprecationWarning):
+            wing = aeroelastic_wing_movement.generate_wing_at_time_step(
+                1,
+                0.01,
+                deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+            )
+        expected = aeroelastic_wing_movement._generate_wing_at_time_step(
+            1,
+            0.01,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+        )
+
+        npt.assert_array_equal(wing.Ler_Gs_Cgs, expected.Ler_Gs_Cgs)
+        for index in range(len(expected.wing_cross_sections)):
+            npt.assert_array_equal(
+                wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
+                expected.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
+            )

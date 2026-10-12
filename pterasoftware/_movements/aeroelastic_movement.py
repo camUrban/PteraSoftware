@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import cast
 
 import numpy as np
@@ -93,7 +94,7 @@ class AeroelasticMovement(_core.CoreMovement):
         # --- Batch generate OperatingPoints ---
         # OperatingPoints are prescribed in aeroelastic simulations, so generate them
         # all upfront.
-        operating_points_list = operating_point_movement.generate_operating_points(
+        operating_points_list = operating_point_movement._generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
         )
         self._operating_points: tuple[operating_point_mod.OperatingPoint, ...] = tuple(
@@ -124,7 +125,46 @@ class AeroelasticMovement(_core.CoreMovement):
     def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
         return self._operating_points
 
-    def generate_airplane_at_time_step(
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this method because it is deprecated.
+    def generate_airplane_at_time_step(  # pragma: no cover
+        self,
+        airplane_movement_index: int,
+        step: int,
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
+    ) -> _geometry.airplane.Airplane:
+        """A deprecated method that creates the Airplane at a single time step for a
+        given AeroelasticAirplaneMovement, applying deformation from the solver's
+        structural response.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param airplane_movement_index: The index of the AeroelasticAirplaneMovement in
+            this AeroelasticMovement's airplane_movements tuple.
+        :param step: The time step index. Must be a non negative int.
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of ndarrays of floats, one per
+            Wing, each with one row per WingCrossSection in that Wing. Each row is a
+            (3,) deformation angle vector that perturbs the corresponding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
+            sequence. The units are in degrees. When None, no deformation is applied.
+            The default is None.
+        :return: The Airplane at this time step, with structural deformation applied if
+            provided.
+        """
+        warnings.warn(
+            "The generate_airplane_at_time_step method is deprecated and will be "
+            "removed in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._generate_airplane_at_time_step(
+            airplane_movement_index,
+            step,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+        )
+
+    # --- Other methods ---
+    def _generate_airplane_at_time_step(
         self,
         airplane_movement_index: int,
         step: int,
@@ -151,7 +191,7 @@ class AeroelasticMovement(_core.CoreMovement):
         """
         return self.airplane_movements[
             airplane_movement_index
-        ].generate_airplane_at_time_step(
+        ]._generate_airplane_at_time_step(
             step,
             self._delta_time,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

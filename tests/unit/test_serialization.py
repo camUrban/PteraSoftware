@@ -2111,8 +2111,8 @@ class TestLoadCallables(unittest.TestCase):
         assert isinstance(result, OperatingPointMovement)
         self.assertIs(result.spacingVCg__E, self.custom_spacing)
         self.assertEqual(
-            result.generate_operating_point_at_time_step(1, 0.1).vCg__E,
-            self.operating_point_movement.generate_operating_point_at_time_step(
+            result._generate_operating_point_at_time_step(1, 0.1).vCg__E,
+            self.operating_point_movement._generate_operating_point_at_time_step(
                 1, 0.1
             ).vCg__E,
         )
@@ -3044,7 +3044,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         result = deserialize_value(serialize_value(operating_point_movement))
         assert isinstance(result, OperatingPointMovement)
         with self.assertRaises(ValueError) as context:
-            result.generate_operating_point_at_time_step(1, 0.1)
+            result._generate_operating_point_at_time_step(1, 0.1)
         self.assertIn(custom_spacing.__qualname__, str(context.exception))
         self.assertIsInstance(context.exception.__context__, RuntimeError)
 

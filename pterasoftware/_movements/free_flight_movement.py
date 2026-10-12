@@ -122,7 +122,7 @@ class FreeFlightMovement(_core.CoreMovement):
         airplanes_temp: list[list[_geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
-                airplane_movement.generate_airplanes(
+                airplane_movement._generate_airplanes(
                     num_steps=self._num_steps, delta_time=self._delta_time
                 )
             )

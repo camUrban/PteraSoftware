@@ -626,9 +626,9 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         # Derive the initial Airplane and OperatingPoint from the FreeFlightMovement's
         # first time step. SteadyProblem mutates each Panel's GP1_CgP1 attributes once,
         # so the initial Airplane must be a fresh object, which
-        # generate_airplane_at_time_step returns.
+        # _generate_airplane_at_time_step returns.
         initial_airplane_movement = movement.airplane_movements[0]
-        initial_airplane = initial_airplane_movement.generate_airplane_at_time_step(
+        initial_airplane = initial_airplane_movement._generate_airplane_at_time_step(
             step=0, delta_time=movement.delta_time
         )
         initial_operating_point = movement.operating_point_movement.operating_points[0]
@@ -1489,7 +1489,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             raise TypeError("movement must be an AeroelasticMovement.")
 
         # Generate the initial Airplane at step 0 with no deformation.
-        initial_airplane = movement.generate_airplane_at_time_step(
+        initial_airplane = movement._generate_airplane_at_time_step(
             airplane_movement_index=0, step=0
         )
 
@@ -1645,7 +1645,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         ]
 
         # Generate the deformed Airplane at this step.
-        airplane = self.movement.generate_airplane_at_time_step(
+        airplane = self.movement._generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

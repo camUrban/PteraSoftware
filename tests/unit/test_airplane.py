@@ -1181,41 +1181,6 @@ class TestAirplaneDeprecatedPlottingMethods(unittest.TestCase):
             self.basic_airplane.draw(save=False, testing=True)
 
 
-class TestAirplaneDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the Airplane methods
-    that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
-        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
-
-    def test_deep_copy_with_Cg_GP1_CgP1_warns_and_copies(self) -> None:
-        """Test that calling deep_copy_with_Cg_GP1_CgP1 warns and returns a copy at the
-        new position."""
-        new_Cg_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
-        with self.assertWarns(DeprecationWarning):
-            copied = self.basic_airplane.deep_copy_with_Cg_GP1_CgP1(new_Cg_GP1_CgP1)
-        self.assertIsNot(copied, self.basic_airplane)
-        npt.assert_array_equal(copied.Cg_GP1_CgP1, new_Cg_GP1_CgP1)
-
-    def test_validate_first_airplane_constraints_warns(self) -> None:
-        """Test that calling validate_first_airplane_constraints warns and validates."""
-        with self.assertWarns(DeprecationWarning):
-            self.first_airplane.validate_first_airplane_constraints()
-        with self.assertWarns(DeprecationWarning):
-            with self.assertRaises(ValueError):
-                self.basic_airplane.validate_first_airplane_constraints()
-
-    def test_process_wing_symmetry_warns_and_meshes(self) -> None:
-        """Test that calling process_wing_symmetry warns and returns the meshed Wing."""
-        wing = geometry_fixtures.make_type_1_wing_fixture()
-        with self.assertWarns(DeprecationWarning):
-            result = ps.Airplane.process_wing_symmetry(wing)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].symmetry_type, 1)
-
-
 class TestGetPlanformReferenceDimensions(unittest.TestCase):
     """This class contains unit tests for the function that calculates the default
     reference dimensions from the first Wing's projected planform."""

@@ -1250,39 +1250,3 @@ class TestAirfoilDeprecatedPlottingMethods(unittest.TestCase):
         with patch.object(plt, "show"):
             with self.assertWarns(DeprecationWarning):
                 self.naca2412_airfoil.draw()
-
-
-class TestAirfoilDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the Airfoil methods
-    that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
-
-    def test_add_control_surface_warns_and_matches(self) -> None:
-        """Test that calling add_control_surface warns and returns the same outline as
-        _add_control_surface."""
-        with self.assertWarns(DeprecationWarning):
-            deprecated_airfoil = self.naca2412_airfoil.add_control_surface(
-                deflection=3.0, hinge_point=0.75
-            )
-        internal_airfoil = self.naca2412_airfoil._add_control_surface(
-            deflection=3.0, hinge_point=0.75
-        )
-        npt.assert_array_equal(
-            deprecated_airfoil.outline_A_Lp, internal_airfoil.outline_A_Lp
-        )
-
-    def test_get_resampled_mcl_warns_and_matches(self) -> None:
-        """Test that calling get_resampled_mcl warns and returns the same points as
-        _get_resampled_mcl."""
-        mcl_fractions = np.linspace(0.0, 1.0, 11)
-        with self.assertWarns(DeprecationWarning):
-            deprecated_mcl_A_Lp = self.naca2412_airfoil.get_resampled_mcl(
-                mcl_fractions=mcl_fractions
-            )
-        internal_mcl_A_Lp = self.naca2412_airfoil._get_resampled_mcl(
-            mcl_fractions=mcl_fractions
-        )
-        npt.assert_array_equal(deprecated_mcl_A_Lp, internal_mcl_A_Lp)

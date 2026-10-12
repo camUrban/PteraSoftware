@@ -1275,35 +1275,3 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         # Second deepcopy with same memo should return same object.
         copied2 = copy.deepcopy(original, memo)
         self.assertIs(copied1, copied2)
-
-
-class TestCoreWingMovementDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the CoreWingMovement
-    methods that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.core_wing_movement = (
-            core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
-        )
-
-    def test_generate_wing_at_time_step_warns_and_delegates(self) -> None:
-        """Test that calling generate_wing_at_time_step warns and returns the same Wing
-        as _generate_wing_at_time_step."""
-        with self.assertWarns(DeprecationWarning):
-            wing = self.core_wing_movement.generate_wing_at_time_step(1, 0.01)
-        expected = self.core_wing_movement._generate_wing_at_time_step(1, 0.01)
-        npt.assert_array_equal(wing.Ler_Gs_Cgs, expected.Ler_Gs_Cgs)
-        npt.assert_array_equal(wing.angles_Gs_to_Wn_ixyz, expected.angles_Gs_to_Wn_ixyz)
-
-    def test_generate_wings_warns_and_delegates(self) -> None:
-        """Test that calling generate_wings warns and returns the same Wings as
-        _generate_wings."""
-        with self.assertWarns(DeprecationWarning):
-            wings = self.core_wing_movement.generate_wings(5, 0.01)
-        expected = self.core_wing_movement._generate_wings(5, 0.01)
-        self.assertEqual(len(wings), len(expected))
-        for wing, expected_wing in zip(wings, expected):
-            npt.assert_array_equal(
-                wing.angles_Gs_to_Wn_ixyz, expected_wing.angles_Gs_to_Wn_ixyz
-            )

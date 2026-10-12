@@ -524,39 +524,3 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
             ],
             deriv_func,
         )
-
-
-class TestAeroelasticWingMovementDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the
-    AeroelasticWingMovement methods that are no longer public."""
-
-    def test_generate_wing_at_time_step_warns_and_delegates(self) -> None:
-        """Test that calling generate_wing_at_time_step warns and returns the same
-        deformed Wing as _generate_wing_at_time_step."""
-        aeroelastic_wing_movement = (
-            aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
-        )
-        # The root (index 0) deformation must stay zero, since the clamped root
-        # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
-        deformationAngles_Wcsp_to_Wcs_ixyz = np.array(
-            [[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float
-        )
-
-        with self.assertWarns(DeprecationWarning):
-            wing = aeroelastic_wing_movement.generate_wing_at_time_step(
-                1,
-                0.01,
-                deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
-            )
-        expected = aeroelastic_wing_movement._generate_wing_at_time_step(
-            1,
-            0.01,
-            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
-        )
-
-        npt.assert_array_equal(wing.Ler_Gs_Cgs, expected.Ler_Gs_Cgs)
-        for index in range(len(expected.wing_cross_sections)):
-            npt.assert_array_equal(
-                wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
-                expected.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
-            )

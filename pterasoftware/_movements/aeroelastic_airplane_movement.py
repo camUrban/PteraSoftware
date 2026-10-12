@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from collections.abc import Callable, Sequence
 from typing import cast
 
@@ -162,43 +161,6 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                 ...,
             ],
             self._wing_movements,
-        )
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_airplane_at_time_step(  # pragma: no cover
-        self,
-        step: int,
-        delta_time: float | int,
-        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
-    ) -> _geometry.airplane.Airplane:
-        """A deprecated method that creates the Airplane at a single time step,
-        optionally applying structural deformation to each Wing.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of ndarrays of floats, one per
-            Wing, each with one row per WingCrossSection in that Wing. Each row is a
-            (3,) deformation angle vector that perturbs the corresponding
-            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
-            sequence. The units are in degrees. When None, no deformation is applied.
-            The default is None.
-        :return: The Airplane at this time step, with structural deformation applied to
-            each Wing if provided.
-        """
-        warnings.warn(
-            "The generate_airplane_at_time_step method is deprecated and will be "
-            "removed in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_airplane_at_time_step(
-            step,
-            delta_time,
-            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
     # --- Other methods ---

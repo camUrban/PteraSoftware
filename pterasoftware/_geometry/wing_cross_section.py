@@ -439,17 +439,6 @@ class WingCrossSection:
         """
         return self._symmetry_type
 
-    # Coverage ignores this setter because it is deprecated.
-    @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:  # pragma: no cover
-        warnings.warn(
-            "Setting the symmetry_type property is deprecated and will raise an "
-            "AttributeError starting in v6.0.0. It is set by the parent Wing.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._set_symmetry_type(value)
-
     def _mark_validated(self) -> None:
         """Marks this WingCrossSection as fully validated by its parent Wing.
 
@@ -472,91 +461,6 @@ class WingCrossSection:
         if self._symmetry_type is not None:
             raise AttributeError("symmetry_type can only be set once")
         self._symmetry_type = value
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this property because it is deprecated.
-    @property
-    def validated(self) -> bool:  # pragma: no cover
-        """A deprecated flag indicating if this WingCrossSection has been fully
-        validated by its parent Wing.
-
-        Reading or setting it emits a DeprecationWarning, and it will be removed in
-        v6.0.0. It can only be set once.
-
-        :return: True if validated, False otherwise.
-        """
-        warnings.warn(
-            "The validated property is deprecated and will be removed in v6.0.0. It is "
-            "not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._validated
-
-    # Coverage ignores this setter because it is deprecated.
-    @validated.setter
-    def validated(self, value: bool) -> None:  # pragma: no cover
-        warnings.warn(
-            "The validated property is deprecated and will be removed in v6.0.0. It is "
-            "not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self._validated:
-            raise AttributeError("validated can only be set once")
-        if value:
-            self._mark_validated()
-
-    # Coverage ignores this method because it is deprecated.
-    def validate_root_constraints(self) -> None:  # pragma: no cover
-        """A deprecated method that validates the constraints specific to root
-        WingCrossSections.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :return: None
-        """
-        warnings.warn(
-            "The validate_root_constraints method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._validate_root_constraints()
-
-    # Coverage ignores this method because it is deprecated.
-    def validate_mid_constraints(self) -> None:  # pragma: no cover
-        """A deprecated method that validates the constraints specific to middle
-        WingCrossSections.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :return: None
-        """
-        warnings.warn(
-            "The validate_mid_constraints method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._validate_mid_constraints()
-
-    # Coverage ignores this method because it is deprecated.
-    def validate_tip_constraints(self) -> None:  # pragma: no cover
-        """A deprecated method that validates the constraints specific to tip
-        WingCrossSections.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :return: None
-        """
-        warnings.warn(
-            "The validate_tip_constraints method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._validate_tip_constraints()
 
     # --- Other methods ---
     def diagram(

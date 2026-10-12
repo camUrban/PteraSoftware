@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import copy
 import math
-import warnings
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -167,52 +166,6 @@ class CoreOperatingPointMovement:
         if self._max_period is None:
             self._max_period = self._periodVCg__E
         return self._max_period
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_operating_point_at_time_step(  # pragma: no cover
-        self, step: int, delta_time: float | int
-    ) -> operating_point_mod.OperatingPoint:
-        """A deprecated method that creates the OperatingPoint at a single time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :return: The OperatingPoint at this time step.
-        """
-        warnings.warn(
-            "The generate_operating_point_at_time_step method is deprecated and will "
-            "be removed in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_operating_point_at_time_step(step, delta_time)
-
-    # Coverage ignores this method because it is deprecated.
-    def generate_operating_points(  # pragma: no cover
-        self, num_steps: int, delta_time: float | int
-    ) -> list[operating_point_mod.OperatingPoint]:
-        """A deprecated method that creates the OperatingPoint at each time step, and
-        returns them in a list.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param num_steps: The number of time steps in this movement. It must be a
-            positive int.
-        :param delta_time: The time between each time step. It must be a positive number
-            (int or float), and will be converted internally to a float. The units are
-            in seconds.
-        :return: The list of OperatingPoints associated with this movement.
-        """
-        warnings.warn(
-            "The generate_operating_points method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_operating_points(num_steps, delta_time)
 
     # --- Other methods ---
     def _generate_operating_point_at_time_step(
@@ -659,54 +612,6 @@ class CoreWingCrossSectionMovement:
                 )
             )
         return self._max_period
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_wing_cross_section_at_time_step(  # pragma: no cover
-        self, step: int, delta_time: float | int
-    ) -> _geometry.wing_cross_section.WingCrossSection:
-        """A deprecated method that creates the WingCrossSection at a single time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :return: The WingCrossSection at this time step.
-        """
-        warnings.warn(
-            "The generate_wing_cross_section_at_time_step method is deprecated and "
-            "will be removed in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wing_cross_section_at_time_step(step, delta_time)
-
-    # Coverage ignores this method because it is deprecated.
-    def generate_wing_cross_sections(  # pragma: no cover
-        self,
-        num_steps: int,
-        delta_time: float | int,
-    ) -> list[_geometry.wing_cross_section.WingCrossSection]:
-        """A deprecated method that creates the WingCrossSection at each time step, and
-        returns them in a list.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param num_steps: The number of time steps in this movement. It must be a
-            positive int.
-        :param delta_time: The time between each time step. It must be a positive number
-            (int or float), and will be converted internally to a float. The units are
-            in seconds.
-        :return: The list of WingCrossSections associated with this movement.
-        """
-        warnings.warn(
-            "The generate_wing_cross_sections method is deprecated and will be removed "
-            "in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wing_cross_sections(num_steps, delta_time)
 
     # --- Other methods ---
     def _generate_wing_cross_section_at_time_step(
@@ -1289,52 +1194,6 @@ class CoreWingMovement:
             )
         return self._max_period
 
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_wing_at_time_step(  # pragma: no cover
-        self, step: int, delta_time: float | int
-    ) -> _geometry.wing.Wing:
-        """A deprecated method that creates the Wing at a single time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :return: The Wing at this time step.
-        """
-        warnings.warn(
-            "The generate_wing_at_time_step method is deprecated and will be removed "
-            "in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wing_at_time_step(step, delta_time)
-
-    # Coverage ignores this method because it is deprecated.
-    def generate_wings(  # pragma: no cover
-        self, num_steps: int, delta_time: float | int
-    ) -> list[_geometry.wing.Wing]:
-        """A deprecated method that creates the Wing at each time step, and returns them
-        in a list.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param num_steps: The number of time steps in this movement. It must be a
-            positive int.
-        :param delta_time: The time between each time step. It must be a positive number
-            (int or float), and will be converted internally to a float. The units are
-            in seconds.
-        :return: The list of Wings associated with this movement.
-        """
-        warnings.warn(
-            "The generate_wings method is deprecated and will be removed in v6.0.0. It "
-            "is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wings(num_steps, delta_time)
-
     # --- Other methods ---
     def _generate_wing_at_time_step(
         self, step: int, delta_time: float | int
@@ -1761,52 +1620,6 @@ class CoreAirplaneMovement:
                 )
             )
         return self._max_period
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_airplane_at_time_step(  # pragma: no cover
-        self, step: int, delta_time: float | int
-    ) -> _geometry.airplane.Airplane:
-        """A deprecated method that creates the Airplane at a single time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :return: The Airplane at this time step.
-        """
-        warnings.warn(
-            "The generate_airplane_at_time_step method is deprecated and will be "
-            "removed in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_airplane_at_time_step(step, delta_time)
-
-    # Coverage ignores this method because it is deprecated.
-    def generate_airplanes(  # pragma: no cover
-        self, num_steps: int, delta_time: float | int
-    ) -> list[_geometry.airplane.Airplane]:
-        """A deprecated method that creates the Airplane at each time step, and returns
-        them in a list.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param num_steps: The number of time steps in this movement. It must be a
-            positive int.
-        :param delta_time: The time between each time step. It must be a positive number
-            (float or int), and will be converted internally to a float. The units are
-            in seconds.
-        :return: The list of Airplanes associated with this movement.
-        """
-        warnings.warn(
-            "The generate_airplanes method is deprecated and will be removed in v6.0.0. "
-            "It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_airplanes(num_steps, delta_time)
 
     # --- Other methods ---
     def _generate_airplane_at_time_step(

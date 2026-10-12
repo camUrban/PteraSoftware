@@ -605,7 +605,7 @@ These read-only properties expose the named load components and coefficients def
 | `num_panels`          | `int \| None`        | `_generate_mesh` | Total panel count                                           |
 | `_panels`             | `np.ndarray \| None` | `_attach_panels` | Panel matrix, called during meshing. The array is read only |
 
-**Note**: `_generate_mesh` writes the first three backing slots itself, and meshing attaches the Panels through `_attach_panels`, so each slot is written only by `Wing`. The `symmetry_type`, `num_spanwise_panels`, and `num_panels` setters, the `panels` property, and the `generate_mesh` method are deprecated aliases. Using any of them emits a `DeprecationWarning`, and they will be removed in v6.0.0. `__deepcopy__` makes the copied Panel matrix read only too.
+**Note**: `_generate_mesh` writes the first three backing slots itself, and meshing attaches the Panels through `_attach_panels`, so each slot is written only by `Wing`. The `symmetry_type`, `num_spanwise_panels`, and `num_panels` properties have no setters. `__deepcopy__` makes the copied Panel matrix read only too.
 
 #### Derived from Set Once (use manual lazy caching)
 
@@ -677,7 +677,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `_validated`    | `bool`        | `Wing.__init__`       | Validation flag         |
 | `symmetry_type` | `int \| None` | `Wing._generate_mesh` | Inherited symmetry type |
 
-**Note**: `Wing` sets these through `_mark_validated` and `_set_symmetry_type`, so each backing slot is written only by `WingCrossSection`. The `validated` property and the `symmetry_type` setter are deprecated aliases. Using either emits a `DeprecationWarning`, and both will be removed in v6.0.0.
+**Note**: `Wing` sets these through `_mark_validated` and `_set_symmetry_type`, so each backing slot is written only by `WingCrossSection`. The `symmetry_type` property has no setter.
 
 #### Mutable (modified by `_process_wing_symmetry`)
 

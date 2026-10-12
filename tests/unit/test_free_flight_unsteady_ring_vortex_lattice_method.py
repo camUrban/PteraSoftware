@@ -3,7 +3,7 @@ FreeFlightUnsteadyRingVortexLatticeMethodSolver class."""
 
 import unittest
 from typing import Any
-from unittest.mock import MagicMock, patch, sentinel
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 
@@ -294,48 +294,3 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
         self.assertIsNone(self.solver._substep_gamma_n)
         self.assertIsNone(self.solver._substep_gamma_n_minus_1)
-
-
-class TestFreeFlightUnsteadyRingVortexLatticeMethodSolverDeprecatedInternalMethods(
-    unittest.TestCase
-):
-    """This class contains unit tests for the deprecated aliases of the
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver methods that are no longer
-    public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
-
-    def test_freeze_substep_warns_and_delegates(self) -> None:
-        """Test that calling freeze_substep warns and delegates to _freeze_substep."""
-        next_steady_problem: Any = sentinel.next_steady_problem
-        with patch.object(
-            FreeFlightUnsteadyRingVortexLatticeMethodSolver, "_freeze_substep"
-        ) as mock_freeze_substep:
-            with self.assertWarns(DeprecationWarning):
-                self.solver.freeze_substep(next_steady_problem)
-        mock_freeze_substep.assert_called_once_with(next_steady_problem)
-
-    def test_evaluate_trial_aero_loads_warns_and_delegates(self) -> None:
-        """Test that calling evaluate_trial_aero_loads warns and delegates to
-        _evaluate_trial_aero_loads."""
-        trial_operating_point: Any = sentinel.trial_operating_point
-        with patch.object(
-            FreeFlightUnsteadyRingVortexLatticeMethodSolver,
-            "_evaluate_trial_aero_loads",
-            return_value=sentinel.airplane,
-        ) as mock_evaluate_trial_aero_loads:
-            with self.assertWarns(DeprecationWarning):
-                result = self.solver.evaluate_trial_aero_loads(trial_operating_point, 0)
-        mock_evaluate_trial_aero_loads.assert_called_once_with(trial_operating_point, 0)
-        self.assertIs(result, sentinel.airplane)
-
-    def test_restore_substep_warns_and_delegates(self) -> None:
-        """Test that calling restore_substep warns and delegates to _restore_substep."""
-        with patch.object(
-            FreeFlightUnsteadyRingVortexLatticeMethodSolver, "_restore_substep"
-        ) as mock_restore_substep:
-            with self.assertWarns(DeprecationWarning):
-                self.solver.restore_substep(0)
-        mock_restore_substep.assert_called_once_with(0)

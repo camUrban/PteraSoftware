@@ -245,11 +245,9 @@ def find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]
     A deprecation is whatever emits a DeprecationWarning, so this reads the package's
     source rather than any docstring marker. A function, method, or property is
     deprecated when its body calls warnings.warn with DeprecationWarning as a top level
-    statement. A property's setter is the exception: such a call in a setter deprecates
-    only setting the property, so it leaves the property public. A parameter is
-    deprecated when such a call sits inside a top level if statement whose test names
-    that parameter. The API reference and the public-API test both use this scan, so
-    they agree on what is deprecated.
+    statement. A parameter is deprecated when such a call sits inside a top level if
+    statement whose test names that parameter. The API reference and the public-API test
+    both use this scan, so they agree on what is deprecated.
 
     :param package_dir: The package's directory.
     :return: A tuple of the fully qualified names of the deprecated members, and a dict
@@ -261,13 +259,7 @@ def find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]
     members: set[str] = set()
     parameters: dict[str, list[str]] = {}
     for function_id, function in iter_functions(package_dir):
-        is_setter = any(
-            isinstance(decorator, ast.Attribute) and decorator.attr == "setter"
-            for decorator in function.decorator_list
-        )
-        if not is_setter and any(
-            is_deprecation_warning(statement) for statement in function.body
-        ):
+        if any(is_deprecation_warning(statement) for statement in function.body):
             members.add(function_id)
         parameter_names = get_parameter_names(function)
         for statement in function.body:

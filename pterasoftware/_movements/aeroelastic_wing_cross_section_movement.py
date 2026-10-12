@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from collections.abc import Callable, Sequence
 
 import numpy as np
@@ -146,42 +145,6 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
             periodAngles_Wcsp_to_Wcs_ixyz=periodAngles_Wcsp_to_Wcs_ixyz,
             spacingAngles_Wcsp_to_Wcs_ixyz=spacingAngles_Wcsp_to_Wcs_ixyz,
             phaseAngles_Wcsp_to_Wcs_ixyz=phaseAngles_Wcsp_to_Wcs_ixyz,
-        )
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_wing_cross_section_at_time_step(  # pragma: no cover
-        self,
-        step: int,
-        delta_time: float | int,
-        deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
-    ) -> _geometry.wing_cross_section.WingCrossSection:
-        """A deprecated method that creates the WingCrossSection at a single time step,
-        optionally applying structural deformation.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A (3,) ndarray of floats representing
-            the structural deformation angles to add to the prescribed
-            angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence. The units are in
-            degrees. When None, no deformation is applied and the result is identical to
-            the prescribed WingCrossSection. The default is None.
-        :return: The WingCrossSection at this time step, with structural deformation
-            applied if provided.
-        """
-        warnings.warn(
-            "The generate_wing_cross_section_at_time_step method is deprecated and "
-            "will be removed in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wing_cross_section_at_time_step(
-            step,
-            delta_time,
-            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
     # --- Other methods ---

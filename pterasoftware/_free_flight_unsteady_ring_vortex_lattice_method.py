@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from typing import cast
 
 import numpy as np
@@ -180,72 +179,6 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         next_operating_point = self._operating_point_at(self._current_step + 1)
         omegas_GP1__E = next_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def freeze_substep(  # pragma: no cover
-        self, next_steady_problem: _problems.SteadyProblem
-    ) -> None:
-        """A deprecated method that freezes the data the strongly coupled sub-iteration
-        reuses across its trials.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param next_steady_problem: The transient SteadyProblem for the next step, built
-            over a scratch copy of the prescribed next-step Airplane.
-        :return: None
-        """
-        warnings.warn(
-            "The freeze_substep method is deprecated and will be removed in v6.0.0. It "
-            "is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._freeze_substep(next_steady_problem)
-
-    # Coverage ignores this method because it is deprecated.
-    def evaluate_trial_aero_loads(  # pragma: no cover
-        self,
-        trial_operating_point: _operating_point.OperatingPoint,
-        step: int,
-    ) -> _geometry.airplane.Airplane:
-        """A deprecated method that evaluates the aerodynamic loads at a trial body
-        state for the next time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param trial_operating_point: The trial OperatingPoint for the next step at
-            which to evaluate the aerodynamics.
-        :param step: The current time step index (zero indexed). The trial body state is
-            the next step's.
-        :return: The scratch copy of the next-step Airplane, carrying the trial
-            aerodynamic forces and moments the solver calculated at the next step.
-        """
-        warnings.warn(
-            "The evaluate_trial_aero_loads method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._evaluate_trial_aero_loads(trial_operating_point, step)
-
-    # Coverage ignores this method because it is deprecated.
-    def restore_substep(self, step: int) -> None:  # pragma: no cover
-        """A deprecated method that restores the solver's current-step state after a
-        strongly coupled step solve.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The current time step index (zero indexed).
-        :return: None
-        """
-        warnings.warn(
-            "The restore_substep method is deprecated and will be removed in v6.0.0. It "
-            "is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._restore_substep(step)
 
     # --- Other methods ---
     def _freeze_substep(self, next_steady_problem: _problems.SteadyProblem) -> None:

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
 from collections.abc import Callable, Sequence
 from typing import cast
 
@@ -314,42 +313,6 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         self,
     ) -> tuple[Callable[[float], float] | None, ...]:
         return self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def generate_wing_at_time_step(  # pragma: no cover
-        self,
-        step: int,
-        delta_time: float | int,
-        deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
-    ) -> _geometry.wing.Wing:
-        """A deprecated method that creates the Wing at a single time step, optionally
-        applying structural deformation to each WingCrossSection.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index. Must be a non negative int.
-        :param delta_time: The time between each time step in seconds. Must be a
-            positive number (int or float).
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: An ndarray of floats with one row per
-            WingCrossSection in this Wing. Each row is a (3,) deformation angle vector
-            using an intrinsic xy'z" sequence that is added to the corresponding
-            WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The units are in
-            degrees. When None, no deformation is applied. The default is None.
-        :return: The Wing at this time step, with structural deformation applied to each
-            WingCrossSection if provided.
-        """
-        warnings.warn(
-            "The generate_wing_at_time_step method is deprecated and will be removed "
-            "in v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._generate_wing_at_time_step(
-            step,
-            delta_time,
-            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
-        )
 
     # --- Other methods ---
     def _generate_wing_at_time_step(

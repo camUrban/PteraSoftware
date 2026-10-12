@@ -1,7 +1,6 @@
 """This module contains classes to test SteadyHorseshoeVortexLatticeMethodSolvers."""
 
 import unittest
-from unittest.mock import patch, sentinel
 
 import pterasoftware as ps
 from tests.unit.fixtures import problem_fixtures, solver_fixtures
@@ -38,45 +37,3 @@ class TestSteadyHorseshoeVortexLatticeMethodSolver(unittest.TestCase):
         solver = solver_fixtures.make_steady_horseshoe_solver_fixture()
         with self.assertRaises(AttributeError):
             setattr(solver, "ran", True)
-
-
-class TestSteadyHorseshoeVortexLatticeMethodSolverDeprecatedInternalMembers(
-    unittest.TestCase
-):
-    """This class contains unit tests for the deprecated aliases of the
-    SteadyHorseshoeVortexLatticeMethodSolver members that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.solver = solver_fixtures.make_steady_horseshoe_solver_fixture()
-
-    def test_deprecated_properties_warn_and_return_internal_values(self) -> None:
-        """Test that reading each deprecated property warns and returns the value of its
-        internal slot."""
-        for name in (
-            "vInf_GP1__E",
-            "stackFreestreamWingInfluences__E",
-            "stackUnitNormals_GP1",
-            "panels",
-            "stackSeedPoints_GP1_CgP1",
-        ):
-            with self.subTest(name=name):
-                with self.assertWarns(DeprecationWarning):
-                    value = getattr(self.solver, name)
-                self.assertIs(value, getattr(self.solver, f"_{name}"))
-
-    def test_calculate_solution_velocity_warns_and_delegates(self) -> None:
-        """Test that calling calculate_solution_velocity warns and delegates to
-        _calculate_solution_velocity."""
-        stackP_GP1_CgP1 = [[0.0, 0.0, 0.0]]
-        with patch.object(
-            ps.SteadyHorseshoeVortexLatticeMethodSolver,
-            "_calculate_solution_velocity",
-            return_value=sentinel.velocities,
-        ) as mock_calculate_solution_velocity:
-            with self.assertWarns(DeprecationWarning):
-                result = self.solver.calculate_solution_velocity(stackP_GP1_CgP1)
-        mock_calculate_solution_velocity.assert_called_once_with(
-            stackP_GP1_CgP1, bound_singularity_counts=None
-        )
-        self.assertIs(result, sentinel.velocities)

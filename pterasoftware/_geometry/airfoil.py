@@ -246,57 +246,6 @@ class Airfoil:
         )
         return self._mcl_A_Lp
 
-    # Coverage ignores this method because it is deprecated.
-    def add_control_surface(  # pragma: no cover
-        self, deflection: float | int, hinge_point: float | int
-    ) -> Airfoil:
-        """A deprecated method that returns a version of the Airfoil with a control
-        surface added at a given point.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param deflection: The control deflection in degrees. Deflection downwards is
-            positive. It must be a number (int or float) in the range [-5.0, 5.0]
-            degrees. Values are converted to floats internally.
-        :param hinge_point: The location of the hinge as a fraction of chord length. It
-            must be a number (int or float) in the range (0.0, 1.0). Values are
-            converted to floats internally.
-        :return: The new Airfoil with the control surface added.
-        """
-        warnings.warn(
-            "The add_control_surface method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._add_control_surface(deflection, hinge_point)
-
-    # Coverage ignores this method because it is deprecated.
-    def get_resampled_mcl(  # pragma: no cover
-        self, mcl_fractions: np.ndarray | Sequence[float]
-    ) -> np.ndarray:
-        """A deprecated method that returns a ndarray of points along the mean camber
-        line (MCL), resampled from the mcl_A_Lp attribute.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param mcl_fractions: An array-like object of floats with shape (N,)
-            representing normalized distances along the MCL (from the leading to the
-            trailing edge) at which to return the resampled MCL points. Can be a tuple,
-            list, or ndarray. The first value must be 0.0, the last must be 1.0, and the
-            remaining must be in the range [0.0, 1.0]. All values must be non duplicated
-            and in ascending order.
-        :return: A (N,2) ndarray of floats that contains the positions of the resampled
-            MCL points (in airfoil axes, relative to the leading point).
-        """
-        warnings.warn(
-            "The get_resampled_mcl method is deprecated and will be removed in v6.0.0. "
-            "It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._get_resampled_mcl(mcl_fractions)
-
     # --- Other methods ---
     # TODO: In the future, if adding control surfaces becomes more important, we may
     #  want to rework this method. Using this method we need to artificially limit the

@@ -129,37 +129,6 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
             self.problem._initialize_next_problem(none_solver, 0)
 
 
-class TestCoupledUnsteadyProblemDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the
-    CoupledUnsteadyProblem methods that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.problem = _problems.CoupledUnsteadyProblem(
-            movement=core_movement_fixtures.make_static_core_movement_fixture(),
-            initial_airplanes=[geometry_fixtures.make_first_airplane_fixture()],
-            initial_operating_point=(
-                operating_point_fixtures.make_basic_operating_point_fixture()
-            ),
-        )
-
-    def test_get_steady_problem_warns_and_delegates(self) -> None:
-        """Test that calling get_steady_problem warns and returns the SteadyProblem at
-        the given step."""
-        with self.assertWarns(DeprecationWarning):
-            steady_problem = self.problem.get_steady_problem(0)
-        self.assertIs(steady_problem, self.problem._steady_problems[0])
-
-    def test_initialize_next_problem_warns_and_delegates(self) -> None:
-        """Test that calling initialize_next_problem warns and delegates to
-        _initialize_next_problem, which raises NotImplementedError on the abstract
-        middle class."""
-        none_solver: Any = None
-        with self.assertWarns(DeprecationWarning):
-            with self.assertRaises(NotImplementedError):
-                self.problem.initialize_next_problem(none_solver, 0)
-
-
 class TestCoupledUnsteadyProblemImmutability(unittest.TestCase):
     """Tests for CoupledUnsteadyProblem attribute immutability."""
 

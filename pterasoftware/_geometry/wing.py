@@ -1149,19 +1149,6 @@ class Wing:
         """
         return self._symmetry_type
 
-    # Coverage ignores this setter because it is deprecated.
-    @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:  # pragma: no cover
-        warnings.warn(
-            "Setting the symmetry_type property is deprecated and will raise an "
-            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self._symmetry_type is not None:
-            raise AttributeError("symmetry_type can only be set once")
-        self._symmetry_type = value
-
     @property
     def num_spanwise_panels(self) -> int | None:
         """The total number of spanwise Panels on this Wing.
@@ -1171,19 +1158,6 @@ class Wing:
         """
         return self._num_spanwise_panels
 
-    # Coverage ignores this setter because it is deprecated.
-    @num_spanwise_panels.setter
-    def num_spanwise_panels(self, value: int) -> None:  # pragma: no cover
-        warnings.warn(
-            "Setting the num_spanwise_panels property is deprecated and will raise an "
-            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self._num_spanwise_panels is not None:
-            raise AttributeError("num_spanwise_panels can only be set once")
-        self._num_spanwise_panels = value
-
     @property
     def num_panels(self) -> int | None:
         """The total number of Panels on this Wing.
@@ -1192,19 +1166,6 @@ class Wing:
             the Wing hasn't been meshed yet.
         """
         return self._num_panels
-
-    # Coverage ignores this setter because it is deprecated.
-    @num_panels.setter
-    def num_panels(self, value: int) -> None:  # pragma: no cover
-        warnings.warn(
-            "Setting the num_panels property is deprecated and will raise an "
-            "AttributeError starting in v6.0.0. It is set when the Wing is meshed.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self._num_panels is not None:
-            raise AttributeError("num_panels can only be set once")
-        self._num_panels = value
 
     def _attach_panels(self, panels: np.ndarray) -> None:
         """Attaches this Wing's 2D array of Panels and makes the array read only.
@@ -1525,55 +1486,6 @@ class Wing:
         else:
             self._mean_aerodynamic_chord = integral / _projected_area
         return self._mean_aerodynamic_chord
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this property because it is deprecated.
-    @property
-    def panels(self) -> np.ndarray | None:  # pragma: no cover
-        """A deprecated property that returns the 2D array of Panels on this Wing.
-
-        Reading or setting it emits a DeprecationWarning, and it will be removed in
-        v6.0.0. It can only be set once.
-
-        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
-            or None if the Wing hasn't been meshed yet.
-        """
-        warnings.warn(
-            "The panels property is deprecated and will be removed in v6.0.0. It is "
-            "not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._panels
-
-    # Coverage ignores this setter because it is deprecated.
-    @panels.setter
-    def panels(self, value: np.ndarray) -> None:  # pragma: no cover
-        warnings.warn(
-            "The panels property is deprecated and will be removed in v6.0.0. It is "
-            "not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._attach_panels(value)
-
-    # Coverage ignores this method because it is deprecated.
-    def generate_mesh(self, symmetry_type: int) -> None:  # pragma: no cover
-        """A deprecated method that generates this Wing's mesh.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param symmetry_type: The symmetry type of this Wing as an int from 1-4. See the
-            class docstring for details on how to interpret the symmetry types.
-        :return: None
-        """
-        warnings.warn(
-            "The generate_mesh method is deprecated and will be removed in v6.0.0. It "
-            "is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._generate_mesh(symmetry_type)
 
     # --- Other methods ---
     def _generate_mesh(self, symmetry_type: int) -> None:

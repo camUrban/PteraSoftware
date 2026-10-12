@@ -1376,34 +1376,3 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         # Second deepcopy with same memo should return same object.
         copied2 = copy.deepcopy(original, memo)
         self.assertIs(copied1, copied2)
-
-
-class TestCoreAirplaneMovementDeprecatedInternalMethods(unittest.TestCase):
-    """This class contains unit tests for the deprecated aliases of the
-    CoreAirplaneMovement methods that are no longer public."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for the deprecated alias tests."""
-        self.core_airplane_movement = (
-            core_airplane_movement_fixtures.make_basic_core_airplane_movement_fixture()
-        )
-
-    def test_generate_airplane_at_time_step_warns_and_delegates(self) -> None:
-        """Test that calling generate_airplane_at_time_step warns and returns the same
-        Airplane as _generate_airplane_at_time_step."""
-        with self.assertWarns(DeprecationWarning):
-            airplane = self.core_airplane_movement.generate_airplane_at_time_step(
-                1, 0.01
-            )
-        expected = self.core_airplane_movement._generate_airplane_at_time_step(1, 0.01)
-        npt.assert_array_equal(airplane.Cg_GP1_CgP1, expected.Cg_GP1_CgP1)
-
-    def test_generate_airplanes_warns_and_delegates(self) -> None:
-        """Test that calling generate_airplanes warns and returns the same Airplanes as
-        _generate_airplanes."""
-        with self.assertWarns(DeprecationWarning):
-            airplanes = self.core_airplane_movement.generate_airplanes(5, 0.01)
-        expected = self.core_airplane_movement._generate_airplanes(5, 0.01)
-        self.assertEqual(len(airplanes), len(expected))
-        for airplane, expected_airplane in zip(airplanes, expected):
-            npt.assert_array_equal(airplane.Cg_GP1_CgP1, expected_airplane.Cg_GP1_CgP1)

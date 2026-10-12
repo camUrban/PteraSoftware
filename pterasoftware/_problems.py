@@ -4,7 +4,6 @@ FreeFlightUnsteadyProblem classes."""
 from __future__ import annotations
 
 import copy
-import warnings
 from collections.abc import Callable, Sequence
 from pathlib import Path, PureWindowsPath
 from typing import TYPE_CHECKING, cast
@@ -477,49 +476,6 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     @property
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return tuple(self._steady_problems)
-
-    # --- Deprecated aliases: remove in v6.0.0 ---
-    # Coverage ignores this method because it is deprecated.
-    def get_steady_problem(self, step: int) -> SteadyProblem:  # pragma: no cover
-        """A deprecated method that gets the SteadyProblem at a given time step.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param step: The time step index (zero indexed). Must be greater than or equal
-            to zero and less than the total number of time steps.
-        :return: The SteadyProblem at the specified time step.
-        """
-        warnings.warn(
-            "The get_steady_problem method is deprecated and will be removed in v6.0.0. "
-            "It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self._get_steady_problem(step)
-
-    # Coverage ignores this method because it is deprecated.
-    def initialize_next_problem(  # pragma: no cover
-        self,
-        solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
-        step: int,
-    ) -> None:
-        """A deprecated method that initializes the next time step's SteadyProblem and
-        performs per step work.
-
-        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
-
-        :param solver: The solver driving this problem, which provides the aerodynamic
-            data from the current time step.
-        :param step: The current time step index (zero indexed).
-        :return: None
-        """
-        warnings.warn(
-            "The initialize_next_problem method is deprecated and will be removed in "
-            "v6.0.0. It is not part of the public API.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self._initialize_next_problem(solver, step)
 
     # --- Other methods ---
     def _get_steady_problem(self, step: int) -> SteadyProblem:

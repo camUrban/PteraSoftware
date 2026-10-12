@@ -341,7 +341,7 @@ print("Finished loading the saved solver.")
 
 # Now that we have run the solver, we can create an animation of the results.
 ps.animate(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,

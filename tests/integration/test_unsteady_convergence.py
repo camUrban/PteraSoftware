@@ -34,7 +34,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_unsteady_convergence(
-            ref_problem=self.unsteady_validation_problem,
+            self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=True,
             num_chords_bounds=(1, 4),
@@ -85,7 +85,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         movement_logger.setLevel(logging.ERROR)
         try:
             converged_parameters = ps.analyze_unsteady_convergence(
-                ref_problem=variable_geometry_problem,
+                variable_geometry_problem,
                 prescribed_wake=True,
                 free_wake=False,
                 num_cycles_bounds=(1, 2),
@@ -110,7 +110,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             converged_parameters = ps.analyze_unsteady_convergence(
-                ref_problem=self.unsteady_validation_problem,
+                self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=True,
                 num_chords_bounds=(1, 4),
@@ -141,7 +141,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             cold_parameters = ps.analyze_unsteady_convergence(
-                ref_problem=self.unsteady_validation_problem,
+                self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
                 num_chords_bounds=(1, 2),
@@ -162,7 +162,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 side_effect=AssertionError("The solver ran despite a warm cache."),
             ):
                 warm_parameters = ps.analyze_unsteady_convergence(
-                    ref_problem=self.unsteady_validation_problem,
+                    self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
                     num_chords_bounds=(1, 2),
@@ -189,7 +189,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             cold_parameters = ps.analyze_unsteady_convergence(
-                ref_problem=self.unsteady_validation_problem,
+                self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
                 num_chords_bounds=(1, 2),
@@ -212,7 +212,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 ),
             ):
                 warm_parameters = ps.analyze_unsteady_convergence(
-                    ref_problem=self.unsteady_validation_problem,
+                    self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
                     num_chords_bounds=(1, 2),
@@ -238,7 +238,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         """
         # An uncached run over the narrower bounds gives the reference result.
         uncached_parameters = ps.analyze_unsteady_convergence(
-            ref_problem=self.unsteady_validation_problem,
+            self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=False,
             num_chords_bounds=(1, 2),
@@ -257,7 +257,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             # absolute mesh values, so they carry over even though the two runs index
             # their sweeps differently.
             ps.analyze_unsteady_convergence(
-                ref_problem=self.unsteady_validation_problem,
+                self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
                 num_chords_bounds=(1, 2),
@@ -280,7 +280,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 ),
             ):
                 warm_parameters = ps.analyze_unsteady_convergence(
-                    ref_problem=self.unsteady_validation_problem,
+                    self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
                     num_chords_bounds=(1, 2),
@@ -305,7 +305,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_convergence(
-                ref_problem=self.unsteady_validation_problem,
+                self.unsteady_validation_problem,
                 prescribed_wake=True,
                 free_wake=False,
                 num_chords_bounds=(1, 2),
@@ -329,7 +329,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 ps.analyze_unsteady_convergence(
-                    ref_problem=self.unsteady_validation_problem,
+                    self.unsteady_validation_problem,
                     prescribed_wake=True,
                     free_wake=False,
                     num_chords_bounds=(1, 2),
@@ -376,7 +376,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_convergence(
-                ref_problem=exploded_problem,
+                exploded_problem,
                 prescribed_wake=True,
                 free_wake=True,
                 num_chords_bounds=(1, 2),
@@ -404,7 +404,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         # expensive. These bounds still span enough of each parameter direction to
         # detect convergence.
         converged_parameters = ps.analyze_unsteady_convergence(
-            ref_problem=edge_defined_unsteady_problem,
+            edge_defined_unsteady_problem,
             prescribed_wake=True,
             free_wake=True,
             num_chords_bounds=(1, 4),
@@ -447,7 +447,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "static"):
             ps.analyze_unsteady_convergence(
-                ref_problem=edge_defined_non_static_problem,
+                edge_defined_non_static_problem,
                 prescribed_wake=True,
                 free_wake=True,
                 num_cycles_bounds=(1, 2),
@@ -465,7 +465,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_unsteady_convergence(
-            ref_problem=self.unsteady_validation_problem,
+            self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=True,
             num_chords_bounds=(1, 4),

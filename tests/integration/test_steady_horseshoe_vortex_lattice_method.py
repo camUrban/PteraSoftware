@@ -78,7 +78,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         allowable_error = 0.10
 
         ps.draw(
-            solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
+            self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
             scalar_type="lift",
@@ -122,7 +122,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         allowable_error = 0.10
 
         ps.draw(
-            solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
+            self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             scalar_type="induced drag",
             show_streamlines=True,
             show_wake_vortices=False,

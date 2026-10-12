@@ -94,7 +94,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._substep_gamma_n: np.ndarray | None = None
         self._substep_gamma_n_minus_1: np.ndarray | None = None
 
-        super().__init__(free_flight_unsteady_problem)
+        super().__init__(unsteady_problem=free_flight_unsteady_problem)
 
     @property
     def _free_flight_unsteady_problem(self) -> _problems.FreeFlightUnsteadyProblem:

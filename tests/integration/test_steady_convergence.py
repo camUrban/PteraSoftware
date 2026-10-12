@@ -33,7 +33,7 @@ class TestSteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=self.steady_validation_problem,
+            self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
@@ -64,7 +64,7 @@ class TestSteadyConvergence(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_steady_convergence(
-                ref_problem=exploded_problem,
+                exploded_problem,
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
@@ -79,7 +79,7 @@ class TestSteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=self.steady_validation_problem,
+            self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
@@ -104,7 +104,7 @@ class TestSteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=self.steady_validation_problem,
+            self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
@@ -136,7 +136,7 @@ class TestSteadyConvergence(unittest.TestCase):
         :return: None
         """
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=self.steady_validation_problem,
+            self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
@@ -173,7 +173,7 @@ class TestSteadyConvergence(unittest.TestCase):
         )
 
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=edge_defined_steady_problem,
+            edge_defined_steady_problem,
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
@@ -201,7 +201,7 @@ class TestSteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             converged_parameters = ps.analyze_steady_convergence(
-                ref_problem=self.steady_validation_problem,
+                self.steady_validation_problem,
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
@@ -230,7 +230,7 @@ class TestSteadyConvergence(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.analyze_steady_convergence(
-                ref_problem=self.steady_validation_problem,
+                self.steady_validation_problem,
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
@@ -251,7 +251,7 @@ class TestSteadyConvergence(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 ps.analyze_steady_convergence(
-                    ref_problem=self.steady_validation_problem,
+                    self.steady_validation_problem,
                     solver_type="steady ring vortex lattice method",
                     panel_aspect_ratio_bounds=(4, 2),
                     num_chordwise_panels_bounds=(1, 4),
@@ -270,7 +270,7 @@ class TestSteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             cold_parameters = ps.analyze_steady_convergence(
-                ref_problem=self.steady_validation_problem,
+                self.steady_validation_problem,
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
@@ -288,7 +288,7 @@ class TestSteadyConvergence(unittest.TestCase):
                 side_effect=AssertionError("The solver ran despite a warm cache."),
             ):
                 warm_parameters = ps.analyze_steady_convergence(
-                    ref_problem=self.steady_validation_problem,
+                    self.steady_validation_problem,
                     solver_type="steady ring vortex lattice method",
                     panel_aspect_ratio_bounds=(4, 2),
                     num_chordwise_panels_bounds=(1, 4),
@@ -310,7 +310,7 @@ class TestSteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             cold_parameters = ps.analyze_steady_convergence(
-                ref_problem=self.steady_validation_problem,
+                self.steady_validation_problem,
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
@@ -330,7 +330,7 @@ class TestSteadyConvergence(unittest.TestCase):
                 ),
             ):
                 warm_parameters = ps.analyze_steady_convergence(
-                    ref_problem=self.steady_validation_problem,
+                    self.steady_validation_problem,
                     solver_type="steady ring vortex lattice method",
                     panel_aspect_ratio_bounds=(4, 2),
                     num_chordwise_panels_bounds=(1, 4),
@@ -352,7 +352,7 @@ class TestSteadyConvergence(unittest.TestCase):
         mixed_steady_problem = problem_fixtures.make_mixed_steady_validation_problem()
 
         converged_parameters = ps.analyze_steady_convergence(
-            ref_problem=mixed_steady_problem,
+            mixed_steady_problem,
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),

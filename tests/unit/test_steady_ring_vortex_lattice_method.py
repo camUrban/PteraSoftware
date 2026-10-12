@@ -24,7 +24,7 @@ class TestSteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             problem_fixtures.make_with_body_rates_steady_problem_fixture()
         )
         with self.assertRaises(ValueError):
-            ps.SteadyRingVortexLatticeMethodSolver(rotating_problem)
+            ps.SteadyRingVortexLatticeMethodSolver(steady_problem=rotating_problem)
 
     def test_ran_is_false_before_run(self) -> None:
         """Test that ran is False before run has been called."""

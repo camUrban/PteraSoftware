@@ -294,7 +294,7 @@ assert isinstance(
     ps.UnsteadyRingVortexLatticeMethodSolver,
 )
 
-ps.log_results(solver=loaded_solver)
+ps.log_results(loaded_solver)
 
 # Choose where the output files will go. Each output function writes to the working
 # directory by default, which is fine for a script that produces a file or two, but this
@@ -309,7 +309,7 @@ Path("plots").mkdir(exist_ok=True)
 # Call the draw function on the loaded solver. The path parameter names the file to save
 # the drawing to. Press any key to close the plotter after it draws the output.
 ps.draw(
-    solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
@@ -321,7 +321,7 @@ ps.draw(
 # wake being shed, saved to the path given below. Press any key, after orienting the
 # view, to begin the animation.
 ps.animate(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,
@@ -333,7 +333,7 @@ ps.animate(
 # name and the quantity plotted, so it takes the directory to write them into rather
 # than a single path.
 ps.plot_results_versus_time(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     show=True,
     save=True,
     directory="plots",

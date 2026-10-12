@@ -35,7 +35,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         """
         if not isinstance(unsteady_problem, _problems.CoupledUnsteadyProblem):
             raise TypeError("unsteady_problem must be a CoupledUnsteadyProblem.")
-        super().__init__(unsteady_problem)
+        super().__init__(unsteady_problem=unsteady_problem)
 
     @property
     def _coupled_unsteady_problem(self) -> _problems.CoupledUnsteadyProblem:

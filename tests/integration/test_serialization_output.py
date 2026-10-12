@@ -56,7 +56,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.loaded_solver,
+            self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=False,
             show_streamlines=True,
@@ -68,7 +68,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.log_results(solver=self.loaded_solver)
+        ps.log_results(self.loaded_solver)
 
 
 class TestUnsteadySolverSerializationOutput(unittest.TestCase):
@@ -114,7 +114,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.loaded_solver,
+            self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=False,
             show_streamlines=False,
@@ -128,7 +128,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.loaded_solver,
+            self.loaded_solver,
             scalar_type="lift",
             show_wake_vortices=True,
             save=False,
@@ -141,11 +141,11 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.plot_results_versus_time(unsteady_solver=self.loaded_solver, show=False)
+        ps.plot_results_versus_time(self.loaded_solver, show=False)
 
     def test_log_results_does_not_throw(self) -> None:
         """Tests that the log_results function accepts a deserialized unsteady solver.
 
         :return: None
         """
-        ps.log_results(solver=self.loaded_solver)
+        ps.log_results(self.loaded_solver)

@@ -33,7 +33,9 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
         )
         with self.assertRaises(TypeError):
-            AeroelasticUnsteadyRingVortexLatticeMethodSolver(coupled_problem)
+            AeroelasticUnsteadyRingVortexLatticeMethodSolver(
+                aeroelastic_unsteady_problem=coupled_problem
+            )
 
     def test_unsteady_problem_is_aeroelastic(self) -> None:
         """Test that the stored unsteady_problem is an AeroelasticUnsteadyProblem."""

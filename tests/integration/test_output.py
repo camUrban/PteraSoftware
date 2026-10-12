@@ -159,7 +159,7 @@ class TestOutput(unittest.TestCase):
         """
         # Call the plot_results_versus_time method on the solver fixture. The show flag
         # is set to False, so the figures will not be displayed.
-        ps.plot_results_versus_time(unsteady_solver=self.unsteady_solver, show=False)
+        ps.plot_results_versus_time(self.unsteady_solver, show=False)
 
     def test_animate_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors.
@@ -169,7 +169,7 @@ class TestOutput(unittest.TestCase):
         # Call the animate function on the unsteady solver fixture. The testing flag is
         # true so the animation will start automatically after 1 second.
         ps.animate(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             save=False,
@@ -184,7 +184,7 @@ class TestOutput(unittest.TestCase):
         # Call the draw function on the unsteady solver fixture. The testing flag is set
         # to true, so the plotter will close after 1 second.
         ps.draw(
-            solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
@@ -221,7 +221,7 @@ class TestLogResults(unittest.TestCase):
         """
         # Capture log output using assertLogs context manager.
         with self.assertLogs("pterasoftware.output", level=logging.INFO) as log:
-            ps.log_results(solver=self.steady_solver)
+            ps.log_results(self.steady_solver)
 
         output = "\n".join(log.output)
 
@@ -237,7 +237,7 @@ class TestLogResults(unittest.TestCase):
         :return: None
         """
         # This test ensures no exceptions are raised.
-        ps.log_results(solver=self.steady_solver)
+        ps.log_results(self.steady_solver)
 
     def test_log_results_unsteady_solver_runs_without_error(self) -> None:
         """Test that log_results() runs without error for unsteady solver.
@@ -245,7 +245,7 @@ class TestLogResults(unittest.TestCase):
         :return: None
         """
         # This test ensures no exceptions are raised.
-        ps.log_results(solver=self.unsteady_solver)
+        ps.log_results(self.unsteady_solver)
 
 
 class TestOutputSurfaceEffect(unittest.TestCase):
@@ -272,7 +272,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
@@ -286,7 +286,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=True,
             show_streamlines=False,
@@ -300,7 +300,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -314,7 +314,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             save=False,
@@ -328,7 +328,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=True,
             save=False,
@@ -382,7 +382,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.free_flight_solver,
+            self.free_flight_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
@@ -396,7 +396,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.free_flight_solver,
+            self.free_flight_solver,
             scalar_type=None,
             show_wake_vortices=True,
             show_streamlines=False,
@@ -410,7 +410,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.draw(
-            solver=self.mujoco_geometry_solver,
+            self.mujoco_geometry_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
@@ -425,7 +425,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.free_flight_solver,
+            self.free_flight_solver,
             scalar_type=None,
             show_wake_vortices=False,
             save=False,
@@ -439,7 +439,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.free_flight_solver,
+            self.free_flight_solver,
             scalar_type=None,
             show_wake_vortices=True,
             save=False,
@@ -453,7 +453,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         ps.animate(
-            unsteady_solver=self.mujoco_geometry_solver,
+            self.mujoco_geometry_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_mujoco_geometry=True,
@@ -467,7 +467,7 @@ class TestFreeFlightOutput(unittest.TestCase):
 
         :return: None
         """
-        ps.plot_results_versus_time(unsteady_solver=self.free_flight_solver, show=False)
+        ps.plot_results_versus_time(self.free_flight_solver, show=False)
 
     def test_log_results_logs_state_history(self) -> None:
         """This method tests that log_results logs the first Airplane's initial and
@@ -476,7 +476,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         :return: None
         """
         with self.assertLogs("pterasoftware.output", level=logging.INFO) as log:
-            ps.log_results(solver=self.free_flight_solver)
+            ps.log_results(self.free_flight_solver)
 
         output = "\n".join(log.output)
 
@@ -534,7 +534,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory_name:
             temporary_path = Path(temporary_directory_name)
             ps.plot_results_versus_time(
-                unsteady_solver=self.free_flight_solver,
+                self.free_flight_solver,
                 show=False,
                 save_csv=True,
                 directory=temporary_path,
@@ -647,7 +647,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with contextlib.chdir(self.temporary_path):
             ps.draw(
-                solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 show_streamlines=False,
@@ -669,7 +669,7 @@ class TestOutputFileWriting(unittest.TestCase):
         saved_path = renders_directory / "static_drawing.webp"
 
         ps.draw(
-            solver=self.unsteady_solver,
+            self.unsteady_solver,
             scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
@@ -689,7 +689,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.draw(
-                solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 show_streamlines=False,
@@ -710,7 +710,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         with patch.object(pv.Plotter, "show", _show_then_resize):
             ps.draw(
-                solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 show_streamlines=False,
@@ -753,7 +753,7 @@ class TestOutputFileWriting(unittest.TestCase):
         ):
             with self.assertRaises(ValueError) as context:
                 ps.draw(
-                    solver=self.unsteady_solver,
+                    self.unsteady_solver,
                     scalar_type=None,
                     show_wake_vortices=False,
                     show_streamlines=False,
@@ -805,7 +805,7 @@ class TestOutputFileWriting(unittest.TestCase):
             patch.object(_output, "create_plotter", create_first_shrinking_plotter),
         ):
             ps.draw(
-                solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 show_streamlines=False,
@@ -841,7 +841,7 @@ class TestOutputFileWriting(unittest.TestCase):
         with self.assertNoLogs("pterasoftware.output", level=logging.WARNING):
             with contextlib.chdir(self.temporary_path):
                 ps.animate(
-                    unsteady_solver=self.unsteady_solver,
+                    self.unsteady_solver,
                     scalar_type=None,
                     show_wake_vortices=False,
                     window_size=(320, 240),
@@ -862,7 +862,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.animate(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 save=True,
@@ -882,7 +882,7 @@ class TestOutputFileWriting(unittest.TestCase):
 
         with patch.object(pv.Plotter, "show", _show_then_resize):
             ps.animate(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 window_size=(320, 240),
@@ -901,7 +901,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with contextlib.chdir(self.temporary_path):
             ps.plot_results_versus_time(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 show=False,
                 save=True,
                 resolution_dpi=50.0,
@@ -927,7 +927,7 @@ class TestOutputFileWriting(unittest.TestCase):
         results_directory.mkdir()
 
         ps.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             show=False,
             save=True,
             directory=results_directory,
@@ -957,7 +957,7 @@ class TestOutputFileWriting(unittest.TestCase):
         :return: None
         """
         ps.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             show=False,
             save=True,
             directory=self.temporary_path,
@@ -982,7 +982,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.plot_results_versus_time(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 show=False,
                 save=True,
                 directory=self.temporary_path,
@@ -999,7 +999,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.plot_results_versus_time(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 show=False,
                 save=True,
                 directory=self.temporary_path,
@@ -1015,7 +1015,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.plot_results_versus_time(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 show=False,
                 save=True,
                 directory=self.temporary_path / "missing",
@@ -1031,7 +1031,7 @@ class TestOutputFileWriting(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ps.plot_results_versus_time(
-                unsteady_solver=self.unsteady_solver,
+                self.unsteady_solver,
                 show=False,
                 save=True,
                 directory=self.temporary_path,
@@ -1049,7 +1049,7 @@ class TestOutputFileWriting(unittest.TestCase):
         :return: None
         """
         ps.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             show=False,
             directory=self.temporary_path,
         )
@@ -1063,7 +1063,7 @@ class TestOutputFileWriting(unittest.TestCase):
         :return: None
         """
         ps.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver,
+            self.unsteady_solver,
             show=False,
             save_csv=True,
             directory=self.temporary_path,
@@ -1189,7 +1189,7 @@ class TestAnimatePlayback(unittest.TestCase):
         """
         with self.assertRaises(ValueError) as context:
             ps.animate(
-                unsteady_solver=self.variable_solver,
+                self.variable_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 save=True,
@@ -1216,7 +1216,7 @@ class TestAnimatePlayback(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             ps.animate(
-                unsteady_solver=self.variable_solver,
+                self.variable_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 save=True,
@@ -1260,7 +1260,7 @@ class TestAnimatePlayback(unittest.TestCase):
 
         with self.assertLogs("pterasoftware.output", level=logging.WARNING) as log:
             ps.animate(
-                unsteady_solver=self.variable_solver,
+                self.variable_solver,
                 scalar_type=None,
                 show_wake_vortices=False,
                 window_size=(320, 240),
@@ -1319,7 +1319,7 @@ class TestFormationOutput(unittest.TestCase):
         """
         with self.assertRaises(ValueError) as context:
             ps.plot_results_versus_time(
-                unsteady_solver=self.formation_solver,
+                self.formation_solver,
                 show=False,
                 save=True,
                 directory=self.temporary_path,
@@ -1340,7 +1340,7 @@ class TestFormationOutput(unittest.TestCase):
         """
         with self.assertRaises(ValueError) as context:
             ps.plot_results_versus_time(
-                unsteady_solver=self.formation_solver,
+                self.formation_solver,
                 show=False,
                 save_csv=True,
                 directory=self.temporary_path,

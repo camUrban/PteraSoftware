@@ -26,7 +26,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_problem: Any = "not a problem"
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=bad_problem,
+                bad_problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -39,7 +39,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -51,7 +51,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=bad_str,
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -61,7 +61,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=bad_short_tuple,
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -71,7 +71,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=bad_element_tuple,
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -80,7 +80,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(10.0, 1.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -89,7 +89,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(0.0, 10.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -101,7 +101,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_str,
                 beta_bounds=(-20.0, 20.0),
@@ -111,7 +111,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_short_tuple,
                 beta_bounds=(-20.0, 20.0),
@@ -121,7 +121,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=bad_element_tuple,
                 beta_bounds=(-20.0, 20.0),
@@ -130,7 +130,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(10.0, -10.0),
                 beta_bounds=(-20.0, 20.0),
@@ -142,7 +142,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             with self.subTest(alpha_bounds=bad_alpha_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
                     ps.analyze_unsteady_trim(
-                        problem=self.problem,
+                        self.problem,
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=bad_alpha_bounds,
                         beta_bounds=(-20.0, 20.0),
@@ -154,7 +154,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=bad_str,
@@ -164,7 +164,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=bad_short_tuple,
@@ -174,7 +174,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=bad_element_tuple,
@@ -183,7 +183,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(10.0, -10.0),
@@ -196,7 +196,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             with self.subTest(beta_bounds=bad_beta_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
                     ps.analyze_unsteady_trim(
-                        problem=self.problem,
+                        self.problem,
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=(-20.0, 20.0),
                         beta_bounds=bad_beta_bounds,
@@ -208,7 +208,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_str: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -218,7 +218,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_short_tuple: Any = (1.0,)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -228,7 +228,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_element_tuple: Any = ("a", 10.0)
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -237,7 +237,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -248,7 +248,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         """Test objective_cut_off parameter validation."""
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -258,7 +258,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -271,7 +271,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_num_calls: Any = 1.5
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -281,7 +281,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -291,7 +291,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -304,7 +304,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         bad_type: Any = 42
         with self.assertRaises(TypeError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -314,7 +314,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -332,7 +332,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         with self.subTest(parameter="vCg__E"):
             with self.assertRaises(ValueError):
                 ps.analyze_unsteady_trim(
-                    problem=self.problem,
+                    self.problem,
                     boundsVCg__E=(
                         base_operating_point.vCg__E + 1.0,
                         base_operating_point.vCg__E + 10.0,
@@ -345,7 +345,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         with self.subTest(parameter="alpha"):
             with self.assertRaises(ValueError):
                 ps.analyze_unsteady_trim(
-                    problem=self.problem,
+                    self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(
                         base_operating_point.alpha + 1.0,
@@ -358,7 +358,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         with self.subTest(parameter="beta"):
             with self.assertRaises(ValueError):
                 ps.analyze_unsteady_trim(
-                    problem=self.problem,
+                    self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(-20.0, 20.0),
                     beta_bounds=(
@@ -371,7 +371,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         with self.subTest(parameter="externalFX_W"):
             with self.assertRaises(ValueError):
                 ps.analyze_unsteady_trim(
-                    problem=self.problem,
+                    self.problem,
                     boundsVCg__E=(1.0, 100.0),
                     alpha_bounds=(-20.0, 20.0),
                     beta_bounds=(-20.0, 20.0),
@@ -392,7 +392,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             ValueError, "must define its duration with num_cycles or num_chords"
         ):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -415,7 +415,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             ValueError, "must define its maximum wake length with max_wake_chords"
         ):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -442,7 +442,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "must be greater than.*ampVCg__E"):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -454,7 +454,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         Airplane's weight along g_E's direction."""
         with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
             ps.analyze_unsteady_trim(
-                problem=self.problem,
+                self.problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -480,7 +480,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -561,7 +561,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             SolverStub,
         ):
             trim_conditions = ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -608,7 +608,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             SolverStub,
         ):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),
@@ -658,7 +658,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             SolverStub,
         ):
             ps.analyze_unsteady_trim(
-                problem=problem,
+                problem,
                 boundsVCg__E=(2.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
                 beta_bounds=(-20.0, 20.0),

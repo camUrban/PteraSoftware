@@ -344,7 +344,7 @@ print("Finished loading the saved solver.")
 # quickly. Slowing it further would make the playback choppy, because a slower speed
 # holds each frame on screen longer rather than adding frames.
 ps.animate(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,

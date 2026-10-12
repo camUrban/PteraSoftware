@@ -87,7 +87,7 @@ trim_problem = ps.SteadyProblem(
 # drag, weight balances lift, and all moments are close to zero) within a certain set of
 # bounds.
 trim_conditions = ps.analyze_steady_trim(
-    problem=trim_problem,
+    trim_problem,
     solver_type="steady horseshoe vortex lattice method",
     boundsVCg__E=(5, 15),
     alpha_bounds=(-10, 10),

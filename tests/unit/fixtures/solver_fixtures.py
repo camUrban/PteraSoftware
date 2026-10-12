@@ -27,7 +27,9 @@ def make_aeroelastic_unsteady_ring_solver_fixture() -> (
         problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
     )
 
-    solver = AeroelasticUnsteadyRingVortexLatticeMethodSolver(aeroelastic_problem)
+    solver = AeroelasticUnsteadyRingVortexLatticeMethodSolver(
+        aeroelastic_unsteady_problem=aeroelastic_problem
+    )
 
     return solver
 
@@ -43,7 +45,7 @@ def make_steady_horseshoe_solver_fixture() -> (
     """
     steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
 
-    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem)
+    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=steady_problem)
 
     return solver
 
@@ -57,7 +59,7 @@ def make_steady_ring_solver_fixture() -> ps.SteadyRingVortexLatticeMethodSolver:
     """
     steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
 
-    solver = ps.SteadyRingVortexLatticeMethodSolver(steady_problem)
+    solver = ps.SteadyRingVortexLatticeMethodSolver(steady_problem=steady_problem)
 
     return solver
 
@@ -71,7 +73,7 @@ def make_unsteady_ring_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSol
     """
     unsteady_problem = problem_fixtures.make_basic_unsteady_problem_fixture()
 
-    solver = ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem)
+    solver = ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=unsteady_problem)
 
     return solver
 
@@ -113,7 +115,7 @@ def make_free_flight_unsteady_ring_solver_fixture(
     )
 
     solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(
-        free_flight_unsteady_problem
+        free_flight_unsteady_problem=free_flight_unsteady_problem
     )
 
     return solver

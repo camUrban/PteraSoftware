@@ -3,13 +3,21 @@ import os
 import re
 import shutil
 import sys
-from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 # Add project root to sys.path so sphinx.ext.autodoc can import pterasoftware.
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
+
+# This import must follow the sys.path insertion, since the docs build does not install
+# the package. The module needs only the standard library, so it imports without the
+# runtime dependencies.
+from pterasoftware._deprecation import (
+    find_deprecations,
+    get_parameter_names,
+    iter_functions,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
@@ -337,94 +345,6 @@ def rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
         text = contributing_path.read_text()
         text = re.sub(r"\(docs/([A-Z_]+\.md)\)", r"(\1)", text)
         source[0] = text
-
-
-def is_deprecation_warning(node: ast.AST) -> bool:
-    """Reports whether a node is a statement calling warnings.warn with
-    DeprecationWarning."""
-    if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
-        return False
-    call = node.value
-    if not (
-        isinstance(call.func, ast.Attribute)
-        and call.func.attr == "warn"
-        and isinstance(call.func.value, ast.Name)
-        and call.func.value.id == "warnings"
-    ):
-        return False
-    category: ast.expr | None = call.args[1] if len(call.args) > 1 else None
-    for keyword in call.keywords:
-        if keyword.arg == "category":
-            category = keyword.value
-    return isinstance(category, ast.Name) and category.id == "DeprecationWarning"
-
-
-def iter_functions(package_dir: Path) -> Iterator[tuple[str, ast.FunctionDef]]:
-    """Yield each module-level function and method in a package from its source.
-
-    Each function is yielded with its fully qualified name, which is the module's dotted
-    name followed by the function's qualified name, as in the function's own __module__
-    and __qualname__. A constructor is named by its class instead, since the API
-    reference renders its parameters on the class signature.
-    """
-    for path in sorted(package_dir.rglob("*.py")):
-        parts = path.relative_to(package_dir).with_suffix("").parts
-        if parts[-1] == "__init__":
-            parts = parts[:-1]
-        module = ".".join((package_dir.name, *parts))
-        for node in ast.parse(path.read_text()).body:
-            if isinstance(node, ast.FunctionDef):
-                yield f"{module}.{node.name}", node
-            elif isinstance(node, ast.ClassDef):
-                class_id = f"{module}.{node.name}"
-                for member in node.body:
-                    if isinstance(member, ast.FunctionDef):
-                        if member.name == "__init__":
-                            yield class_id, member
-                        else:
-                            yield f"{class_id}.{member.name}", member
-
-
-def get_parameter_names(function: ast.FunctionDef) -> set[str]:
-    """Return the names of a function's parameters, other than * and ** parameters."""
-    return {
-        argument.arg
-        for argument in (
-            *function.args.posonlyargs,
-            *function.args.args,
-            *function.args.kwonlyargs,
-        )
-    }
-
-
-def find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]]:
-    """Find the deprecated members and parameters in a package from its source.
-
-    A deprecation is whatever emits a DeprecationWarning, so this reads the package's
-    source rather than any docstring marker. A function, method, or property is
-    deprecated when its body calls warnings.warn with DeprecationWarning as a top-level
-    statement. A parameter is deprecated when such a call sits inside a top-level if
-    statement whose test names that parameter. The first return value holds the fully
-    qualified names of the deprecated members. The second maps the fully qualified name
-    of each function or method with deprecated parameters to those parameters' names,
-    with a constructor's parameters keyed by its class, since the API reference renders
-    them on the class signature.
-    """
-    members: set[str] = set()
-    parameters: dict[str, list[str]] = {}
-    for function_id, function in iter_functions(package_dir):
-        if any(is_deprecation_warning(statement) for statement in function.body):
-            members.add(function_id)
-        parameter_names = get_parameter_names(function)
-        for statement in function.body:
-            if not isinstance(statement, ast.If):
-                continue
-            if not any(is_deprecation_warning(node) for node in ast.walk(statement)):
-                continue
-            for node in ast.walk(statement.test):
-                if isinstance(node, ast.Name) and node.id in parameter_names:
-                    parameters.setdefault(function_id, []).append(node.id)
-    return members, parameters
 
 
 DEPRECATED_MEMBERS, DEPRECATED_PARAMETERS = find_deprecations(PACKAGE_DIR)

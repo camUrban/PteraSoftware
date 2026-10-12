@@ -1,13 +1,16 @@
-"""Contains the function behind the deprecated modules at the old public paths and the
-decorator behind the deprecated parameter kinds."""
+"""Contains the function behind the deprecated modules at the old public paths, the
+decorator behind the deprecated parameter kinds, and the source scan that finds the
+package's deprecated members and parameters."""
 
 from __future__ import annotations
 
+import ast
 import functools
 import importlib
 import inspect
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from pathlib import Path
 from typing import Any, ParamSpec, TypeVar
 
 P = ParamSpec("P")
@@ -164,3 +167,107 @@ def keyword_only(
         return wrapper
 
     return decorator
+
+
+def is_deprecation_warning(node: ast.AST) -> bool:
+    """Returns whether a node is a statement calling warnings.warn with
+    DeprecationWarning.
+
+    :param node: The node to check.
+    :return: True if the node is such a statement and False otherwise.
+    """
+    if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
+        return False
+    call = node.value
+    if not (
+        isinstance(call.func, ast.Attribute)
+        and call.func.attr == "warn"
+        and isinstance(call.func.value, ast.Name)
+        and call.func.value.id == "warnings"
+    ):
+        return False
+    category: ast.expr | None = call.args[1] if len(call.args) > 1 else None
+    for keyword in call.keywords:
+        if keyword.arg == "category":
+            category = keyword.value
+    return isinstance(category, ast.Name) and category.id == "DeprecationWarning"
+
+
+def iter_functions(package_dir: Path) -> Iterator[tuple[str, ast.FunctionDef]]:
+    """Yields each module level function and method in a package, read from its source.
+
+    Each function is yielded with its fully qualified name, which is the module's dotted
+    name followed by the function's qualified name, as in the function's own __module__
+    and __qualname__. A constructor is named by its class instead, since the API
+    reference renders its parameters on the class signature.
+
+    :param package_dir: The package's directory.
+    :return: An iterator of tuples, each holding a function's fully qualified name and
+        its ast.FunctionDef node.
+    """
+    for path in sorted(package_dir.rglob("*.py")):
+        parts = path.relative_to(package_dir).with_suffix("").parts
+        if parts[-1] == "__init__":
+            parts = parts[:-1]
+        module = ".".join((package_dir.name, *parts))
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, ast.FunctionDef):
+                yield f"{module}.{node.name}", node
+            elif isinstance(node, ast.ClassDef):
+                class_id = f"{module}.{node.name}"
+                for member in node.body:
+                    if isinstance(member, ast.FunctionDef):
+                        if member.name == "__init__":
+                            yield class_id, member
+                        else:
+                            yield f"{class_id}.{member.name}", member
+
+
+def get_parameter_names(function: ast.FunctionDef) -> set[str]:
+    """Returns the names of a function's parameters, other than its * and ** parameters.
+
+    :param function: The function's ast.FunctionDef node.
+    :return: The set of the parameter names.
+    """
+    return {
+        argument.arg
+        for argument in (
+            *function.args.posonlyargs,
+            *function.args.args,
+            *function.args.kwonlyargs,
+        )
+    }
+
+
+def find_deprecations(package_dir: Path) -> tuple[set[str], dict[str, list[str]]]:
+    """Finds the deprecated members and parameters in a package from its source.
+
+    A deprecation is whatever emits a DeprecationWarning, so this reads the package's
+    source rather than any docstring marker. A function, method, or property is
+    deprecated when its body calls warnings.warn with DeprecationWarning as a top level
+    statement. A parameter is deprecated when such a call sits inside a top level if
+    statement whose test names that parameter. The API reference and the public-API test
+    both use this scan, so they agree on what is deprecated.
+
+    :param package_dir: The package's directory.
+    :return: A tuple of the fully qualified names of the deprecated members, and a dict
+        mapping the fully qualified name of each function or method with deprecated
+        parameters to those parameters' names, in that order. A constructor's parameters
+        are keyed by its class, since the API reference renders them on the class
+        signature.
+    """
+    members: set[str] = set()
+    parameters: dict[str, list[str]] = {}
+    for function_id, function in iter_functions(package_dir):
+        if any(is_deprecation_warning(statement) for statement in function.body):
+            members.add(function_id)
+        parameter_names = get_parameter_names(function)
+        for statement in function.body:
+            if not isinstance(statement, ast.If):
+                continue
+            if not any(is_deprecation_warning(node) for node in ast.walk(statement)):
+                continue
+            for node in ast.walk(statement.test):
+                if isinstance(node, ast.Name) and node.id in parameter_names:
+                    parameters.setdefault(function_id, []).append(node.id)
+    return members, parameters

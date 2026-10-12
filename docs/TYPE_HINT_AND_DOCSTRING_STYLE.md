@@ -607,7 +607,7 @@ The API reference documents only the names in `pterasoftware.__all__`. Every oth
 
 #### Deprecated API
 
-Deprecated functions, methods, properties, and parameters are filtered out of the API reference, so they need no docstring marker. The build detects them from the source, and the detection only works when the deprecation takes this exact shape:
+Deprecated functions, methods, properties, and parameters are filtered out of the API reference and left out of the public-API test's pins, so they need no docstring marker. The build and the test detect them from the source with the same scan, and the detection only works when the deprecation takes this exact shape:
 
 - A function, method, or property is deprecated when a top-level statement of its body is `warnings.warn(..., DeprecationWarning)` (positional or `category=` keyword). Deprecated members are omitted from the reference entirely.
 - A parameter is deprecated when such a call sits inside a top-level `if` statement whose test names the parameter, as in `if outline_A_lp is not UNSET:`. Deprecated parameters are removed from the rendered signature along with their `:param:` field, while the rest of the signature and docstring render unchanged.

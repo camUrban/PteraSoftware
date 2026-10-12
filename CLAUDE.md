@@ -88,7 +88,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_convergence_meshing.py`: Mesh building and refinement for convergence iterations
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
-    - `_deprecation.py`: The function behind the deprecated modules at the old public paths, and the decorator that deprecates passing public parameters with any kind other than their v6.0.0 kind
+    - `_deprecation.py`: The function behind the deprecated modules at the old public paths, the decorator that deprecates passing public parameters with any kind other than their v6.0.0 kind, and the source scan that finds deprecated members and parameters for the API reference and the public-API test
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
     - `_fonts.py`: The fonts used by the visualization functions
     - `_free_flight_unsteady_ring_vortex_lattice_method.py`: Free flight UVLM solver subclass with six-DOF MuJoCo coupling

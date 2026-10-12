@@ -51,10 +51,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "num_airplanes",
         "num_panels",
         "_gridWingWingInfluences__E",
-        "_vInf_GP1__E",
-        "_stackFreestreamWingInfluences__E",
+        "vInf_GP1__E",
+        "stackFreestreamWingInfluences__E",
         "_vortex_strengths",
-        "_stackUnitNormals_GP1",
+        "stackUnitNormals_GP1",
         "_panel_areas",
         "_stackCpp_GP1_CgP1",
         "_stackBrhvp_GP1_CgP1",
@@ -65,7 +65,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "_stackBoundVortexCenters_GP1_CgP1",
         "_stackBoundVortexVectors_GP1",
         "_r_c0s",
-        "_stackSeedPoints_GP1_CgP1",
+        "stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
         "_ran",
     )
@@ -105,14 +105,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._gridWingWingInfluences__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
-        self._vInf_GP1__E = self.operating_point.vInf_GP1__E
-        self._stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+        self.vInf_GP1__E = self.operating_point.vInf_GP1__E
+        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
 
         # Initialize the vortex strengths to ones so that they can be passed in to find
         # the normalized wing wing influence coefficients.
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
-        self._stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._panel_areas = np.zeros(self.num_panels, dtype=float)
         self._stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
@@ -132,7 +132,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # and left legs' take the wake's value.
         self._r_c0s = np.zeros((self.num_panels, 3), dtype=float)
 
-        self._stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+        self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
         self._ran: bool = False
@@ -376,7 +376,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
             stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
             stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
-            stackHorseshoeUnitNormals_D=self._stackUnitNormals_GP1,
+            stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1,
             horseshoe_vortices_are_wake=False,
             largest_chord=max(
                 wing_cross_section.chord
@@ -450,7 +450,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # attributes (in the first Airplane's geometry axes, relative to the
                     # first Airplane's CG).
                     self._panels[global_panel_position] = panel
-                    self._stackUnitNormals_GP1[global_panel_position, :] = (
+                    self.stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
                     )
                     self._panel_areas[global_panel_position] = panel.area
@@ -483,9 +483,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # Calculate this Panel's streamline seed point (in the first
                         # Airplane's geometry axes, relative to the first Airplane's
                         # CG). Add it to the solver's 1D ndarray of seed points.
-                        self._stackSeedPoints_GP1_CgP1 = np.vstack(
+                        self.stackSeedPoints_GP1_CgP1 = np.vstack(
                             (
-                                self._stackSeedPoints_GP1_CgP1,
+                                self.stackSeedPoints_GP1_CgP1,
                                 _Blpp_GP1_CgP1
                                 + 0.5 * (_Brpp_GP1_CgP1 - _Blpp_GP1_CgP1),
                             )
@@ -568,7 +568,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_GP1__E,
-            np.expand_dims(self._stackUnitNormals_GP1, axis=1),
+            np.expand_dims(self.stackUnitNormals_GP1, axis=1),
         )
 
     def _calculate_vortex_strengths(self) -> None:
@@ -577,7 +577,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
         self._vortex_strengths = np.linalg.solve(
-            self._gridWingWingInfluences__E, -self._stackFreestreamWingInfluences__E
+            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
         )
 
     def _calculate_solution_velocity(
@@ -662,7 +662,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 is_position=False,
             )
 
-        return cast(np.ndarray, stackVInd_GP1__E + self._vInf_GP1__E)
+        return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)
 
     def _calculate_loads(self) -> None:
         """Calculates the forces (in the first Airplane's geometry axes) and moments (in

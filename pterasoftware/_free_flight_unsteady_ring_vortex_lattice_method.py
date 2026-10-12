@@ -158,7 +158,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        omegas_GP1__E = self._current_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
+        omegas_GP1__E = self.current_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
@@ -271,9 +271,9 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         # induced transport is the frozen precompute from _freeze_substep.
         current_problem = self._get_steady_problem_at(step)
         self._current_step = step
-        self._current_airplanes = current_problem.airplanes
-        self._current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+        self.current_airplanes = current_problem.airplanes
+        self.current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
         self._current_bound_vortex_strengths = self._substep_gamma_n
         self._populate_next_airplanes_wake_vortex_points(
             self._substepStackVIndGridWrvp_GP1__E
@@ -285,13 +285,13 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         # and the current OperatingPoint is the trial. The unsteady load term
         # differences the solved strengths against the snapshot strengths.
         self._current_step = next_step
-        self._current_airplanes = self._get_steady_problem_at(next_step).airplanes
-        self._current_operating_point = trial_operating_point
-        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+        self.current_airplanes = self._get_steady_problem_at(next_step).airplanes
+        self.current_operating_point = trial_operating_point
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
         self._last_bound_vortex_strengths = self._substep_gamma_n
         self._evaluate_step_aerodynamics()
 
-        return self._current_airplanes[0]
+        return self.current_airplanes[0]
 
     def _restore_substep(self, step: int) -> None:
         """Restores the solver's current-step state after a strongly coupled step solve.
@@ -313,9 +313,9 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
         current_problem = self._get_steady_problem_at(step)
         self._current_step = step
-        self._current_airplanes = current_problem.airplanes
-        self._current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+        self.current_airplanes = current_problem.airplanes
+        self.current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
         self._last_bound_vortex_strengths = self._substep_gamma_n_minus_1
         self._evaluate_step_aerodynamics()
 

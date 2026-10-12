@@ -184,7 +184,7 @@ CHUNKED_SLOTS: tuple[tuple[type, tuple[str, ...]], ...] = (
             "_listStackFrbrvp_GP1_CgP1",
             "_listStackFlbrvp_GP1_CgP1",
             "_listStackBlbrvp_GP1_CgP1",
-            "_list_num_wake_vortices",
+            "list_num_wake_vortices",
             "_list_wake_vortex_strengths",
             "_list_wake_r_c0s",
             "listStackBrwrvp_GP1_CgP1",

@@ -110,7 +110,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         The body-to-geometry transformation negates the x and z components, and the
         result is converted from degrees per second to radians per second.
         """
-        self.solver._current_operating_point = (
+        self.solver.current_operating_point = (
             operating_point_fixtures.make_with_body_rates_operating_point_fixture()
         )
 
@@ -130,7 +130,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         Using a body rate with three distinct non zero components pins down the full
         body to geometry flip, which a body rate aligned with a single axis cannot.
         """
-        self.solver._current_operating_point = (
+        self.solver.current_operating_point = (
             operating_point_fixtures.make_with_full_body_rates_operating_point_fixture()
         )
 

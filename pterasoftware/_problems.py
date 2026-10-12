@@ -1399,8 +1399,8 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         :param step: The current time step index (zero indexed).
         :return: None
         """
-        current_airplane = solver._current_airplanes[0]
-        current_operating_point = solver._current_operating_point
+        current_airplane = solver.current_airplanes[0]
+        current_operating_point = solver.current_operating_point
 
         if step < self.num_steps - 1:
             if step >= self.movement.prescribed_num_steps:

@@ -191,9 +191,9 @@ def calculate_streamlines(
     """
     # Initialize a ndarray to hold this solver's grid of streamline points (in the first
     # Airplane's geometry axes, relative to the first Airplane's CG).
-    assert solver._stackSeedPoints_GP1_CgP1 is not None
+    assert solver.stackSeedPoints_GP1_CgP1 is not None
     solver.gridStreamlinePoints_GP1_CgP1 = np.expand_dims(
-        solver._stackSeedPoints_GP1_CgP1, axis=0
+        solver.stackSeedPoints_GP1_CgP1, axis=0
     )
 
     bound_singularity_counts = np.zeros(3, dtype=np.int64)
@@ -291,10 +291,10 @@ def process_solver_loads(
         solver,
         _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
-        assert solver._current_airplanes is not None
-        these_airplanes = solver._current_airplanes
-        assert solver._current_operating_point is not None
-        this_operating_point = solver._current_operating_point
+        assert solver.current_airplanes is not None
+        these_airplanes = solver.current_airplanes
+        assert solver.current_operating_point is not None
+        this_operating_point = solver.current_operating_point
     else:
         raise ValueError(
             f"solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
@@ -479,14 +479,14 @@ def update_ring_vortex_solvers_panel_attributes(
     """
     assert ring_vortex_solver._panels is not None
     ring_vortex_solver._panels[global_panel_position] = panel
-    assert ring_vortex_solver._stackUnitNormals_GP1 is not None
-    ring_vortex_solver._stackUnitNormals_GP1[global_panel_position, :] = (
+    assert ring_vortex_solver.stackUnitNormals_GP1 is not None
+    ring_vortex_solver.stackUnitNormals_GP1[global_panel_position, :] = (
         panel.unitNormal_GP1
     )
-    assert ring_vortex_solver._panel_areas is not None
-    ring_vortex_solver._panel_areas[global_panel_position] = panel.area
-    assert ring_vortex_solver._stackCpp_GP1_CgP1 is not None
-    ring_vortex_solver._stackCpp_GP1_CgP1[global_panel_position, :] = panel.Cpp_GP1_CgP1
+    assert ring_vortex_solver.panel_areas is not None
+    ring_vortex_solver.panel_areas[global_panel_position] = panel.area
+    assert ring_vortex_solver.stackCpp_GP1_CgP1 is not None
+    ring_vortex_solver.stackCpp_GP1_CgP1[global_panel_position, :] = panel.Cpp_GP1_CgP1
 
     # Bound ring vortex corner points. The right leg goes from the back right corner to
     # the front right corner, the front leg from front right to front left, the left leg
@@ -506,58 +506,58 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver.stackCblvpr_GP1_CgP1[global_panel_position, :] = 0.5 * (
         Brrvp_GP1_CgP1 + Frrvp_GP1_CgP1
     )
-    assert ring_vortex_solver._stackRbrv_GP1 is not None
-    ring_vortex_solver._stackRbrv_GP1[global_panel_position, :] = (
+    assert ring_vortex_solver.stackRbrv_GP1 is not None
+    ring_vortex_solver.stackRbrv_GP1[global_panel_position, :] = (
         Frrvp_GP1_CgP1 - Brrvp_GP1_CgP1
     )
     assert ring_vortex_solver.stackCblvpf_GP1_CgP1 is not None
     ring_vortex_solver.stackCblvpf_GP1_CgP1[global_panel_position, :] = 0.5 * (
         Frrvp_GP1_CgP1 + Flrvp_GP1_CgP1
     )
-    assert ring_vortex_solver._stackFbrv_GP1 is not None
-    ring_vortex_solver._stackFbrv_GP1[global_panel_position, :] = (
+    assert ring_vortex_solver.stackFbrv_GP1 is not None
+    ring_vortex_solver.stackFbrv_GP1[global_panel_position, :] = (
         Flrvp_GP1_CgP1 - Frrvp_GP1_CgP1
     )
     assert ring_vortex_solver.stackCblvpl_GP1_CgP1 is not None
     ring_vortex_solver.stackCblvpl_GP1_CgP1[global_panel_position, :] = 0.5 * (
         Flrvp_GP1_CgP1 + Blrvp_GP1_CgP1
     )
-    assert ring_vortex_solver._stackLbrv_GP1 is not None
-    ring_vortex_solver._stackLbrv_GP1[global_panel_position, :] = (
+    assert ring_vortex_solver.stackLbrv_GP1 is not None
+    ring_vortex_solver.stackLbrv_GP1[global_panel_position, :] = (
         Blrvp_GP1_CgP1 - Flrvp_GP1_CgP1
     )
     assert ring_vortex_solver.stackCblvpb_GP1_CgP1 is not None
     ring_vortex_solver.stackCblvpb_GP1_CgP1[global_panel_position, :] = 0.5 * (
         Blrvp_GP1_CgP1 + Brrvp_GP1_CgP1
     )
-    assert ring_vortex_solver._stackBbrv_GP1 is not None
-    ring_vortex_solver._stackBbrv_GP1[global_panel_position, :] = (
+    assert ring_vortex_solver.stackBbrv_GP1 is not None
+    ring_vortex_solver.stackBbrv_GP1[global_panel_position, :] = (
         Brrvp_GP1_CgP1 - Blrvp_GP1_CgP1
     )
 
-    assert ring_vortex_solver._panel_is_trailing_edge is not None
-    ring_vortex_solver._panel_is_trailing_edge[global_panel_position] = (
+    assert ring_vortex_solver.panel_is_trailing_edge is not None
+    ring_vortex_solver.panel_is_trailing_edge[global_panel_position] = (
         panel.is_trailing_edge
     )
-    assert ring_vortex_solver._panel_is_leading_edge is not None
-    ring_vortex_solver._panel_is_leading_edge[global_panel_position] = (
+    assert ring_vortex_solver.panel_is_leading_edge is not None
+    ring_vortex_solver.panel_is_leading_edge[global_panel_position] = (
         panel.is_leading_edge
     )
-    assert ring_vortex_solver._panel_is_right_edge is not None
-    ring_vortex_solver._panel_is_right_edge[global_panel_position] = panel.is_right_edge
-    assert ring_vortex_solver._panel_is_left_edge is not None
-    ring_vortex_solver._panel_is_left_edge[global_panel_position] = panel.is_left_edge
+    assert ring_vortex_solver.panel_is_right_edge is not None
+    ring_vortex_solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
+    assert ring_vortex_solver.panel_is_left_edge is not None
+    ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
 
     # Check if this Panel is on the trailing edge. If so, calculate its streamline seed
     # point (in the first Airplane's geometry axes, relative to the first Airplane's CG)
     # and add it to the solver's ndarray of streamline seed points.
     if panel.is_trailing_edge:
-        assert ring_vortex_solver._stackSeedPoints_GP1_CgP1 is not None
+        assert ring_vortex_solver.stackSeedPoints_GP1_CgP1 is not None
         assert panel.Brpp_GP1_CgP1 is not None
         assert panel.Blpp_GP1_CgP1 is not None
-        ring_vortex_solver._stackSeedPoints_GP1_CgP1 = np.vstack(
+        ring_vortex_solver.stackSeedPoints_GP1_CgP1 = np.vstack(
             (
-                ring_vortex_solver._stackSeedPoints_GP1_CgP1,
+                ring_vortex_solver.stackSeedPoints_GP1_CgP1,
                 panel.Blpp_GP1_CgP1 + 0.5 * (panel.Brpp_GP1_CgP1 - panel.Blpp_GP1_CgP1),
             )
         )
@@ -582,10 +582,10 @@ def calculate_steady_freestream_wing_influences(
     # geometry axes, observed from the Earth frame) with each of the N Panel's unit
     # normal vectors (in the first Airplane's geometry axes). This is now the solver's
     # (N,) ndarray of freestream Wing influence coefficients.
-    steady_solver._stackFreestreamWingInfluences__E = np.einsum(
+    steady_solver.stackFreestreamWingInfluences__E = np.einsum(
         "ij,j->i",
-        steady_solver._stackUnitNormals_GP1,
-        steady_solver._vInf_GP1__E,
+        steady_solver.stackUnitNormals_GP1,
+        steady_solver.vInf_GP1__E,
     )
 
 

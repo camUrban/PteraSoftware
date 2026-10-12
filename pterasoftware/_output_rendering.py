@@ -3099,7 +3099,7 @@ def get_wake_ring_vortex_surfaces(
     :param step: The time step at which to process the wake ring vortices.
     :return: The PolyData representation of the wake ring vortices.
     """
-    num_wake_ring_vortices = solver._list_num_wake_vortices[step]
+    num_wake_ring_vortices = solver.list_num_wake_vortices[step]
     stackFrwrvp_GP1_CgP1 = solver.listStackFrwrvp_GP1_CgP1[step]
     stackFlwrvp_GP1_CgP1 = solver.listStackFlwrvp_GP1_CgP1[step]
     stackBlwrvp_GP1_CgP1 = solver.listStackBlwrvp_GP1_CgP1[step]

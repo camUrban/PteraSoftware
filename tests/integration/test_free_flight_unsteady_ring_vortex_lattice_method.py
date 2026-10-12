@@ -95,7 +95,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         cls.lifts = -forces_W[:, 2]
         cls.crosswind_forces = -forces_W[:, 1]
 
-        cls.weight = cls.solver._current_airplanes[0].weight
+        cls.weight = cls.solver.current_airplanes[0].weight
         cls.g_E = operating_points[0].g_E
         cls.mass = problem.mass
         cls.inertia_matrix = problem.I_BP1_CgP1
@@ -278,7 +278,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         cls.lifts = -forces_W[:, 2]
         cls.crosswind_forces = -forces_W[:, 1]
 
-        cls.weight = cls.solver._current_airplanes[0].weight
+        cls.weight = cls.solver.current_airplanes[0].weight
 
     def test_run_produces_finite_full_length_history(self) -> None:
         """This method tests that the coupled run completed for every time step and
@@ -369,7 +369,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodKatzForceMethod(unittest.Test
         cls.forces_W = forces_W
         cls.lifts = -forces_W[:, 2]
 
-        cls.weight = cls.solver._current_airplanes[0].weight
+        cls.weight = cls.solver.current_airplanes[0].weight
 
     def test_run_produces_finite_full_length_history(self) -> None:
         """This method tests that the coupled run completed for every time step and

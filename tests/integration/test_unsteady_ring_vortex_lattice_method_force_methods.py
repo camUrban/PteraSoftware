@@ -46,8 +46,8 @@ class TestForceMethodsComparison(unittest.TestCase):
 
     def test_static_geometry_methods_produce_similar_lift(self) -> None:
         """Test that both methods produce lift within 25% of each other."""
-        joukowski_airplane = self.static_solver_joukowski._current_airplanes[0]
-        katz_airplane = self.static_solver_katz._current_airplanes[0]
+        joukowski_airplane = self.static_solver_joukowski.current_airplanes[0]
+        katz_airplane = self.static_solver_katz.current_airplanes[0]
         assert joukowski_airplane.forceCoefficients_W is not None
         assert katz_airplane.forceCoefficients_W is not None
 
@@ -78,8 +78,8 @@ class TestForceMethodsComparison(unittest.TestCase):
 
     def test_static_geometry_methods_produce_similar_drag(self) -> None:
         """Test that both methods produce drag within 100% of each other."""
-        joukowski_airplane = self.static_solver_joukowski._current_airplanes[0]
-        katz_airplane = self.static_solver_katz._current_airplanes[0]
+        joukowski_airplane = self.static_solver_joukowski.current_airplanes[0]
+        katz_airplane = self.static_solver_katz.current_airplanes[0]
         assert joukowski_airplane.forceCoefficients_W is not None
         assert katz_airplane.forceCoefficients_W is not None
 
@@ -158,8 +158,8 @@ class TestForceMethodsComparison(unittest.TestCase):
 
     def test_static_geometry_methods_produce_similar_moment(self) -> None:
         """Test that both methods produce moment within 5% of each other."""
-        joukowski_airplane = self.static_solver_joukowski._current_airplanes[0]
-        katz_airplane = self.static_solver_katz._current_airplanes[0]
+        joukowski_airplane = self.static_solver_joukowski.current_airplanes[0]
+        katz_airplane = self.static_solver_katz.current_airplanes[0]
         assert joukowski_airplane.momentCoefficients_W_CgP1 is not None
         assert katz_airplane.momentCoefficients_W_CgP1 is not None
 

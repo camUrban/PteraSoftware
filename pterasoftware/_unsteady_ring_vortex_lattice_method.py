@@ -48,8 +48,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_current_step",
         "_prescribed_wake",
         "_force_method",
-        "_current_airplanes",
-        "_current_operating_point",
+        "current_airplanes",
+        "current_operating_point",
         "num_airplanes",
         "num_panels",
         "_currentVInf_GP1__E",
@@ -59,9 +59,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_current_bound_vortex_strengths",
         "_last_bound_vortex_strengths",
         "_panels",
-        "_stackUnitNormals_GP1",
-        "_panel_areas",
-        "_stackCpp_GP1_CgP1",
+        "stackUnitNormals_GP1",
+        "panel_areas",
+        "stackCpp_GP1_CgP1",
         "_stackLastCpp_GP1_CgP1",
         "stackBrbrvp_GP1_CgP1",
         "stackFrbrvp_GP1_CgP1",
@@ -87,25 +87,25 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_lastStackCblvpf_GP1_CgP1",
         "_lastStackCblvpl_GP1_CgP1",
         "_lastStackCblvpb_GP1_CgP1",
-        "_stackRbrv_GP1",
-        "_stackFbrv_GP1",
-        "_stackLbrv_GP1",
-        "_stackBbrv_GP1",
+        "stackRbrv_GP1",
+        "stackFbrv_GP1",
+        "stackLbrv_GP1",
+        "stackBbrv_GP1",
         "_panel_chord_lengths",
         "_panel_span_lengths",
         "_stackChordwiseTangents_GP1",
         "_stackSpanwiseTangents_GP1",
-        "_panel_is_trailing_edge",
-        "_panel_is_leading_edge",
-        "_panel_is_left_edge",
-        "_panel_is_right_edge",
+        "panel_is_trailing_edge",
+        "panel_is_leading_edge",
+        "panel_is_left_edge",
+        "panel_is_right_edge",
         "_current_wake_vortex_strengths",
         "_current_wake_vortex_ages",
         "_currentStackBrwrvp_GP1_CgP1",
         "_currentStackFrwrvp_GP1_CgP1",
         "_currentStackFlwrvp_GP1_CgP1",
         "_currentStackBlwrvp_GP1_CgP1",
-        "_list_num_wake_vortices",
+        "list_num_wake_vortices",
         "_list_wake_vortex_strengths",
         "_list_wake_r_c0s",
         "listStackBrwrvp_GP1_CgP1",
@@ -114,7 +114,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "listStackBlwrvp_GP1_CgP1",
         "_current_bound_r_c0s",
         "_current_wake_r_c0s",
-        "_stackSeedPoints_GP1_CgP1",
+        "stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
         "_ran",
     )
@@ -164,8 +164,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         first_steady_problem: _problems.SteadyProblem = self._get_steady_problem_at(0)
 
-        self._current_airplanes: tuple[_geometry.airplane.Airplane, ...] = ()
-        self._current_operating_point: _operating_point.OperatingPoint = (
+        self.current_airplanes: tuple[_geometry.airplane.Airplane, ...] = ()
+        self.current_operating_point: _operating_point.OperatingPoint = (
             first_steady_problem.operating_point
         )
         self.num_airplanes: int = len(first_steady_problem.airplanes)
@@ -200,12 +200,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
         self._panels: np.ndarray = np.empty(0, dtype=object)
-        self._stackUnitNormals_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._panel_areas: np.ndarray = np.empty(0, dtype=float)
+        self.stackUnitNormals_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.panel_areas: np.ndarray = np.empty(0, dtype=float)
 
         # The current and last time step's collocation panel points (in the first
         # Airplane's geometry axes, relative to the first Airplane's CG).
-        self._stackCpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackCpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self._stackLastCpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # The current and last time step's back right, front right, front left, and back
@@ -285,7 +285,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 num_chordwise_wake_rows = min(step, self._max_wake_rows)
             wake_sizes_per_step.append(num_chordwise_wake_rows * total_spanwise_panels)
 
-        self._list_num_wake_vortices: list[int] = list(wake_sizes_per_step)
+        self.list_num_wake_vortices: list[int] = list(wake_sizes_per_step)
         self._list_wake_vortex_strengths: list[np.ndarray] = [
             np.zeros(n, dtype=float) for n in wake_sizes_per_step
         ]
@@ -322,10 +322,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Right, front, left, and back bound ring vortex vectors (in the first
         # Airplane's geometry axes).
-        self._stackRbrv_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackFbrv_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackLbrv_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackBbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackRbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackFbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackLbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackBbrv_GP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize Katz-method-specific arrays for the pressure calculation.
         self._panel_chord_lengths: np.ndarray = np.empty(0, dtype=float)
@@ -335,10 +335,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize variables to hold aerodynamic data about each Panel's location on
         # its Wing.
-        self._panel_is_trailing_edge: np.ndarray = np.empty(0, dtype=bool)
-        self._panel_is_leading_edge: np.ndarray = np.empty(0, dtype=bool)
-        self._panel_is_left_edge: np.ndarray = np.empty(0, dtype=bool)
-        self._panel_is_right_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_trailing_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_leading_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_left_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_right_edge: np.ndarray = np.empty(0, dtype=bool)
 
         # Initialize variables to hold aerodynamic data that pertains to the wake at the
         # current time step.
@@ -353,14 +353,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentStackFlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self._currentStackBlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
-        # The list attributes above (_list_num_wake_vortices,
+        # The list attributes above (list_num_wake_vortices,
         # _list_wake_vortex_strengths, _list_wake_r_c0s,
         # listStack{Br,Fr,Fl,Bl}wrvp_GP1_CgP1) were pre-allocated above this block.
 
         self._current_bound_r_c0s: np.ndarray = np.empty((0, 4), dtype=float)
         self._current_wake_r_c0s: np.ndarray = np.empty((0, 4), dtype=float)
 
-        self._stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty((0, 3), dtype=float)
 
         self._ran: bool = False
@@ -482,7 +482,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         approx_times = np.zeros(self.num_steps + 1, dtype=float)
         for step in range(1, self.num_steps):
             # Calculate the total number of ring vortices analyzed during this step.
-            num_wake_ring_vortices = self._list_num_wake_vortices[step]
+            num_wake_ring_vortices = self.list_num_wake_vortices[step]
             num_ring_vortices = num_wing_panels + num_wake_ring_vortices
 
             # The following constant multipliers were determined empirically. Thus far,
@@ -531,9 +531,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 current_problem: _problems.SteadyProblem = self._get_steady_problem_at(
                     self._current_step
                 )
-                self._current_airplanes = current_problem.airplanes
-                self._current_operating_point = current_problem.operating_point
-                self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+                self.current_airplanes = current_problem.airplanes
+                self.current_operating_point = current_problem.operating_point
+                self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
                 logger.debug(
                     _logging.indent()
                     + "Beginning time step "
@@ -831,7 +831,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  Consider dropping them.
         # Initialize attributes to hold aerodynamic data that pertain to the simulation
         # at this time step.
-        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
         self._currentStackFreestreamWingInfluences__E = np.zeros(
             self.num_panels, dtype=float
         )
@@ -848,10 +848,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
         self._panels = np.empty(self.num_panels, dtype=object)
-        self._stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._panel_areas = np.zeros(self.num_panels, dtype=float)
+        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.panel_areas = np.zeros(self.num_panels, dtype=float)
 
-        self._stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackLastCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         self.stackBrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
@@ -872,10 +872,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._lastStackCblvpl_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._lastStackCblvpb_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
-        self._stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Reinitialize the Katz-method-specific arrays.
         self._panel_chord_lengths = np.zeros(self.num_panels, dtype=float)
@@ -884,10 +884,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._stackSpanwiseTangents_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables to hold details about each Panel's location on its Wing.
-        self._panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
-        self._panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
-        self._panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
-        self._panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
         # Hook: Subclasses may reinitialize step-specific arrays here.
         self._reinitialize_step_arrays_hook()
@@ -901,7 +901,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
 
         self._current_bound_r_c0s = np.zeros((self.num_panels, 4), dtype=float)
-        num_wake_vortices = self._list_num_wake_vortices[step]
+        num_wake_vortices = self.list_num_wake_vortices[step]
         self._current_wake_vortex_ages = np.zeros(num_wake_vortices, dtype=float)
 
         # Every leg of a wake ring vortex shares the initial core radius it was shed
@@ -911,7 +911,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self._list_wake_r_c0s[step][:, np.newaxis], 4, axis=1
         )
 
-        self._stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
+        self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
         # Collapse the geometry matrices into 1D ndarrays of attributes.
         logger.debug(_logging.indent() + "Collapsing the geometry")
@@ -974,9 +974,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Set the current step and related state.
         self._current_step = step
         current_problem: _problems.SteadyProblem = self._get_steady_problem_at(step)
-        self._current_airplanes = current_problem.airplanes
-        self._current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
+        self.current_airplanes = current_problem.airplanes
+        self.current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
 
         # Populate the wake for the next step (if not the last step).
         if step < self.num_steps - 1:
@@ -1064,7 +1064,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the current time step's Airplanes' Wings.
         global_panel_position = 0
         global_wake_ring_vortex_position = 0
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 # Based on results from Ramasamy and Leishman (2007), the wake's initial
                 # core radius is 3.0% of this Wing's standard mean chord. The bound ring
@@ -1175,7 +1175,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         global_panel_position = 0
 
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 _panels = wing._panels
                 assert _panels is not None
@@ -1235,7 +1235,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         singularity_counts = np.zeros(3, dtype=np.int64)
         gridNormVIndCpp_GP1_E = (
             _aerodynamics_functions.expanded_velocities_from_ring_vortices(
-                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
@@ -1244,18 +1244,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 r_c0s=self._current_bound_r_c0s,
                 singularity_counts=singularity_counts,
                 ages=None,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
         )
 
         # Add the image contribution if an image surface is defined.
         surfaceReflect_T_act_GP1_CgP1 = (
-            self._current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
         )
         if surfaceReflect_T_act_GP1_CgP1 is not None:
             stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                 surfaceReflect_T_act_GP1_CgP1,
-                self._stackCpp_GP1_CgP1,
+                self.stackCpp_GP1_CgP1,
                 is_position=True,
             )
             gridImageVIndCpp_GP1__E = (
@@ -1269,7 +1269,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=self._current_bound_r_c0s,
                     singularity_counts=singularity_counts,
                     ages=None,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
             gridNormVIndCpp_GP1_E += _transformations.apply_T_to_vectors(
@@ -1295,7 +1295,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentGridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_GP1_E,
-            np.expand_dims(self._stackUnitNormals_GP1, axis=1),
+            np.expand_dims(self.stackUnitNormals_GP1, axis=1),
         )
 
     def _currentOmegasRad_GP1__E(self) -> np.ndarray:
@@ -1388,7 +1388,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # batch dot product.
         currentStackFreestreamOnlyWingInfluences__E = np.einsum(
             "ij,j->i",
-            self._stackUnitNormals_GP1,
+            self.stackUnitNormals_GP1,
             self._currentVInf_GP1__E,
         )
 
@@ -1397,9 +1397,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # to the body angular rate (omega cross r), in the first Airplane's geometry
         # axes, observed from the Earth frame.
         currentStackApparentV_GP1_E = self._apply_body_rate(
-            self._stackCpp_GP1_CgP1,
+            self.stackCpp_GP1_CgP1,
             self._calculate_current_movement_velocities(
-                self._stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
+                self.stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
             ),
         )
 
@@ -1408,7 +1408,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # product.
         currentStackApparentInfluences__E = np.einsum(
             "ij,ij->i",
-            self._stackUnitNormals_GP1,
+            self.stackUnitNormals_GP1,
             currentStackApparentV_GP1_E,
         )
 
@@ -1441,7 +1441,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             singularity_counts = np.zeros(3, dtype=np.int64)
             currentStackWakeV_GP1_E = (
                 _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
-                    stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                    stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                     stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
                     stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
                     stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
@@ -1450,18 +1450,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=self._current_wake_r_c0s,
                     singularity_counts=singularity_counts,
                     ages=self._current_wake_vortex_ages,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
 
             # Add the image contribution if an image surface is defined.
             surfaceReflect_T_act_GP1_CgP1 = (
-                self._current_operating_point.surfaceReflect_T_act_GP1_CgP1
+                self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
             )
             if surfaceReflect_T_act_GP1_CgP1 is not None:
                 stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                     surfaceReflect_T_act_GP1_CgP1,
-                    self._stackCpp_GP1_CgP1,
+                    self.stackCpp_GP1_CgP1,
                     is_position=True,
                 )
                 currentStackImageWakeV_GP1_E = (
@@ -1475,7 +1475,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         r_c0s=self._current_wake_r_c0s,
                         singularity_counts=singularity_counts,
                         ages=self._current_wake_vortex_ages,
-                        nu=self._current_operating_point.nu,
+                        nu=self.current_operating_point.nu,
                     )
                 )
                 currentStackWakeV_GP1_E += _transformations.apply_T_to_vectors(
@@ -1497,7 +1497,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # frame) by taking a batch dot product with each Panel's normal vector (in
             # the first Airplane's geometry axes).
             self._currentStackWakeWingInfluences__E = np.einsum(
-                "ij,ij->i", currentStackWakeV_GP1_E, self._stackUnitNormals_GP1
+                "ij,ij->i", currentStackWakeV_GP1_E, self.stackUnitNormals_GP1
             )
 
         else:
@@ -1631,7 +1631,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 r_c0s=self._current_bound_r_c0s,
                 singularity_counts=bound_singularity_counts,
                 ages=None,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
         )
         stackWakeRingVInd_GP1_E = (
@@ -1645,13 +1645,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 r_c0s=self._current_wake_r_c0s,
                 singularity_counts=wake_singularity_counts,
                 ages=self._current_wake_vortex_ages,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
         )
 
         # Add the image contributions if an image surface is defined.
         surfaceReflect_T_act_GP1_CgP1 = (
-            self._current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
         )
         if surfaceReflect_T_act_GP1_CgP1 is not None:
             stackReflectedP_GP1_CgP1 = _transformations.apply_T_to_vectors(
@@ -1670,7 +1670,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=self._current_bound_r_c0s,
                     singularity_counts=bound_singularity_counts,
                     ages=None,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
             stackBoundRingVInd_GP1_E += _transformations.apply_T_to_vectors(
@@ -1689,7 +1689,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=self._current_wake_r_c0s,
                     singularity_counts=wake_singularity_counts,
                     ages=self._current_wake_vortex_ages,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
             stackWakeRingVInd_GP1_E += _transformations.apply_T_to_vectors(
@@ -1756,7 +1756,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # strengths can be found at fixed offsets from the current global Panel
         # position: +1 right, -1 left, +num_spanwise_panels back, -num_spanwise_panels
         # front.
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 _panels = wing._panels
                 assert _panels is not None
@@ -1925,32 +1925,32 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex's right line vortex, front line vortex, left line vortex, and back line
         # vortex using the effective vortex strengths.
         rightLegForces_GP1 = (
-            self._current_operating_point.rho
+            self.current_operating_point.rho
             * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityRightLineVortexCenters_GP1__E, self._stackRbrv_GP1
+                stackVelocityRightLineVortexCenters_GP1__E, self.stackRbrv_GP1
             )
         )
         frontLegForces_GP1 = (
-            self._current_operating_point.rho
+            self.current_operating_point.rho
             * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityFrontLineVortexCenters_GP1__E, self._stackFbrv_GP1
+                stackVelocityFrontLineVortexCenters_GP1__E, self.stackFbrv_GP1
             )
         )
         leftLegForces_GP1 = (
-            self._current_operating_point.rho
+            self.current_operating_point.rho
             * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityLeftLineVortexCenters_GP1__E, self._stackLbrv_GP1
+                stackVelocityLeftLineVortexCenters_GP1__E, self.stackLbrv_GP1
             )
         )
         backLegForces_GP1 = (
-            self._current_operating_point.rho
+            self.current_operating_point.rho
             * np.expand_dims(effective_back_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityBackLineVortexCenters_GP1__E,
-                self._stackBbrv_GP1,
+                self.stackBbrv_GP1,
                 axis=-1,
             )
         )
@@ -1970,7 +1970,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate the unsteady component of the force on each Panel (in geometry
         # axes), which is derived from the unsteady Bernoulli equation.
         unsteady_forces_GP1 = -(
-            self._current_operating_point.rho
+            self.current_operating_point.rho
             * np.expand_dims(
                 (
                     self._current_bound_vortex_strengths
@@ -1978,8 +1978,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 ),
                 axis=1,
             )
-            * np.expand_dims(self._panel_areas, axis=1)
-            * self._stackUnitNormals_GP1
+            * np.expand_dims(self.panel_areas, axis=1)
+            * self.stackUnitNormals_GP1
             / self.delta_time
         )
 
@@ -2014,7 +2014,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the moments (in the first Airplane's geometry axes, relative to the first
         # Airplane's CG) due to the unsteady component of the force on each Panel.
         unsteady_moments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self._stackCpp_GP1_CgP1, unsteady_forces_GP1
+            self.stackCpp_GP1_CgP1, unsteady_forces_GP1
         )
 
         moments_GP1_CgP1 = (
@@ -2089,7 +2089,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the current time step's Airplanes and Wings, matching the
         # [airplane_id][wing_id] indexing used by
         # _populate_next_airplanes_wake_vortex_points.
-        for this_airplane in self._current_airplanes:
+        for this_airplane in self.current_airplanes:
             airplaneStackVIndGridWrvp_GP1__E: list[np.ndarray] = []
 
             for this_wing in this_airplane.wings:
@@ -2130,7 +2130,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        rho = self._current_operating_point.rho
+        rho = self.current_operating_point.rho
 
         # Calculate the average bound vorticity densities.
         chordwise_vorticity_densities = self._calculate_chordwise_vorticity_densities()
@@ -2139,7 +2139,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate the apparent velocity due to prescribed motion at each Panel's
         # collocation point.
         stackMovementVelocityCpp_GP1__E = self._calculate_current_movement_velocities(
-            self._stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
+            self.stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
         )
 
         # Calculate the velocity at the Panel collocation points, which feeds the
@@ -2155,7 +2155,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         wake_singularity_counts = np.zeros(3, dtype=np.int64)
         stackVelocityCpp_GP1__E = (
             self._calculate_solution_velocity(
-                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
             )
@@ -2223,7 +2223,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Lift calculation (Lambert Eq. 2.14): delta_L = delta_p * S * cos(alpha)
-        stackLiftMagnitudes = delta_p * self._panel_areas * stackCosLocalAlphas
+        stackLiftMagnitudes = delta_p * self.panel_areas * stackCosLocalAlphas
 
         # Induced drag calculation (Lambert Eq. 2.15). First term: rho * (U_bc + U_w)
         # dot (P_U_hat * n_hat) * delta_Gamma * b where delta_Gamma = Gamma_{i, j} -
@@ -2289,7 +2289,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # compared to the clockwise ordering used by Katz and Plotkin and by Lambert.
         # See the comment above the delta_p calculation and issue #27:
         # https://github.com/camUrban/PteraSoftware/issues/27
-        induced_drag_term2 = rho * -d_gamma_dt * self._panel_areas * stackSinLocalAlphas
+        induced_drag_term2 = rho * -d_gamma_dt * self.panel_areas * stackSinLocalAlphas
 
         stackDragMagnitudes = induced_drag_term1 + induced_drag_term2
 
@@ -2337,7 +2337,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         chordwise_densities = np.zeros(self.num_panels, dtype=float)
         global_panel_position = 0
 
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 _panels = wing._panels
                 assert _panels is not None
@@ -2410,7 +2410,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         spanwise_densities = np.zeros(self.num_panels, dtype=float)
         global_panel_position = 0
 
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 _panels = wing._panels
                 assert _panels is not None
@@ -2504,14 +2504,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Gather the endpoints, strengths, and initial core radii of the trailing edge
         # bound ring vortices' back legs, which run from their back left to their back
         # right vertices.
-        te_mask = self._panel_is_trailing_edge
+        te_mask = self.panel_is_trailing_edge
         stackTeBlbrvp_GP1_CgP1 = self.stackBlbrvp_GP1_CgP1[te_mask]
         stackTeBrbrvp_GP1_CgP1 = self.stackBrbrvp_GP1_CgP1[te_mask]
         te_strengths = self._current_bound_vortex_strengths[te_mask]
         te_r_c0s = self._current_bound_r_c0s[te_mask, 3]
 
         stackChordwiseVInd_GP1__E = _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
-            stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+            stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
             stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
             stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
             stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
@@ -2520,29 +2520,29 @@ class UnsteadyRingVortexLatticeMethodSolver:
             r_c0s=self._current_bound_r_c0s,
             singularity_counts=singularity_counts,
             ages=None,
-            nu=self._current_operating_point.nu,
+            nu=self.current_operating_point.nu,
         )
         stackChordwiseVInd_GP1__E += (
             _aerodynamics_functions.collapsed_velocities_from_line_vortices(
-                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 stackSlvp_GP1_CgP1=stackTeBlbrvp_GP1_CgP1,
                 stackElvp_GP1_CgP1=stackTeBrbrvp_GP1_CgP1,
                 strengths=te_strengths,
                 r_c0s=te_r_c0s,
                 singularity_counts=singularity_counts,
                 ages=None,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
         )
 
         # Add the image contribution if an image surface is defined.
         surfaceReflect_T_act_GP1_CgP1 = (
-            self._current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
         )
         if surfaceReflect_T_act_GP1_CgP1 is not None:
             stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                 surfaceReflect_T_act_GP1_CgP1,
-                self._stackCpp_GP1_CgP1,
+                self.stackCpp_GP1_CgP1,
                 is_position=True,
             )
             stackImageChordwiseVInd_GP1__E = _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
@@ -2555,7 +2555,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 r_c0s=self._current_bound_r_c0s,
                 singularity_counts=singularity_counts,
                 ages=None,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
             stackImageChordwiseVInd_GP1__E += (
                 _aerodynamics_functions.collapsed_velocities_from_line_vortices(
@@ -2566,7 +2566,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=te_r_c0s,
                     singularity_counts=singularity_counts,
                     ages=None,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
             stackChordwiseVInd_GP1__E += _transformations.apply_T_to_vectors(
@@ -2602,7 +2602,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         stackWakeVInd_GP1__E = (
             _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
-                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
                 stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
@@ -2611,18 +2611,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 r_c0s=self._current_wake_r_c0s,
                 singularity_counts=singularity_counts,
                 ages=self._current_wake_vortex_ages,
-                nu=self._current_operating_point.nu,
+                nu=self.current_operating_point.nu,
             )
         )
 
         # Add the image contribution if an image surface is defined.
         surfaceReflect_T_act_GP1_CgP1 = (
-            self._current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
         )
         if surfaceReflect_T_act_GP1_CgP1 is not None:
             stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                 surfaceReflect_T_act_GP1_CgP1,
-                self._stackCpp_GP1_CgP1,
+                self.stackCpp_GP1_CgP1,
                 is_position=True,
             )
             stackImageWakeVInd_GP1__E = (
@@ -2636,7 +2636,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     r_c0s=self._current_wake_r_c0s,
                     singularity_counts=singularity_counts,
                     ages=self._current_wake_vortex_ages,
-                    nu=self._current_operating_point.nu,
+                    nu=self.current_operating_point.nu,
                 )
             )
             stackWakeVInd_GP1__E += _transformations.apply_T_to_vectors(
@@ -2682,14 +2682,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Compute sin(alpha) = n_hat dot U_hat for each Panel.
         stackSinLocalAlphas = np.einsum(
             "ij,ij->i",
-            self._stackUnitNormals_GP1,
+            self.stackUnitNormals_GP1,
             stackFlowUnitVectors_GP1,
         )
 
         # Compute lift direction: P_U_hat * n_hat = n_hat - (n_hat dot U_hat) * U_hat.
         # This is the Panel normal with its flow parallel component removed.
         stackLiftDirections_GP1 = (
-            self._stackUnitNormals_GP1
+            self.stackUnitNormals_GP1
             - stackSinLocalAlphas[:, np.newaxis] * stackFlowUnitVectors_GP1
         )
 
@@ -2706,7 +2706,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         differences = np.zeros(self.num_panels, dtype=float)
         global_panel_position = 0
 
-        for airplane in self._current_airplanes:
+        for airplane in self.current_airplanes:
             for wing in airplane.wings:
                 _panels = wing._panels
                 assert _panels is not None
@@ -2826,7 +2826,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 for wing_id, next_wing in enumerate(next_airplane.wings):
 
                     # Get the Wings at this position from the current Airplane.
-                    this_airplane = self._current_airplanes[airplane_id]
+                    this_airplane = self.current_airplanes[airplane_id]
                     this_wing = this_airplane.wings[wing_id]
 
                     # Check if this is the first time step.
@@ -3120,7 +3120,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # The new front row is shed by this step's Wing, so it takes 3.0% of
                 # this Wing's standard mean chord as its initial core radius, matching
                 # the trailing edge back legs in _collapse_geometry.
-                this_wing = self._current_airplanes[airplane_id].wings[wing_id]
+                this_wing = self.current_airplanes[airplane_id].wings[wing_id]
                 _standard_mean_chord = this_wing.standard_mean_chord
                 assert _standard_mean_chord is not None
                 this_wing_r_c0 = 0.03 * _standard_mean_chord

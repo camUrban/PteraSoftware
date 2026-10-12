@@ -12,6 +12,7 @@ import numpy as np
 import scipy.optimize as sp_opt
 
 from . import (
+    _deprecation,
     _functions,
     _logging,
     _movements,
@@ -37,6 +38,7 @@ SEED = 42
 #  extend them if needed.
 # TODO: It would be awesome if we could incorporate control surface deflections into the
 #  steady trim analysis.
+@_deprecation.keyword_only(positional_only=("problem",))
 def analyze_steady_trim(
     problem: _problems.SteadyProblem,
     solver_type: str,
@@ -514,6 +516,7 @@ def analyze_steady_trim(
 #  parameters of the AirplaneMovement's WingMovements and WingCrossSectionMovements into
 #  the unsteady trim analysis. Incorporating control surface deflection would also be
 #  great but less important.
+@_deprecation.keyword_only(positional_only=("problem",))
 def analyze_unsteady_trim(
     problem: _problems.UnsteadyProblem,
     boundsVCg__E: tuple[float | int, float | int],

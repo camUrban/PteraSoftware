@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _core, _geometry, _oscillation
+from .. import _core, _deprecation, _geometry, _oscillation
 
 
 class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
@@ -22,6 +22,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,

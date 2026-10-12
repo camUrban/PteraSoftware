@@ -13,6 +13,7 @@ import numpy as np
 import pyvista as pv
 
 from .. import (
+    _deprecation,
     _functions,
     _output_rendering,
     _parameter_validation,
@@ -45,6 +46,7 @@ class Airfoil:
         "_mcl_A_Lp",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         name: str = "NACA0012",

@@ -7,7 +7,7 @@ from typing import Any
 
 import numpy as np
 
-from . import _parameter_validation, _transformations
+from . import _deprecation, _parameter_validation, _transformations
 
 
 class OperatingPoint:
@@ -55,6 +55,7 @@ class OperatingPoint:
         "_vInf_GP1__E",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         rho: float | int = 1.225,

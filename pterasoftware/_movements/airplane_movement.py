@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _geometry
+from .. import _core, _deprecation, _geometry
 from . import wing_movement as wing_movement_mod
 
 
@@ -16,6 +16,7 @@ class AirplaneMovement(_core.CoreAirplaneMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_airplane: _geometry.airplane.Airplane,

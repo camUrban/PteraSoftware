@@ -15,6 +15,7 @@ from tqdm import tqdm
 from . import (
     _aerodynamics_functions,
     _core,
+    _deprecation,
     _functions,
     _geometry,
     _logging,
@@ -125,6 +126,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
     # at every evaluation point, overrides this to True.
     _models_body_rates = False
 
+    @_deprecation.keyword_only()
     def __init__(self, unsteady_problem: _core.CoreUnsteadyProblem) -> None:
         """The initialization method.
 
@@ -411,6 +413,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         return self._ran
 
+    @_deprecation.keyword_only()
     def run(
         self,
         prescribed_wake: bool | np.bool = True,

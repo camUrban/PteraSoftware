@@ -19,6 +19,7 @@ import webp
 from tqdm import tqdm
 
 from . import (
+    _deprecation,
     _free_flight_unsteady_ring_vortex_lattice_method,
     _logging,
     _mujoco_model,
@@ -387,6 +388,7 @@ def get_draw_geometry_meshes(
     ]
 
 
+@_deprecation.keyword_only(positional_only=("solver",))
 def draw(
     solver: (
         _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -881,6 +883,7 @@ def draw(
     plotter.close()
 
 
+@_deprecation.keyword_only(positional_only=("unsteady_solver",))
 def animate(
     unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
@@ -1646,6 +1649,7 @@ def animate(
     frame_plotter.close()
 
 
+@_deprecation.keyword_only(positional_only=("unsteady_solver",))
 def plot_results_versus_time(
     unsteady_solver: _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool | np.bool = True,
@@ -2249,6 +2253,7 @@ def plot_results_versus_time(
         plt.close("all")
 
 
+@_deprecation.keyword_only(positional_only=("solver",))
 def log_results(
     solver: (
         _steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver

@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _geometry, _oscillation, _transformations
+from .. import _core, _deprecation, _geometry, _oscillation, _transformations
 from . import (
     aeroelastic_wing_cross_section_movement as aeroelastic_wing_cross_section_movement_mod,
 )
@@ -44,6 +44,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
     __slots__ = ("_spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",)
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_wing: _geometry.wing.Wing,

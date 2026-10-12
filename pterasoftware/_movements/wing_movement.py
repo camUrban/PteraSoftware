@@ -7,7 +7,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _geometry
+from .. import _core, _deprecation, _geometry
 from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
 
@@ -24,6 +24,7 @@ class WingMovement(_core.CoreWingMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_wing: _geometry.wing.Wing,

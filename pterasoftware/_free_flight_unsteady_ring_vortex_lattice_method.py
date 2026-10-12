@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import _geometry, _operating_point, _problems
+from . import _deprecation, _geometry, _operating_point, _problems
 from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -58,6 +58,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
     _models_body_rates = True
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         free_flight_unsteady_problem: _problems.FreeFlightUnsteadyProblem,

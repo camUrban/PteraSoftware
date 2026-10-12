@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _core, _geometry
+from .. import _core, _deprecation, _geometry
 
 
 class WingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
@@ -14,6 +14,7 @@ class WingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_wing_cross_section: _geometry.wing_cross_section.WingCrossSection,

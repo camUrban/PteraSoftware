@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pyvista as pv
 
-from .. import _output_rendering, _parameter_validation, _transformations
+from .. import _deprecation, _output_rendering, _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
 
 
@@ -74,6 +74,7 @@ class WingCrossSection:
         "_T_pas_Wcs_Lp_to_Wcsp_Lpp",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airfoil: airfoil_mod.Airfoil,
@@ -144,7 +145,7 @@ class WingCrossSection:
         # Validate airfoil (immutable).
         if not isinstance(airfoil, airfoil_mod.Airfoil):
             raise TypeError("airfoil must be an Airfoil.")
-        self._airfoil = airfoil
+        self._airfoil: airfoil_mod.Airfoil = airfoil
 
         # Perform a preliminary validation for num_spanwise_panels (immutable). The
         # parent Wing will later check that this is None if this WingCrossSection is a

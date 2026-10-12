@@ -14,6 +14,7 @@ from scipy.integrate import solve_ivp
 
 from . import (
     _core,
+    _deprecation,
     _fixed_point_relaxation,
     _geometry,
     _logging,
@@ -82,6 +83,7 @@ class SteadyProblem:
         "_reynolds_numbers",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airplanes: list[_geometry.airplane.Airplane],
@@ -343,6 +345,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         "_steady_problems",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: _movements.movement.Movement,
@@ -364,7 +367,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         # Movement provides the parameters that the core class needs.
         if not isinstance(movement, _movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
-        self._movement = movement
+        self._movement: _movements.movement.Movement = movement
 
         # Delegate shared initialization (validation, first_averaging_step computation,
         # load list initialization) to the core class.
@@ -522,6 +525,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         "_mujoco_model",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: _movements.free_flight_movement.FreeFlightMovement,
@@ -1452,6 +1456,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         "_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: aeroelastic_movement_mod.AeroelasticMovement,

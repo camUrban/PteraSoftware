@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import _core
+from .. import _core, _deprecation
 from .. import _operating_point as operating_point_mod
 
 
@@ -19,6 +19,7 @@ class FreeFlightOperatingPointMovement(_core.CoreOperatingPointMovement):
 
     __slots__ = ("operating_points",)
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_operating_point: operating_point_mod.OperatingPoint,

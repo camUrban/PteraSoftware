@@ -13,6 +13,7 @@ import pyvista as pv
 
 from . import (
     _aerodynamics_functions,
+    _deprecation,
     _functions,
     _geometry,
     _logging,
@@ -69,6 +70,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "_ran",
     )
 
+    @_deprecation.keyword_only()
     def __init__(self, steady_problem: _problems.SteadyProblem) -> None:
         """The initialization method.
 
@@ -143,6 +145,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
         return self._ran
 
+    @_deprecation.keyword_only()
     def run(self, calculate_streamlines: bool | np.bool = True) -> None:
         """Runs the solver on the SteadyProblem.
 

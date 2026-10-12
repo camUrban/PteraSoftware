@@ -151,8 +151,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "finalYawingMoments_W_Cg",
         "first_averaging_step",
         "first_results_step",
-        "get_steady_problem",
-        "initialize_next_problem",
         "listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz",
         "max_wake_rows",
         "movement",
@@ -374,8 +372,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "finalYawingMoments_W_Cg",
         "first_averaging_step",
         "first_results_step",
-        "get_steady_problem",
-        "initialize_next_problem",
         "k_max",
         "mass",
         "max_wake_rows",
@@ -787,8 +783,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "AeroelasticUnsteadyProblem.get_steady_problem": ("step",),
-    "AeroelasticUnsteadyProblem.initialize_next_problem": ("solver", "step"),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.__init__": (
         "*",
         "aeroelastic_unsteady_problem",
@@ -924,8 +918,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "FreeFlightUnsteadyProblem.get_steady_problem": ("step",),
-    "FreeFlightUnsteadyProblem.initialize_next_problem": ("solver", "step"),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.__init__": (
         "*",
         "free_flight_unsteady_problem",
@@ -1317,13 +1309,9 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
 # or "return" whose annotation names the type. A slot attribute's surface is keyed by
 # its class's name and the attribute's name. The base unsteady solver's constructor
 # accepts the shared parent problem type so the derived solvers can pass their own
-# problem types through it, until the core solver split removes the need. The
-# initialize_next_problem hooks are annotated with the shared parent solver type until
-# they become internal.
+# problem types through it, until the core solver split removes the need.
 INTERNAL_TYPE_ALLOWLIST = {
     ("UnsteadyRingVortexLatticeMethodSolver.__init__", "unsteady_problem"),
-    ("FreeFlightUnsteadyProblem.initialize_next_problem", "solver"),
-    ("AeroelasticUnsteadyProblem.initialize_next_problem", "solver"),
 }
 
 

@@ -20,9 +20,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     results at the previous step, so bound vortices cannot be initialized upfront. This
     class inherits the parent's run() and initialize_step_geometry() unchanged and
     overrides three hooks: _initialize_step_vortices (per step bound vortex init),
-    _update_next_step_hook (calls CoupledUnsteadyProblem.initialize_next_problem between
-    steps), and _get_steady_problem_at (dynamic dispatch through the problem's
-    get_steady_problem accessor).
+    _update_next_step_hook (calls CoupledUnsteadyProblem._initialize_next_problem
+    between steps), and _get_steady_problem_at (dynamic dispatch through the problem's
+    _get_steady_problem accessor).
     """
 
     __slots__ = ()
@@ -56,9 +56,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         self._initialize_panel_vortices_at(step)
 
     def _update_next_step_hook(self, step: int) -> None:
-        self._coupled_unsteady_problem.initialize_next_problem(self, step)
+        self._coupled_unsteady_problem._initialize_next_problem(self, step)
         if step < self.num_steps - 1:
             self._initialize_panel_vortices_at(step + 1)
 
     def _get_steady_problem_at(self, step: int) -> _problems.SteadyProblem:
-        return self._coupled_unsteady_problem.get_steady_problem(step)
+        return self._coupled_unsteady_problem._get_steady_problem(step)

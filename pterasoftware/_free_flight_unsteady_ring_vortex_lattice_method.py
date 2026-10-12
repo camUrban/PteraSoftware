@@ -25,8 +25,8 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     lattice method.
 
     In a FreeFlightUnsteadyProblem the body state at each time step comes from the
-    coupled MuJoCo rigid-body dynamics (carried out in FreeFlightUnsteadyProblem's
-    initialize_next_problem), so each step's OperatingPoint carries a body angular rate
+    coupled MuJoCo rigid-body dynamics (carried out by the FreeFlightUnsteadyProblem
+    between time steps), so each step's OperatingPoint carries a body angular rate
     (omegas_BP1__E) that the standard solver assumes is zero. This solver contributes
     the apparent velocity from that body rate (omega cross r) at every collocation point
     and bound line vortex leg center.

@@ -4,6 +4,7 @@ FreeFlightUnsteadyProblem classes."""
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Callable, Sequence
 from pathlib import Path, PureWindowsPath
 from typing import TYPE_CHECKING, cast
@@ -457,7 +458,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         )
 
         # Coupled-specific state: a mutable list of SteadyProblems that grows as the
-        # solver advances. Subclass initialize_next_problem overrides append to this
+        # solver advances. Subclass _initialize_next_problem overrides append to this
         # list. External code reads through the steady_problems tuple-view property to
         # preserve the read-only contract inherited from UnsteadyProblem. Seed with a
         # SteadyProblem built from the initial geometry so step zero is always ready.
@@ -477,7 +478,51 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return tuple(self._steady_problems)
 
-    def get_steady_problem(self, step: int) -> SteadyProblem:
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this method because it is deprecated.
+    def get_steady_problem(self, step: int) -> SteadyProblem:  # pragma: no cover
+        """A deprecated method that gets the SteadyProblem at a given time step.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param step: The time step index (zero indexed). Must be greater than or equal
+            to zero and less than the total number of time steps.
+        :return: The SteadyProblem at the specified time step.
+        """
+        warnings.warn(
+            "The get_steady_problem method is deprecated and will be removed in v6.0.0. "
+            "It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._get_steady_problem(step)
+
+    # Coverage ignores this method because it is deprecated.
+    def initialize_next_problem(  # pragma: no cover
+        self,
+        solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
+        step: int,
+    ) -> None:
+        """A deprecated method that initializes the next time step's SteadyProblem and
+        performs per step work.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param solver: The solver driving this problem, which provides the aerodynamic
+            data from the current time step.
+        :param step: The current time step index (zero indexed).
+        :return: None
+        """
+        warnings.warn(
+            "The initialize_next_problem method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._initialize_next_problem(solver, step)
+
+    # --- Other methods ---
+    def _get_steady_problem(self, step: int) -> SteadyProblem:
         """Get the SteadyProblem at a given time step.
 
         :param step: The time step index (zero indexed). Must be greater than or equal
@@ -490,7 +535,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
 
         return self._steady_problems[step]
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -509,7 +554,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         :return: None
         :raises NotImplementedError: Always. Subclasses must override this method.
         """
-        raise NotImplementedError("Subclasses must implement initialize_next_problem.")
+        raise NotImplementedError("Subclasses must implement _initialize_next_problem.")
 
 
 class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
@@ -690,7 +735,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
 
         # Tracks whether the external_loads_fn's return structure has been validated.
         # The return contract is static across time steps, so it is checked once, on the
-        # function's first invocation in initialize_next_problem, rather than every
+        # function's first invocation in _initialize_next_problem, rather than every
         # step.
         self._external_loads_validated = False
 
@@ -1377,7 +1422,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         self._commit_next_problem(accepted_operating_point, step)
         solver.restore_substep(step)
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -1616,7 +1661,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         areas = np.array([[panel.area for panel in row] for row in wing._panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,

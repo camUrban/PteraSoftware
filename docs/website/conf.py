@@ -29,20 +29,13 @@ API_TARGET = Path(__file__).resolve().parent / "api"
 # qualified class (for constructor parameters) or method where it is defined, and then
 # by parameter name. These are signatures whose source annotation names an internal
 # class, which the API reference does not document, and is wider than what the
-# implementation accepts: the hook methods are widened to the shared parent solver type
-# because an override cannot narrow a parameter type, and the base unsteady solver's
-# constructor is widened to the shared parent problem type so the derived solvers can
-# pass their own problem types through it. The docs show the type that actually works,
-# and contributors can read the source for the formal contract.
+# implementation accepts: the base unsteady solver's constructor is widened to the
+# shared parent problem type so the derived solvers can pass their own problem types
+# through it. The docs show the type that actually works, and contributors can read the
+# source for the formal contract.
 ANNOTATION_OVERRIDES = {
     "pterasoftware._unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver": {
         "unsteady_problem": "~pterasoftware.UnsteadyProblem",
-    },
-    "pterasoftware._problems.FreeFlightUnsteadyProblem.initialize_next_problem": {
-        "solver": "~pterasoftware.FreeFlightUnsteadyRingVortexLatticeMethodSolver",
-    },
-    "pterasoftware._problems.AeroelasticUnsteadyProblem.initialize_next_problem": {
-        "solver": "~pterasoftware.AeroelasticUnsteadyRingVortexLatticeMethodSolver",
     },
 }
 

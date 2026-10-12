@@ -65,7 +65,7 @@ def _make_aeroelastic_solver(
     are exposed as parameters rather than hard-coded.
 
     The main wing is declared symmetric so that the reflected Wing is automatically
-    generated. AeroelasticUnsteadyProblem.initialize_next_problem requires at least two
+    generated. AeroelasticUnsteadyProblem._initialize_next_problem requires at least two
     WingMovements (wings[0] and wings[1]) for the deformation update.
 
     :param wing_density: The wing mass per unit area (kg/m^2).
@@ -278,7 +278,7 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
         a successful run.
 
         The time series is seeded with one initial-state entry at construction.
-        initialize_next_problem is invoked on every time step and returns early on the
+        _initialize_next_problem is invoked on every time step and returns early on the
         final one, so num_steps - 1 of its calls (steps 1 through num_steps - 1) each
         append one entry.
 
@@ -326,8 +326,8 @@ class TestAeroelasticUnsteadySolverKatzForceMethod(unittest.TestCase):
         nonzero SLEP moments and nonzero deformation angles.
 
         The time series is seeded with one initial-state entry at construction, and
-        initialize_next_problem appends one entry on each of steps 1 through num_steps -
-        1, so a completed 20 step run holds 20 entries.
+        _initialize_next_problem appends one entry on each of steps 1 through num_steps
+        - 1, so a completed 20 step run holds 20 entries.
 
         :return: None
         """

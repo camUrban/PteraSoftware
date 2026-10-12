@@ -817,8 +817,8 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     Core-owned properties (only_final_results, num_steps, delta_time,
     first_averaging_step, first_results_step, and the mutable load lists) are tested at
     the CoreUnsteadyProblem level. Coupled-owned properties (movement, steady_problems,
-    get_steady_problem) are tested at the CoupledUnsteadyProblem level. This class tests
-    FreeFlightUnsteadyProblem-specific slots.
+    _get_steady_problem) are tested at the CoupledUnsteadyProblem level. This class
+    tests FreeFlightUnsteadyProblem-specific slots.
     """
 
     def setUp(self) -> None:

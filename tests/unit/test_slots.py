@@ -1655,11 +1655,11 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.reynolds_numbers, tuple)
         self.assertIsInstance(self.solver.num_airplanes, int)
         self.assertIsInstance(self.solver.num_panels, int)
-        self.assertIsInstance(self.solver.vInf_GP1__E, np.ndarray)
-        self.assertIsInstance(self.solver.stackFreestreamWingInfluences__E, np.ndarray)
-        self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
-        self.assertIsInstance(self.solver.panels, np.ndarray)
-        self.assertIsInstance(self.solver.stackSeedPoints_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._vInf_GP1__E, np.ndarray)
+        self.assertIsInstance(self.solver._stackFreestreamWingInfluences__E, np.ndarray)
+        self.assertIsInstance(self.solver._stackUnitNormals_GP1, np.ndarray)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
+        self.assertIsInstance(self.solver._stackSeedPoints_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
@@ -1674,10 +1674,10 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         self.assertEqual(copied.num_panels, self.solver.num_panels)
         self.assertEqual(copied.num_airplanes, self.solver.num_airplanes)
         self.assertEqual(copied.ran, self.solver.ran)
-        npt.assert_array_equal(copied.vInf_GP1__E, self.solver.vInf_GP1__E)
+        npt.assert_array_equal(copied._vInf_GP1__E, self.solver._vInf_GP1__E)
 
         # Verify arrays are independent.
-        self.assertIsNot(copied.vInf_GP1__E, self.solver.vInf_GP1__E)
+        self.assertIsNot(copied._vInf_GP1__E, self.solver._vInf_GP1__E)
 
 
 class TestSteadyRingSolverSlots(unittest.TestCase):
@@ -1717,21 +1717,21 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.reynolds_numbers, tuple)
         self.assertIsInstance(self.solver.num_airplanes, int)
         self.assertIsInstance(self.solver.num_panels, int)
-        self.assertIsInstance(self.solver.vInf_GP1__E, np.ndarray)
-        self.assertIsInstance(self.solver.stackFreestreamWingInfluences__E, np.ndarray)
-        self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
-        self.assertIsInstance(self.solver.panels, np.ndarray)
-        self.assertIsInstance(self.solver.panel_areas, np.ndarray)
-        self.assertIsInstance(self.solver.stackCpp_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._vInf_GP1__E, np.ndarray)
+        self.assertIsInstance(self.solver._stackFreestreamWingInfluences__E, np.ndarray)
+        self.assertIsInstance(self.solver._stackUnitNormals_GP1, np.ndarray)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
+        self.assertIsInstance(self.solver._panel_areas, np.ndarray)
+        self.assertIsInstance(self.solver._stackCpp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.stackBrbrvp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.stackFrbrvp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.stackFlbrvp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.stackBlbrvp_GP1_CgP1, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_trailing_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_leading_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_left_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_right_edge, np.ndarray)
-        self.assertIsInstance(self.solver.stackSeedPoints_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_trailing_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_leading_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_left_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_right_edge, np.ndarray)
+        self.assertIsInstance(self.solver._stackSeedPoints_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
@@ -1746,10 +1746,10 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         self.assertEqual(copied.num_panels, self.solver.num_panels)
         self.assertEqual(copied.num_airplanes, self.solver.num_airplanes)
         self.assertEqual(copied.ran, self.solver.ran)
-        npt.assert_array_equal(copied.vInf_GP1__E, self.solver.vInf_GP1__E)
+        npt.assert_array_equal(copied._vInf_GP1__E, self.solver._vInf_GP1__E)
 
         # Verify arrays are independent.
-        self.assertIsNot(copied.vInf_GP1__E, self.solver.vInf_GP1__E)
+        self.assertIsNot(copied._vInf_GP1__E, self.solver._vInf_GP1__E)
 
 
 class TestUnsteadyRingSolverSlots(unittest.TestCase):
@@ -1794,23 +1794,23 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.steady_problems, tuple)
         self.assertEqual(len(self.solver.steady_problems), self.solver.num_steps)
         self.assertIsInstance(
-            self.solver.current_operating_point,
+            self.solver._current_operating_point,
             ps.OperatingPoint,
         )
-        self.assertIsInstance(self.solver.panels, np.ndarray)
-        self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
-        self.assertIsInstance(self.solver.panel_areas, np.ndarray)
-        self.assertIsInstance(self.solver.stackCpp_GP1_CgP1, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_trailing_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_leading_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_left_edge, np.ndarray)
-        self.assertIsInstance(self.solver.panel_is_right_edge, np.ndarray)
-        self.assertIsInstance(self.solver.list_num_wake_vortices, list)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
+        self.assertIsInstance(self.solver._stackUnitNormals_GP1, np.ndarray)
+        self.assertIsInstance(self.solver._panel_areas, np.ndarray)
+        self.assertIsInstance(self.solver._stackCpp_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_trailing_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_leading_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_left_edge, np.ndarray)
+        self.assertIsInstance(self.solver._panel_is_right_edge, np.ndarray)
+        self.assertIsInstance(self.solver._list_num_wake_vortices, list)
         self.assertIsInstance(self.solver.listStackBrwrvp_GP1_CgP1, list)
         self.assertIsInstance(self.solver.listStackFrwrvp_GP1_CgP1, list)
         self.assertIsInstance(self.solver.listStackFlwrvp_GP1_CgP1, list)
         self.assertIsInstance(self.solver.listStackBlwrvp_GP1_CgP1, list)
-        self.assertIsInstance(self.solver.stackSeedPoints_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._stackSeedPoints_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
@@ -1831,7 +1831,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         # Verify objects are independent.
         self.assertIsNot(copied.unsteady_problem, self.solver.unsteady_problem)
         self.assertIsNot(
-            copied.current_operating_point, self.solver.current_operating_point
+            copied._current_operating_point, self.solver._current_operating_point
         )
 
 

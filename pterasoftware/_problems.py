@@ -1323,7 +1323,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             airplanes=[copy.deepcopy(next_airplane)],
             operating_point=current_operating_point,
         )
-        solver.freeze_substep(transient_next_steady_problem)
+        solver._freeze_substep(transient_next_steady_problem)
         weights = self._build_relaxation_weights()
 
         # Seed the iteration with the loose step, S(x_n, l_n), evaluated from the
@@ -1345,7 +1345,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             trial_operating_point = self._operating_point_from_vector(
                 trial_x, current_operating_point
             )
-            trial_airplane = solver.evaluate_trial_aero_loads(
+            trial_airplane = solver._evaluate_trial_aero_loads(
                 trial_operating_point, step
             )
             interval_loads = self._assemble_interval_loads(
@@ -1420,7 +1420,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             self._mujoco_model.get_state(), current_operating_point
         )
         self._commit_next_problem(accepted_operating_point, step)
-        solver.restore_substep(step)
+        solver._restore_substep(step)
 
     def _initialize_next_problem(
         self,
@@ -1443,8 +1443,8 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         :param step: The current time step index (zero indexed).
         :return: None
         """
-        current_airplane = solver.current_airplanes[0]
-        current_operating_point = solver.current_operating_point
+        current_airplane = solver._current_airplanes[0]
+        current_operating_point = solver._current_operating_point
 
         if step < self.num_steps - 1:
             if step >= self.movement.prescribed_num_steps:

@@ -3,7 +3,7 @@ FreeFlightUnsteadyRingVortexLatticeMethodSolver class."""
 
 import unittest
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, sentinel
 
 import numpy as np
 
@@ -110,7 +110,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         The body-to-geometry transformation negates the x and z components, and the
         result is converted from degrees per second to radians per second.
         """
-        self.solver.current_operating_point = (
+        self.solver._current_operating_point = (
             operating_point_fixtures.make_with_body_rates_operating_point_fixture()
         )
 
@@ -130,7 +130,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         Using a body rate with three distinct non zero components pins down the full
         body to geometry flip, which a body rate aligned with a single axis cannot.
         """
-        self.solver.current_operating_point = (
+        self.solver._current_operating_point = (
             operating_point_fixtures.make_with_full_body_rates_operating_point_fixture()
         )
 
@@ -208,7 +208,7 @@ class TestFreeFlightSolverSubstepDispatch(unittest.TestCase):
 
 
 class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
-    """Tests for the transient working state freeze_substep and restore_substep
+    """Tests for the transient working state _freeze_substep and _restore_substep
     manage."""
 
     def setUp(self) -> None:
@@ -216,7 +216,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
     def test_freeze_substep_snapshots_strengths_as_copies(self) -> None:
-        """Test that freeze_substep records the next step, stores the transient
+        """Test that _freeze_substep records the next step, stores the transient
         SteadyProblem, and snapshots the current and previous bound vortex strengths as
         independent copies.
 
@@ -233,7 +233,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         )
         next_steady_problem = MagicMock()
 
-        self.solver.freeze_substep(next_steady_problem)
+        self.solver._freeze_substep(next_steady_problem)
 
         self.assertEqual(self.solver._substep_next_step, 1)
         self.assertIs(self.solver._substep_next_steady_problem, next_steady_problem)
@@ -254,19 +254,19 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertEqual(self.solver._substep_gamma_n_minus_1[0], 4.0)
 
     def test_freeze_substep_skips_induced_precompute_for_prescribed_wake(self) -> None:
-        """Test that freeze_substep leaves the frozen wake induced velocities unset for
+        """Test that _freeze_substep leaves the frozen wake induced velocities unset for
         a prescribed wake, which has no induced transport to precompute."""
         self.solver._prescribed_wake = True
         self.solver._current_step = 0
         self.solver._current_bound_vortex_strengths = np.ones(3, dtype=float)
         self.solver._last_bound_vortex_strengths = np.zeros(3, dtype=float)
 
-        self.solver.freeze_substep(MagicMock())
+        self.solver._freeze_substep(MagicMock())
 
         self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
 
     def test_restore_substep_clears_transient_state(self) -> None:
-        """Test that restore_substep re-evaluates the current step and clears every
+        """Test that _restore_substep re-evaluates the current step and clears every
         transient sub-iteration slot.
 
         A leftover non-None slot would redirect the next step's geometry and wake reads
@@ -285,7 +285,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
             ps.UnsteadyRingVortexLatticeMethodSolver,
             "_evaluate_step_aerodynamics",
         ) as mock_evaluate_step_aerodynamics:
-            self.solver.restore_substep(step=0)
+            self.solver._restore_substep(step=0)
 
         mock_evaluate_step_aerodynamics.assert_called_once()
         self.assertIsNone(self.solver._substep_next_step)
@@ -294,3 +294,48 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
         self.assertIsNone(self.solver._substep_gamma_n)
         self.assertIsNone(self.solver._substep_gamma_n_minus_1)
+
+
+class TestFreeFlightUnsteadyRingVortexLatticeMethodSolverDeprecatedInternalMethods(
+    unittest.TestCase
+):
+    """This class contains unit tests for the deprecated aliases of the
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver methods that are no longer
+    public."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated alias tests."""
+        self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
+
+    def test_freeze_substep_warns_and_delegates(self) -> None:
+        """Test that calling freeze_substep warns and delegates to _freeze_substep."""
+        next_steady_problem: Any = sentinel.next_steady_problem
+        with patch.object(
+            FreeFlightUnsteadyRingVortexLatticeMethodSolver, "_freeze_substep"
+        ) as mock_freeze_substep:
+            with self.assertWarns(DeprecationWarning):
+                self.solver.freeze_substep(next_steady_problem)
+        mock_freeze_substep.assert_called_once_with(next_steady_problem)
+
+    def test_evaluate_trial_aero_loads_warns_and_delegates(self) -> None:
+        """Test that calling evaluate_trial_aero_loads warns and delegates to
+        _evaluate_trial_aero_loads."""
+        trial_operating_point: Any = sentinel.trial_operating_point
+        with patch.object(
+            FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+            "_evaluate_trial_aero_loads",
+            return_value=sentinel.airplane,
+        ) as mock_evaluate_trial_aero_loads:
+            with self.assertWarns(DeprecationWarning):
+                result = self.solver.evaluate_trial_aero_loads(trial_operating_point, 0)
+        mock_evaluate_trial_aero_loads.assert_called_once_with(trial_operating_point, 0)
+        self.assertIs(result, sentinel.airplane)
+
+    def test_restore_substep_warns_and_delegates(self) -> None:
+        """Test that calling restore_substep warns and delegates to _restore_substep."""
+        with patch.object(
+            FreeFlightUnsteadyRingVortexLatticeMethodSolver, "_restore_substep"
+        ) as mock_restore_substep:
+            with self.assertWarns(DeprecationWarning):
+                self.solver.restore_substep(0)
+        mock_restore_substep.assert_called_once_with(0)

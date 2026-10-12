@@ -53,8 +53,8 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
 
         :return: None
         """
-        surface_effect_airplane = self.surface_effect_solver.current_airplanes[0]
-        free_air_airplane = self.free_air_solver.current_airplanes[0]
+        surface_effect_airplane = self.surface_effect_solver._current_airplanes[0]
+        free_air_airplane = self.free_air_solver._current_airplanes[0]
         assert surface_effect_airplane.forceCoefficients_W is not None
         assert free_air_airplane.forceCoefficients_W is not None
 
@@ -74,8 +74,8 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
 
         :return: None
         """
-        surface_effect_airplane = self.surface_effect_solver.current_airplanes[0]
-        free_air_airplane = self.free_air_solver.current_airplanes[0]
+        surface_effect_airplane = self.surface_effect_solver._current_airplanes[0]
+        free_air_airplane = self.free_air_solver._current_airplanes[0]
         assert surface_effect_airplane.forceCoefficients_W is not None
         assert free_air_airplane.forceCoefficients_W is not None
 

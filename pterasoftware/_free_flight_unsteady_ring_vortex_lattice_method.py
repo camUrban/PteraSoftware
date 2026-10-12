@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import cast
 
 import numpy as np
@@ -38,13 +39,11 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     velocity calculations, the latter used when convecting the wake to the next time
     step.
 
-    **Strongly coupled solve interface:**
+    **Strongly coupled solve:**
 
-    freeze_substep, evaluate_trial_aero_loads, and restore_substep are the public
-    methods the FreeFlightUnsteadyProblem's step solve drives to evaluate the
-    aerodynamics at successive trial body states within a single time step. They share
-    transient working state (the frozen wake induced velocities and the snapshot bound
-    ring vortex strengths) that freeze_substep establishes and restore_substep clears.
+    Within each time step, the FreeFlightUnsteadyProblem drives this solver to evaluate
+    the aerodynamics at successive trial body states, then restores the solver's current
+    step state once it accepts the next step's body state.
     """
 
     __slots__ = (
@@ -76,7 +75,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             )
 
         # This is transient working state for the strongly coupled sub-iteration,
-        # established by freeze_substep and cleared by restore_substep. Each is None
+        # established by _freeze_substep and cleared by _restore_substep. Each is None
         # between substeps. The next step and its transient SteadyProblem and trial
         # OperatingPoint redirect the inherited geometry and wake reads to a scratch
         # copy of the next Airplane and the current trial state, since the canonical
@@ -160,7 +159,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        omegas_GP1__E = self.current_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
+        omegas_GP1__E = self._current_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
@@ -182,7 +181,74 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         omegas_GP1__E = next_operating_point.omegas_BP1__E * BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
 
-    def freeze_substep(self, next_steady_problem: _problems.SteadyProblem) -> None:
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this method because it is deprecated.
+    def freeze_substep(  # pragma: no cover
+        self, next_steady_problem: _problems.SteadyProblem
+    ) -> None:
+        """A deprecated method that freezes the data the strongly coupled sub-iteration
+        reuses across its trials.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param next_steady_problem: The transient SteadyProblem for the next step, built
+            over a scratch copy of the prescribed next-step Airplane.
+        :return: None
+        """
+        warnings.warn(
+            "The freeze_substep method is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._freeze_substep(next_steady_problem)
+
+    # Coverage ignores this method because it is deprecated.
+    def evaluate_trial_aero_loads(  # pragma: no cover
+        self,
+        trial_operating_point: _operating_point.OperatingPoint,
+        step: int,
+    ) -> _geometry.airplane.Airplane:
+        """A deprecated method that evaluates the aerodynamic loads at a trial body
+        state for the next time step.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param trial_operating_point: The trial OperatingPoint for the next step at
+            which to evaluate the aerodynamics.
+        :param step: The current time step index (zero indexed). The trial body state is
+            the next step's.
+        :return: The scratch copy of the next-step Airplane, carrying the trial
+            aerodynamic forces and moments the solver calculated at the next step.
+        """
+        warnings.warn(
+            "The evaluate_trial_aero_loads method is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._evaluate_trial_aero_loads(trial_operating_point, step)
+
+    # Coverage ignores this method because it is deprecated.
+    def restore_substep(self, step: int) -> None:  # pragma: no cover
+        """A deprecated method that restores the solver's current-step state after a
+        strongly coupled step solve.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param step: The current time step index (zero indexed).
+        :return: None
+        """
+        warnings.warn(
+            "The restore_substep method is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._restore_substep(step)
+
+    # --- Other methods ---
+    def _freeze_substep(self, next_steady_problem: _problems.SteadyProblem) -> None:
         """Freezes the data the sub-iteration reuses across its trials.
 
         Called once at the start of a strongly coupled free-flight step solve, before
@@ -193,7 +259,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         depends only on the current step's bound geometry, strengths, and wake and so is
         identical across the step's trials (skipped for a prescribed wake, which has no
         induced part), and snapshots the current and previous steps' solved bound ring
-        vortex strengths. evaluate_trial_aero_loads reuses these, and restore_substep
+        vortex strengths. _evaluate_trial_aero_loads reuses these, and _restore_substep
         clears them. The solver's current step, Airplanes, and strengths must be those
         of the step being solved, as they are when the run loop invokes the step solve.
 
@@ -204,7 +270,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         :param next_steady_problem: The transient SteadyProblem for the next step, built
             over a scratch copy of the prescribed next-step Airplane. Its OperatingPoint
             is a placeholder; the trial OperatingPoint is supplied per trial to
-            evaluate_trial_aero_loads.
+            _evaluate_trial_aero_loads.
         :return: None
         """
         self._substep_next_step = self._current_step + 1
@@ -225,7 +291,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._substep_gamma_n = self._current_bound_vortex_strengths.copy()
         self._substep_gamma_n_minus_1 = self._last_bound_vortex_strengths.copy()
 
-    def evaluate_trial_aero_loads(
+    def _evaluate_trial_aero_loads(
         self,
         trial_operating_point: _operating_point.OperatingPoint,
         step: int,
@@ -235,10 +301,10 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         Called once per sub-iteration with the trial OperatingPoint for the next step.
         Installs that OperatingPoint as the one the inherited reads see for the next
         step, builds the trial bound geometry at the next step, ages the current step's
-        wake into the next step using the frozen induced transport from freeze_substep
+        wake into the next step using the frozen induced transport from _freeze_substep
         plus the trial frame terms, then solves the circulation and loads at the next
         step. The geometry and wake are built over the scratch copy of the next-step
-        Airplane that freeze_substep installed. Returns that copy, carrying the trial
+        Airplane that _freeze_substep installed. Returns that copy, carrying the trial
         aerodynamic loads, which the caller assembles into the interval load.
 
         The wake build runs with the current step as the reference step: its wake is the
@@ -269,12 +335,12 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         # current step as the reference step, the next step's trial OperatingPoint for
         # the frame terms, and the snapshot bound strengths for the newly shed row, so
         # set the current step's context and restore the snapshot strengths first. The
-        # induced transport is the frozen precompute from freeze_substep.
+        # induced transport is the frozen precompute from _freeze_substep.
         current_problem = self._get_steady_problem_at(step)
         self._current_step = step
-        self.current_airplanes = current_problem.airplanes
-        self.current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
+        self._current_airplanes = current_problem.airplanes
+        self._current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
         self._current_bound_vortex_strengths = self._substep_gamma_n
         self._populate_next_airplanes_wake_vortex_points(
             self._substepStackVIndGridWrvp_GP1__E
@@ -286,15 +352,15 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         # and the current OperatingPoint is the trial. The unsteady load term
         # differences the solved strengths against the snapshot strengths.
         self._current_step = next_step
-        self.current_airplanes = self._get_steady_problem_at(next_step).airplanes
-        self.current_operating_point = trial_operating_point
-        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
+        self._current_airplanes = self._get_steady_problem_at(next_step).airplanes
+        self._current_operating_point = trial_operating_point
+        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
         self._last_bound_vortex_strengths = self._substep_gamma_n
         self._evaluate_step_aerodynamics()
 
-        return self.current_airplanes[0]
+        return self._current_airplanes[0]
 
-    def restore_substep(self, step: int) -> None:
+    def _restore_substep(self, step: int) -> None:
         """Restores the solver's current-step state after a strongly coupled step solve.
 
         Called once after the sub-iteration accepts, before the inherited run loop
@@ -314,9 +380,9 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
         current_problem = self._get_steady_problem_at(step)
         self._current_step = step
-        self.current_airplanes = current_problem.airplanes
-        self.current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
+        self._current_airplanes = current_problem.airplanes
+        self._current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self._current_operating_point.vInf_GP1__E
         self._last_bound_vortex_strengths = self._substep_gamma_n_minus_1
         self._evaluate_step_aerodynamics()
 

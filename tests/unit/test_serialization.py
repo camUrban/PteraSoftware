@@ -942,7 +942,7 @@ class TestDeserializeValue(unittest.TestCase):
         """
         placeholder = {
             "_type": "chunked",
-            "key": "list_num_wake_vortices",
+            "key": "_list_num_wake_vortices",
             "container": "list",
             "length": 0,
         }
@@ -1752,7 +1752,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         "_listStackFrbrvp_GP1_CgP1",
         "_listStackFlbrvp_GP1_CgP1",
         "_listStackBlbrvp_GP1_CgP1",
-        "list_num_wake_vortices",
+        "_list_num_wake_vortices",
         "_list_wake_vortex_strengths",
         "_list_wake_r_c0s",
         "listStackBrwrvp_GP1_CgP1",
@@ -1905,7 +1905,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         loaded = load(self.path)
         assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
         self.assertEqual(
-            loaded.list_num_wake_vortices, self.solver.list_num_wake_vortices
+            loaded._list_num_wake_vortices, self.solver._list_num_wake_vortices
         )
         for step in range(self.num_steps):
             npt.assert_array_equal(
@@ -1923,12 +1923,12 @@ class TestChunkedSaveLoad(unittest.TestCase):
         loaded = load(self.path)
         assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
         current_problem = loaded.steady_problems[loaded._current_step]
-        self.assertEqual(len(loaded.current_airplanes), len(current_problem.airplanes))
+        self.assertEqual(len(loaded._current_airplanes), len(current_problem.airplanes))
         for loaded_airplane, problem_airplane in zip(
-            loaded.current_airplanes, current_problem.airplanes
+            loaded._current_airplanes, current_problem.airplanes
         ):
             self.assertIs(loaded_airplane, problem_airplane)
-        self.assertIs(loaded.current_operating_point, current_problem.operating_point)
+        self.assertIs(loaded._current_operating_point, current_problem.operating_point)
         self.assertIs(loaded.steady_problems, loaded.unsteady_problem.steady_problems)
 
     def test_movement_refs_resolve_into_step_members(self) -> None:
@@ -1971,7 +1971,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         loaded = load(path)
         assert isinstance(loaded, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         self.assertEqual(len(loaded.unsteady_problem.steady_problems), num_problems)
-        self.assertEqual(len(loaded.list_num_wake_vortices), solver.num_steps)
+        self.assertEqual(len(loaded._list_num_wake_vortices), solver.num_steps)
 
     def test_shared_airfoil_written_once_across_members(self) -> None:
         """Tests that an Airfoil shared by every step's WingCrossSections and by the
@@ -2047,7 +2047,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         :return: None
         """
         root = read_member(self.path, "root.json")
-        root["list_num_wake_vortices"]["length"] += 1
+        root["_list_num_wake_vortices"]["length"] += 1
         rewrite_archive(self.path, {"root.json": json.dumps(root).encode()})
         with self.assertRaises(ValueError):
             load(self.path)

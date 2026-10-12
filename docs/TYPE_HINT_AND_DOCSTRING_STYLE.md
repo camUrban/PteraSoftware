@@ -95,7 +95,7 @@ For class attributes initialized to `None` but populated later:
 class Solver:
     def __init__(self):
         # Attribute that will be populated before use
-        self.current_airplanes: list[geometry.airplane.Airplane] | None = None
+        self._current_airplanes: list[geometry.airplane.Airplane] | None = None
 ```
 
 #### Narrowing with Assertions
@@ -105,9 +105,9 @@ Use `assert` when you have a programming invariant (the value should never be `N
 ```python
 def compute_forces(self):
     # At this point in the code, these should always be populated
-    assert self.current_airplanes is not None
-    for airplane in self.current_airplanes:
-        # mypy now knows current_airplanes is not None
+    assert self._current_airplanes is not None
+    for airplane in self._current_airplanes:
+        # mypy now knows _current_airplanes is not None
         ...
 ```
 

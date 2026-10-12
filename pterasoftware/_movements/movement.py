@@ -497,7 +497,7 @@ def compute_wake_area_mismatch(
     populated in the first Airplane's geometry axes (GP1_CgP1), then computes bound
     trailing edge ring vortex areas and wake first row ring vortex areas analytically
     from the panel corners. Skips solver instantiation, the per step
-    initialize_step_geometry walk, the bound corner stack population, and the wake
+    _initialize_step_geometry walk, the bound corner stack population, and the wake
     corner stack population.
 
     The area mismatch metric measures how well the wake ring vortex sizing matches the

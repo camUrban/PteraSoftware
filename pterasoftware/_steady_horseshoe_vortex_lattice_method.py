@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 from typing import cast
@@ -51,21 +52,21 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "num_airplanes",
         "num_panels",
         "_gridWingWingInfluences__E",
-        "vInf_GP1__E",
-        "stackFreestreamWingInfluences__E",
+        "_vInf_GP1__E",
+        "_stackFreestreamWingInfluences__E",
         "_vortex_strengths",
-        "stackUnitNormals_GP1",
+        "_stackUnitNormals_GP1",
         "_panel_areas",
         "_stackCpp_GP1_CgP1",
         "_stackBrhvp_GP1_CgP1",
         "_stackFrhvp_GP1_CgP1",
         "_stackFlhvp_GP1_CgP1",
         "_stackBlhvp_GP1_CgP1",
-        "panels",
+        "_panels",
         "_stackBoundVortexCenters_GP1_CgP1",
         "_stackBoundVortexVectors_GP1",
         "_r_c0s",
-        "stackSeedPoints_GP1_CgP1",
+        "_stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
         "_ran",
     )
@@ -105,14 +106,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._gridWingWingInfluences__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
-        self.vInf_GP1__E = self.operating_point.vInf_GP1__E
-        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+        self._vInf_GP1__E = self.operating_point.vInf_GP1__E
+        self._stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
 
         # Initialize the vortex strengths to ones so that they can be passed in to find
         # the normalized wing wing influence coefficients.
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
-        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._panel_areas = np.zeros(self.num_panels, dtype=float)
         self._stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
@@ -121,7 +122,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._stackFlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackBlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
-        self.panels = np.empty(self.num_panels, dtype=object)
+        self._panels = np.empty(self.num_panels, dtype=object)
         self._stackBoundVortexCenters_GP1_CgP1 = np.zeros(
             (self.num_panels, 3), dtype=float
         )
@@ -132,7 +133,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # and left legs' take the wake's value.
         self._r_c0s = np.zeros((self.num_panels, 3), dtype=float)
 
-        self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+        self._stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
         self._ran: bool = False
@@ -144,6 +145,133 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: True if a call to run has completed on this solver and False otherwise.
         """
         return self._ran
+
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def vInf_GP1__E(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the freestream velocity (in the first
+        Airplane's geometry axes, observed from the Earth frame).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (3,) ndarray of floats. The units are in meters per second.
+        """
+        warnings.warn(
+            "The vInf_GP1__E property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._vInf_GP1__E
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackFreestreamWingInfluences__E(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the component of the freestream velocity
+        along each Panel's unit normal.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of floats. The units are in meters per second.
+        """
+        warnings.warn(
+            "The stackFreestreamWingInfluences__E property is deprecated and will be "
+            "removed in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackFreestreamWingInfluences__E
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackUnitNormals_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns each Panel's unit normal vector (in the
+        first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats.
+        """
+        warnings.warn(
+            "The stackUnitNormals_GP1 property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackUnitNormals_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panels(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the 1D array of every Panel in the
+        problem.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of Panel objects.
+        """
+        warnings.warn(
+            "The panels property is deprecated and will be removed in v6.0.0. It is not "
+            "part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panels
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackSeedPoints_GP1_CgP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the streamline seed points (in the first
+        Airplane's geometry axes, relative to the first Airplane's CG).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: An (N, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackSeedPoints_GP1_CgP1 property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackSeedPoints_GP1_CgP1
+
+    # Coverage ignores this method because it is deprecated.
+    def calculate_solution_velocity(  # pragma: no cover
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """A deprecated method that finds the fluid velocity (in the first Airplane's
+        geometry axes, observed from the Earth frame) at one or more points (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG) due to the
+        freestream velocity and the induced velocity from every horseshoe vortex.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :param bound_singularity_counts: An optional (3,) ndarray of int64 for
+            accumulating singularity event counts from bound horseshoe vortices. If
+            None, counts are discarded.
+        :return: A (N,3) ndarray of floats representing the velocity (in the first
+            Airplane's geometry axes, observed from the Earth frame) at each evaluation
+            point due to the summed effects of the freestream velocity and the induced
+            velocity from every horseshoe vortex. The units are in meters per second.
+        """
+        warnings.warn(
+            "The calculate_solution_velocity method is deprecated and will be removed "
+            "in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._calculate_solution_velocity(
+            stackP_GP1_CgP1, bound_singularity_counts=bound_singularity_counts
+        )
 
     @_deprecation.keyword_only()
     def run(self, calculate_streamlines: bool | np.bool = True) -> None:
@@ -376,7 +504,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
             stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
             stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
-            stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1,
+            stackHorseshoeUnitNormals_D=self._stackUnitNormals_GP1,
             horseshoe_vortices_are_wake=False,
             largest_chord=max(
                 wing_cross_section.chord
@@ -449,8 +577,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # Update the solver's list of attributes with this Panel's
                     # attributes (in the first Airplane's geometry axes, relative to the
                     # first Airplane's CG).
-                    self.panels[global_panel_position] = panel
-                    self.stackUnitNormals_GP1[global_panel_position, :] = (
+                    self._panels[global_panel_position] = panel
+                    self._stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
                     )
                     self._panel_areas[global_panel_position] = panel.area
@@ -483,9 +611,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # Calculate this Panel's streamline seed point (in the first
                         # Airplane's geometry axes, relative to the first Airplane's
                         # CG). Add it to the solver's 1D ndarray of seed points.
-                        self.stackSeedPoints_GP1_CgP1 = np.vstack(
+                        self._stackSeedPoints_GP1_CgP1 = np.vstack(
                             (
-                                self.stackSeedPoints_GP1_CgP1,
+                                self._stackSeedPoints_GP1_CgP1,
                                 _Blpp_GP1_CgP1
                                 + 0.5 * (_Brpp_GP1_CgP1 - _Blpp_GP1_CgP1),
                             )
@@ -568,7 +696,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_GP1__E,
-            np.expand_dims(self.stackUnitNormals_GP1, axis=1),
+            np.expand_dims(self._stackUnitNormals_GP1, axis=1),
         )
 
     def _calculate_vortex_strengths(self) -> None:
@@ -577,10 +705,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
         self._vortex_strengths = np.linalg.solve(
-            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
+            self._gridWingWingInfluences__E, -self._stackFreestreamWingInfluences__E
         )
 
-    def calculate_solution_velocity(
+    def _calculate_solution_velocity(
         self,
         stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         bound_singularity_counts: np.ndarray | None = None,
@@ -662,7 +790,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 is_position=False,
             )
 
-        return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)
+        return cast(np.ndarray, stackVInd_GP1__E + self._vInf_GP1__E)
 
     def _calculate_loads(self) -> None:
         """Calculates the forces (in the first Airplane's geometry axes) and moments (in
@@ -682,7 +810,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Calculate the velocity (in the first Airplane's geometry axes, observed from
         # the Earth frame) at the center of every Panel's horseshoe vortex's finite leg.
         bound_singularity_counts = np.zeros(3, dtype=np.int64)
-        stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityBoundVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )

@@ -112,7 +112,7 @@ class TestWakeTruncation(unittest.TestCase):
 
         # Total spanwise panel count summed over all wings of all airplanes.
         total_spanwise_panels = 0
-        for airplane in solver.current_airplanes:
+        for airplane in solver._current_airplanes:
             for wing in airplane.wings:
                 num_spanwise_panels = wing.num_spanwise_panels
                 assert num_spanwise_panels is not None
@@ -120,7 +120,7 @@ class TestWakeTruncation(unittest.TestCase):
         expected_num_wake_vortices = self.max_wake_rows * total_spanwise_panels
 
         self.assertEqual(
-            solver.list_num_wake_vortices[final_step], expected_num_wake_vortices
+            solver._list_num_wake_vortices[final_step], expected_num_wake_vortices
         )
 
     def test_non_truncated_wake_is_larger(self) -> None:
@@ -130,9 +130,9 @@ class TestWakeTruncation(unittest.TestCase):
         truncated_final_step = self.truncated_solver.num_steps - 1
 
         non_truncated_num_wake_vortices = (
-            self.non_truncated_solver.list_num_wake_vortices[non_truncated_final_step]
+            self.non_truncated_solver._list_num_wake_vortices[non_truncated_final_step]
         )
-        truncated_num_wake_vortices = self.truncated_solver.list_num_wake_vortices[
+        truncated_num_wake_vortices = self.truncated_solver._list_num_wake_vortices[
             truncated_final_step
         ]
 
@@ -141,8 +141,8 @@ class TestWakeTruncation(unittest.TestCase):
     def test_truncated_loads_close_to_non_truncated(self) -> None:
         """Test that the truncated simulation's loads are close to the non truncated
         simulation's loads."""
-        non_truncated_airplane = self.non_truncated_solver.current_airplanes[0]
-        truncated_airplane = self.truncated_solver.current_airplanes[0]
+        non_truncated_airplane = self.non_truncated_solver._current_airplanes[0]
+        truncated_airplane = self.truncated_solver._current_airplanes[0]
 
         # Compare lift coefficients (CL = -forceCoefficients_W[2]).
         assert non_truncated_airplane.forceCoefficients_W is not None
@@ -163,14 +163,14 @@ class TestWakeTruncation(unittest.TestCase):
         # plateau.
         for step in range(self.max_wake_rows + 1, num_steps):
             self.assertEqual(
-                self.truncated_solver.list_num_wake_vortices[step],
-                self.truncated_solver.list_num_wake_vortices[self.max_wake_rows],
+                self.truncated_solver._list_num_wake_vortices[step],
+                self.truncated_solver._list_num_wake_vortices[self.max_wake_rows],
             )
 
     def test_wake_point_grid_is_capped(self) -> None:
         """Test that the truncated simulation's wake point grid has the correct number
         of rows."""
-        final_airplane = self.truncated_solver.current_airplanes[0]
+        final_airplane = self.truncated_solver._current_airplanes[0]
 
         for wing in final_airplane.wings:
             grid = wing.gridWrvp_GP1_CgP1

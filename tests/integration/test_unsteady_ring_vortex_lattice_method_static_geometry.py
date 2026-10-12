@@ -53,7 +53,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         :return: None
         """
         this_solver = self.unsteady_ring_vortex_lattice_method_validation_solver
-        this_airplane = this_solver.current_airplanes[0]
+        this_airplane = this_solver._current_airplanes[0]
         assert this_airplane.forceCoefficients_W is not None
         assert this_airplane.momentCoefficients_W_CgP1 is not None
 

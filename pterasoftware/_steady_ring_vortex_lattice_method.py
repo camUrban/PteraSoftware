@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 from typing import cast
@@ -50,15 +51,15 @@ class SteadyRingVortexLatticeMethodSolver:
         "reynolds_numbers",
         "num_airplanes",
         "num_panels",
-        "num_trailing_edge_panels",
-        "vInf_GP1__E",
-        "stackFreestreamWingInfluences__E",
+        "_num_trailing_edge_panels",
+        "_vInf_GP1__E",
+        "_stackFreestreamWingInfluences__E",
         "_gridWingWingInfluences__E",
         "_vortex_strengths",
-        "panels",
-        "stackUnitNormals_GP1",
-        "panel_areas",
-        "stackCpp_GP1_CgP1",
+        "_panels",
+        "_stackUnitNormals_GP1",
+        "_panel_areas",
+        "_stackCpp_GP1_CgP1",
         "stackBrbrvp_GP1_CgP1",
         "stackFrbrvp_GP1_CgP1",
         "stackFlbrvp_GP1_CgP1",
@@ -67,10 +68,10 @@ class SteadyRingVortexLatticeMethodSolver:
         "stackCblvpf_GP1_CgP1",
         "stackCblvpl_GP1_CgP1",
         "stackCblvpb_GP1_CgP1",
-        "stackRbrv_GP1",
-        "stackFbrv_GP1",
-        "stackLbrv_GP1",
-        "stackBbrv_GP1",
+        "_stackRbrv_GP1",
+        "_stackFbrv_GP1",
+        "_stackLbrv_GP1",
+        "_stackBbrv_GP1",
         "_stackBrhvp_GP1_CgP1",
         "_stackFrhvp_GP1_CgP1",
         "_stackFlhvp_GP1_CgP1",
@@ -78,11 +79,11 @@ class SteadyRingVortexLatticeMethodSolver:
         "_horseshoe_vortex_strengths",
         "_r_c0s",
         "_te_r_c0s",
-        "panel_is_trailing_edge",
-        "panel_is_leading_edge",
-        "panel_is_left_edge",
-        "panel_is_right_edge",
-        "stackSeedPoints_GP1_CgP1",
+        "_panel_is_trailing_edge",
+        "_panel_is_leading_edge",
+        "_panel_is_left_edge",
+        "_panel_is_right_edge",
+        "_stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
         "_ran",
     )
@@ -110,30 +111,30 @@ class SteadyRingVortexLatticeMethodSolver:
         self.reynolds_numbers = self._steady_problem.reynolds_numbers
         self.num_airplanes = len(self.airplanes)
         self.num_panels = 0
-        self.num_trailing_edge_panels = 0
+        self._num_trailing_edge_panels = 0
         airplane: _geometry.airplane.Airplane
         for airplane in self.airplanes:
             self.num_panels += airplane.num_panels
             for wing in airplane.wings:
                 assert wing.num_spanwise_panels is not None
-                self.num_trailing_edge_panels += wing.num_spanwise_panels
+                self._num_trailing_edge_panels += wing.num_spanwise_panels
 
         # Initialize attributes to hold aerodynamic data that pertains to this
         # simulation.
-        self.vInf_GP1__E = self.operating_point.vInf_GP1__E
-        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+        self._vInf_GP1__E = self.operating_point.vInf_GP1__E
+        self._stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
         self._gridWingWingInfluences__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
-        self.panels = np.empty(self.num_panels, dtype=object)
-        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self.panel_areas = np.zeros(self.num_panels, dtype=float)
+        self._panels = np.empty(self.num_panels, dtype=object)
+        self._stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._panel_areas = np.zeros(self.num_panels, dtype=float)
 
         # Collocation panel points (in the first Airplane's geometry axes, relative to
         # the first Airplane's CG)
-        self.stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Back-right, front right, front left, and back left bound ring vortex points
         # (in the first Airplane's geometry axes, relative to the first Airplane's CG).
@@ -151,29 +152,29 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Right, front, left, and back bound ring vortex vectors (in the first
         # Airplane's geometry axes).
-        self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables that will hold data which characterizes the trailing edge
         # Panels' horseshoe vortices. These arrays are sized by the number of trailing
         # edge Panels, in trailing edge order, since non trailing edge Panels do not
         # carry a horseshoe vortex.
         self._stackBrhvp_GP1_CgP1 = np.zeros(
-            (self.num_trailing_edge_panels, 3), dtype=float
+            (self._num_trailing_edge_panels, 3), dtype=float
         )
         self._stackFrhvp_GP1_CgP1 = np.zeros(
-            (self.num_trailing_edge_panels, 3), dtype=float
+            (self._num_trailing_edge_panels, 3), dtype=float
         )
         self._stackFlhvp_GP1_CgP1 = np.zeros(
-            (self.num_trailing_edge_panels, 3), dtype=float
+            (self._num_trailing_edge_panels, 3), dtype=float
         )
         self._stackBlhvp_GP1_CgP1 = np.zeros(
-            (self.num_trailing_edge_panels, 3), dtype=float
+            (self._num_trailing_edge_panels, 3), dtype=float
         )
         self._horseshoe_vortex_strengths = np.zeros(
-            self.num_trailing_edge_panels, dtype=float
+            self._num_trailing_edge_panels, dtype=float
         )
 
         # Initial core radii of each bound ring vortex's four legs and, in trailing edge
@@ -181,15 +182,15 @@ class SteadyRingVortexLatticeMethodSolver:
         # numerical floor. The legs along and behind the trailing edge take the wake's
         # value instead.
         self._r_c0s = np.zeros((self.num_panels, 4), dtype=float)
-        self._te_r_c0s = np.zeros((self.num_trailing_edge_panels, 3), dtype=float)
+        self._te_r_c0s = np.zeros((self._num_trailing_edge_panels, 3), dtype=float)
 
         # Initialize variables to hold details about each Panels' location on its Wing.
-        self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
-        self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
-        self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
-        self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
+        self._panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
+        self._panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
+        self._panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
+        self._panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
-        self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+        self._stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
         self._ran: bool = False
@@ -201,6 +202,332 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: True if a call to run has completed on this solver and False otherwise.
         """
         return self._ran
+
+    # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def num_trailing_edge_panels(self) -> int:  # pragma: no cover
+        """A deprecated property that returns the number of trailing edge Panels in the
+        problem.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: The number of trailing edge Panels.
+        """
+        warnings.warn(
+            "The num_trailing_edge_panels property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._num_trailing_edge_panels
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def vInf_GP1__E(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the freestream velocity (in the first
+        Airplane's geometry axes, observed from the Earth frame).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (3,) ndarray of floats. The units are in meters per second.
+        """
+        warnings.warn(
+            "The vInf_GP1__E property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._vInf_GP1__E
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackFreestreamWingInfluences__E(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the component of the freestream velocity
+        along each Panel's unit normal.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of floats. The units are in meters per second.
+        """
+        warnings.warn(
+            "The stackFreestreamWingInfluences__E property is deprecated and will be "
+            "removed in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackFreestreamWingInfluences__E
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panels(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the 1D array of every Panel in the
+        problem.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of Panel objects.
+        """
+        warnings.warn(
+            "The panels property is deprecated and will be removed in v6.0.0. It is not "
+            "part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panels
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackUnitNormals_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns each Panel's unit normal vector (in the
+        first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats.
+        """
+        warnings.warn(
+            "The stackUnitNormals_GP1 property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackUnitNormals_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panel_areas(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns each Panel's area.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of floats. The units are in square meters.
+        """
+        warnings.warn(
+            "The panel_areas property is deprecated and will be removed in v6.0.0. It is "
+            "not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panel_areas
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackCpp_GP1_CgP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns each Panel's collocation point (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackCpp_GP1_CgP1 property is deprecated and will be removed in v6.0.0. "
+            "It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackCpp_GP1_CgP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackRbrv_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the vector along each bound ring vortex's
+        right leg (in the first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackRbrv_GP1 property is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackRbrv_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackFbrv_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the vector along each bound ring vortex's
+        front leg (in the first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackFbrv_GP1 property is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackFbrv_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackLbrv_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the vector along each bound ring vortex's
+        left leg (in the first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackLbrv_GP1 property is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackLbrv_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackBbrv_GP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the vector along each bound ring vortex's
+        back leg (in the first Airplane's geometry axes).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackBbrv_GP1 property is deprecated and will be removed in v6.0.0. It "
+            "is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackBbrv_GP1
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panel_is_trailing_edge(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns whether each Panel is on its Wing's
+        trailing edge.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of bools.
+        """
+        warnings.warn(
+            "The panel_is_trailing_edge property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panel_is_trailing_edge
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panel_is_leading_edge(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns whether each Panel is on its Wing's
+        leading edge.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of bools.
+        """
+        warnings.warn(
+            "The panel_is_leading_edge property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panel_is_leading_edge
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panel_is_left_edge(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns whether each Panel is on its Wing's left
+        edge.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of bools.
+        """
+        warnings.warn(
+            "The panel_is_left_edge property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panel_is_left_edge
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def panel_is_right_edge(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns whether each Panel is on its Wing's right
+        edge.
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: A (num_panels,) ndarray of bools.
+        """
+        warnings.warn(
+            "The panel_is_right_edge property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._panel_is_right_edge
+
+    # Coverage ignores this property because it is deprecated.
+    @property
+    def stackSeedPoints_GP1_CgP1(self) -> np.ndarray:  # pragma: no cover
+        """A deprecated property that returns the streamline seed points (in the first
+        Airplane's geometry axes, relative to the first Airplane's CG).
+
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :return: An (N, 3) ndarray of floats. The units are in meters.
+        """
+        warnings.warn(
+            "The stackSeedPoints_GP1_CgP1 property is deprecated and will be removed in "
+            "v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._stackSeedPoints_GP1_CgP1
+
+    # Coverage ignores this method because it is deprecated.
+    def calculate_solution_velocity(  # pragma: no cover
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """A deprecated method that finds the fluid velocity (in the first Airplane's
+        geometry axes, observed from the Earth frame) at one or more points (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG) due to the
+        freestream velocity and the induced velocity from every ring vortex and
+        horseshoe vortex.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0.
+
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :param bound_singularity_counts: An optional (3,) ndarray of int64 for
+            accumulating singularity event counts from bound ring vortices and horseshoe
+            vortices. If None, counts are discarded.
+        :return: A (N,3) ndarray of floats representing the velocity (in the first
+            Airplane's geometry axes, observed from the Earth frame) at each evaluation
+            point due to the summed effects of the freestream velocity and the induced
+            velocity from every ring vortex and horseshoe vortex. The units are in
+            meters per second.
+        """
+        warnings.warn(
+            "The calculate_solution_velocity method is deprecated and will be removed "
+            "in v6.0.0. It is not part of the public API.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._calculate_solution_velocity(
+            stackP_GP1_CgP1, bound_singularity_counts=bound_singularity_counts
+        )
 
     @_deprecation.keyword_only()
     def run(self, calculate_streamlines: bool | np.bool = True) -> None:
@@ -428,7 +755,7 @@ class SteadyRingVortexLatticeMethodSolver:
             stackFlrvp_D_Do=self.stackFlbrvp_GP1_CgP1,
             stackBlrvp_D_Do=self.stackBlbrvp_GP1_CgP1,
             stackBrrvp_D_Do=self.stackBrbrvp_GP1_CgP1,
-            stackRingUnitNormals_D=self.stackUnitNormals_GP1,
+            stackRingUnitNormals_D=self._stackUnitNormals_GP1,
             stackFrwrvp_D_Do=noVortexPoints_D_Do,
             stackFlwrvp_D_Do=noVortexPoints_D_Do,
             stackBlwrvp_D_Do=noVortexPoints_D_Do,
@@ -438,8 +765,8 @@ class SteadyRingVortexLatticeMethodSolver:
             stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
             stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
             stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
-            stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1[
-                self.panel_is_trailing_edge
+            stackHorseshoeUnitNormals_D=self._stackUnitNormals_GP1[
+                self._panel_is_trailing_edge
             ],
             horseshoe_vortices_are_wake=True,
             largest_chord=max(
@@ -611,7 +938,7 @@ class SteadyRingVortexLatticeMethodSolver:
         singularity_counts = np.zeros(3, dtype=np.int64)
         gridRingNormVIndCpp_GP1__E = (
             _aerodynamics_functions.expanded_velocities_from_ring_vortices(
-                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
@@ -629,12 +956,12 @@ class SteadyRingVortexLatticeMethodSolver:
         # point by every trailing edge Panel's horseshoe vortex. The answer is
         # normalized because the horseshoe vortex strengths were initialized to 1.0 and
         # will be updated once the correct vortex strengths are calculated. The result
-        # has shape (num_panels, num_trailing_edge_panels,
+        # has shape (num_panels, _num_trailing_edge_panels,
         # 3) and is later scatter added into the ring contribution at the trailing
         # edge columns.
         gridHorseshoeNormVIndCpp_GP1__E = (
             _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
-                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
                 stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
                 stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
@@ -653,7 +980,7 @@ class SteadyRingVortexLatticeMethodSolver:
         if surfaceReflect_T_act_GP1_CgP1 is not None:
             stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                 surfaceReflect_T_act_GP1_CgP1,
-                self.stackCpp_GP1_CgP1,
+                self._stackCpp_GP1_CgP1,
                 is_position=True,
             )
             gridImageRingVIndCpp_GP1__E = (
@@ -706,7 +1033,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # trailing edge columns. For non trailing edge columns the ring grid is
         # untouched.
         gridRingNormVIndCpp_GP1__E[
-            :, self.panel_is_trailing_edge, :
+            :, self._panel_is_trailing_edge, :
         ] += gridHorseshoeNormVIndCpp_GP1__E
 
         # Take the batch dot product of the normalized induced velocities (in the first
@@ -717,7 +1044,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridRingNormVIndCpp_GP1__E,
-            np.expand_dims(self.stackUnitNormals_GP1, axis=1),
+            np.expand_dims(self._stackUnitNormals_GP1, axis=1),
         )
 
     def _calculate_vortex_strengths(self) -> None:
@@ -727,16 +1054,16 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         self._vortex_strengths = np.linalg.solve(
-            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
+            self._gridWingWingInfluences__E, -self._stackFreestreamWingInfluences__E
         )
 
         # Mirror the trailing edge entries of the solved strengths into the trailing
         # edge sized horseshoe vortex strength array.
         self._horseshoe_vortex_strengths = self._vortex_strengths[
-            self.panel_is_trailing_edge
+            self._panel_is_trailing_edge
         ]
 
-    def calculate_solution_velocity(
+    def _calculate_solution_velocity(
         self,
         stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         bound_singularity_counts: np.ndarray | None = None,
@@ -854,7 +1181,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         return cast(
             np.ndarray,
-            stackRingVInd_GP1__E + stackHorseshoeVInd_GP1__E + self.vInf_GP1__E,
+            stackRingVInd_GP1__E + stackHorseshoeVInd_GP1__E + self._vInf_GP1__E,
         )
 
     def _calculate_loads(self) -> None:
@@ -983,19 +1310,19 @@ class SteadyRingVortexLatticeMethodSolver:
         # the Earth frame) at the center of every Panels' ring vortex's right line
         # vortex, front line vortex, left line vortex, and back line vortex.
         bound_singularity_counts = np.zeros(3, dtype=np.int64)
-        stackVelocityRightLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityRightLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityFrontLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityFrontLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityLeftLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityLeftLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityBackLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityBackLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
@@ -1016,7 +1343,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityRightLineVortexCenters_GP1__E,
-                self.stackRbrv_GP1,
+                self._stackRbrv_GP1,
                 axis=-1,
             )
         )
@@ -1025,7 +1352,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityFrontLineVortexCenters_GP1__E,
-                self.stackFbrv_GP1,
+                self._stackFbrv_GP1,
                 axis=-1,
             )
         )
@@ -1034,7 +1361,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityLeftLineVortexCenters_GP1__E,
-                self.stackLbrv_GP1,
+                self._stackLbrv_GP1,
                 axis=-1,
             )
         )
@@ -1043,7 +1370,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_back_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityBackLineVortexCenters_GP1__E,
-                self.stackBbrv_GP1,
+                self._stackBbrv_GP1,
                 axis=-1,
             )
         )

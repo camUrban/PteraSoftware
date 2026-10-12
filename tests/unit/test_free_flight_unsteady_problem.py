@@ -486,11 +486,11 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.current_airplane.momentCoefficients_W_CgP1 = np.array(
             [0.4, 0.5, 0.6], dtype=float
         )
-        self.current_operating_point = self.problem.steady_problems[0].operating_point
+        self._current_operating_point = self.problem.steady_problems[0].operating_point
 
         self.solver = MagicMock()
-        self.solver.current_airplanes = [self.current_airplane]
-        self.solver.current_operating_point = self.current_operating_point
+        self.solver._current_airplanes = [self.current_airplane]
+        self.solver._current_operating_point = self._current_operating_point
 
     def _mock_mujoco_model(self) -> MagicMock:
         """Replace the problem's MuJoCoModel with a MagicMock returning a fixed state.
@@ -538,8 +538,8 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         airplane.momentCoefficients_W_CgP1 = np.array([0.4, 0.5, 0.6], dtype=float)
 
         solver = MagicMock()
-        solver.current_airplanes = [airplane]
-        solver.current_operating_point = problem.steady_problems[0].operating_point
+        solver._current_airplanes = [airplane]
+        solver._current_operating_point = problem.steady_problems[0].operating_point
 
         mock_model = MagicMock()
         mock_model.get_state.return_value = {
@@ -611,8 +611,8 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
             return_value=(np.zeros(3, dtype=float), np.zeros(3, dtype=float))
         )
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
-        airplane = solver.current_airplanes[0]
-        operating_point = solver.current_operating_point
+        airplane = solver._current_airplanes[0]
+        operating_point = solver._current_operating_point
 
         problem._initialize_next_problem(solver, step=0)
 

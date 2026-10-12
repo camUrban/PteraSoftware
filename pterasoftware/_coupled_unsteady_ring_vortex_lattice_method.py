@@ -18,7 +18,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
     Geometry in a CoupledUnsteadyProblem is determined step by step from the solver's
     results at the previous step, so bound vortices cannot be initialized upfront. This
-    class inherits the parent's run() and initialize_step_geometry() unchanged and
+    class inherits the parent's run() and _initialize_step_geometry() unchanged and
     overrides three hooks: _initialize_step_vortices (per step bound vortex init),
     _update_next_step_hook (calls CoupledUnsteadyProblem._initialize_next_problem
     between steps), and _get_steady_problem_at (dynamic dispatch through the problem's

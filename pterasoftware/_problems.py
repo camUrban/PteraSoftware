@@ -14,6 +14,7 @@ from scipy.integrate import solve_ivp
 
 from . import (
     _core,
+    _deprecation,
     _fixed_point_relaxation,
     _geometry,
     _logging,
@@ -82,6 +83,7 @@ class SteadyProblem:
         "_reynolds_numbers",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airplanes: list[_geometry.airplane.Airplane],
@@ -343,6 +345,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         "_steady_problems",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: _movements.movement.Movement,
@@ -364,7 +367,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
         # Movement provides the parameters that the core class needs.
         if not isinstance(movement, _movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
-        self._movement = movement
+        self._movement: _movements.movement.Movement = movement
 
         # Delegate shared initialization (validation, first_averaging_step computation,
         # load list initialization) to the core class.
@@ -522,6 +525,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         "_mujoco_model",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: _movements.free_flight_movement.FreeFlightMovement,
@@ -836,15 +840,9 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         return self._external_loads_fn
 
     @property
-    def _free_flight_movement(self) -> free_flight_movement.FreeFlightMovement:
-        """Type narrowed view of the inherited _movement attribute.
-
-        The parent stores _movement as a CoreMovement (widened to let subclasses pass
-        their own variants). __init__ accepts only a FreeFlightMovement, so the cast
-        here is safe.
-
-        :return: The _movement narrowed to FreeFlightMovement.
-        """
+    def movement(self) -> free_flight_movement.FreeFlightMovement:
+        # The parent stores the Movement as a CoreMovement in _movement. The constructor
+        # guarantees it is a FreeFlightMovement, so the cast here is safe.
         return cast(free_flight_movement.FreeFlightMovement, self._movement)
 
     @staticmethod
@@ -911,7 +909,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             Newtons and Newton meters, or None to withhold the loads in the prescribed
             phase.
         """
-        in_free_phase = step >= self._free_flight_movement.prescribed_num_steps
+        in_free_phase = step >= self.movement.prescribed_num_steps
 
         if not in_free_phase:
             # In the prescribed phase the loads are withheld, but the external_loads_fn
@@ -1189,7 +1187,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         :return: A (12,) ndarray of floats representing the diagonal of the weighting
             matrix D.
         """
-        airplane = self._free_flight_movement.airplanes[0][0]
+        airplane = self.movement.airplanes[0][0]
         L_ref = airplane.c_ref
         assert L_ref is not None
 
@@ -1223,11 +1221,11 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         :param step: The current time step index (zero indexed).
         :return: None
         """
-        self._free_flight_movement.operating_point_movement.operating_points.append(
+        self.movement.operating_point_movement.operating_points.append(
             next_operating_point
         )
 
-        next_airplane = self._free_flight_movement.airplanes[0][step + 1]
+        next_airplane = self.movement.airplanes[0][step + 1]
 
         next_steady_problem = SteadyProblem(
             airplanes=[next_airplane],
@@ -1275,7 +1273,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         # trial.
         snapshot = self._mujoco_model.save_state()
         snapshot_x = self._state_to_vector(self._mujoco_model.get_state())
-        next_airplane = self._free_flight_movement.airplanes[0][step + 1]
+        next_airplane = self.movement.airplanes[0][step + 1]
         transient_next_steady_problem = SteadyProblem(
             airplanes=[copy.deepcopy(next_airplane)],
             operating_point=current_operating_point,
@@ -1404,7 +1402,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         current_operating_point = solver.current_operating_point
 
         if step < self.num_steps - 1:
-            if step >= self._free_flight_movement.prescribed_num_steps:
+            if step >= self.movement.prescribed_num_steps:
                 # Free flight phase: drive the loads and the body state to mutual
                 # consistency before committing the next step.
                 self._advance_strongly_coupled(
@@ -1458,6 +1456,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         "_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         movement: aeroelastic_movement_mod.AeroelasticMovement,
@@ -1533,9 +1532,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
     # --- Immutable: read only properties ---
     @property
-    def _aeroelastic_movement(
-        self,
-    ) -> aeroelastic_movement_mod.AeroelasticMovement:
+    def movement(self) -> aeroelastic_movement_mod.AeroelasticMovement:
         # The parent stores the Movement as a CoreMovement in _movement. The constructor
         # guarantees it is an AeroelasticMovement, so the cast here is safe.
         return cast(
@@ -1648,12 +1645,12 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         ]
 
         # Generate the deformed Airplane at this step.
-        airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
+        airplane = self.movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
-        operating_point = self._aeroelastic_movement.operating_points[next_step]
+        operating_point = self.movement.operating_points[next_step]
 
         self._steady_problems.append(
             SteadyProblem(
@@ -1688,7 +1685,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         """
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]
-        wing_movements = self._aeroelastic_movement.airplane_movements[0].wing_movements
+        wing_movements = self.movement.airplane_movements[0].wing_movements
 
         results: list[np.ndarray | None] = []
         panel_offset = 0

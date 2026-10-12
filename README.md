@@ -72,7 +72,7 @@ solver = (
 
 solver.run()
 
-ps.draw(solver=solver, scalar_type="lift", show_streamlines=True)
+ps.draw(solver, scalar_type="lift", show_streamlines=True)
 ```
 
 ## Features

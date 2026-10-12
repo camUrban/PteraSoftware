@@ -25,9 +25,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         # The structural methods take the AeroelasticWingMovement whose prescribed
         # flapping parameters they read, so grab the fixture problem's first Wing's
         # movement.
-        wing_movement = self.problem._aeroelastic_movement.airplane_movements[
-            0
-        ].wing_movements[0]
+        wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
         assert isinstance(
             wing_movement,
             ps.AeroelasticWingMovement,

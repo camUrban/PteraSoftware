@@ -663,7 +663,9 @@ class TestProcessSolverLoads(unittest.TestCase):
             airplanes=[first_airplane, second_airplane],
             operating_point=operating_point,
         )
-        solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem)
+        solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem=steady_problem
+        )
 
         # Populate the solver's Panels in the same order as its geometry collapsing
         # step: each Airplane's Wings' Panels, unraveled.

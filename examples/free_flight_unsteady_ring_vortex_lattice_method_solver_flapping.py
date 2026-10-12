@@ -391,14 +391,14 @@ assert isinstance(
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,
 # orientation, angular velocity, and aerodynamic angles.
-ps.log_results(solver=loaded_solver)
+ps.log_results(loaded_solver)
 
 # Call the draw function on the loaded solver. For a free flight solver, the geometry is
 # drawn in Earth axes at the final time step's true flight pose, so the Airplane appears
 # where and how it ended up after the final time step. Press any key to close the
 # plotter after it draws the output.
 ps.draw(
-    solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
@@ -410,7 +410,7 @@ ps.draw(
 # WebP saved in the same directory as this script. Press any key, after orienting the
 # view, to begin the animation.
 ps.animate(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,
@@ -420,7 +420,7 @@ ps.animate(
 # respect to time. For a free flight solver, it also plots the first Airplane's
 # six-degree-of-freedom state history.
 ps.plot_results_versus_time(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     show=True,
     save=True,
 )

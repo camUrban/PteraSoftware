@@ -9,7 +9,7 @@ from typing import cast
 import numpy as np
 import scipy.optimize as sp_opt
 
-from .. import _core, _geometry, _logging
+from .. import _core, _deprecation, _geometry, _logging
 from .. import _operating_point as operating_point_mod
 from .. import _panel, _parameter_validation, _problems
 from . import airplane_movement as airplane_movement_mod
@@ -44,6 +44,7 @@ class Movement(_core.CoreMovement):
         "_operating_points",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airplane_movements: list[airplane_movement_mod.AirplaneMovement],

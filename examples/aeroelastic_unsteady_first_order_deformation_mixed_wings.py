@@ -389,7 +389,7 @@ print("Finished loading the saved solver.")
 # wake being shed, saved in the same directory as this script. Press "q", after
 # orienting the view, to begin the animation.
 ps.animate(
-    unsteady_solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,

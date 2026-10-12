@@ -17,8 +17,7 @@ import importlib.resources
 import math
 from pathlib import Path
 
-# Import NumPy, MatPlotLib, and MatPlotLib's legend handler, PyPlot, and text packages.
-import matplotlib
+# Import various MatPlotLib names and NumPy.
 import matplotlib.legend_handler
 import matplotlib.pyplot as plt
 import matplotlib.text
@@ -376,7 +375,7 @@ del validation_movement
     converged_num_chordwise_panels,
     converged_solver,
 ) = ps.analyze_unsteady_convergence(
-    ref_problem=reference_problem,
+    reference_problem,
     prescribed_wake=True,
     free_wake=True,
     num_cycles_bounds=(1, 4),
@@ -811,7 +810,7 @@ print()
 print(f"Lift Mean Absolute Error: {lift_mean_absolute_error:#.3G} N")
 
 ps.draw(
-    solver=converged_solver,
+    converged_solver,
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,

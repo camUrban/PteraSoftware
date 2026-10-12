@@ -1,6 +1,7 @@
 """Tests for the deprecation module and the deprecated modules it backs."""
 
 import importlib
+import inspect
 import pkgutil
 import types
 import unittest
@@ -34,6 +35,36 @@ def import_shim_modules() -> list[types.ModuleType]:
         else:
             shim_modules.append(importlib.import_module(module_name))
     return shim_modules
+
+
+@_deprecation.keyword_only(positional_only=("path", "obj"))
+def sample_function(
+    path: str, obj: object, quality: int = 75, show: bool = True
+) -> tuple[str, object, int, bool]:
+    """Returns its arguments, so a test can check how a call bound them."""
+    return path, obj, quality, show
+
+
+class SampleClass:
+    """A class whose constructor, method, and class method have deprecated parameter
+    kinds."""
+
+    @_deprecation.keyword_only()
+    def __init__(self, span: float, chord: float = 1.0) -> None:
+        """The initialization method."""
+        self.span = span
+        self.chord = chord
+
+    @_deprecation.keyword_only()
+    def scaled_span(self, factor: float) -> float:
+        """Returns the span multiplied by a factor."""
+        return self.span * factor
+
+    @classmethod
+    @_deprecation.keyword_only()
+    def from_area(cls, area: float, chord: float = 1.0) -> "SampleClass":
+        """Returns a SampleClass with the given area and chord."""
+        return cls(span=area / chord, chord=chord)
 
 
 class TestMakeDeprecatedModule(unittest.TestCase):
@@ -89,6 +120,158 @@ class TestMakeDeprecatedModule(unittest.TestCase):
         with self.assertWarns(DeprecationWarning) as context:
             trim_module.analyze_steady_trim
         self.assertEqual(context.filename, __file__)
+
+
+class TestKeywordOnly(unittest.TestCase):
+    """Tests for the keyword_only decorator."""
+
+    def test_signature_reports_the_v6_parameter_kinds(self) -> None:
+        """The decorated function's signature should mark the positional_only parameters
+        positional-only and every other parameter keyword-only, while keeping its name
+        and docstring."""
+        parameters = inspect.signature(sample_function).parameters
+        self.assertEqual(
+            [parameter.kind for parameter in parameters.values()],
+            [
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.KEYWORD_ONLY,
+                inspect.Parameter.KEYWORD_ONLY,
+            ],
+        )
+        self.assertEqual(list(parameters), ["path", "obj", "quality", "show"])
+        self.assertEqual(sample_function.__name__, "sample_function")
+        self.assertEqual(
+            sample_function.__doc__,
+            "Returns its arguments, so a test can check how a call bound them.",
+        )
+
+    def test_signatures_of_methods_leave_self_and_cls_alone(self) -> None:
+        """The signatures of a decorated constructor, method, and class method should
+        mark every parameter keyword-only except self and cls."""
+        self.assertEqual(
+            str(inspect.signature(SampleClass)),
+            "(*, span: float, chord: float = 1.0) -> None",
+        )
+        self.assertEqual(
+            str(inspect.signature(SampleClass.scaled_span)),
+            "(self, *, factor: float) -> float",
+        )
+        self.assertEqual(
+            str(inspect.signature(SampleClass.from_area)),
+            "(*, area: float, chord: float = 1.0) -> 'SampleClass'",
+        )
+
+    def test_calls_with_the_v6_parameter_kinds_do_not_warn(self) -> None:
+        """Calls that pass every parameter with its v6.0.0 kind should not warn and
+        should bind the arguments unchanged."""
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            function_result = sample_function("a", 1, quality=50)
+            instance = SampleClass(span=2.0)
+            method_result = instance.scaled_span(factor=3.0)
+            class_method_result = SampleClass.from_area(area=6.0, chord=2.0)
+        self.assertEqual(caught, [])
+        self.assertEqual(function_result, ("a", 1, 50, True))
+        self.assertEqual(method_result, 6.0)
+        self.assertEqual(class_method_result.span, 3.0)
+
+    def test_passing_parameters_positionally_warns_once_and_binds(self) -> None:
+        """Passing parameters outside positional_only positionally should emit one
+        DeprecationWarning naming all of them, and still bind them."""
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = sample_function("a", 1, 50, False)
+        self.assertEqual(len(caught), 1)
+        self.assertIs(caught[0].category, DeprecationWarning)
+        message = str(caught[0].message)
+        self.assertIn("quality, show positionally to sample_function", message)
+        self.assertIn("v6.0.0", message)
+        self.assertEqual(result, ("a", 1, 50, False))
+
+    def test_passing_positional_only_parameters_by_keyword_warns_and_binds(
+        self,
+    ) -> None:
+        """Passing positional_only parameters by keyword should emit one
+        DeprecationWarning naming all of them, and still bind them."""
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = sample_function(path="a", obj=1)
+        self.assertEqual(len(caught), 1)
+        self.assertIs(caught[0].category, DeprecationWarning)
+        message = str(caught[0].message)
+        self.assertIn("path, obj by keyword to sample_function", message)
+        self.assertIn("v6.0.0", message)
+        self.assertEqual(result, ("a", 1, 75, True))
+
+    def test_constructor_warning_names_the_class(self) -> None:
+        """A decorated constructor's warning should name its class rather than its
+        __init__ method."""
+        with self.assertWarns(DeprecationWarning) as context:
+            instance = SampleClass(2.0)
+        message = str(context.warning)
+        self.assertIn("span positionally to SampleClass is deprecated", message)
+        self.assertNotIn("__init__", message)
+        self.assertEqual(instance.span, 2.0)
+
+    def test_method_and_class_method_warnings_skip_self_and_cls(self) -> None:
+        """Calling a decorated method or class method positionally should warn about its
+        own parameters and never about self or cls."""
+        instance = SampleClass(span=2.0)
+        with self.assertWarns(DeprecationWarning) as method_context:
+            method_result = instance.scaled_span(3.0)
+        with self.assertWarns(DeprecationWarning) as class_method_context:
+            class_method_result = SampleClass.from_area(6.0)
+        method_message = str(method_context.warning)
+        class_method_message = str(class_method_context.warning)
+        self.assertIn("Passing factor positionally", method_message)
+        self.assertNotIn("self", method_message)
+        self.assertIn("Passing area positionally", class_method_message)
+        self.assertNotIn("cls", class_method_message)
+        self.assertEqual(method_result, 6.0)
+        self.assertEqual(class_method_result.span, 6.0)
+
+    def test_attributes_the_warning_to_the_calling_line(self) -> None:
+        """A deprecated call should attribute the warning to the line that made the
+        call, not to the decorator."""
+        with self.assertWarns(DeprecationWarning) as function_context:
+            sample_function(path="a", obj=1)
+        with self.assertWarns(DeprecationWarning) as constructor_context:
+            SampleClass(2.0)
+        self.assertEqual(function_context.filename, __file__)
+        self.assertEqual(constructor_context.filename, __file__)
+
+    def test_rejects_a_name_that_is_not_a_parameter(self) -> None:
+        """Decorating a callable should raise ValueError when positional_only names a
+        parameter the callable does not have."""
+
+        # noinspection unused-parameter
+        def target(path: str) -> None:
+            pass
+
+        with self.assertRaises(ValueError):
+            _deprecation.keyword_only(positional_only=("missing",))(target)
+
+    def test_rejects_a_name_that_is_not_a_leading_parameter(self) -> None:
+        """Decorating a callable should raise ValueError when positional_only names a
+        parameter that follows one that becomes keyword-only."""
+
+        # noinspection unused-parameter
+        def target(path: str, show: bool = True) -> None:
+            pass
+
+        with self.assertRaises(ValueError):
+            _deprecation.keyword_only(positional_only=("show",))(target)
+
+    def test_rejects_a_callable_with_a_variadic_parameter(self) -> None:
+        """Decorating a callable with a variadic parameter should raise TypeError."""
+
+        # noinspection unused-parameter
+        def target(path: str, *args: int) -> None:
+            pass
+
+        with self.assertRaises(TypeError):
+            _deprecation.keyword_only()(target)
 
 
 class TestDeprecatedModules(unittest.TestCase):

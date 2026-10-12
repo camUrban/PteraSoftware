@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import _geometry, _operating_point, _problems
+from . import _deprecation, _geometry, _operating_point, _problems
 from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -58,6 +58,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
     _models_body_rates = True
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         free_flight_unsteady_problem: _problems.FreeFlightUnsteadyProblem,
@@ -94,7 +95,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._substep_gamma_n: np.ndarray | None = None
         self._substep_gamma_n_minus_1: np.ndarray | None = None
 
-        super().__init__(free_flight_unsteady_problem)
+        super().__init__(unsteady_problem=free_flight_unsteady_problem)
 
     @property
     def _free_flight_unsteady_problem(self) -> _problems.FreeFlightUnsteadyProblem:

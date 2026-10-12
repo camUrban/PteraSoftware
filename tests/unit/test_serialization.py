@@ -1435,7 +1435,7 @@ class TestHashObject(unittest.TestCase):
         :return: None
         """
         solver = UnsteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_unsteady_problem_fixture()
+            unsteady_problem=serialization_fixtures.make_unsteady_problem_fixture()
         )
         solver.run()
         original_hash = hash_object(solver)
@@ -1454,7 +1454,7 @@ class TestHashObject(unittest.TestCase):
         :return: None
         """
         solver = UnsteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_unsteady_problem_fixture()
+            unsteady_problem=serialization_fixtures.make_unsteady_problem_fixture()
         )
         solver.run()
         original_hash = hash_object(solver)
@@ -1768,7 +1768,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         :return: None
         """
         self.solver = UnsteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_unsteady_problem_fixture()
+            unsteady_problem=serialization_fixtures.make_unsteady_problem_fixture()
         )
         self.solver.run()
         self.num_steps = self.solver.num_steps
@@ -1800,7 +1800,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         :return: None
         """
         solver = SteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_steady_problem_fixture()
+            steady_problem=serialization_fixtures.make_steady_problem_fixture()
         )
         solver.run()
         path = Path(self.tmp.name) / "steady_solver.psz"
@@ -1981,7 +1981,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         :return: None
         """
         solver = UnsteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_variable_unsteady_problem_fixture()
+            unsteady_problem=serialization_fixtures.make_variable_unsteady_problem_fixture()
         )
         solver.run()
         path = Path(self.tmp.name) / "variable.psz"
@@ -2014,7 +2014,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         :return: None
         """
         solver = UnsteadyRingVortexLatticeMethodSolver(
-            serialization_fixtures.make_variable_unsteady_problem_fixture()
+            unsteady_problem=serialization_fixtures.make_variable_unsteady_problem_fixture()
         )
         path = Path(self.tmp.name) / "variable.psz"
         save(path, solver)
@@ -2792,7 +2792,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
+        solver = SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
@@ -2810,7 +2810,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
+        solver = SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
@@ -2826,7 +2826,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
+        solver = SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
@@ -2837,7 +2837,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
+        solver = SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "solver.psz"
@@ -2857,7 +2857,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyRingVortexLatticeMethodSolver(problem)
+        solver = SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
@@ -2875,7 +2875,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyRingVortexLatticeMethodSolver(problem)
+        solver = SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
@@ -2891,7 +2891,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyRingVortexLatticeMethodSolver(problem)
+        solver = SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
@@ -2902,7 +2902,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        solver = SteadyRingVortexLatticeMethodSolver(problem)
+        solver = SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "solver.psz"
@@ -3231,7 +3231,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        solver = UnsteadyRingVortexLatticeMethodSolver(problem)
+        solver = UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
@@ -3245,7 +3245,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        solver = UnsteadyRingVortexLatticeMethodSolver(problem)
+        solver = UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
@@ -3258,7 +3258,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        solver = UnsteadyRingVortexLatticeMethodSolver(problem)
+        solver = UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
         solver.run()
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
@@ -3281,7 +3281,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        solver = UnsteadyRingVortexLatticeMethodSolver(problem)
+        solver = UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
         result = deserialize_value(serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
@@ -3292,7 +3292,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
-        solver = UnsteadyRingVortexLatticeMethodSolver(problem)
+        solver = UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "solver.psz"
@@ -3724,7 +3724,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         """
         fixture = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         problem = FreeFlightUnsteadyProblem(
-            movement=fixture._free_flight_movement,
+            movement=fixture.movement,
             mass=fixture.mass,
             I_BP1_CgP1=fixture.I_BP1_CgP1,
             k_max=5,

@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import _functions, _problems
+from . import _deprecation, _functions, _problems
 from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -47,6 +47,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         "_stackSlep_GP1_CgP1",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         aeroelastic_unsteady_problem: _problems.AeroelasticUnsteadyProblem,
@@ -67,7 +68,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
                 "aeroelastic_unsteady_problem must be an " "AeroelasticUnsteadyProblem."
             )
 
-        super().__init__(aeroelastic_unsteady_problem)
+        super().__init__(unsteady_problem=aeroelastic_unsteady_problem)
 
         first_steady_problem: _problems.SteadyProblem = self._get_steady_problem_at(0)
 

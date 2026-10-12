@@ -172,7 +172,7 @@ assert isinstance(
 
 # Call the draw function on the loaded solver.
 ps.draw(
-    solver=loaded_solver,
+    loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,

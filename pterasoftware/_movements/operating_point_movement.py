@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from .. import _core
+from .. import _core, _deprecation
 from .. import _operating_point as operating_point_mod
 
 
@@ -13,6 +13,7 @@ class OperatingPointMovement(_core.CoreOperatingPointMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_operating_point: operating_point_mod.OperatingPoint,

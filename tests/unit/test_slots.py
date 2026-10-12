@@ -2073,10 +2073,6 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
             self.problem.movement,
             ps.AeroelasticMovement,
         )
-        self.assertIsInstance(
-            self.problem._aeroelastic_movement,
-            ps.AeroelasticMovement,
-        )
         self.assertIsInstance(self.problem.steady_problems, tuple)
 
     def test_mutable_state_access(self) -> None:

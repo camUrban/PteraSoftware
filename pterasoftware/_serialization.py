@@ -17,7 +17,7 @@ from typing import Any
 
 import numpy as np
 
-from . import _logging, _parameter_validation
+from . import _deprecation, _logging, _parameter_validation
 from ._aeroelastic_unsteady_ring_vortex_lattice_method import (
     AeroelasticUnsteadyRingVortexLatticeMethodSolver,
 )
@@ -309,6 +309,7 @@ def all_slots(cls: type) -> list[str]:
     return slots
 
 
+@_deprecation.keyword_only(positional_only=("path", "obj"))
 def save(path: str | Path, obj: object) -> None:
     """Saves a Ptera Software object to a .psz file.
 
@@ -396,6 +397,7 @@ def save(path: str | Path, obj: object) -> None:
     )
 
 
+@_deprecation.keyword_only(positional_only=("path",))
 def load(
     path: str | Path,
     max_size: int | None = None,

@@ -38,7 +38,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
         )
 
         ps.animate(
-            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
+            self.unsteady_ring_vortex_lattice_method_validation_solver,
             scalar_type="induced drag",
             show_wake_vortices=True,
             save=False,

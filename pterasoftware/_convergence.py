@@ -12,6 +12,7 @@ import numpy as np
 from . import (
     _convergence_cache,
     _convergence_meshing,
+    _deprecation,
     _functions,
     _geometry,
     _logging,
@@ -39,6 +40,7 @@ COEFFICIENT_LABELS = (
 )
 
 
+@_deprecation.keyword_only(positional_only=("ref_problem",))
 def analyze_steady_convergence(
     ref_problem: _problems.SteadyProblem,
     solver_type: str,
@@ -683,6 +685,7 @@ def analyze_steady_convergence(
     return None, None, None
 
 
+@_deprecation.keyword_only(positional_only=("ref_problem",))
 def analyze_unsteady_convergence(
     ref_problem: _problems.UnsteadyProblem,
     prescribed_wake: bool | np.bool = True,

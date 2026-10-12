@@ -73,7 +73,7 @@ class TestWakeTruncation(unittest.TestCase):
         )
         non_truncated_problem = ps.UnsteadyProblem(movement=non_truncated_movement)
         cls.non_truncated_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
-            non_truncated_problem
+            unsteady_problem=non_truncated_problem
         )
         cls.non_truncated_solver.run(
             prescribed_wake=True,
@@ -92,7 +92,7 @@ class TestWakeTruncation(unittest.TestCase):
         )
         truncated_problem = ps.UnsteadyProblem(movement=truncated_movement)
         cls.truncated_solver = ps.UnsteadyRingVortexLatticeMethodSolver(
-            truncated_problem
+            unsteady_problem=truncated_problem
         )
         cls.truncated_solver.run(
             prescribed_wake=True,

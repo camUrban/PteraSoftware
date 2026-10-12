@@ -65,7 +65,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         allowable_error = 0.10
 
         ps.draw(
-            solver=self.steady_ring_vortex_lattice_method_validation_solver,
+            self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
             scalar_type="lift",

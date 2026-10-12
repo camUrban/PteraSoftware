@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import cast
 
 import numpy as np
 
-from .. import _core, _geometry
+from .. import _core, _deprecation, _geometry
 from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
 
@@ -23,6 +24,7 @@ class WingMovement(_core.CoreWingMovement):
 
     __slots__ = ()
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         base_wing: _geometry.wing.Wing,
@@ -165,4 +167,14 @@ class WingMovement(_core.CoreWingMovement):
             spacingAngles_Gs_to_Wn_ixyz=spacingAngles_Gs_to_Wn_ixyz,
             phaseAngles_Gs_to_Wn_ixyz=phaseAngles_Gs_to_Wn_ixyz,
             rotationPointOffset_Gs_Ler=rotationPointOffset_Gs_Ler,
+        )
+
+    # --- Immutable: read only properties ---
+    @property
+    def wing_cross_section_movements(
+        self,
+    ) -> tuple[wing_cross_section_movement_mod.WingCrossSectionMovement, ...]:
+        return cast(
+            tuple[wing_cross_section_movement_mod.WingCrossSectionMovement, ...],
+            self._wing_cross_section_movements,
         )

@@ -46,7 +46,9 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
         )
         with self.assertRaises(TypeError):
-            FreeFlightUnsteadyRingVortexLatticeMethodSolver(coupled_problem)
+            FreeFlightUnsteadyRingVortexLatticeMethodSolver(
+                free_flight_unsteady_problem=coupled_problem
+            )
 
     def test_initialization_rejects_non_problem_types(self) -> None:
         """Test that initialization raises TypeError for non-problem inputs."""
@@ -60,7 +62,9 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         for invalid in invalid_inputs:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
-                    FreeFlightUnsteadyRingVortexLatticeMethodSolver(invalid)
+                    FreeFlightUnsteadyRingVortexLatticeMethodSolver(
+                        free_flight_unsteady_problem=invalid
+                    )
 
     def test_free_flight_unsteady_problem_property_narrows_unsteady_problem(
         self,
@@ -87,7 +91,9 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         rotating_problem = (
             problem_fixtures.make_with_body_rates_free_flight_unsteady_problem_fixture()
         )
-        solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(rotating_problem)
+        solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(
+            free_flight_unsteady_problem=rotating_problem
+        )
         self.assertIsInstance(solver, FreeFlightUnsteadyRingVortexLatticeMethodSolver)
 
     def test_current_omegas_without_rotation_is_zero(self) -> None:

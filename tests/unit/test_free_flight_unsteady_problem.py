@@ -24,7 +24,7 @@ def _movement_and_mass() -> tuple[ps.FreeFlightMovement, float]:
     :return: A tuple of the FreeFlightMovement and the consistent mass in kilograms.
     """
     fixture_problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-    return fixture_problem._free_flight_movement, fixture_problem.mass
+    return fixture_problem.movement, fixture_problem.mass
 
 
 class TestFreeFlightUnsteadyProblem(unittest.TestCase):
@@ -417,12 +417,10 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=np.eye(2, dtype=float),
             )
 
-    def test_free_flight_movement_property_narrows_movement(self) -> None:
-        """Test that the _free_flight_movement property returns the same object as
-        movement, narrowed to FreeFlightMovement."""
-        self.assertIs(self.problem._free_flight_movement, self.problem.movement)
+    def test_movement_property_narrows_movement(self) -> None:
+        """Test that the movement property returns a FreeFlightMovement."""
         self.assertIsInstance(
-            self.problem._free_flight_movement,
+            self.problem.movement,
             ps.FreeFlightMovement,
         )
 
@@ -569,7 +567,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         step."""
         self._mock_mujoco_model()
         operating_points = (
-            self.problem._free_flight_movement.operating_point_movement.operating_points
+            self.problem.movement.operating_point_movement.operating_points
         )
         before = len(operating_points)
 
@@ -630,7 +628,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         # The basic fixture has more than one prescribed step, so step 1 is in the
         # prescribed phase but is not the first step.
-        self.assertGreater(problem._free_flight_movement.prescribed_num_steps, 1)
+        self.assertGreater(problem.movement.prescribed_num_steps, 1)
         problem.initialize_next_problem(solver, step=1)
 
         external_loads_fn.assert_not_called()
@@ -857,7 +855,7 @@ class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
 
         weights = problem._build_relaxation_weights()
 
-        L_ref = problem._free_flight_movement.airplanes[0][0].c_ref
+        L_ref = problem.movement.airplanes[0][0].c_ref
         mean_inertia = (2.0 + 3.0 + 4.0) / 3.0
         theta_ref = mass * L_ref**2 / mean_inertia
         delta_time = problem.delta_time

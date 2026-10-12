@@ -419,7 +419,7 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
         bad_ref_problem: Any = problem_fixtures.make_basic_unsteady_problem_fixture()
         with self.assertRaises(TypeError):
             _convergence.analyze_steady_convergence(
-                ref_problem=bad_ref_problem,
+                bad_ref_problem,
                 solver_type="steady ring vortex lattice method",
             )
 
@@ -427,7 +427,7 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
         """Test that an unrecognized solver_type raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_steady_convergence(
-                ref_problem=self.steady_problem,
+                self.steady_problem,
                 solver_type="unsteady ring vortex lattice method",
             )
 
@@ -451,7 +451,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         bad_ref_problem: Any = problem_fixtures.make_basic_steady_problem_fixture()
         with self.assertRaises(TypeError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=bad_ref_problem,
+                bad_ref_problem,
                 num_cycles_bounds=(1, 2),
             )
 
@@ -460,7 +460,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 prescribed_wake=False,
                 free_wake=False,
             )
@@ -470,7 +470,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         bad_force_method: Any = 42
         with self.assertRaises(TypeError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_cycles_bounds=(1, 2),
                 force_method=bad_force_method,
             )
@@ -479,7 +479,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a force_method that is not a valid option raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_cycles_bounds=(1, 2),
                 force_method="invalid",
             )
@@ -500,7 +500,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
+                ps.UnsteadyProblem(movement=truncated_movement),
                 num_cycles_bounds=(1, 2),
             )
 
@@ -520,7 +520,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
+                ps.UnsteadyProblem(movement=truncated_movement),
                 num_chords_bounds=(1, 2),
             )
 
@@ -540,7 +540,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=ps.UnsteadyProblem(movement=truncated_movement),
+                ps.UnsteadyProblem(movement=truncated_movement),
                 num_cycles_bounds=(1, 2),
             )
 
@@ -549,7 +549,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.static_problem,
+                self.static_problem,
                 num_cycles_bounds=(1, 2),
             )
 
@@ -557,14 +557,14 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that omitting num_chords_bounds for a static-geometry problem raises a
         TypeError."""
         with self.assertRaises(TypeError):
-            _convergence.analyze_unsteady_convergence(ref_problem=self.static_problem)
+            _convergence.analyze_unsteady_convergence(self.static_problem)
 
     def test_num_chords_bounds_wrong_length_raises_type_error(self) -> None:
         """Test that a num_chords_bounds without exactly two elements raises a
         TypeError."""
         with self.assertRaises(TypeError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.static_problem,
+                self.static_problem,
                 num_chords_bounds=(1, 2, 3),  # type: ignore[arg-type]
             )
 
@@ -572,7 +572,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a num_chords_bounds with a non-int element raises a TypeError."""
         with self.assertRaises(TypeError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.static_problem,
+                self.static_problem,
                 num_chords_bounds=(1.0, 4.0),  # type: ignore[arg-type]
             )
 
@@ -580,7 +580,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a num_chords_bounds in descending order raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.static_problem,
+                self.static_problem,
                 num_chords_bounds=(4, 1),
             )
 
@@ -588,7 +588,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a num_chords_bounds at or below zero raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.static_problem,
+                self.static_problem,
                 num_chords_bounds=(0, 0),
             )
 
@@ -597,7 +597,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_chords_bounds=(1, 4),
             )
 
@@ -605,13 +605,13 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that omitting num_cycles_bounds for a variable-geometry problem raises a
         TypeError."""
         with self.assertRaises(TypeError):
-            _convergence.analyze_unsteady_convergence(ref_problem=self.variable_problem)
+            _convergence.analyze_unsteady_convergence(self.variable_problem)
 
     def test_num_cycles_bounds_non_int_raises_type_error(self) -> None:
         """Test that a num_cycles_bounds with a non-int element raises a TypeError."""
         with self.assertRaises(TypeError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_cycles_bounds=(1.0, 2.0),  # type: ignore[arg-type]
             )
 
@@ -619,7 +619,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a num_cycles_bounds in descending order raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_cycles_bounds=(2, 1),
             )
 
@@ -627,6 +627,6 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         """Test that a num_cycles_bounds at or below zero raises a ValueError."""
         with self.assertRaises(ValueError):
             _convergence.analyze_unsteady_convergence(
-                ref_problem=self.variable_problem,
+                self.variable_problem,
                 num_cycles_bounds=(0, 0),
             )

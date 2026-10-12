@@ -168,7 +168,7 @@ del operating_point
 # return the parameters it found to result in a converged solution. See the
 # analyze_steady_convergence function docstring for more details.
 ps.analyze_steady_convergence(
-    ref_problem=steady_problem,
+    steady_problem,
     solver_type="steady ring vortex lattice method",
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 8),

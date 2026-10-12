@@ -11,7 +11,13 @@ import numpy as np
 import pyvista as pv
 import scipy.interpolate as sp_interp
 
-from .. import _output_rendering, _panel, _parameter_validation, _transformations
+from .. import (
+    _deprecation,
+    _output_rendering,
+    _panel,
+    _parameter_validation,
+    _transformations,
+)
 from . import airfoil as airfoil_mod
 from . import meshing
 from . import wing_cross_section as wing_cross_section_mod
@@ -115,6 +121,7 @@ class Wing:
         "_mean_aerodynamic_chord",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         wing_cross_sections: list[wing_cross_section_mod.WingCrossSection],
@@ -375,6 +382,7 @@ class Wing:
 
     # --- Alternate constructor ---
     @classmethod
+    @_deprecation.keyword_only()
     def from_edge_points(
         cls,
         leadingEdgePoints_Wn_Ler: np.ndarray | Sequence[Sequence[float | int]],

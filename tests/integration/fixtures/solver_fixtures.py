@@ -17,7 +17,9 @@ def make_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
     steady_horseshoe_vortex_lattice_method_validation_solver = (
-        ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_validation_problem)
+        ps.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem=steady_validation_problem
+        )
     )
 
     return steady_horseshoe_vortex_lattice_method_validation_solver
@@ -38,7 +40,9 @@ def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver(
     )
 
     steady_horseshoe_vortex_lattice_method_validation_solver = (
-        ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_validation_problem)
+        ps.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem=steady_validation_problem
+        )
     )
 
     return steady_horseshoe_vortex_lattice_method_validation_solver
@@ -57,7 +61,7 @@ def make_steady_ring_vortex_lattice_method_validation_solver() -> (
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
     steady_ring_vortex_lattice_method_validation_solver = (
-        ps.SteadyRingVortexLatticeMethodSolver(steady_validation_problem)
+        ps.SteadyRingVortexLatticeMethodSolver(steady_problem=steady_validation_problem)
     )
 
     return steady_ring_vortex_lattice_method_validation_solver
@@ -78,7 +82,9 @@ def make_steady_ring_vortex_lattice_method_formation_solver() -> (
     )
 
     steady_ring_vortex_lattice_method_formation_solver = (
-        ps.SteadyRingVortexLatticeMethodSolver(steady_formation_validation_problem)
+        ps.SteadyRingVortexLatticeMethodSolver(
+            steady_problem=steady_formation_validation_problem
+        )
     )
 
     return steady_ring_vortex_lattice_method_formation_solver
@@ -99,7 +105,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
     )
 
     unsteady_ring_vortex_lattice_method_validation_solver = (
-        ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_validation_problem)
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=unsteady_validation_problem
+        )
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
@@ -120,7 +128,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
     )
 
     unsteady_ring_vortex_lattice_method_validation_solver = (
-        ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_validation_problem)
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=unsteady_validation_problem
+        )
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
@@ -141,7 +151,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     )
 
     unsteady_ring_vortex_lattice_method_validation_solver = (
-        ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_validation_problem)
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=unsteady_validation_problem
+        )
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
@@ -162,7 +174,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     )
 
     unsteady_ring_vortex_lattice_method_validation_solver = (
-        ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_validation_problem)
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=unsteady_validation_problem
+        )
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
@@ -178,7 +192,7 @@ def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_steady_problem()
 
-    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(problem)
+    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
 
     return solver
 
@@ -193,7 +207,7 @@ def make_steady_horseshoe_vortex_lattice_method_free_air_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
 
-    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(problem)
+    solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(steady_problem=problem)
 
     return solver
 
@@ -208,7 +222,7 @@ def make_steady_ring_vortex_lattice_method_surface_effect_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_steady_problem()
 
-    solver = ps.SteadyRingVortexLatticeMethodSolver(problem)
+    solver = ps.SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
 
     return solver
 
@@ -223,7 +237,7 @@ def make_steady_ring_vortex_lattice_method_free_air_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
 
-    solver = ps.SteadyRingVortexLatticeMethodSolver(problem)
+    solver = ps.SteadyRingVortexLatticeMethodSolver(steady_problem=problem)
 
     return solver
 
@@ -238,7 +252,7 @@ def make_unsteady_ring_vortex_lattice_method_surface_effect_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_unsteady_problem()
 
-    solver = ps.UnsteadyRingVortexLatticeMethodSolver(problem)
+    solver = ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
 
     return solver
 
@@ -253,7 +267,7 @@ def make_unsteady_ring_vortex_lattice_method_free_air_solver() -> (
     """
     problem = problem_fixtures.make_surface_effect_free_air_unsteady_problem()
 
-    solver = ps.UnsteadyRingVortexLatticeMethodSolver(problem)
+    solver = ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=problem)
 
     return solver
 
@@ -277,7 +291,7 @@ def make_simple_glider_free_flight_solver(
 
     simple_glider_free_flight_solver = (
         ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver(
-            simple_glider_free_flight_problem
+            free_flight_unsteady_problem=simple_glider_free_flight_problem
         )
     )
 
@@ -297,7 +311,7 @@ def make_flapping_free_flight_solver() -> (
     flapping_free_flight_problem = problem_fixtures.make_flapping_free_flight_problem()
 
     flapping_free_flight_solver = ps.FreeFlightUnsteadyRingVortexLatticeMethodSolver(
-        flapping_free_flight_problem
+        free_flight_unsteady_problem=flapping_free_flight_problem
     )
 
     return flapping_free_flight_solver
@@ -319,7 +333,9 @@ def make_unsteady_ring_vortex_lattice_method_formation_solver() -> (
     )
 
     unsteady_ring_vortex_lattice_method_formation_solver = (
-        ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_formation_validation_problem)
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=unsteady_formation_validation_problem
+        )
     )
 
     return unsteady_ring_vortex_lattice_method_formation_solver

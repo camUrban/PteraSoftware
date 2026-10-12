@@ -228,9 +228,9 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 
 #### Derived from Immutable (read-only property, no backing slot)
 
-| Property                | Depends On              | Notes                                                                                               |
-|-------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|
-| `_aeroelastic_movement` | `_movement`             | Typed-narrow cast of the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
+| Property   | Depends On  | Notes                                                                                                                    |
+|------------|-------------|--------------------------------------------------------------------------------------------------------------------------|
+| `movement` | `_movement` | Overrides the inherited property, casting the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
 
 #### Mutable (populated by solver)
 
@@ -262,9 +262,9 @@ The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJ
 
 #### Derived from Immutable (read-only property, no backing slot)
 
-| Property                | Depends On  | Notes                                                                                              |
-|-------------------------|-------------|----------------------------------------------------------------------------------------------------|
-| `_free_flight_movement` | `_movement` | Typed-narrow cast of the inherited `_movement` slot to `FreeFlightMovement` (recomputed, uncached) |
+| Property   | Depends On  | Notes                                                                                                                   |
+|------------|-------------|-------------------------------------------------------------------------------------------------------------------------|
+| `movement` | `_movement` | Overrides the inherited property, casting the inherited `_movement` slot to `FreeFlightMovement` (recomputed, uncached) |
 
 #### Mutable (populated by solver)
 
@@ -377,7 +377,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### `AeroelasticWingMovement` variant additions
 
-`AeroelasticWingMovement` extends `CoreWingMovement` directly, as a feature-specific sibling of `WingMovement`. It inherits every attribute above unchanged and adds the one immutable slot below, stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
+`AeroelasticWingMovement` extends `CoreWingMovement` directly, as a feature-specific sibling of `WingMovement`. It inherits every attribute above, narrows the `wing_cross_section_movements` type to require `AeroelasticWingCrossSectionMovement` children, and adds the one immutable slot below, stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
 | Attribute                                     | Type                           | Notes                                                                                                                                                                                                             |
 |-----------------------------------------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

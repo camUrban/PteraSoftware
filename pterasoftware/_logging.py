@@ -13,6 +13,8 @@ from typing import TextIO
 
 from tqdm import tqdm
 
+from . import _deprecation
+
 # Package level logger. All module loggers should be children of this logger.
 PACKAGE_LOGGER_NAME = "pterasoftware"
 
@@ -162,6 +164,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(f"{PACKAGE_LOGGER_NAME}.{name}")
 
 
+@_deprecation.keyword_only()
 def set_up_logging(
     level: int | str = logging.WARNING,
     handler: logging.Handler | None = None,

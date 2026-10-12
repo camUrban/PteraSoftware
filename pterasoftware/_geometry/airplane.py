@@ -14,7 +14,7 @@ import pyvista as pv
 import scipy.interpolate as sp_interp
 import webp
 
-from .. import _output_rendering, _parameter_validation, _transformations
+from .. import _deprecation, _output_rendering, _parameter_validation, _transformations
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
@@ -138,6 +138,7 @@ class Airplane:
         "momentCoefficients_W_Cg",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         wings: list[wing_mod.Wing],

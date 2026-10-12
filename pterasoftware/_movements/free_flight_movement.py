@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from .. import _core, _geometry, _parameter_validation
+from .. import _core, _deprecation, _geometry, _parameter_validation
 from . import airplane_movement as airplane_movement_mod
 from . import (
     free_flight_operating_point_movement as free_flight_operating_point_movement_mod,
@@ -32,6 +32,7 @@ class FreeFlightMovement(_core.CoreMovement):
         "_airplanes",
     )
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airplane_movements: list[airplane_movement_mod.AirplaneMovement],

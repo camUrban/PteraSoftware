@@ -7,7 +7,6 @@ import numpy as np
 import numpy.testing as npt
 from scipy import signal
 
-import pterasoftware as ps
 from pterasoftware import _core
 from tests.unit.fixtures import (
     core_wing_cross_section_movement_fixtures,

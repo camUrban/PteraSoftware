@@ -136,7 +136,7 @@ trim_problem = ps.UnsteadyProblem(
 # balances drag, weight balances lift, and all moments are close to zero) within a
 # certain set of bounds.
 trim_conditions = ps.analyze_unsteady_trim(
-    problem=trim_problem,
+    trim_problem,
     boundsVCg__E=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),

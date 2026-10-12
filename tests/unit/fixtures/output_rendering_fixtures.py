@@ -44,7 +44,7 @@ def _make_playback_solver(
         num_steps=11,
     )
     unsteady_problem = ps.UnsteadyProblem(movement=movement, only_final_results=False)
-    return ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem)
+    return ps.UnsteadyRingVortexLatticeMethodSolver(unsteady_problem=unsteady_problem)
 
 
 def make_playback_solver_fixture() -> ps.UnsteadyRingVortexLatticeMethodSolver:

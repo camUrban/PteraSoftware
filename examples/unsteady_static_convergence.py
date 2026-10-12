@@ -98,7 +98,7 @@ del example_movement
 # converged solution. See the analyze_unsteady_convergence function docstring for more
 # details.
 ps.analyze_unsteady_convergence(
-    ref_problem=example_problem,
+    example_problem,
     prescribed_wake=True,
     free_wake=True,
     num_chords_bounds=(4, 8),

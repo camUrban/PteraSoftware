@@ -59,7 +59,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
             ps.analyze_steady_trim(
-                problem=problem,
+                problem,
                 solver_type="steady horseshoe vortex lattice method",
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -78,7 +78,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             with self.subTest(alpha_bounds=bad_alpha_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
                     ps.analyze_steady_trim(
-                        problem=self.steady_validation_problem,
+                        self.steady_validation_problem,
                         solver_type="steady horseshoe vortex lattice method",
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=bad_alpha_bounds,
@@ -90,7 +90,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             with self.subTest(beta_bounds=bad_beta_bounds):
                 with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
                     ps.analyze_steady_trim(
-                        problem=self.steady_validation_problem,
+                        self.steady_validation_problem,
                         solver_type="steady horseshoe vortex lattice method",
                         boundsVCg__E=(1.0, 100.0),
                         alpha_bounds=(-20.0, 20.0),
@@ -116,7 +116,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
             ps.analyze_steady_trim(
-                problem=problem,
+                problem,
                 solver_type="steady horseshoe vortex lattice method",
                 boundsVCg__E=(1.0, 100.0),
                 alpha_bounds=(-20.0, 20.0),
@@ -145,7 +145,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         )
 
         trim_conditions = ps.analyze_steady_trim(
-            problem=self.steady_validation_problem,
+            self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
             boundsVCg__E=v_x_bounds,
             alpha_bounds=alpha_bounds,

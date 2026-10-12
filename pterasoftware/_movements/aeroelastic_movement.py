@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from .. import _core, _geometry
+from .. import _core, _deprecation, _geometry
 from .. import _operating_point as operating_point_mod
 from . import aeroelastic_airplane_movement as aeroelastic_airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
@@ -27,6 +27,7 @@ class AeroelasticMovement(_core.CoreMovement):
 
     __slots__ = ("_operating_points",)
 
+    @_deprecation.keyword_only()
     def __init__(
         self,
         airplane_movements: list[

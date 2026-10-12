@@ -101,11 +101,13 @@ class Airfoil:
         """
         # Coverage ignores this branch because the outline_A_lp parameter is deprecated.
         if outline_A_lp is not UNSET:  # pragma: no cover
+            # The stack level skips this method and the keyword_only wrapper around it,
+            # so the warning is attributed to the caller.
             warnings.warn(
                 "The outline_A_lp parameter is deprecated and will be removed in "
                 "v6.0.0. Use outline_A_Lp instead.",
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=3,
             )
             if outline_A_Lp is not None:
                 raise ValueError(

@@ -17,8 +17,7 @@ import importlib.resources
 import math
 from pathlib import Path
 
-# Import NumPy, MatPlotLib, and MatPlotLib's legend handler, PyPlot, and text packages.
-import matplotlib
+# Import various MatPlotLib names and NumPy.
 import matplotlib.legend_handler
 import matplotlib.pyplot as plt
 import matplotlib.text

@@ -5,7 +5,6 @@ import unittest
 
 import numpy as np
 
-import pterasoftware as ps
 from pterasoftware import _core
 
 

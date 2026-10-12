@@ -2,7 +2,6 @@
 
 import unittest
 
-import pterasoftware as ps
 from pterasoftware import _core
 
 

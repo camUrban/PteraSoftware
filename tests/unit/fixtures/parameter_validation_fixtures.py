@@ -1,7 +1,6 @@
 """This module contains functions to create fixtures for parameter validation tests."""
 
 from collections.abc import Callable
-from typing import Any
 
 import numpy as np
 

@@ -291,6 +291,22 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
         return new_movement
 
+    # --- Immutable: read only properties ---
+    @property
+    def wing_cross_section_movements(
+        self,
+    ) -> tuple[
+        aeroelastic_wing_cross_section_movement_mod.AeroelasticWingCrossSectionMovement,
+        ...,
+    ]:
+        return cast(
+            tuple[
+                aeroelastic_wing_cross_section_movement_mod.AeroelasticWingCrossSectionMovement,
+                ...,
+            ],
+            self._wing_cross_section_movements,
+        )
+
     @property
     def spacingAnglesSecondDerivative_Gs_to_Wn_ixyz(
         self,

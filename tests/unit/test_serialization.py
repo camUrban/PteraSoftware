@@ -3724,7 +3724,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         """
         fixture = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         problem = FreeFlightUnsteadyProblem(
-            movement=fixture._free_flight_movement,
+            movement=fixture.movement,
             mass=fixture.mass,
             I_BP1_CgP1=fixture.I_BP1_CgP1,
             k_max=5,

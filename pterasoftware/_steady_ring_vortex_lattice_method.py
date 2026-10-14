@@ -736,7 +736,7 @@ class SteadyRingVortexLatticeMethodSolver:
             self.panel_is_trailing_edge
         ]
 
-    def calculate_solution_velocity(
+    def _calculate_solution_velocity(
         self,
         stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         bound_singularity_counts: np.ndarray | None = None,
@@ -983,19 +983,19 @@ class SteadyRingVortexLatticeMethodSolver:
         # the Earth frame) at the center of every Panels' ring vortex's right line
         # vortex, front line vortex, left line vortex, and back line vortex.
         bound_singularity_counts = np.zeros(3, dtype=np.int64)
-        stackVelocityRightLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityRightLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityFrontLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityFrontLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityLeftLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityLeftLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        stackVelocityBackLineVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityBackLineVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )

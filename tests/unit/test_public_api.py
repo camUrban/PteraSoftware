@@ -164,7 +164,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "wing_density",
     ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
@@ -172,7 +171,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "first_results_step",
         "force_method",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -390,7 +388,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "steady_problems",
     ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
@@ -400,7 +397,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "force_method",
         "freeze_substep",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -496,7 +492,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     ),
     "SteadyHorseshoeVortexLatticeMethodSolver": (
         "airplanes",
-        "calculate_solution_velocity",
         "diagram",
         "gridStreamlinePoints_GP1_CgP1",
         "num_airplanes",
@@ -519,7 +514,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     ),
     "SteadyRingVortexLatticeMethodSolver": (
         "airplanes",
-        "calculate_solution_velocity",
         "diagram",
         "gridStreamlinePoints_GP1_CgP1",
         "num_airplanes",
@@ -619,7 +613,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "steady_problems",
     ),
     "UnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
@@ -627,7 +620,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "first_results_step",
         "force_method",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -804,11 +796,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "*",
         "aeroelastic_unsteady_problem",
     ),
-    "AeroelasticUnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
-    ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "step",
@@ -825,9 +812,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "save",
         "path",
         "quality",
-    ),
-    "AeroelasticUnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": (
-        "step",
     ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
@@ -946,11 +930,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "*",
         "free_flight_unsteady_problem",
     ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
-    ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "step",
@@ -974,9 +953,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
     ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.freeze_substep": (
         "next_steady_problem",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": (
-        "step",
     ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.restore_substep": ("step",),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.run": (
@@ -1022,10 +998,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "phaseVCg__E",
     ),
     "SteadyHorseshoeVortexLatticeMethodSolver.__init__": ("*", "steady_problem"),
-    "SteadyHorseshoeVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-    ),
     "SteadyHorseshoeVortexLatticeMethodSolver.diagram": (
         "*",
         "show_airplane_axes_and_points",
@@ -1060,10 +1032,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "quality",
     ),
     "SteadyRingVortexLatticeMethodSolver.__init__": ("*", "steady_problem"),
-    "SteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-    ),
     "SteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "show_airplane_axes_and_points",
@@ -1099,11 +1067,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "quality",
     ),
     "UnsteadyRingVortexLatticeMethodSolver.__init__": ("*", "unsteady_problem"),
-    "UnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
-    ),
     "UnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "step",
@@ -1121,7 +1084,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "UnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": ("step",),
     "UnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
         "prescribed_wake",

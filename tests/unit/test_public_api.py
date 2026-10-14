@@ -392,10 +392,8 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "current_operating_point",
         "delta_time",
         "diagram",
-        "evaluate_trial_aero_loads",
         "first_results_step",
         "force_method",
-        "freeze_substep",
         "gridStreamlinePoints_GP1_CgP1",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
@@ -413,7 +411,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "panels",
         "prescribed_wake",
         "ran",
-        "restore_substep",
         "run",
         "stackBbrv_GP1",
         "stackBlbrvp_GP1_CgP1",
@@ -947,14 +944,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.evaluate_trial_aero_loads": (
-        "trial_operating_point",
-        "step",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.freeze_substep": (
-        "next_steady_problem",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.restore_substep": ("step",),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
         "prescribed_wake",

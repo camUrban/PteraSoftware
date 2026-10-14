@@ -393,7 +393,7 @@ class Movement(_core.CoreMovement):
         airplanes_temp: list[list[_geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
-                airplane_movement.generate_airplanes(
+                airplane_movement._generate_airplanes(
                     num_steps=self._num_steps, delta_time=self._delta_time
                 )
             )
@@ -432,7 +432,7 @@ class Movement(_core.CoreMovement):
 
         # Generate a list of OperatingPoints that are the steps through the
         # OperatingPointMovement.
-        operating_points_temp = operating_point_movement.generate_operating_points(
+        operating_points_temp = operating_point_movement._generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
         )
         # Store as tuple to prevent external mutation.
@@ -1419,7 +1419,7 @@ def analytically_optimize_delta_time(
     for airplane_id in range(num_airplanes):
         # Use the first generated Airplane to get Wing properties, since the base
         # Airplane may have different panel counts (e.g., due to symmetry processing
-        # that occurs during generate_airplanes).
+        # that occurs during _generate_airplanes).
         first_airplane = temp_problem.steady_problems[0].airplanes[airplane_id]
         for wing_id, wing in enumerate(first_airplane.wings):
             num_chordwise = wing.num_chordwise_panels

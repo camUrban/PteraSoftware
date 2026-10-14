@@ -277,9 +277,11 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         """Test that sine spacing actually produces sinusoidal motion for vCg__E."""
         num_steps = 100
         delta_time = 0.01
-        operating_points = self.sine_spacing_core_op_movement.generate_operating_points(
-            num_steps=num_steps,
-            delta_time=delta_time,
+        operating_points = (
+            self.sine_spacing_core_op_movement._generate_operating_points(
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
         )
 
         # Extract vCg__E values from generated OperatingPoints.
@@ -298,7 +300,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         num_steps = 100
         delta_time = 0.01
         operating_points = (
-            self.uniform_spacing_core_op_movement.generate_operating_points(
+            self.uniform_spacing_core_op_movement._generate_operating_points(
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -334,55 +336,55 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         self.assertEqual(core_op_movement.max_period, 10.0)
 
     def test_generate_operating_points_parameter_validation(self) -> None:
-        """Test that generate_operating_points validates num_steps and delta_time."""
+        """Test that _generate_operating_points validates num_steps and delta_time."""
         core_op_movement = self.basic_core_op_movement
 
         # Test invalid num_steps.
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            core_op_movement.generate_operating_points(num_steps=0, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=0, delta_time=0.01)
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            core_op_movement.generate_operating_points(num_steps=-1, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=-1, delta_time=0.01)
 
         bad_num_steps: Any = "invalid"
         with self.assertRaises(TypeError):
-            core_op_movement.generate_operating_points(
+            core_op_movement._generate_operating_points(
                 num_steps=bad_num_steps, delta_time=0.01
             )
 
         # Test invalid delta_time.
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.0)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.0)
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=-0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=-0.01)
 
         bad_delta_time: Any = "invalid"
         with self.assertRaises(TypeError):
-            core_op_movement.generate_operating_points(
+            core_op_movement._generate_operating_points(
                 num_steps=10, delta_time=bad_delta_time
             )
 
     def test_generate_operating_points_returns_correct_length(self) -> None:
-        """Test that generate_operating_points returns list of correct length."""
+        """Test that _generate_operating_points returns list of correct length."""
         core_op_movement = self.basic_core_op_movement
 
         test_num_steps = [1, 5, 10, 25, 50, 100, 200]
         for num_steps in test_num_steps:
             with self.subTest(num_steps=num_steps):
-                operating_points = core_op_movement.generate_operating_points(
+                operating_points = core_op_movement._generate_operating_points(
                     num_steps=num_steps, delta_time=0.01
                 )
                 self.assertEqual(len(operating_points), num_steps)
 
     def test_generate_operating_points_returns_correct_types(self) -> None:
-        """Test that generate_operating_points returns OperatingPoints."""
+        """Test that _generate_operating_points returns OperatingPoints."""
         core_op_movement = self.basic_core_op_movement
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=10, delta_time=0.01
         )
 
@@ -391,11 +393,11 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             self.assertIsInstance(op, ps.OperatingPoint)
 
     def test_generate_operating_points_preserves_non_changing_attributes(self) -> None:
-        """Test that generate_operating_points preserves non-changing attributes."""
+        """Test that _generate_operating_points preserves non-changing attributes."""
         core_op_movement = self.basic_core_op_movement
         base_op = core_op_movement.base_operating_point
 
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=10, delta_time=0.01
         )
 
@@ -412,7 +414,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         core_op_movement = self.static_core_op_movement
         base_op = core_op_movement.base_operating_point
 
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=50, delta_time=0.01
         )
 
@@ -421,14 +423,14 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             self.assertEqual(op.vCg__E, base_op.vCg__E)
 
     def test_generate_operating_points_different_delta_time(self) -> None:
-        """Test generate_operating_points with various delta_time values."""
+        """Test _generate_operating_points with various delta_time values."""
         core_op_movement = self.basic_core_op_movement
 
         delta_time_list = [0.001, 0.01, 0.1, 1.0]
         num_steps = 50
         for delta_time in delta_time_list:
             with self.subTest(delta_time=delta_time):
-                operating_points = core_op_movement.generate_operating_points(
+                operating_points = core_op_movement._generate_operating_points(
                     num_steps=num_steps, delta_time=delta_time
                 )
                 self.assertEqual(len(operating_points), num_steps)
@@ -436,7 +438,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
     def test_phase_offset_shifts_initial_value(self) -> None:
         """Test that phase shifts initial vCg__E correctly."""
         core_op_movement = self.phase_offset_core_op_movement
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=100, delta_time=0.01
         )
 
@@ -454,7 +456,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
     def test_custom_spacing_function_works(self) -> None:
         """Test that custom spacing function works for vCg__E."""
         core_op_movement = self.custom_spacing_core_op_movement
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=100, delta_time=0.01
         )
 
@@ -485,7 +487,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_nonzero_start,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_invalid_end_value(self) -> None:
         """Test that custom function with invalid end value raises error."""
@@ -502,7 +504,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_nonzero_end,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_invalid_mean(self) -> None:
         """Test that custom function with invalid mean raises error."""
@@ -519,7 +521,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_nonzero_mean,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_invalid_amplitude(self) -> None:
         """Test that custom function with invalid amplitude raises error."""
@@ -536,7 +538,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_wrong_amplitude,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_not_periodic(self) -> None:
         """Test that custom function that is not periodic raises error."""
@@ -553,7 +555,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_not_periodic,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_returns_non_finite(self) -> None:
         """Test that custom function returning NaN or Inf raises error."""
@@ -570,7 +572,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_non_finite,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_custom_function_validation_wrong_shape(self) -> None:
         """Test that custom function returning wrong shape raises error."""
@@ -587,7 +589,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
                 periodVCg__E=1.0,
                 spacingVCg__E=invalid_wrong_shape,
             )
-            core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_unsafe_amplitude_causes_error(self) -> None:
         """Test that amplitude too high for base vCg__E causes error during
@@ -607,7 +609,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
 
         # Generating OperatingPoints should raise ValueError when vCg__E goes negative.
         with self.assertRaises(ValueError) as context:
-            core_op_movement.generate_operating_points(num_steps=100, delta_time=0.01)
+            core_op_movement._generate_operating_points(num_steps=100, delta_time=0.01)
 
         # Verify the error message is about vCg__E validation.
         self.assertIn("vCg__E", str(context.exception))
@@ -615,7 +617,7 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
     def test_large_amplitude_movement(self) -> None:
         """Test CoreOperatingPointMovement with large amplitude."""
         core_op_movement = self.large_amplitude_core_op_movement
-        operating_points = core_op_movement.generate_operating_points(
+        operating_points = core_op_movement._generate_operating_points(
             num_steps=100, delta_time=0.01
         )
 

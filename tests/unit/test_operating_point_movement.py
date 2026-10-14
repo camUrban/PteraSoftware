@@ -38,12 +38,12 @@ class TestOperatingPointMovement(unittest.TestCase):
         )
 
     def test_generate_operating_points_returns_operating_points(self) -> None:
-        """Test that generate_operating_points returns OperatingPoints when called
+        """Test that _generate_operating_points returns OperatingPoints when called
         through the public class."""
         operating_point_movement = (
             operating_point_movement_fixtures.make_sine_spacing_operating_point_movement_fixture()
         )
-        operating_points = operating_point_movement.generate_operating_points(
+        operating_points = operating_point_movement._generate_operating_points(
             num_steps=5, delta_time=0.01
         )
         self.assertEqual(len(operating_points), 5)

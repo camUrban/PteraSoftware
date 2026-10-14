@@ -62,7 +62,7 @@ class CoreOperatingPointMovement:
     See OperatingPointMovement for full documentation of the shared interface.
 
     CoreOperatingPointMovement holds the base OperatingPoint and oscillation parameters,
-    and provides generate_operating_point_at_time_step() for creating OperatingPoints
+    and provides _generate_operating_point_at_time_step() for creating OperatingPoints
     one step at a time.
     """
 
@@ -168,7 +168,7 @@ class CoreOperatingPointMovement:
         return self._max_period
 
     # --- Other methods ---
-    def generate_operating_point_at_time_step(
+    def _generate_operating_point_at_time_step(
         self, step: int, delta_time: float | int
     ) -> operating_point_mod.OperatingPoint:
         """Creates the OperatingPoint at a single time step.
@@ -224,7 +224,7 @@ class CoreOperatingPointMovement:
             omegas_BP1__E=self._base_operating_point.omegas_BP1__E,
         )
 
-    def generate_operating_points(
+    def _generate_operating_points(
         self, num_steps: int, delta_time: float | int
     ) -> list[operating_point_mod.OperatingPoint]:
         """Creates the OperatingPoint at each time step, and returns them in a list.
@@ -249,7 +249,7 @@ class CoreOperatingPointMovement:
         operating_points = []
         for step in range(num_steps):
             operating_points.append(
-                self.generate_operating_point_at_time_step(step, delta_time)
+                self._generate_operating_point_at_time_step(step, delta_time)
             )
 
         return operating_points
@@ -262,7 +262,7 @@ class CoreWingCrossSectionMovement:
     See WingCrossSectionMovement for full documentation of the shared interface.
 
     CoreWingCrossSectionMovement holds the base WingCrossSection and oscillation
-    parameters, and provides generate_wing_cross_section_at_time_step() for creating
+    parameters, and provides _generate_wing_cross_section_at_time_step() for creating
     WingCrossSections one step at a time.
     """
 
@@ -614,7 +614,7 @@ class CoreWingCrossSectionMovement:
         return self._max_period
 
     # --- Other methods ---
-    def generate_wing_cross_section_at_time_step(
+    def _generate_wing_cross_section_at_time_step(
         self, step: int, delta_time: float | int
     ) -> _geometry.wing_cross_section.WingCrossSection:
         """Creates the WingCrossSection at a single time step.
@@ -724,7 +724,7 @@ class CoreWingCrossSectionMovement:
             spanwise_spacing=self._base_wing_cross_section.spanwise_spacing,
         )
 
-    def generate_wing_cross_sections(
+    def _generate_wing_cross_sections(
         self,
         num_steps: int,
         delta_time: float | int,
@@ -751,7 +751,7 @@ class CoreWingCrossSectionMovement:
         wing_cross_sections = []
         for step in range(num_steps):
             wing_cross_sections.append(
-                self.generate_wing_cross_section_at_time_step(step, delta_time)
+                self._generate_wing_cross_section_at_time_step(step, delta_time)
             )
 
         return wing_cross_sections
@@ -764,8 +764,8 @@ class CoreWingMovement:
     See WingMovement for full documentation of the shared interface.
 
     CoreWingMovement holds the base Wing, WingCrossSectionMovements, and oscillation
-    parameters, and provides generate_wing_at_time_step() for creating Wings one step at
-    a time.
+    parameters, and provides _generate_wing_at_time_step() for creating Wings one step
+    at a time.
     """
 
     __slots__ = (
@@ -1195,7 +1195,7 @@ class CoreWingMovement:
         return self._max_period
 
     # --- Other methods ---
-    def generate_wing_at_time_step(
+    def _generate_wing_at_time_step(
         self, step: int, delta_time: float | int
     ) -> _geometry.wing.Wing:
         """Creates the Wing at a single time step.
@@ -1287,7 +1287,7 @@ class CoreWingMovement:
         these_wing_cross_sections = []
         for wing_cross_section_movement in self._wing_cross_section_movements:
             these_wing_cross_sections.append(
-                wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+                wing_cross_section_movement._generate_wing_cross_section_at_time_step(
                     step, delta_time
                 )
             )
@@ -1328,7 +1328,7 @@ class CoreWingMovement:
             chordwise_spacing=self._base_wing.chordwise_spacing,
         )
 
-    def generate_wings(
+    def _generate_wings(
         self, num_steps: int, delta_time: float | int
     ) -> list[_geometry.wing.Wing]:
         """Creates the Wing at each time step, and returns them in a list.
@@ -1352,7 +1352,7 @@ class CoreWingMovement:
 
         wings = []
         for step in range(num_steps):
-            wings.append(self.generate_wing_at_time_step(step, delta_time))
+            wings.append(self._generate_wing_at_time_step(step, delta_time))
 
         return wings
 
@@ -1364,8 +1364,8 @@ class CoreAirplaneMovement:
     See AirplaneMovement for full documentation of the shared interface.
 
     CoreAirplaneMovement holds the base Airplane, WingMovements, and oscillation
-    parameters, and provides generate_airplane_at_time_step() for creating Airplanes one
-    step at a time.
+    parameters, and provides _generate_airplane_at_time_step() for creating Airplanes
+    one step at a time.
     """
 
     __slots__ = (
@@ -1622,7 +1622,7 @@ class CoreAirplaneMovement:
         return self._max_period
 
     # --- Other methods ---
-    def generate_airplane_at_time_step(
+    def _generate_airplane_at_time_step(
         self, step: int, delta_time: float | int
     ) -> _geometry.airplane.Airplane:
         """Creates the Airplane at a single time step.
@@ -1675,7 +1675,7 @@ class CoreAirplaneMovement:
         these_wings = []
         for wing_movement in self._wing_movements:
             these_wings.append(
-                wing_movement.generate_wing_at_time_step(step, delta_time)
+                wing_movement._generate_wing_at_time_step(step, delta_time)
             )
 
         # The reference dimensions are inherited from the base Airplane rather than
@@ -1691,7 +1691,7 @@ class CoreAirplaneMovement:
             b_ref=self._base_airplane.b_ref,
         )
 
-    def generate_airplanes(
+    def _generate_airplanes(
         self, num_steps: int, delta_time: float | int
     ) -> list[_geometry.airplane.Airplane]:
         """Creates the Airplane at each time step, and returns them in a list.
@@ -1742,7 +1742,7 @@ class CoreAirplaneMovement:
         :return: The list of Airplanes.
         """
         # Create the first Airplane (triggers full mesh generation).
-        first_airplane = self.generate_airplane_at_time_step(0, delta_time)
+        first_airplane = self._generate_airplane_at_time_step(0, delta_time)
 
         # Create list with first Airplane.
         airplanes = [first_airplane]
@@ -1834,7 +1834,7 @@ class CoreAirplaneMovement:
         # Iterate through the CoreWingMovements.
         for wing_movement_id, wing_movement in enumerate(self._wing_movements):
             this_wings_list_of_wings = np.array(
-                wing_movement.generate_wings(
+                wing_movement._generate_wings(
                     num_steps=validation_num_steps, delta_time=delta_time
                 )
             )
@@ -1853,7 +1853,7 @@ class CoreAirplaneMovement:
         # Step 5: Create Airplanes for first period.
         first_period_airplanes = []
         for step in range(steps_per_period):
-            this_airplane = self.generate_airplane_at_time_step(step, delta_time)
+            this_airplane = self._generate_airplane_at_time_step(step, delta_time)
             first_period_airplanes.append(this_airplane)
 
         # Step 6: Create copies for remaining steps with different Cg_GP1_CgP1.
@@ -1919,7 +1919,7 @@ class CoreAirplaneMovement:
         """
         airplanes = []
         for step in range(num_steps):
-            airplanes.append(self.generate_airplane_at_time_step(step, delta_time))
+            airplanes.append(self._generate_airplane_at_time_step(step, delta_time))
 
         return airplanes
 

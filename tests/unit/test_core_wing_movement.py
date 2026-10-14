@@ -96,7 +96,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that sine spacing actually produces sinusoidal motion for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.sine_spacing_Ler_wing_movement.generate_wings(
+        wings = self.sine_spacing_Ler_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -116,7 +116,7 @@ class TestCoreWingMovement(unittest.TestCase):
         Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.uniform_spacing_Ler_wing_movement.generate_wings(
+        wings = self.uniform_spacing_Ler_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -135,7 +135,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that mixed spacing types work correctly for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.mixed_spacing_Ler_wing_movement.generate_wings(
+        wings = self.mixed_spacing_Ler_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -161,7 +161,7 @@ class TestCoreWingMovement(unittest.TestCase):
         angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.sine_spacing_angles_wing_movement.generate_wings(
+        wings = self.sine_spacing_angles_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -181,7 +181,7 @@ class TestCoreWingMovement(unittest.TestCase):
         angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.uniform_spacing_angles_wing_movement.generate_wings(
+        wings = self.uniform_spacing_angles_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -200,7 +200,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that mixed spacing types work correctly for angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.mixed_spacing_angles_wing_movement.generate_wings(
+        wings = self.mixed_spacing_angles_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -225,7 +225,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that static CoreWingMovement produces Wings with constant parameters."""
         num_steps = 50
         delta_time = 0.02
-        wings = self.static_wing_movement.generate_wings(
+        wings = self.static_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -249,10 +249,10 @@ class TestCoreWingMovement(unittest.TestCase):
         )
 
     def test_generate_wings_returns_correct_number(self) -> None:
-        """Test that generate_wings returns the correct number of Wings."""
+        """Test that _generate_wings returns the correct number of Wings."""
         num_steps = 75
         delta_time = 0.015
-        wings = self.basic_wing_movement.generate_wings(
+        wings = self.basic_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -260,10 +260,10 @@ class TestCoreWingMovement(unittest.TestCase):
         self.assertEqual(len(wings), num_steps)
 
     def test_generate_wings_preserves_wing_properties(self) -> None:
-        """Test that generate_wings preserves non-changing Wing properties."""
+        """Test that _generate_wings preserves non-changing Wing properties."""
         num_steps = 30
         delta_time = 0.02
-        wings = self.basic_wing_movement.generate_wings(
+        wings = self.basic_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -288,7 +288,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that phase offset for Ler_Gs_Cgs produces phase-shifted motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.phase_offset_Ler_wing_movement.generate_wings(
+        wings = self.phase_offset_Ler_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -314,7 +314,7 @@ class TestCoreWingMovement(unittest.TestCase):
         motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.phase_offset_angles_wing_movement.generate_wings(
+        wings = self.phase_offset_angles_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -624,7 +624,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that custom spacing function for Ler_Gs_Cgs produces expected motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.custom_spacing_Ler_wing_movement.generate_wings(
+        wings = self.custom_spacing_Ler_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -649,7 +649,7 @@ class TestCoreWingMovement(unittest.TestCase):
         motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.custom_spacing_angles_wing_movement.generate_wings(
+        wings = self.custom_spacing_angles_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -708,8 +708,8 @@ class TestCoreWingMovement(unittest.TestCase):
             rotationPointOffset_Gs_Ler=(0.0, 0.0, 0.0),
         )
 
-        wings_default = movement_default.generate_wings(num_steps, delta_time)
-        wings_zero = movement_zero_offset.generate_wings(num_steps, delta_time)
+        wings_default = movement_default._generate_wings(num_steps, delta_time)
+        wings_zero = movement_zero_offset._generate_wings(num_steps, delta_time)
 
         for i in range(num_steps):
             npt.assert_allclose(
@@ -730,7 +730,7 @@ class TestCoreWingMovement(unittest.TestCase):
         oscillate."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.rotation_point_offset_wing_movement.generate_wings(
+        wings = self.rotation_point_offset_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -762,7 +762,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that rotation point offset does not affect the Wing angles."""
         num_steps = 50
         delta_time = 0.02
-        wings = self.rotation_point_offset_wing_movement.generate_wings(
+        wings = self.rotation_point_offset_wing_movement._generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -1230,7 +1230,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.max_period, original_max_period)
 
     def test_deepcopy_generate_wings_produces_same_results(self) -> None:
-        """Test that generate_wings produces same results after deepcopy."""
+        """Test that _generate_wings produces same results after deepcopy."""
         import copy
 
         original = self.core_wing_movement
@@ -1239,10 +1239,12 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         num_steps = 50
         delta_time = 0.01
 
-        original_wings = original.generate_wings(
+        original_wings = original._generate_wings(
             num_steps=num_steps, delta_time=delta_time
         )
-        copied_wings = copied.generate_wings(num_steps=num_steps, delta_time=delta_time)
+        copied_wings = copied._generate_wings(
+            num_steps=num_steps, delta_time=delta_time
+        )
 
         # Verify same number of Wings.
         self.assertEqual(len(copied_wings), len(original_wings))

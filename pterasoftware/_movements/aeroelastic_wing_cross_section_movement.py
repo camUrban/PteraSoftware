@@ -16,7 +16,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
     In aeroelastic simulations, wing cross section geometry is prescribed via
     oscillation parameters (the same oscillation based generation as
     WingCrossSectionMovement), but the solver adds structural deformation angles at each
-    time step. This class overrides generate_wing_cross_section_at_time_step to accept
+    time step. When creating the WingCrossSection at each time step, this class accepts
     an optional deformation that is added to the prescribed angles_Wcsp_to_Wcs_ixyz.
     """
 
@@ -147,7 +147,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
             phaseAngles_Wcsp_to_Wcs_ixyz=phaseAngles_Wcsp_to_Wcs_ixyz,
         )
 
-    def generate_wing_cross_section_at_time_step(
+    def _generate_wing_cross_section_at_time_step(
         self,
         step: int,
         delta_time: float | int,

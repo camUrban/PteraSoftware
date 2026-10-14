@@ -145,7 +145,7 @@ def make_mixed_wing_aeroelastic_airplane_movement_fixture() -> (
     Wing is backed by an AeroelasticWingMovement and whose second Wing is backed by a
     standard WingMovement.
 
-    This exercises both branches of generate_airplane_at_time_step at once: the
+    This exercises both branches of _generate_airplane_at_time_step at once: the
     AeroelasticWingMovement child receives its per Wing deformation, while the standard
     WingMovement child is advanced without deformation.
 

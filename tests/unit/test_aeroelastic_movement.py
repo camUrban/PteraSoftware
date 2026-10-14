@@ -126,11 +126,11 @@ class TestAeroelasticMovement(unittest.TestCase):
             )
 
     def test_generate_airplane_at_time_step_returns_airplane(self) -> None:
-        """Test that generate_airplane_at_time_step returns an Airplane."""
+        """Test that _generate_airplane_at_time_step returns an Airplane."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
-        airplane = aeroelastic_movement.generate_airplane_at_time_step(
+        airplane = aeroelastic_movement._generate_airplane_at_time_step(
             airplane_movement_index=0, step=2
         )
         self.assertIsInstance(
@@ -141,7 +141,7 @@ class TestAeroelasticMovement(unittest.TestCase):
     def test_generate_airplane_at_time_step_delegates_with_internal_delta_time(
         self,
     ) -> None:
-        """Test that generate_airplane_at_time_step delegates to the selected
+        """Test that _generate_airplane_at_time_step delegates to the selected
         AeroelasticAirplaneMovement using the AeroelasticMovement's own delta_time."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
@@ -149,12 +149,12 @@ class TestAeroelasticMovement(unittest.TestCase):
 
         # The AeroelasticMovement does not take a delta_time argument here; it must use
         # its stored delta_time when delegating to the AeroelasticAirplaneMovement.
-        result = aeroelastic_movement.generate_airplane_at_time_step(
+        result = aeroelastic_movement._generate_airplane_at_time_step(
             airplane_movement_index=0, step=2
         )
         expected = aeroelastic_movement.airplane_movements[
             0
-        ].generate_airplane_at_time_step(2, aeroelastic_movement.delta_time)
+        ]._generate_airplane_at_time_step(2, aeroelastic_movement.delta_time)
 
         npt.assert_array_equal(result.Cg_GP1_CgP1, expected.Cg_GP1_CgP1)
         result_wing_cross_sections = result.wings[0].wing_cross_sections
@@ -166,9 +166,9 @@ class TestAeroelasticMovement(unittest.TestCase):
             )
 
     def test_generate_airplane_at_time_step_applies_deformation(self) -> None:
-        """Test that generate_airplane_at_time_step threads per Wing deformation down to
-        the AeroelasticAirplaneMovement, so each WingCrossSection's angles differ from
-        the prescribed angles by exactly that row's deformation."""
+        """Test that _generate_airplane_at_time_step threads per Wing deformation down
+        to the AeroelasticAirplaneMovement, so each WingCrossSection's angles differ
+        from the prescribed angles by exactly that row's deformation."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -178,10 +178,10 @@ class TestAeroelasticMovement(unittest.TestCase):
             np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
         ]
 
-        prescribed_airplane = aeroelastic_movement.generate_airplane_at_time_step(
+        prescribed_airplane = aeroelastic_movement._generate_airplane_at_time_step(
             airplane_movement_index=0, step=1
         )
-        deformed_airplane = aeroelastic_movement.generate_airplane_at_time_step(
+        deformed_airplane = aeroelastic_movement._generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=1,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

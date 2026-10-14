@@ -38,12 +38,12 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         )
 
     def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
-        """Test that generate_wing_cross_sections returns WingCrossSections when called
+        """Test that _generate_wing_cross_sections returns WingCrossSections when called
         through the public class."""
         wing_cross_section_movement = (
             wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture()
         )
-        wing_cross_sections = wing_cross_section_movement.generate_wing_cross_sections(
+        wing_cross_sections = wing_cross_section_movement._generate_wing_cross_sections(
             num_steps=5, delta_time=0.01
         )
         self.assertEqual(len(wing_cross_sections), 5)

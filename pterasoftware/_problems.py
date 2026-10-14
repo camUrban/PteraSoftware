@@ -457,7 +457,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         )
 
         # Coupled-specific state: a mutable list of SteadyProblems that grows as the
-        # solver advances. Subclass initialize_next_problem overrides append to this
+        # solver advances. Subclass _initialize_next_problem overrides append to this
         # list. External code reads through the steady_problems tuple-view property to
         # preserve the read-only contract inherited from UnsteadyProblem. Seed with a
         # SteadyProblem built from the initial geometry so step zero is always ready.
@@ -477,7 +477,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return tuple(self._steady_problems)
 
-    def get_steady_problem(self, step: int) -> SteadyProblem:
+    def _get_steady_problem(self, step: int) -> SteadyProblem:
         """Get the SteadyProblem at a given time step.
 
         :param step: The time step index (zero indexed). Must be greater than or equal
@@ -490,7 +490,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
 
         return self._steady_problems[step]
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -509,7 +509,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         :return: None
         :raises NotImplementedError: Always. Subclasses must override this method.
         """
-        raise NotImplementedError("Subclasses must implement initialize_next_problem.")
+        raise NotImplementedError("Subclasses must implement _initialize_next_problem.")
 
 
 class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
@@ -626,9 +626,9 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         # Derive the initial Airplane and OperatingPoint from the FreeFlightMovement's
         # first time step. SteadyProblem mutates each Panel's GP1_CgP1 attributes once,
         # so the initial Airplane must be a fresh object, which
-        # generate_airplane_at_time_step returns.
+        # _generate_airplane_at_time_step returns.
         initial_airplane_movement = movement.airplane_movements[0]
-        initial_airplane = initial_airplane_movement.generate_airplane_at_time_step(
+        initial_airplane = initial_airplane_movement._generate_airplane_at_time_step(
             step=0, delta_time=movement.delta_time
         )
         initial_operating_point = movement.operating_point_movement.operating_points[0]
@@ -690,7 +690,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
 
         # Tracks whether the external_loads_fn's return structure has been validated.
         # The return contract is static across time steps, so it is checked once, on the
-        # function's first invocation in initialize_next_problem, rather than every
+        # function's first invocation in _initialize_next_problem, rather than every
         # step.
         self._external_loads_validated = False
 
@@ -1278,7 +1278,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             airplanes=[copy.deepcopy(next_airplane)],
             operating_point=current_operating_point,
         )
-        solver.freeze_substep(transient_next_steady_problem)
+        solver._freeze_substep(transient_next_steady_problem)
         weights = self._build_relaxation_weights()
 
         # Seed the iteration with the loose step, S(x_n, l_n), evaluated from the
@@ -1300,7 +1300,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             trial_operating_point = self._operating_point_from_vector(
                 trial_x, current_operating_point
             )
-            trial_airplane = solver.evaluate_trial_aero_loads(
+            trial_airplane = solver._evaluate_trial_aero_loads(
                 trial_operating_point, step
             )
             interval_loads = self._assemble_interval_loads(
@@ -1375,9 +1375,9 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             self._mujoco_model.get_state(), current_operating_point
         )
         self._commit_next_problem(accepted_operating_point, step)
-        solver.restore_substep(step)
+        solver._restore_substep(step)
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -1489,7 +1489,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             raise TypeError("movement must be an AeroelasticMovement.")
 
         # Generate the initial Airplane at step 0 with no deformation.
-        initial_airplane = movement.generate_airplane_at_time_step(
+        initial_airplane = movement._generate_airplane_at_time_step(
             airplane_movement_index=0, step=0
         )
 
@@ -1616,7 +1616,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -1645,7 +1645,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         ]
 
         # Generate the deformed Airplane at this step.
-        airplane = self.movement.generate_airplane_at_time_step(
+        airplane = self.movement._generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

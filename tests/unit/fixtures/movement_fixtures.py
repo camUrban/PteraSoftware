@@ -233,8 +233,8 @@ def make_aeroelastic_movement_with_standard_wing_fixture() -> ps.AeroelasticMove
     AeroelasticWingMovement.
 
     This exercises the code path in AeroelasticAirplaneMovement.
-    generate_airplane_at_time_step where the else branch calls
-    WingMovement.generate_wing_at_time_step(step, delta_time) without deformation.
+    _generate_airplane_at_time_step where the else branch calls
+    WingMovement._generate_wing_at_time_step(step, delta_time) without deformation.
 
     :return make_aeroelastic_movement_with_standard_wing_fixture: AeroelasticMovement
         This is the AeroelasticMovement configured with a standard WingMovement child

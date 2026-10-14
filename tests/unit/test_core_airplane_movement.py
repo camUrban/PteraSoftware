@@ -70,7 +70,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         Cg_GP1_CgP1."""
         num_steps = 10
         delta_time = 0.01
-        airplanes = self.sine_spacing_Cg_airplane_movement.generate_airplanes(
+        airplanes = self.sine_spacing_Cg_airplane_movement._generate_airplanes(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -91,7 +91,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         Cg_GP1_CgP1."""
         num_steps = 10
         delta_time = 0.01
-        airplanes = self.uniform_spacing_Cg_airplane_movement.generate_airplanes(
+        airplanes = self.uniform_spacing_Cg_airplane_movement._generate_airplanes(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -111,7 +111,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         """Test that mixed spacing types work correctly for Cg_GP1_CgP1."""
         num_steps = 10
         delta_time = 0.01
-        airplanes = self.mixed_spacing_Cg_airplane_movement.generate_airplanes(
+        airplanes = self.mixed_spacing_Cg_airplane_movement._generate_airplanes(
             num_steps=num_steps,
             delta_time=delta_time,
         )
@@ -391,66 +391,66 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         self.assertEqual(airplane_movement.max_period, 1.5)
 
     def test_generate_airplanes_parameter_validation(self) -> None:
-        """Test that generate_airplanes validates num_steps and delta_time."""
+        """Test that _generate_airplanes validates num_steps and delta_time."""
         airplane_movement = self.basic_airplane_movement
 
         # Test invalid num_steps.
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            airplane_movement.generate_airplanes(num_steps=0, delta_time=0.01)
+            airplane_movement._generate_airplanes(num_steps=0, delta_time=0.01)
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            airplane_movement.generate_airplanes(num_steps=-1, delta_time=0.01)
+            airplane_movement._generate_airplanes(num_steps=-1, delta_time=0.01)
 
         bad_num_steps: Any = "invalid"
         with self.assertRaises(TypeError):
-            airplane_movement.generate_airplanes(
+            airplane_movement._generate_airplanes(
                 num_steps=bad_num_steps, delta_time=0.01
             )
 
         # Test invalid delta_time.
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            airplane_movement.generate_airplanes(num_steps=10, delta_time=0.0)
+            airplane_movement._generate_airplanes(num_steps=10, delta_time=0.0)
 
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
-            airplane_movement.generate_airplanes(num_steps=10, delta_time=-0.01)
+            airplane_movement._generate_airplanes(num_steps=10, delta_time=-0.01)
 
         bad_delta_time: Any = "invalid"
         with self.assertRaises(TypeError):
-            airplane_movement.generate_airplanes(
+            airplane_movement._generate_airplanes(
                 num_steps=10, delta_time=bad_delta_time
             )
 
     def test_generate_airplanes_returns_correct_length(self) -> None:
-        """Test that generate_airplanes returns list of correct length."""
+        """Test that _generate_airplanes returns list of correct length."""
         airplane_movement = self.basic_airplane_movement
 
         test_num_steps = [1, 5, 10, 50, 100]
         for num_steps in test_num_steps:
             with self.subTest(num_steps=num_steps):
-                airplanes = airplane_movement.generate_airplanes(
+                airplanes = airplane_movement._generate_airplanes(
                     num_steps=num_steps, delta_time=0.01
                 )
                 self.assertEqual(len(airplanes), num_steps)
 
     def test_generate_airplanes_returns_correct_types(self) -> None:
-        """Test that generate_airplanes returns Airplanes."""
+        """Test that _generate_airplanes returns Airplanes."""
         airplane_movement = self.basic_airplane_movement
-        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=10, delta_time=0.01)
 
         # Verify all elements are Airplanes.
         for airplane in airplanes:
             self.assertIsInstance(airplane, ps.Airplane)
 
     def test_generate_airplanes_preserves_non_changing_attributes(self) -> None:
-        """Test that generate_airplanes preserves non-changing attributes."""
+        """Test that _generate_airplanes preserves non-changing attributes."""
         airplane_movement = self.basic_airplane_movement
         base_airplane = airplane_movement.base_airplane
 
-        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=10, delta_time=0.01)
 
         # Check that non-changing attributes are preserved. The reference dimensions are
         # inherited from the base Airplane rather than recalculated from each time
@@ -494,9 +494,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         )
         self.assertGreater(airplane_movement.max_period, 0.0)
 
-        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=10, delta_time=0.01)
         airplanes.append(
-            airplane_movement.generate_airplane_at_time_step(step=3, delta_time=0.01)
+            airplane_movement._generate_airplane_at_time_step(step=3, delta_time=0.01)
         )
 
         for airplane in airplanes:
@@ -509,7 +509,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         airplane_movement = self.static_airplane_movement
         base_airplane = airplane_movement.base_airplane
 
-        airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=50, delta_time=0.01)
 
         # All Airplanes should have same Cg_GP1_CgP1.
         for airplane in airplanes:
@@ -518,7 +518,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
     def test_phase_offset_Cg(self) -> None:
         """Test that phase shifts initial position correctly for Cg_GP1_CgP1."""
         airplane_movement = self.phase_offset_Cg_airplane_movement
-        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(
+            num_steps=100, delta_time=0.01
+        )
 
         # Extract positions (in Earth axes, relative to the simulation starting point).
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
@@ -534,7 +536,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
     def test_single_dimension_movement_Cg(self) -> None:
         """Test that only one dimension of Cg_GP1_CgP1 moves."""
         airplane_movement = self.sine_spacing_Cg_airplane_movement
-        airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=50, delta_time=0.01)
 
         # Extract positions (in Earth axes, relative to the simulation starting point).
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
@@ -549,7 +551,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
     def test_custom_spacing_function_Cg(self) -> None:
         """Test that custom spacing function works for Cg_GP1_CgP1."""
         airplane_movement = self.custom_spacing_Cg_airplane_movement
-        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(
+            num_steps=100, delta_time=0.01
+        )
 
         # Extract x positions (in Earth axes, relative to the simulation starting
         # point).
@@ -566,7 +570,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
     def test_custom_spacing_function_mixed_with_standard(self) -> None:
         """Test that custom and standard spacing functions can be mixed."""
         airplane_movement = self.mixed_custom_and_standard_spacing_airplane_movement
-        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(
+            num_steps=100, delta_time=0.01
+        )
 
         # Verify that Airplanes are generated successfully.
         self.assertEqual(len(airplanes), 100)
@@ -610,7 +616,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         # Generate Wings for step 0.
         wings = []
         for wing_movement in self.static_airplane_movement.wing_movements:
-            step_0_wings = wing_movement.generate_wings(num_steps=1, delta_time=0.01)
+            step_0_wings = wing_movement._generate_wings(num_steps=1, delta_time=0.01)
             wings.append(step_0_wings[0])
 
         wings_array = np.array(wings)
@@ -631,7 +637,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         wings_step_5 = []
 
         for wing_movement in airplane_movement.wing_movements:
-            all_wings = wing_movement.generate_wings(num_steps=10, delta_time=0.01)
+            all_wings = wing_movement._generate_wings(num_steps=10, delta_time=0.01)
             wings_step_0.append(all_wings[0])
             wings_step_5.append(all_wings[5])
 
@@ -651,7 +657,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         # Generate Wings.
         wings = []
         for wing_movement in self.static_airplane_movement.wing_movements:
-            step_0_wings = wing_movement.generate_wings(num_steps=1, delta_time=0.01)
+            step_0_wings = wing_movement._generate_wings(num_steps=1, delta_time=0.01)
             wings.append(step_0_wings[0])
 
         wings_array = np.array(wings)
@@ -674,7 +680,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         num_steps = 30
         delta_time = 0.01
 
-        airplanes = airplane_movement.generate_airplanes(
+        airplanes = airplane_movement._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 
@@ -694,7 +700,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         delta_time = 0.01
         steps_per_period = 10
 
-        airplanes = airplane_movement.generate_airplanes(
+        airplanes = airplane_movement._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 
@@ -750,7 +756,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         num_steps = 30
         delta_time = 0.01
 
-        airplanes = airplane_movement.generate_airplanes(
+        airplanes = airplane_movement._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 
@@ -776,7 +782,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         num_steps = 30
         delta_time = 0.007  # Doesn't align with period = 1.0.
 
-        airplanes = airplane_movement.generate_airplanes(
+        airplanes = airplane_movement._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 
@@ -791,7 +797,7 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         num_steps = 10
         delta_time = 0.01
 
-        airplanes = airplane_movement.generate_airplanes(
+        airplanes = airplane_movement._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 
@@ -829,7 +835,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         wings_step_5 = []
 
         for wing_movement in airplane_movement.wing_movements:
-            all_wings = wing_movement.generate_wings(num_steps=10, delta_time=0.01)
+            all_wings = wing_movement._generate_wings(num_steps=10, delta_time=0.01)
             wings_step_0.append(all_wings[0])
             wings_step_5.append(all_wings[5])
 
@@ -874,10 +880,10 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         )
 
         # Generate Airplanes (which have meshed Wings with panels).
-        airplanes_2 = airplane_movement_2.generate_airplanes(
+        airplanes_2 = airplane_movement_2._generate_airplanes(
             num_steps=1, delta_time=0.01
         )
-        airplanes_3 = airplane_movement_3.generate_airplanes(
+        airplanes_3 = airplane_movement_3._generate_airplanes(
             num_steps=1, delta_time=0.01
         )
 
@@ -915,7 +921,7 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         airplane_movement = self.static_airplane_movement
 
         # Generate 2 time steps to get independent copies.
-        airplanes = airplane_movement.generate_airplanes(num_steps=2, delta_time=0.01)
+        airplanes = airplane_movement._generate_airplanes(num_steps=2, delta_time=0.01)
 
         # Extract Wings from each Airplane.
         wings_a = list(airplanes[0].wings)
@@ -953,7 +959,7 @@ class TestVariableGeometryFallback(unittest.TestCase):
             "_geometry_matches",
             return_value=False,
         ):
-            airplanes = airplane_movement.generate_airplanes(
+            airplanes = airplane_movement._generate_airplanes(
                 num_steps=num_steps, delta_time=delta_time
             )
 
@@ -1331,17 +1337,17 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.max_period, original_max_period)
 
     def test_deepcopy_generate_airplanes_produces_same_results(self) -> None:
-        """Test that generate_airplanes produces same results after deepcopy."""
+        """Test that _generate_airplanes produces same results after deepcopy."""
         original = self.core_airplane_movement
         copied = copy.deepcopy(original)
 
         num_steps = 10
         delta_time = 0.01
 
-        original_airplanes = original.generate_airplanes(
+        original_airplanes = original._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
-        copied_airplanes = copied.generate_airplanes(
+        copied_airplanes = copied._generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 

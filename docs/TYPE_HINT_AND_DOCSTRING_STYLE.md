@@ -567,15 +567,13 @@ def wing_cross_section_movements(self) -> tuple:
 
 
 # Uses deferral language
-def generate_wing_at_time_step(self, step: int, delta_time: float | int) -> Wing:
-    """Creates the Wing at a single time step.
+@property
+def max_period(self) -> float:
+    """The longest period of this Wing's motion.
 
     See WingMovement for full details.
 
-    :param step: The time step index. Must be a non negative int.
-    :param delta_time: The time between each time step in seconds. Must be a positive
-        number (int or float).
-    :return: The Wing at this time step.
+    :return: The longest period in seconds.
     """
 ```
 
@@ -601,7 +599,7 @@ The API reference documents only the names in `pterasoftware.__all__`. Every oth
 #### Signatures
 
 1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked class name.
-2. **When an annotation must be a private type, add an override.** Two shapes force this: a hook method whose override cannot narrow the parameter type, so the hook is annotated with the shared parent solver, and a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For those, add an entry to `ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method where it is defined, such as `pterasoftware._problems.FreeFlightUnsteadyProblem.initialize_next_problem`, then by parameter name, giving the one public type that actually works. The build checks each key and parameter against the package source and fails on a stale one, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
+2. **When an annotation must be a private type, add an override.** One shape forces this: a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For it, add an entry to `ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method where it is defined, such as `pterasoftware._unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver`, then by parameter name, giving the one public type that actually works. The build checks each key and parameter against the package source and fails on a stale one, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
 3. **Bases are not shown.** The reference shows no Bases line for any class, so a public class extending a private parent never mentions it. Its docstring must stand on its own for that reason.
 4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
 

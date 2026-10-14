@@ -580,7 +580,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
         )
 
-    def calculate_solution_velocity(
+    def _calculate_solution_velocity(
         self,
         stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         bound_singularity_counts: np.ndarray | None = None,
@@ -682,7 +682,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Calculate the velocity (in the first Airplane's geometry axes, observed from
         # the Earth frame) at the center of every Panel's horseshoe vortex's finite leg.
         bound_singularity_counts = np.zeros(3, dtype=np.int64)
-        stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
+        stackVelocityBoundVortexCenters_GP1__E = self._calculate_solution_velocity(
             stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )

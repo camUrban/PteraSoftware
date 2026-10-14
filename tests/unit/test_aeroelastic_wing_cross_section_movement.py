@@ -43,13 +43,13 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
 
     def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
-        """Test that generate_wing_cross_sections returns WingCrossSections when called
+        """Test that _generate_wing_cross_sections returns WingCrossSections when called
         through the public class."""
         aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
         wing_cross_sections = (
-            aeroelastic_wing_cross_section_movement.generate_wing_cross_sections(
+            aeroelastic_wing_cross_section_movement._generate_wing_cross_sections(
                 num_steps=5, delta_time=0.01
             )
         )
@@ -63,12 +63,12 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
     def test_generate_wing_cross_section_at_time_step_returns_wing_cross_section(
         self,
     ) -> None:
-        """Test that generate_wing_cross_section_at_time_step returns a
+        """Test that _generate_wing_cross_section_at_time_step returns a
         WingCrossSection."""
         aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
-        wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=2, delta_time=0.01
         )
         self.assertIsInstance(
@@ -86,7 +86,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             aeroelastic_wing_cross_section_movement.base_wing_cross_section
         )
 
-        wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=3, delta_time=0.01
         )
 
@@ -110,10 +110,10 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
 
-        default_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        default_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=2, delta_time=0.01
         )
-        explicit_none_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        explicit_none_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=2, delta_time=0.01, deformationAngles_Wcsp_to_Wcs_ixyz=None
         )
 
@@ -137,7 +137,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
         deformationAngles_Wcsp_to_Wcs_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
 
-        wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -167,7 +167,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
         deformationAngles_Wcsp_to_Wcs_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
 
-        wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=1,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
@@ -186,10 +186,10 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
 
-        no_deformation_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        no_deformation_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=2, delta_time=0.01
         )
-        zero_deformation_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        zero_deformation_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=2,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=np.zeros(3, dtype=float),
@@ -210,10 +210,10 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
         deformationAngles_Wcsp_to_Wcs_ixyz = np.array([3.0, -2.0, 1.0], dtype=float)
 
-        prescribed_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        prescribed_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=3, delta_time=0.01
         )
-        deformed_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+        deformed_wing_cross_section = aeroelastic_wing_cross_section_movement._generate_wing_cross_section_at_time_step(
             step=3,
             delta_time=0.01,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

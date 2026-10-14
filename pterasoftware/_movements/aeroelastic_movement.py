@@ -93,7 +93,7 @@ class AeroelasticMovement(_core.CoreMovement):
         # --- Batch generate OperatingPoints ---
         # OperatingPoints are prescribed in aeroelastic simulations, so generate them
         # all upfront.
-        operating_points_list = operating_point_movement.generate_operating_points(
+        operating_points_list = operating_point_movement._generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
         )
         self._operating_points: tuple[operating_point_mod.OperatingPoint, ...] = tuple(
@@ -124,7 +124,7 @@ class AeroelasticMovement(_core.CoreMovement):
     def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
         return self._operating_points
 
-    def generate_airplane_at_time_step(
+    def _generate_airplane_at_time_step(
         self,
         airplane_movement_index: int,
         step: int,
@@ -151,7 +151,7 @@ class AeroelasticMovement(_core.CoreMovement):
         """
         return self.airplane_movements[
             airplane_movement_index
-        ].generate_airplane_at_time_step(
+        ]._generate_airplane_at_time_step(
             step,
             self._delta_time,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,

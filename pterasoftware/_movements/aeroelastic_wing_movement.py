@@ -18,10 +18,10 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
 
     In aeroelastic simulations, wing geometry is prescribed via oscillation parameters
     (the same oscillation based generation as WingMovement), but the solver adds
-    structural deformation at each time step. This class overrides
-    generate_wing_at_time_step to accept per WingCrossSection deformation angles (which
-    perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to
-    its AeroelasticWingCrossSectionMovement children.
+    structural deformation at each time step. When creating the Wing at each time step,
+    this class accepts per WingCrossSection deformation angles (which perturb the
+    WingCrossSections' angles_Wcsp_to_Wcs_ixyz) and threads them down to its
+    AeroelasticWingCrossSectionMovement children.
 
     Wings cannot undergo motion that causes them to switch symmetry types. A transition
     between types could change the number of Wings and the Panel structure, which is
@@ -314,7 +314,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     ) -> tuple[Callable[[float], float] | None, ...]:
         return self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
 
-    def generate_wing_at_time_step(
+    def _generate_wing_at_time_step(
         self,
         step: int,
         delta_time: float | int,
@@ -435,7 +435,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
                 )
 
             these_wing_cross_sections.append(
-                wing_cross_section_movement.generate_wing_cross_section_at_time_step(
+                wing_cross_section_movement._generate_wing_cross_section_at_time_step(
                     step,
                     delta_time,
                     deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,

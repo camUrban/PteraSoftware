@@ -184,9 +184,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         self._currentGridWingWingInfluences__E: np.ndarray = np.empty(0, dtype=float)
         self._currentStackWakeWingInfluences__E: np.ndarray = np.empty(0, dtype=float)
-        # Initialized to ones so that initialize_step_geometry (which can run before any
-        # strength solve) finds a sensible placeholder when shedding the next step's
-        # wake. run() overwrites this each step before solving.
+        # Initialized to ones as a placeholder. run() overwrites this each step before
+        # solving.
         self._current_bound_vortex_strengths: np.ndarray = np.ones(
             self.num_panels, dtype=float
         )
@@ -948,41 +947,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             logger.debug(_logging.indent() + "Calculating forces and moments")
             self._calculate_loads()
 
-    def initialize_step_geometry(self, step: int) -> None:
-        """Initializes geometry for a specific step without solving.
-
-        Sets up bound ring vortices and wake ring vortices for the specified time step,
-        but does not solve the aerodynamic system. Use this for geometry only analysis
-        like delta_time optimization.
-
-        This method must be called sequentially for each step starting from 0, as wake
-        vortices at step N depend on the geometry from step N - 1.
-
-        :param step: The time step to initialize geometry for. It is zero indexed. It
-            must be a non negative int and be less than the total number of steps.
-        :return: None
-        """
-        step = _parameter_validation.int_in_range_return_int(
-            step, "step", 0, True, self.num_steps, False
-        )
-
-        # Initialize bound ring vortices. The base solver's hook does an upfront init
-        # for all steps when step is 0 and is a no-op otherwise. Coupled subclasses
-        # override to initialize only the specified step.
-        self._initialize_step_vortices(step)
-
-        # Set the current step and related state.
-        self._current_step = step
-        current_problem: _problems.SteadyProblem = self._get_steady_problem_at(step)
-        self.current_airplanes = current_problem.airplanes
-        self.current_operating_point = current_problem.operating_point
-        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
-
-        # Populate the wake for the next step (if not the last step).
-        if step < self.num_steps - 1:
-            self._populate_next_airplanes_wake_vortex_points()
-            self._populate_next_airplanes_wake_vortices()
-
     def _initialize_step_vortices(self, step: int) -> None:
         """Initializes this time step's bound ring vortices.
 
@@ -1519,7 +1483,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             - self._currentStackFreestreamWingInfluences__E,
         )
 
-    def calculate_solution_velocity(
+    def _calculate_solution_velocity(
         self,
         stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
         bound_singularity_counts: np.ndarray | None = None,
@@ -1582,7 +1546,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         also includes the induced velocity from image bound and wake ring vortices
         reflected across that surface.
 
-        This is the induced part of calculate_solution_velocity, which adds the current
+        This is the induced part of _calculate_solution_velocity, which adds the current
         time step's freestream velocity to this result. Wake convection calls this
         method directly so that it can add the next time step's freestream instead.
 
@@ -1864,7 +1828,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         wake_singularity_counts = np.zeros(3, dtype=np.int64)
         stackVelocityRightLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpr_GP1_CgP1,
-            self.calculate_solution_velocity(
+            self._calculate_solution_velocity(
                 stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
@@ -1875,7 +1839,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         stackVelocityFrontLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpf_GP1_CgP1,
-            self.calculate_solution_velocity(
+            self._calculate_solution_velocity(
                 stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
@@ -1886,7 +1850,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         stackVelocityLeftLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpl_GP1_CgP1,
-            self.calculate_solution_velocity(
+            self._calculate_solution_velocity(
                 stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
@@ -1897,7 +1861,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         stackVelocityBackLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpb_GP1_CgP1,
-            self.calculate_solution_velocity(
+            self._calculate_solution_velocity(
                 stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
@@ -2154,7 +2118,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         bound_singularity_counts = np.zeros(3, dtype=np.int64)
         wake_singularity_counts = np.zeros(3, dtype=np.int64)
         stackVelocityCpp_GP1__E = (
-            self.calculate_solution_velocity(
+            self._calculate_solution_velocity(
                 stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
@@ -2896,7 +2860,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # Take the induced velocity at the current step and add the
                             # next step's freestream (the interval's end frame), rather
                             # than the current step's freestream that
-                            # calculate_solution_velocity would add.
+                            # _calculate_solution_velocity would add.
                             stackVRowWrvp_GP1__E = (
                                 self._calculate_induced_velocity(
                                     stackRowWrvp_GP1_CgP1,
@@ -2953,7 +2917,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # freestream velocity (in the first Airplane's geometry axes,
                         # observed from the Earth frame). Otherwise, add the next step's
                         # freestream (the interval's end frame, rather than the current
-                        # step's freestream that calculate_solution_velocity would add)
+                        # step's freestream that _calculate_solution_velocity would add)
                         # to the induced velocity at the aged grid, computed up front
                         # for this call or supplied by a strongly coupled sub-iteration
                         # that reuses it across trials.

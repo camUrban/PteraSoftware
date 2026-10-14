@@ -165,7 +165,7 @@ class MuJoCoModel:
         vCgX_E__E, vCgY_E__E, vCgZ_E__E = vCg_E__E[:]
 
         # Gravity in the MuJoCo model is turned off as it is applied by
-        # FreeFlightUnsteadyProblem.initialize_next_problem.
+        # FreeFlightUnsteadyProblem._initialize_next_problem.
         gravity_str = "0.0 0.0 0.0"
         inertia_str = (
             f"{IXX_BP1_CgP1} {IYY_BP1_CgP1} {IZZ_BP1_CgP1} {IXY_BP1_CgP1} "
@@ -307,11 +307,11 @@ class MuJoCoModel:
 
         :param forces_E: A (3,) ndarray of floats representing the forces (in Earth
             axes) to apply to the first Airplane at the first Airplane's CG, in Newtons.
-            Supplied by FreeFlightUnsteadyProblem.initialize_next_problem.
+            Supplied by FreeFlightUnsteadyProblem._initialize_next_problem.
         :param moments_E_CgP1: A (3,) ndarray of floats representing the moments (in
             Earth axes, relative to the first Airplane's CG) to apply to the first
             Airplane at the first Airplane's CG, in Newton meters. Supplied by
-            FreeFlightUnsteadyProblem.initialize_next_problem.
+            FreeFlightUnsteadyProblem._initialize_next_problem.
         :return: None
         """
         # Pack the force and moment into the model's 6-element xfrc_applied array.

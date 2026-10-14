@@ -59,10 +59,10 @@ class TestWingMovement(unittest.TestCase):
             )
 
     def test_generate_wings_returns_wings(self) -> None:
-        """Test that generate_wings returns Wings when called through the public
+        """Test that _generate_wings returns Wings when called through the public
         class."""
         wing_movement = wing_movement_fixtures.make_basic_wing_movement_fixture()
-        wings = wing_movement.generate_wings(num_steps=5, delta_time=0.01)
+        wings = wing_movement._generate_wings(num_steps=5, delta_time=0.01)
         self.assertEqual(len(wings), 5)
         for wing in wings:
             self.assertIsInstance(

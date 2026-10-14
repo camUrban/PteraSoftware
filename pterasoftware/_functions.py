@@ -209,7 +209,7 @@ def calculate_streamlines(
         # Finds the fluid velocity (in the first Airplane's geometry axes, observed from
         # the Earth frame) at each streamline point in the previous row due to the
         # freestream velocity and the induced velocity from the vortices.
-        stackVLastRowStreamlinePoints_GP1__E = solver.calculate_solution_velocity(
+        stackVLastRowStreamlinePoints_GP1__E = solver._calculate_solution_velocity(
             stackP_GP1_CgP1=lastRowStackStreamlinePoints_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )

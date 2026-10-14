@@ -465,7 +465,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
 
 
 class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
-    """Tests for FreeFlightUnsteadyProblem.initialize_next_problem."""
+    """Tests for FreeFlightUnsteadyProblem._initialize_next_problem."""
 
     def setUp(self) -> None:
         """Set up a fresh FreeFlightUnsteadyProblem and a primed mock solver."""
@@ -475,7 +475,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.final_step = self.problem.num_steps - 1
 
         # The solver populates the current Airplane's load attributes via
-        # _calculate_loads before invoking initialize_next_problem, so emulate that
+        # _calculate_loads before invoking _initialize_next_problem, so emulate that
         # here.
         self.current_airplane = self.problem.steady_problems[0].airplanes[0]
         self.current_airplane.forces_W = np.array([1.0, 2.0, 3.0], dtype=float)
@@ -557,7 +557,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self._mock_mujoco_model()
         before = len(self.problem.steady_problems)
 
-        self.problem.initialize_next_problem(self.solver, step=0)
+        self.problem._initialize_next_problem(self.solver, step=0)
 
         self.assertEqual(len(self.problem.steady_problems), before + 1)
         self.assertIsInstance(self.problem.steady_problems[-1], ps.SteadyProblem)
@@ -571,7 +571,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         )
         before = len(operating_points)
 
-        self.problem.initialize_next_problem(self.solver, step=0)
+        self.problem._initialize_next_problem(self.solver, step=0)
 
         self.assertEqual(len(operating_points), before + 1)
 
@@ -582,7 +582,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         # Step 0 is always in the prescribed phase, since prescribed_num_steps is at
         # least one.
-        self.problem.initialize_next_problem(self.solver, step=0)
+        self.problem._initialize_next_problem(self.solver, step=0)
 
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_called_once()
@@ -591,7 +591,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         """Test that no SteadyProblem is appended on the final step."""
         before = len(self.problem.steady_problems)
 
-        self.problem.initialize_next_problem(self.solver, step=self.final_step)
+        self.problem._initialize_next_problem(self.solver, step=self.final_step)
 
         self.assertEqual(len(self.problem.steady_problems), before)
 
@@ -599,7 +599,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         """Test that the MuJoCo model is not stepped on the final step."""
         mock_model = self._mock_mujoco_model()
 
-        self.problem.initialize_next_problem(self.solver, step=self.final_step)
+        self.problem._initialize_next_problem(self.solver, step=self.final_step)
 
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_not_called()
@@ -614,7 +614,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         airplane = solver.current_airplanes[0]
         operating_point = solver.current_operating_point
 
-        problem.initialize_next_problem(solver, step=0)
+        problem._initialize_next_problem(solver, step=0)
 
         external_loads_fn.assert_called_once_with(operating_point, airplane)
 
@@ -629,7 +629,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         # The basic fixture has more than one prescribed step, so step 1 is in the
         # prescribed phase but is not the first step.
         self.assertGreater(problem.movement.prescribed_num_steps, 1)
-        problem.initialize_next_problem(solver, step=1)
+        problem._initialize_next_problem(solver, step=1)
 
         external_loads_fn.assert_not_called()
 
@@ -644,7 +644,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         )
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
 
-        problem.initialize_next_problem(solver, step=0)
+        problem._initialize_next_problem(solver, step=0)
 
         self.assertTrue(problem._external_loads_validated)
 
@@ -654,7 +654,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
 
         with self.assertRaises(ValueError):
-            problem.initialize_next_problem(solver, step=0)
+            problem._initialize_next_problem(solver, step=0)
 
     def test_external_loads_fn_wrong_shape_raises(self) -> None:
         """Test that an external_loads_fn returning a non (3,) component raises."""
@@ -664,7 +664,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
 
         with self.assertRaises(ValueError):
-            problem.initialize_next_problem(solver, step=0)
+            problem._initialize_next_problem(solver, step=0)
 
     def test_external_loads_fn_non_finite_raises(self) -> None:
         """Test that an external_loads_fn returning a non finite value raises."""
@@ -677,7 +677,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
 
         with self.assertRaises(ValueError):
-            problem.initialize_next_problem(solver, step=0)
+            problem._initialize_next_problem(solver, step=0)
 
 
 class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):

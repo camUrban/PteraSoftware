@@ -73,8 +73,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "all_periods",
         "ampCg_GP1_CgP1",
         "base_airplane",
-        "generate_airplane_at_time_step",
-        "generate_airplanes",
         "max_period",
         "periodCg_GP1_CgP1",
         "phaseCg_GP1_CgP1",
@@ -84,7 +82,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     "AeroelasticMovement": (
         "airplane_movements",
         "delta_time",
-        "generate_airplane_at_time_step",
         "lcm_period",
         "max_period",
         "max_wake_rows",
@@ -154,8 +151,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "finalYawingMoments_W_Cg",
         "first_averaging_step",
         "first_results_step",
-        "get_steady_problem",
-        "initialize_next_problem",
         "listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz",
         "max_wake_rows",
         "movement",
@@ -167,7 +162,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "wing_density",
     ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
@@ -175,7 +169,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "first_results_step",
         "force_method",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -217,8 +210,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "ampAngles_Wcsp_to_Wcs_ixyz",
         "ampLp_Wcsp_Lpp",
         "base_wing_cross_section",
-        "generate_wing_cross_section_at_time_step",
-        "generate_wing_cross_sections",
         "max_period",
         "periodAngles_Wcsp_to_Wcs_ixyz",
         "periodLp_Wcsp_Lpp",
@@ -232,8 +223,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "ampAngles_Gs_to_Wn_ixyz",
         "ampLer_Gs_Cgs",
         "base_wing",
-        "generate_wing_at_time_step",
-        "generate_wings",
         "max_period",
         "periodAngles_Gs_to_Wn_ixyz",
         "periodLer_Gs_Cgs",
@@ -296,8 +285,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "all_periods",
         "ampCg_GP1_CgP1",
         "base_airplane",
-        "generate_airplane_at_time_step",
-        "generate_airplanes",
         "max_period",
         "periodCg_GP1_CgP1",
         "phaseCg_GP1_CgP1",
@@ -321,8 +308,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     "FreeFlightOperatingPointMovement": (
         "ampVCg__E",
         "base_operating_point",
-        "generate_operating_point_at_time_step",
-        "generate_operating_points",
         "max_period",
         "operating_points",
         "periodVCg__E",
@@ -390,8 +375,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "finalYawingMoments_W_Cg",
         "first_averaging_step",
         "first_results_step",
-        "get_steady_problem",
-        "initialize_next_problem",
         "k_max",
         "mass",
         "max_wake_rows",
@@ -401,17 +384,13 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "steady_problems",
     ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
         "diagram",
-        "evaluate_trial_aero_loads",
         "first_results_step",
         "force_method",
-        "freeze_substep",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -428,7 +407,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "panels",
         "prescribed_wake",
         "ran",
-        "restore_substep",
         "run",
         "stackBbrv_GP1",
         "stackBlbrvp_GP1_CgP1",
@@ -500,8 +478,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     "OperatingPointMovement": (
         "ampVCg__E",
         "base_operating_point",
-        "generate_operating_point_at_time_step",
-        "generate_operating_points",
         "max_period",
         "periodVCg__E",
         "phaseVCg__E",
@@ -509,7 +485,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     ),
     "SteadyHorseshoeVortexLatticeMethodSolver": (
         "airplanes",
-        "calculate_solution_velocity",
         "diagram",
         "gridStreamlinePoints_GP1_CgP1",
         "num_airplanes",
@@ -532,7 +507,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
     ),
     "SteadyRingVortexLatticeMethodSolver": (
         "airplanes",
-        "calculate_solution_velocity",
         "diagram",
         "gridStreamlinePoints_GP1_CgP1",
         "num_airplanes",
@@ -632,7 +606,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "steady_problems",
     ),
     "UnsteadyRingVortexLatticeMethodSolver": (
-        "calculate_solution_velocity",
         "current_airplanes",
         "current_operating_point",
         "delta_time",
@@ -640,7 +613,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "first_results_step",
         "force_method",
         "gridStreamlinePoints_GP1_CgP1",
-        "initialize_step_geometry",
         "listStackBlwrvp_GP1_CgP1",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -738,8 +710,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "ampAngles_Wcsp_to_Wcs_ixyz",
         "ampLp_Wcsp_Lpp",
         "base_wing_cross_section",
-        "generate_wing_cross_section_at_time_step",
-        "generate_wing_cross_sections",
         "max_period",
         "periodAngles_Wcsp_to_Wcs_ixyz",
         "periodLp_Wcsp_Lpp",
@@ -753,8 +723,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "ampAngles_Gs_to_Wn_ixyz",
         "ampLer_Gs_Cgs",
         "base_wing",
-        "generate_wing_at_time_step",
-        "generate_wings",
         "max_period",
         "periodAngles_Gs_to_Wn_ixyz",
         "periodLer_Gs_Cgs",
@@ -783,12 +751,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingCg_GP1_CgP1",
         "phaseCg_GP1_CgP1",
     ),
-    "AeroelasticAirplaneMovement.generate_airplane_at_time_step": (
-        "step",
-        "delta_time",
-        "deformationAngles_Wcsp_to_Wcs_ixyz",
-    ),
-    "AeroelasticAirplaneMovement.generate_airplanes": ("num_steps", "delta_time"),
     "AeroelasticMovement.__init__": (
         "*",
         "airplane_movements",
@@ -796,11 +758,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "delta_time",
         "num_steps",
         "max_wake_rows",
-    ),
-    "AeroelasticMovement.generate_airplane_at_time_step": (
-        "airplane_movement_index",
-        "step",
-        "deformationAngles_Wcsp_to_Wcs_ixyz",
     ),
     "AeroelasticUnsteadyProblem.__init__": (
         "*",
@@ -826,16 +783,9 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "AeroelasticUnsteadyProblem.get_steady_problem": ("step",),
-    "AeroelasticUnsteadyProblem.initialize_next_problem": ("solver", "step"),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.__init__": (
         "*",
         "aeroelastic_unsteady_problem",
-    ),
-    "AeroelasticUnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
     ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
@@ -853,9 +803,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "save",
         "path",
         "quality",
-    ),
-    "AeroelasticUnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": (
-        "step",
     ),
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
@@ -876,15 +823,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingAngles_Wcsp_to_Wcs_ixyz",
         "phaseAngles_Wcsp_to_Wcs_ixyz",
     ),
-    "AeroelasticWingCrossSectionMovement.generate_wing_cross_section_at_time_step": (
-        "step",
-        "delta_time",
-        "deformationAngles_Wcsp_to_Wcs_ixyz",
-    ),
-    "AeroelasticWingCrossSectionMovement.generate_wing_cross_sections": (
-        "num_steps",
-        "delta_time",
-    ),
     "AeroelasticWingMovement.__init__": (
         "*",
         "base_wing",
@@ -900,12 +838,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "rotationPointOffset_Gs_Ler",
         "spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",
     ),
-    "AeroelasticWingMovement.generate_wing_at_time_step": (
-        "step",
-        "delta_time",
-        "deformationAngles_Wcsp_to_Wcs_ixyz",
-    ),
-    "AeroelasticWingMovement.generate_wings": ("num_steps", "delta_time"),
     "Airfoil.__init__": ("*", "name", "outline_A_Lp", "resample", "n_points_per_side"),
     "Airfoil.add_control_surface": ("deflection", "hinge_point"),
     "Airfoil.diagram": ("*", "show_mcl", "math_labels", "save", "path", "quality"),
@@ -946,8 +878,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingCg_GP1_CgP1",
         "phaseCg_GP1_CgP1",
     ),
-    "AirplaneMovement.generate_airplane_at_time_step": ("step", "delta_time"),
-    "AirplaneMovement.generate_airplanes": ("num_steps", "delta_time"),
     "FreeFlightMovement.__init__": (
         "*",
         "airplane_movements",
@@ -958,14 +888,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "max_wake_rows",
     ),
     "FreeFlightOperatingPointMovement.__init__": ("*", "base_operating_point"),
-    "FreeFlightOperatingPointMovement.generate_operating_point_at_time_step": (
-        "step",
-        "delta_time",
-    ),
-    "FreeFlightOperatingPointMovement.generate_operating_points": (
-        "num_steps",
-        "delta_time",
-    ),
     "FreeFlightUnsteadyProblem.__init__": (
         "*",
         "movement",
@@ -993,16 +915,9 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "FreeFlightUnsteadyProblem.get_steady_problem": ("step",),
-    "FreeFlightUnsteadyProblem.initialize_next_problem": ("solver", "step"),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.__init__": (
         "*",
         "free_flight_unsteady_problem",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
     ),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
@@ -1021,17 +936,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.evaluate_trial_aero_loads": (
-        "trial_operating_point",
-        "step",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.freeze_substep": (
-        "next_steady_problem",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": (
-        "step",
-    ),
-    "FreeFlightUnsteadyRingVortexLatticeMethodSolver.restore_substep": ("step",),
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
         "prescribed_wake",
@@ -1074,16 +978,7 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingVCg__E",
         "phaseVCg__E",
     ),
-    "OperatingPointMovement.generate_operating_point_at_time_step": (
-        "step",
-        "delta_time",
-    ),
-    "OperatingPointMovement.generate_operating_points": ("num_steps", "delta_time"),
     "SteadyHorseshoeVortexLatticeMethodSolver.__init__": ("*", "steady_problem"),
-    "SteadyHorseshoeVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-    ),
     "SteadyHorseshoeVortexLatticeMethodSolver.diagram": (
         "*",
         "show_airplane_axes_and_points",
@@ -1118,10 +1013,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "quality",
     ),
     "SteadyRingVortexLatticeMethodSolver.__init__": ("*", "steady_problem"),
-    "SteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-    ),
     "SteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "show_airplane_axes_and_points",
@@ -1157,11 +1048,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "quality",
     ),
     "UnsteadyRingVortexLatticeMethodSolver.__init__": ("*", "unsteady_problem"),
-    "UnsteadyRingVortexLatticeMethodSolver.calculate_solution_velocity": (
-        "stackP_GP1_CgP1",
-        "bound_singularity_counts",
-        "wake_singularity_counts",
-    ),
     "UnsteadyRingVortexLatticeMethodSolver.diagram": (
         "*",
         "step",
@@ -1179,7 +1065,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "UnsteadyRingVortexLatticeMethodSolver.initialize_step_geometry": ("step",),
     "UnsteadyRingVortexLatticeMethodSolver.run": (
         "*",
         "prescribed_wake",
@@ -1269,14 +1154,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingAngles_Wcsp_to_Wcs_ixyz",
         "phaseAngles_Wcsp_to_Wcs_ixyz",
     ),
-    "WingCrossSectionMovement.generate_wing_cross_section_at_time_step": (
-        "step",
-        "delta_time",
-    ),
-    "WingCrossSectionMovement.generate_wing_cross_sections": (
-        "num_steps",
-        "delta_time",
-    ),
     "WingMovement.__init__": (
         "*",
         "base_wing",
@@ -1291,8 +1168,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "phaseAngles_Gs_to_Wn_ixyz",
         "rotationPointOffset_Gs_Ler",
     ),
-    "WingMovement.generate_wing_at_time_step": ("step", "delta_time"),
-    "WingMovement.generate_wings": ("num_steps", "delta_time"),
     "analyze_steady_convergence": (
         "ref_problem",
         "/",
@@ -1405,13 +1280,9 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
 # or "return" whose annotation names the type. A slot attribute's surface is keyed by
 # its class's name and the attribute's name. The base unsteady solver's constructor
 # accepts the shared parent problem type so the derived solvers can pass their own
-# problem types through it, until the core solver split removes the need. The
-# initialize_next_problem hooks are annotated with the shared parent solver type until
-# they become internal.
+# problem types through it, until the core solver split removes the need.
 INTERNAL_TYPE_ALLOWLIST = {
     ("UnsteadyRingVortexLatticeMethodSolver.__init__", "unsteady_problem"),
-    ("FreeFlightUnsteadyProblem.initialize_next_problem", "solver"),
-    ("AeroelasticUnsteadyProblem.initialize_next_problem", "solver"),
 }
 
 

@@ -17,9 +17,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
 
     In aeroelastic simulations, airplane geometry is prescribed via oscillation
     parameters (the same oscillation based generation as AirplaneMovement), but the
-    solver adds structural deformation at each time step. This class overrides
-    generate_airplane_at_time_step to accept per Wing deformation angles (which perturb
-    the Wings' WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to its
+    solver adds structural deformation at each time step. When creating the Airplane at
+    each time step, this class accepts per Wing deformation angles (which perturb the
+    Wings' WingCrossSections' angles_Wcsp_to_Wcs_ixyz) and threads them down to its
     AeroelasticWingMovement children.
     """
 
@@ -163,7 +163,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             self._wing_movements,
         )
 
-    def generate_airplane_at_time_step(
+    def _generate_airplane_at_time_step(
         self,
         step: int,
         delta_time: float | int,
@@ -243,7 +243,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                 aeroelastic_wing_movement_mod.AeroelasticWingMovement,
             ):
                 these_wings.append(
-                    wing_movement.generate_wing_at_time_step(
+                    wing_movement._generate_wing_at_time_step(
                         step,
                         delta_time,
                         deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,
@@ -251,7 +251,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                 )
             else:
                 these_wings.append(
-                    wing_movement.generate_wing_at_time_step(step, delta_time)
+                    wing_movement._generate_wing_at_time_step(step, delta_time)
                 )
 
         # The reference dimensions are inherited from the base Airplane rather than

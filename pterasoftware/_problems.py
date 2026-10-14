@@ -457,7 +457,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         )
 
         # Coupled-specific state: a mutable list of SteadyProblems that grows as the
-        # solver advances. Subclass initialize_next_problem overrides append to this
+        # solver advances. Subclass _initialize_next_problem overrides append to this
         # list. External code reads through the steady_problems tuple-view property to
         # preserve the read-only contract inherited from UnsteadyProblem. Seed with a
         # SteadyProblem built from the initial geometry so step zero is always ready.
@@ -477,7 +477,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return tuple(self._steady_problems)
 
-    def get_steady_problem(self, step: int) -> SteadyProblem:
+    def _get_steady_problem(self, step: int) -> SteadyProblem:
         """Get the SteadyProblem at a given time step.
 
         :param step: The time step index (zero indexed). Must be greater than or equal
@@ -490,7 +490,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
 
         return self._steady_problems[step]
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -509,7 +509,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         :return: None
         :raises NotImplementedError: Always. Subclasses must override this method.
         """
-        raise NotImplementedError("Subclasses must implement initialize_next_problem.")
+        raise NotImplementedError("Subclasses must implement _initialize_next_problem.")
 
 
 class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
@@ -690,7 +690,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
 
         # Tracks whether the external_loads_fn's return structure has been validated.
         # The return contract is static across time steps, so it is checked once, on the
-        # function's first invocation in initialize_next_problem, rather than every
+        # function's first invocation in _initialize_next_problem, rather than every
         # step.
         self._external_loads_validated = False
 
@@ -1377,7 +1377,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         self._commit_next_problem(accepted_operating_point, step)
         solver._restore_substep(step)
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -1616,7 +1616,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
-    def initialize_next_problem(
+    def _initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
         step: int,

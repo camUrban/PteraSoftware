@@ -207,7 +207,7 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 | `movement`        | `CoreMovement`              | Source of `delta_time`, `num_steps`, `max_wake_rows`, and `lcm_period`                                                                               |
 | `steady_problems` | `tuple[SteadyProblem, ...]` | Read-only view of the `_steady_problems` backing list. Returned tuple is frozen, but successive calls may return different-length tuples (see below) |
 
-**Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
+**Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `_initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
 
 ## `AeroelasticUnsteadyProblem` Class (`_problems.py`)
 
@@ -268,7 +268,7 @@ The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJ
 
 #### Mutable (populated by solver)
 
-This is allocated in `__init__` (the validation guard as `False`) and updated by the problem's `initialize_next_problem` on the `external_loads_fn`'s first invocation. It is a plain slot rather than a read-only property because it must change after construction.
+This is allocated in `__init__` (the validation guard as `False`) and updated by the problem's `_initialize_next_problem` on the `external_loads_fn`'s first invocation. It is a plain slot rather than a read-only property because it must change after construction.
 
 | Attribute                   | Type   | Notes                                                                                                      |
 |-----------------------------|--------|------------------------------------------------------------------------------------------------------------|

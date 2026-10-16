@@ -981,6 +981,33 @@ class TestGetFreeFlightFitParallelScale(unittest.TestCase):
         )
         self.assertAlmostEqual(deep_box_scale, cube_scale, places=12)
 
+    def test_accounts_for_a_narrow_viewport_when_aspect_ratio_is_supplied(
+        self,
+    ) -> None:
+        """A narrow viewport needs more scale to fit the horizontal extent."""
+        mesh = output_rendering_fixtures.make_cube_mesh_fixture()
+        scale = _output_rendering.get_free_flight_fit_parallel_scale(
+            [mesh],
+            np.zeros(3, dtype=float),
+            np.array([0.0, 0.0, -10.0], dtype=float),
+            np.array([0.0, -1.0, 0.0], dtype=float),
+            margin=1.0,
+            aspect_ratio=0.5,
+        )
+        self.assertAlmostEqual(scale, 2.0, places=12)
+
+    def test_rejects_invalid_aspect_ratio(self) -> None:
+        """A provided viewport aspect ratio must be finite and positive."""
+        mesh = output_rendering_fixtures.make_cube_mesh_fixture()
+        with self.assertRaisesRegex(ValueError, "aspect_ratio"):
+            _output_rendering.get_free_flight_fit_parallel_scale(
+                [mesh],
+                np.zeros(3, dtype=float),
+                np.array([0.0, 0.0, -10.0], dtype=float),
+                np.array([0.0, -1.0, 0.0], dtype=float),
+                aspect_ratio=0.0,
+            )
+
     def test_measures_the_extents_from_the_focal_point(self) -> None:
         """Test that geometry off to one side of the focal point stays in view.
 

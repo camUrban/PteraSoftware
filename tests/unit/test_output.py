@@ -13,8 +13,8 @@ class TestValidateCameraInputs(unittest.TestCase):
     """Tests validation of the shared camera arguments."""
 
     def test_valid_camera_inputs_are_normalized_to_float_arrays(self) -> None:
-        position, focal_point, up, scale, return_state = _output._validate_camera_inputs(
-            [3, 2, 1], [0, 0, 0], [0, 0, 1], 4, True
+        position, focal_point, up, scale, return_state = (
+            _output._validate_camera_inputs([3, 2, 1], [0, 0, 0], [0, 0, 1], 4, True)
         )
         npt.assert_array_equal(position, [3.0, 2.0, 1.0])
         npt.assert_array_equal(focal_point, [0.0, 0.0, 0.0])

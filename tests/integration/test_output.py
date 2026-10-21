@@ -192,20 +192,58 @@ class TestOutput(unittest.TestCase):
         )
 
     def test_returning_camera_state_alone_keeps_legacy_camera_setup(self) -> None:
-        """Requesting state capture alone must not invoke the custom-camera path."""
-        with patch.object(
-            _output, "_apply_camera_parameters", wraps=_output._apply_camera_parameters
-        ) as apply_camera:
-            draw_state = ps.draw(
-                self.unsteady_solver, return_camera_state=True, testing=True
-            )
-            animate_state = ps.animate(
-                self.unsteady_solver, return_camera_state=True, testing=True
-            )
+        """Returning camera state preserves the original default camera framing."""
+        expected_camera_state = {
+            "camera_position": (
+                -10.37451463829966,
+                -11.37451463829966,
+                11.393649372941187,
+            ),
+            "camera_focal_point": (1.0, 0.0, 0.019134734641526818),
+            "camera_up": (0.0, 0.0, 1.0),
+            "camera_parallel_scale": 5.0990554162579755,
+        }
+
+        draw_state = ps.draw(
+            self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=False,
+            testing=True,
+            return_camera_state=True,
+        )
+        animate_state = ps.animate(
+            self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            save=False,
+            testing=True,
+            return_camera_state=True,
+        )
 
         self.assertIsNotNone(draw_state)
         self.assertIsNotNone(animate_state)
-        apply_camera.assert_not_called()
+
+        for method_name, camera_state in (
+            ("draw", draw_state),
+            ("animate", animate_state),
+        ):
+            assert camera_state is not None
+
+            for camera_key, expected_value in expected_camera_state.items():
+                with self.subTest(method=method_name, camera_property=camera_key):
+                    actual_value = camera_state[camera_key]
+
+                    if isinstance(expected_value, tuple):
+                        self.assertEqual(len(actual_value), len(expected_value))
+                        for actual_component, expected_component in zip(
+                            actual_value, expected_value
+                        ):
+                            self.assertAlmostEqual(
+                                actual_component, expected_component, places=6
+                            )
+                    else:
+                        self.assertAlmostEqual(actual_value, expected_value, places=6)
 
     def test_draw_and_animate_support_partial_camera_overrides(self) -> None:
         """Partial camera overrides preserve supplied values and fit the view."""

@@ -1038,12 +1038,17 @@ def draw(
         # then keep cpos=None so show() cannot overwrite the requested values.
         if not is_free_flight and image_surface_mesh is None:
             bounds_array = np.asarray(geometry_bounds, dtype=float)
-            center = 0.5 * (bounds_array[0::2] + bounds_array[1::2])
-            diagonal = float(np.linalg.norm(bounds_array[1::2] - bounds_array[0::2]))
-            default_offset = np.array([-1.0, -1.0, 1.0]) / math.sqrt(3.0)
-            plotter.camera.focal_point = tuple(center)
+            cameraCenter_G = 0.5 * (bounds_array[0::2] + bounds_array[1::2])
+            cameraDiagonal = float(
+                np.linalg.norm(bounds_array[1::2] - bounds_array[0::2])
+            )
+            defaultCameraOffsetDirection_G = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+                3.0
+            )
+            plotter.camera.focal_point = tuple(cameraCenter_G)
             plotter.camera.position = tuple(
-                center + 3.0 * max(diagonal, 1.0) * default_offset
+                cameraCenter_G
+                + 3.0 * max(cameraDiagonal, 1.0) * defaultCameraOffsetDirection_G
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 
@@ -1729,12 +1734,17 @@ def animate(
         # free-flight branches already have their mode-specific camera initialized.
         if not is_free_flight and image_surface_mesh is None:
             bounds_array = np.asarray(plotter.bounds, dtype=float)
-            center = 0.5 * (bounds_array[0::2] + bounds_array[1::2])
-            diagonal = float(np.linalg.norm(bounds_array[1::2] - bounds_array[0::2]))
-            default_offset = np.array([-1.0, -1.0, 1.0]) / math.sqrt(3.0)
-            plotter.camera.focal_point = tuple(center)
+            cameraCenter_G = 0.5 * (bounds_array[0::2] + bounds_array[1::2])
+            cameraDiagonal = float(
+                np.linalg.norm(bounds_array[1::2] - bounds_array[0::2])
+            )
+            defaultCameraOffsetDirection_G = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+                3.0
+            )
+            plotter.camera.focal_point = tuple(cameraCenter_G)
             plotter.camera.position = tuple(
-                center + 3.0 * max(diagonal, 1.0) * default_offset
+                cameraCenter_G
+                + 3.0 * max(cameraDiagonal, 1.0) * defaultCameraOffsetDirection_G
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 

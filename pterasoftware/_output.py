@@ -578,9 +578,9 @@ def draw(
     path: str | Path = "draw.webp",
     quality: int | float = 75.0,
     testing: bool | np.bool = False,
-    camera_position: Sequence[float] | None = None,
-    camera_focal_point: Sequence[float] | None = None,
-    camera_up: Sequence[float] | None = None,
+    camera_position: np.ndarray | Sequence[float | int] | None = None,
+    camera_focal_point: np.ndarray | Sequence[float | int] | None = None,
+    camera_up: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
 ) -> dict[str, tuple[float, float, float] | float] | None:
@@ -647,15 +647,22 @@ def draw(
     :param testing: Set this to True to close the image after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :param camera_position: Optional camera position in the rendered scene's
-        coordinates. Body-fixed views use the first Airplane's geometry axes relative to
-        its CG; free-flight views use Earth axes relative to the Earth origin. The focal
-        point and up direction use the same coordinates. When omitted, the mode's
-        default camera position is used.
-    :param camera_focal_point: Optional camera focal point in the coordinate system of
-        the rendered scene. When omitted, the mode's default focal point is used.
-    :param camera_up: Optional camera up direction in the coordinate system of the
-        rendered scene. When omitted, the mode's default up direction is used.
+    :param camera_position: None, or an array-like object of 3 numbers (int or float)
+        representing the camera position. For body-fixed views, coordinates are in the
+        first Airplane's geometry axes, relative to its CG. For free-flight views,
+        coordinates are in Earth axes, relative to the Earth origin. Tuples, lists, and
+        ndarrays are accepted, and values are converted to floats internally. When
+        omitted, the mode's default camera position is used.
+    :param camera_focal_point: None, or an array-like object of 3 numbers (int or float)
+        representing the camera focal point. It uses the same coordinate system as
+        camera_position. Tuples, lists, and ndarrays are accepted, and values are
+        converted to floats internally. When omitted, the mode's default focal point
+        is used.
+    :param camera_up: None, or an array-like object of 3 numbers (int or float)
+        representing the camera up direction. It uses the same coordinate system as
+        camera_position. Tuples, lists, and ndarrays are accepted, and values are
+        converted to floats internally. When omitted, the mode's default up direction
+        is used.
     :param camera_parallel_scale: Optional positive parallel-projection scale. When
         omitted alongside any camera override, the scale is fitted to the relevant
         geometry for the effective camera direction.
@@ -1166,9 +1173,9 @@ def animate(
     quality: int | float = 75.0,
     speed: int | float | None = None,
     testing: bool | np.bool = False,
-    camera_position: Sequence[float] | None = None,
-    camera_focal_point: Sequence[float] | None = None,
-    camera_up: Sequence[float] | None = None,
+    camera_position: np.ndarray | Sequence[float | int] | None = None,
+    camera_focal_point: np.ndarray | Sequence[float | int] | None = None,
+    camera_up: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
 ) -> dict[str, tuple[float, float, float] | float] | None:
@@ -1235,15 +1242,22 @@ def animate(
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :param camera_position: Optional camera position in the rendered scene's
-        coordinates. Body-fixed views use the first Airplane's geometry axes relative to
-        its CG; free-flight views use Earth axes relative to the Earth origin. The focal
-        point and up direction use the same coordinates. When omitted, the mode's
-        default camera position is used.
-    :param camera_focal_point: Optional camera focal point in the coordinate system of
-        the rendered scene. When omitted, the mode's default focal point is used.
-    :param camera_up: Optional camera up direction in the coordinate system of the
-        rendered scene. When omitted, the mode's default up direction is used.
+    :param camera_position: None, or an array-like object of 3 numbers (int or float)
+        representing the camera position. For body-fixed views, coordinates are in the
+        first Airplane's geometry axes, relative to its CG. For free-flight views,
+        coordinates are in Earth axes, relative to the Earth origin. Tuples, lists, and
+        ndarrays are accepted, and values are converted to floats internally. When
+        omitted, the mode's default camera position is used.
+    :param camera_focal_point: None, or an array-like object of 3 numbers (int or float)
+        representing the camera focal point. It uses the same coordinate system as
+        camera_position. Tuples, lists, and ndarrays are accepted, and values are
+        converted to floats internally. When omitted, the mode's default focal point
+        is used.
+    :param camera_up: None, or an array-like object of 3 numbers (int or float)
+        representing the camera up direction. It uses the same coordinate system as
+        camera_position. Tuples, lists, and ndarrays are accepted, and values are
+        converted to floats internally. When omitted, the mode's default up direction
+        is used.
     :param camera_parallel_scale: Optional positive parallel-projection scale. When
         omitted alongside any camera override, the scale is fitted to the relevant
         geometry for the effective camera direction.
@@ -2107,7 +2121,7 @@ def plot_results_versus_time(
         _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
-            "unsteady_solver must be an "  "UnsteadyRingVortexLatticeMethodSolver."
+            "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
 

@@ -398,10 +398,11 @@ def _apply_camera_parameters(
     aspect_ratio: float,
     fit_meshes: list[pv.PolyData] | None = None,
 ) -> None:
-    """Applies caller-specified camera values and fits unspecified parallel scale.
+    """Applies camera values and fits an unspecified parallel scale.
 
-    Existing mode-specific camera setup must run before this helper. That setup provides
-    defaults for any camera vectors the caller leaves as None.
+    The camera position, focal point, and up direction must use the same
+    coordinate system. Existing mode-specific camera setup provides defaults
+    for any camera vectors the caller leaves as None.
     """
     position = np.asarray(
         plotter.camera.position if camera_position is None else camera_position,
@@ -531,7 +532,14 @@ def _validate_camera_inputs(
     float | None,
     bool,
 ]:
-    """Validates camera arguments shared by draw() and animate()."""
+    """Validates camera inputs shared by draw() and animate().
+
+    Camera position, focal point, and up direction use the coordinate system
+    appropriate to the rendering mode. Body-fixed views use the first
+    Airplane's geometry axes, relative to the CG; free-flight views use Earth
+    axes, relative to the Earth origin. Provided vectors are validated and
+    converted to floating-point NumPy arrays.
+    """
     if camera_position is not None:
         camera_position = _parameter_validation.threeD_number_vectorLike_return_float(
             camera_position, "camera_position"

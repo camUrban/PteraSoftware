@@ -400,18 +400,19 @@ def apply_camera_parameters(
 ) -> None:
     """Applies camera values and fits an unspecified parallel scale.
 
-    The camera position and focal-point position must use the same axes and
-    reference point: geometry axes relative to the first Airplane's center of
-    gravity for body-fixed views, or Earth axes relative to the Earth origin
-    for free-flight views. The camera up direction must use the corresponding
-    axes. Existing mode-specific camera setup provides defaults for any camera
-    vectors left as None.
+    The camera position and focal-point position are positions expressed in
+    the same coordinate system: geometry axes relative to the first Airplane's
+    center of gravity for body-fixed views, or Earth axes relative to the Earth
+    origin for free-flight views. The camera up vector is a direction expressed
+    in the corresponding axes, without a reference-point suffix. Existing
+    mode-specific camera setup provides defaults for any camera vectors left
+    as None.
     """
-    cameraPosition = np.asarray(
+    camera_position_vector = np.asarray(
         plotter.camera.position if camera_position is None else camera_position,
         dtype=float,
     )
-    cameraFocalPoint = np.asarray(
+    camera_focal_point_vector = np.asarray(
         (
             plotter.camera.focal_point
             if camera_focal_point is None
@@ -419,85 +420,85 @@ def apply_camera_parameters(
         ),
         dtype=float,
     )
-    cameraUp = np.asarray(
+    camera_up_vector = np.asarray(
         plotter.camera.up if camera_up is None else camera_up,
         dtype=float,
     )
 
-    cameraLookVector = cameraFocalPoint - cameraPosition
-    if not np.isfinite(cameraLookVector).all():
+    camera_look_vector = camera_focal_point_vector - camera_position_vector
+    if not np.isfinite(camera_look_vector).all():
         raise ValueError(
             "camera_position and camera_focal_point must define a finite "
             "view direction."
         )
-    cameraLookLength = float(np.linalg.norm(cameraLookVector))
-    cameraUpLength = float(np.linalg.norm(cameraUp))
-    if not np.isfinite(cameraLookLength):
+    camera_look_length = float(np.linalg.norm(camera_look_vector))
+    camera_up_length = float(np.linalg.norm(camera_up_vector))
+    if not np.isfinite(camera_look_length):
         raise ValueError(
             "camera_position and camera_focal_point must define a finite "
             "view direction."
         )
-    if cameraLookLength == 0.0:
+    if camera_look_length == 0.0:
         raise ValueError("camera_position and camera_focal_point must not be equal.")
-    if not np.isfinite(cameraUpLength) or cameraUpLength == 0.0:
+    if not np.isfinite(camera_up_length) or camera_up_length == 0.0:
         raise ValueError("camera_up must have a finite, non-zero length.")
 
-    cameraLookDirection = cameraLookVector / cameraLookLength
-    orthogonalCameraUp = (
-        cameraUp - np.dot(cameraUp, cameraLookDirection) * cameraLookDirection
+    camera_look_direction = camera_look_vector / camera_look_length
+    orthogonal_camera_up = (
+        camera_up_vector - np.dot(camera_up_vector, camera_look_direction) * camera_look_direction
     )
-    orthogonalCameraUpLength = float(np.linalg.norm(orthogonalCameraUp))
-    if not np.isfinite(orthogonalCameraUpLength) or orthogonalCameraUpLength <= (
-        1e-8 * cameraUpLength
+    orthogonal_camera_up_length = float(np.linalg.norm(orthogonal_camera_up))
+    if not np.isfinite(orthogonal_camera_up_length) or orthogonal_camera_up_length <= (
+        1e-8 * camera_up_length
     ):
         raise ValueError(
             "camera_up must not be parallel or antiparallel to the view direction."
         )
-    cameraUpDirection = orthogonalCameraUp / orthogonalCameraUpLength
-    cameraRightDirection = np.cross(cameraLookDirection, cameraUpDirection)
-    cameraRightDirection /= np.linalg.norm(cameraRightDirection)
+    camera_up_direction = orthogonal_camera_up / orthogonal_camera_up_length
+    camera_right_direction = np.cross(camera_look_direction, camera_up_direction)
+    camera_right_direction /= np.linalg.norm(camera_right_direction)
 
-    plotter.camera.position = tuple(cameraPosition)
-    plotter.camera.focal_point = tuple(cameraFocalPoint)
-    plotter.camera.up = tuple(cameraUp)
+    plotter.camera.position = tuple(camera_position_vector)
+    plotter.camera.focal_point = tuple(camera_focal_point_vector)
+    plotter.camera.up = tuple(camera_up_vector)
 
     if camera_parallel_scale is None:
         if fit_meshes is not None:
             # The helper projects each mesh's own bounding-box corners, avoiding the
             # extra empty space an aggregate axis-aligned bounding box can introduce.
-            fittedParallelScale = _output_rendering.get_free_flight_fit_parallel_scale(
+            fitted_parallel_scale = _output_rendering.get_free_flight_fit_parallel_scale(
                 fit_meshes,
-                cameraFocalPoint,
-                cameraPosition - cameraFocalPoint,
-                cameraUp,
+                camera_focal_point_vector,
+                camera_position_vector - camera_focal_point_vector,
+                camera_up_vector,
                 aspect_ratio=aspect_ratio,
             )
         else:
-            sceneBoundsArray = np.asarray(bounds, dtype=float)
-            sceneBoundsCorners = np.array(
+            scene_bounds_array = np.asarray(bounds, dtype=float)
+            scene_bounds_corners = np.array(
                 [
                     (x, y, z)
-                    for x in sceneBoundsArray[0:2]
-                    for y in sceneBoundsArray[2:4]
-                    for z in sceneBoundsArray[4:6]
+                    for x in scene_bounds_array[0:2]
+                    for y in scene_bounds_array[2:4]
+                    for z in scene_bounds_array[4:6]
                 ],
                 dtype=float,
             )
-            sceneBoundsCorners -= cameraFocalPoint
-            halfExtentRight = float(
-                np.abs(sceneBoundsCorners @ cameraRightDirection).max()
+            scene_bounds_corners -= camera_focal_point_vector
+            half_extent_right = float(
+                np.abs(scene_bounds_corners @ camera_right_direction).max()
             )
-            halfExtentUp = float(np.abs(sceneBoundsCorners @ cameraUpDirection).max())
-            fittedParallelScale = 1.15 * max(
-                halfExtentRight / aspect_ratio, halfExtentUp
+            half_extent_up = float(np.abs(scene_bounds_corners @ camera_up_direction).max())
+            fitted_parallel_scale = 1.15 * max(
+                half_extent_right / aspect_ratio, half_extent_up
             )
-        if not np.isfinite(fittedParallelScale):
+        if not np.isfinite(fitted_parallel_scale):
             raise ValueError(
                 "The camera parameters and scene bounds produce a non-finite "
                 "parallel scale."
             )
         # A degenerate point-like scene still needs a positive parallel scale.
-        plotter.camera.parallel_scale = max(fittedParallelScale, np.finfo(float).eps)
+        plotter.camera.parallel_scale = max(fitted_parallel_scale, np.finfo(float).eps)
     else:
         plotter.camera.parallel_scale = camera_parallel_scale
 
@@ -543,11 +544,12 @@ def validate_camera_inputs(
 ]:
     """Validates camera inputs shared by draw() and animate().
 
-    The camera position and focal-point position must use the same axes and
-    reference point: geometry axes relative to the first Airplane's center of
-    gravity for body-fixed views, or Earth axes relative to the Earth origin
-    for free-flight views. The camera up direction must use the corresponding
-    axes. Provided vectors are converted to floating-point NumPy arrays.
+    The camera position and focal-point position are positions expressed in
+    the same coordinate system: geometry axes relative to the first Airplane's
+    center of gravity for body-fixed views, or Earth axes relative to the Earth
+    origin for free-flight views. The camera up vector is a direction expressed
+    in the corresponding axes. Provided vectors are converted to floating-point
+    NumPy arrays.
     """
     if camera_position is not None:
         camera_position = _parameter_validation.threeD_number_vectorLike_return_float(
@@ -1056,19 +1058,19 @@ def draw(
         # then keep cpos=None so show() cannot overwrite the requested values.
         if not is_free_flight and image_surface_mesh is None:
             geometryBoundsArray = np.asarray(geometry_bounds, dtype=float)
-            cameraFocalPoint_G = 0.5 * (
+            cameraFocalPoint_GP1_CgP1 = 0.5 * (
                 geometryBoundsArray[0::2] + geometryBoundsArray[1::2]
             )
             boundsDiagonalLength = float(
                 np.linalg.norm(geometryBoundsArray[1::2] - geometryBoundsArray[0::2])
             )
-            defaultCameraOffsetDirection_G = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+            defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
                 3.0
             )
-            plotter.camera.focal_point = tuple(cameraFocalPoint_G)
+            plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
             plotter.camera.position = tuple(
-                cameraFocalPoint_G
-                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_G
+                cameraFocalPoint_GP1_CgP1
+                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 
@@ -1753,17 +1755,17 @@ def animate(
         # free-flight branches already have their mode-specific camera initialized.
         if not is_free_flight and image_surface_mesh is None:
             sceneBoundsArray = np.asarray(plotter.bounds, dtype=float)
-            cameraFocalPoint_G = 0.5 * (sceneBoundsArray[0::2] + sceneBoundsArray[1::2])
+            cameraFocalPoint_GP1_CgP1 = 0.5 * (sceneBoundsArray[0::2] + sceneBoundsArray[1::2])
             boundsDiagonalLength = float(
                 np.linalg.norm(sceneBoundsArray[1::2] - sceneBoundsArray[0::2])
             )
-            defaultCameraOffsetDirection_G = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+            defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
                 3.0
             )
-            plotter.camera.focal_point = tuple(cameraFocalPoint_G)
+            plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
             plotter.camera.position = tuple(
-                cameraFocalPoint_G
-                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_G
+                cameraFocalPoint_GP1_CgP1
+                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 

@@ -655,7 +655,7 @@ class TestProcessSolverLoads(unittest.TestCase):
         # Build a two Airplane SteadyProblem in which the second Airplane is a
         # translated copy of the first.
         first_airplane = geometry_fixtures.make_first_airplane_fixture()
-        second_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(
+        second_airplane = first_airplane._deep_copy_with_Cg_GP1_CgP1(
             cls.secondCg_GP1_CgP1
         )
         operating_point = operating_point_fixtures.make_basic_operating_point_fixture()

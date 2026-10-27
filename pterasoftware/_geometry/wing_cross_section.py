@@ -30,7 +30,7 @@ class WingCrossSection:
     after being set.
 
     The control_surface_symmetry_type attribute remains mutable as it may be modified by
-    Airplane.process_wing_symmetry() for type 5 symmetry handling.
+    the parent Airplane for type 5 symmetry handling.
 
     The first WingCrossSection in a Wing's wing_cross_section list is known as the root
     WingCrossSection. The last is known as the tip WingCrossSection.
@@ -199,7 +199,7 @@ class WingCrossSection:
         self._angles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
         # Validate control surface symmetry type (mutable, may be modified by
-        # Airplane.process_wing_symmetry for type 5 symmetry).
+        # Airplane._process_wing_symmetry for type 5 symmetry).
         if control_surface_symmetry_type is not None:
             control_surface_symmetry_type = _parameter_validation.str_return_str(
                 control_surface_symmetry_type, "control_surface_symmetry_type"

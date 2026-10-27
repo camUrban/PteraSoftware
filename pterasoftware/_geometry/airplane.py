@@ -199,7 +199,7 @@ class Airplane:
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
-            wing_symmetry_wings = self.process_wing_symmetry(wing)
+            wing_symmetry_wings = self._process_wing_symmetry(wing)
             if not first_wings:
                 first_wings = wing_symmetry_wings
             processed_wings.extend(wing_symmetry_wings)
@@ -322,7 +322,7 @@ class Airplane:
 
         return new_airplane
 
-    def deep_copy_with_Cg_GP1_CgP1(
+    def _deep_copy_with_Cg_GP1_CgP1(
         self, new_Cg_GP1_CgP1: np.ndarray | Sequence[float | int]
     ) -> Airplane:
         """Creates a deep copy of this Airplane with a different Cg_GP1_CgP1 position.
@@ -1218,7 +1218,7 @@ class Airplane:
 
         return None
 
-    def validate_first_airplane_constraints(self) -> None:
+    def _validate_first_airplane_constraints(self) -> None:
         """Validates that the first Airplane in a simulation has Cg_GP1_CgP1 set to
         zeros.
 
@@ -1233,7 +1233,7 @@ class Airplane:
             )
 
     @staticmethod
-    def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
+    def _process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
         """Processes a Wing to determine what type of symmetry it has.
 
         If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
@@ -1496,7 +1496,7 @@ def get_planform_reference_dimensions(
     mirrored half is found by reflecting the original half, and for type 5 symmetry, the
     strip joining the two halves is called the bridge strip.
 
-    :param first_wings: The list of meshed Wings that process_wing_symmetry returns for
+    :param first_wings: The list of meshed Wings that _process_wing_symmetry returns for
         the first element of the wings passed to an Airplane. It holds one Wing, or two
         for type 5 symmetry.
     :return: A tuple of three floats, which are the reference area, the reference chord,

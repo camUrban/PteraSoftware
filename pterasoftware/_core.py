@@ -1788,7 +1788,9 @@ class CoreAirplaneMovement:
                 else:
                     raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-            copied_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            copied_airplane = first_airplane._deep_copy_with_Cg_GP1_CgP1(
+                thisCg_GP1_CgP1
+            )
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -1901,7 +1903,7 @@ class CoreAirplaneMovement:
 
             copied_airplane = first_period_airplanes[
                 source_step
-            ].deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            ]._deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
             airplanes.append(copied_airplane)
 
         return airplanes

@@ -674,8 +674,8 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deep_copy_with_cg(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
-        copied = self.airplane.deep_copy_with_Cg_GP1_CgP1([2.0, 1.0, 0.5])
+        """Test that _deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
+        copied = self.airplane._deep_copy_with_Cg_GP1_CgP1([2.0, 1.0, 0.5])
 
         # Verify the copy is a separate instance.
         self.assertIsNot(copied, self.airplane)

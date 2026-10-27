@@ -620,7 +620,7 @@ These read-only properties expose the named load components and coefficients def
 
 **Note**: `wetted_area` is deprecated. Its value is the total area of the `Wing`'s `Panel`s, which lie on the mean camber surface, so it is not the `Wing`'s wetted area. Reading it emits a `DeprecationWarning`, and it will be removed in v6.0.0.
 
-#### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
+#### Mutable (modified by `_process_wing_symmetry` for type 5 symmetry)
 
 | Attribute            | Type                 | Notes                          |
 |----------------------|----------------------|--------------------------------|
@@ -629,7 +629,7 @@ These read-only properties expose the named load components and coefficients def
 | `symmetryNormal_G`   | `np.ndarray \| None` | Modified to `None` for type 5  |
 | `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to `None` for type 5  |
 
-**Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
+**Note**: These are modified by `Airplane._process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
 
 #### Mutable (modified during simulation for wake)
 
@@ -675,7 +675,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `_validated`    | `bool`        | `Wing.__init__`, via `_mark_validated`         | Internal validation flag          |
 | `symmetry_type` | `int \| None` | `Wing.generate_mesh`, via `_set_symmetry_type` | Read-only inherited symmetry type |
 
-#### Mutable (modified by `process_wing_symmetry`)
+#### Mutable (modified by `_process_wing_symmetry`)
 
 | Attribute                       | Type          | Notes                             |
 |---------------------------------|---------------|-----------------------------------|

@@ -115,7 +115,7 @@ class SteadyProblem:
         self._reynolds_numbers: tuple[float, ...] | None = None
 
         # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
-        self._airplanes[0].validate_first_airplane_constraints()
+        self._airplanes[0]._validate_first_airplane_constraints()
 
         # Populate GP1_CgP1 coordinates for all Airplanes' Panels. This finds the
         # Panels' positions in the first Airplane's geometry axes, relative to the first

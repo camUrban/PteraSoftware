@@ -48,9 +48,9 @@ class Wing:
     once by generate_mesh and cannot be modified after being set.
 
     The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
-    remain mutable as they may be modified by Airplane.process_wing_symmetry() for type
-    5 symmetry handling. The gridWrvp_GP1_CgP1 attribute is mutable as it is modified
-    during simulation.
+    remain mutable as they may be modified by the parent Airplane for type 5 symmetry
+    handling. The gridWrvp_GP1_CgP1 attribute is mutable as it is modified during
+    simulation.
 
     Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the Ler_Gs_Cgs and
@@ -291,7 +291,7 @@ class Wing:
         self._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
         # Validate symmetric and mirror_only. These are mutable because
-        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
+        # Airplane._process_wing_symmetry modifies them for type 5 symmetry.
         symmetric = _parameter_validation.boolLike_return_bool(symmetric, "symmetric")
         mirror_only = _parameter_validation.boolLike_return_bool(
             mirror_only, "mirror_only"
@@ -302,7 +302,7 @@ class Wing:
         self.mirror_only = mirror_only
 
         # Validate symmetryNormal_G and symmetryPoint_G_Cg. These are mutable because
-        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
+        # Airplane._process_wing_symmetry modifies them for type 5 symmetry.
         if self.symmetric or self.mirror_only:
             if symmetryNormal_G is None:
                 raise ValueError(
@@ -654,7 +654,7 @@ class Wing:
         new_wing._tip_trim_fraction = self._tip_trim_fraction
 
         # Copy mutable symmetry attributes (these may be modified by
-        # process_wing_symmetry for type 5 symmetry).
+        # _process_wing_symmetry for type 5 symmetry).
         new_wing.symmetric = self.symmetric
         new_wing.mirror_only = self.mirror_only
 
@@ -665,7 +665,7 @@ class Wing:
         new_wing._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
         # Copy mutable symmetry arrays (may be None, may be modified by
-        # process_wing_symmetry).
+        # _process_wing_symmetry).
         new_wing.symmetryNormal_G = (
             self.symmetryNormal_G.copy() if self.symmetryNormal_G is not None else None
         )

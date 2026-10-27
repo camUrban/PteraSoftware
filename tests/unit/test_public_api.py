@@ -235,9 +235,7 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "wing_cross_section_movements",
     ),
     "Airfoil": (
-        "add_control_surface",
         "diagram",
-        "get_resampled_mcl",
         "mcl_A_Lp",
         "n_points_per_side",
         "name",
@@ -839,9 +837,7 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",
     ),
     "Airfoil.__init__": ("*", "name", "outline_A_Lp", "resample", "n_points_per_side"),
-    "Airfoil.add_control_surface": ("deflection", "hinge_point"),
     "Airfoil.diagram": ("*", "show_mcl", "math_labels", "save", "path", "quality"),
-    "Airfoil.get_resampled_mcl": ("mcl_fractions",),
     "Airplane.__init__": (
         "*",
         "wings",

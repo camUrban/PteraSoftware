@@ -601,7 +601,7 @@ The API reference documents only the names in `pterasoftware.__all__`. Every oth
 1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked class name.
 2. **When an annotation must be a private type, add an override.** One shape forces this: a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For it, add an entry to `ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method where it is defined, such as `pterasoftware._unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver`, then by parameter name, giving the one public type that actually works. The build checks each key and parameter against the package source and fails on a stale one, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
 3. **Bases are not shown.** The reference shows no Bases line for any class, so a public class extending a private parent never mentions it. Its docstring must stand on its own for that reason.
-4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
+4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil._add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
 
 #### Deprecated API
 
@@ -872,7 +872,7 @@ def __init__(
 ### Example 5: Method Returning Self-Reference
 
 ```python
-def add_control_surface(
+def _add_control_surface(
     self, deflection: float | int, hinge_point: float | int
 ) -> Airfoil:
     """Returns a version of the Airfoil with a control surface added at a given point.
@@ -907,7 +907,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
 ### Example 7: Method Returning Array
 
 ```python
-def get_resampled_mcl(
+def _get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
     """Returns a ndarray of points along the mean camber line (MCL), resampled from the

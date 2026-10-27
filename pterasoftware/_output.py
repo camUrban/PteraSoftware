@@ -2295,7 +2295,7 @@ def log_results(
         _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         these_airplanes = solver.current_airplanes
-        if solver.unsteady_problem.movement.static:
+        if solver.unsteady_problem.movement._static:
             solver_type = "static geometry unsteady"
         else:
             solver_type = "variable geometry unsteady"

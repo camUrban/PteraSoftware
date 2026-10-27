@@ -87,7 +87,7 @@ The `_serialization` module uses the same `object.__new__()` + `object.__setattr
 
 A saved file is a `.psz` file: a zip archive of compressed JSON members. The first member is a header holding the format version, provenance metadata, the saved object's class name, and a manifest of the members that follow. The last member holds the object itself. For an `UnsteadyProblem` or an unsteady solver, the per time step sequences (the problem's `_steady_problems` and the solver's per step bound and wake vortex lists) are split out of the last member into one member per time step, and the corresponding slots in the last member hold placeholders that `load` splices the step members back into. This keeps the serialized text of at most one time step in memory at once during a save or a load, on top of the object itself.
 
-Shared references are preserved by an identity memo that spans every member of the file: the first encounter of an object serializes it in full, and every later encounter (for example, a solver's `airplanes` alias into its `SteadyProblem`, or `Movement._airplanes` inside an `UnsteadyProblem`) serializes as a reference to it. Deserialization resolves those references to the same rebuilt instance, so object graph identity survives the round trip without duplicating equivalent objects. The one exception is `MuJoCoModel`'s native engine objects, which cannot be serialized at all, so they are serialized as `null` and rebuilt from the model's XML string on deserialization.
+Shared references are preserved by an identity memo that spans every member of the file: the first encounter of an object serializes it in full, and every later encounter (for example, a solver's `airplanes` alias into its `SteadyProblem`, or `Movement._pregenerated_airplanes` inside an `UnsteadyProblem`) serializes as a reference to it. Deserialization resolves those references to the same rebuilt instance, so object graph identity survives the round trip without duplicating equivalent objects. The one exception is `MuJoCoModel`'s native engine objects, which cannot be serialized at all, so they are serialized as `null` and rebuilt from the model's XML string on deserialization.
 
 Custom callables are the other thing a saved file cannot hold. The built in `"sine"` and `"uniform"` spacing functions serialize by name and are restored exactly. Every other callable (a custom spacing function, an `AeroelasticWingMovement`'s `spacingAnglesSecondDerivative_Gs_to_Wn_ixyz` entry, or a `FreeFlightUnsteadyProblem`'s `external_loads_fn`) serializes as an inert marker holding its qualified name, its dedented source text when `inspect.getsource` can retrieve it, and the SHA-256 hash of that text. Nothing stored in the file is ever executed. Deserialization restores the marker as an `UnboundCallable`, a private slotted placeholder in `_serialization.py` holding the marker's three fields as immutable attributes, which occupies the same slot, passes `callable(...)` checks, and re-emits the identical marker when saved again, so a loaded object's `hash_object` digest matches the original's. Because the source text is part of the serialized content, editing a custom function changes the digest, which is what lets the convergence cache self-invalidate. Loading never invokes these callables, so a solved simulation that holds them loads and visualizes normally, and an `UnboundCallable` raises only if something later tries to call it. To re-solve or regenerate motion, the user passes the original functions to `load`'s `callables` argument, keyed by the recorded qualified names, and `load` restores them in place of the placeholders during deserialization rather than mutating the loaded object afterwards, which would need an immutability bypass. A key that matches no marker raises, and a function whose source does not hash to a marker's recorded hash logs a warning, since the file was saved with a different definition.
 
@@ -204,7 +204,7 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 | Attribute         | Type                        | Notes                                                                                                                                                |
 |-------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `movement`        | `CoreMovement`              | Source of `delta_time`, `num_steps`, `max_wake_rows`, and `lcm_period`                                                                               |
+| `movement`        | `CoreMovement`              | Source of `delta_time`, `num_steps`, `max_wake_rows`, and `_lcm_period`                                                                              |
 | `steady_problems` | `tuple[SteadyProblem, ...]` | Read-only view of the `_steady_problems` backing list. Returned tuple is frozen, but successive calls may return different-length tuples (see below) |
 
 **Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `_initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
@@ -280,47 +280,47 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 ## `CoreMovement` / `Movement` Class (`_core.py`, `_movements/movement.py`)
 
-`Movement` extends `CoreMovement`. `CoreMovement` owns the shared slots (`airplane_movements`, `operating_point_movement`, `delta_time`, `num_steps`, `max_wake_rows`) and derived properties (`lcm_period`, `max_period`, `min_period`, `static`). `Movement` adds cycle/chord counting, wake sizing parameters, and batch pre-generation of `Airplane`s and `OperatingPoint`s.
+`Movement` extends `CoreMovement`. `CoreMovement` owns the shared slots (`airplane_movements`, `operating_point_movement`, `delta_time`, `num_steps`, `max_wake_rows`) and the internal derived properties (`_lcm_period`, `_max_period`, `_min_period`, `_static`), each of which caches its value in a backing slot with a `_cache` suffix, such as `_max_period_cache`. `Movement` adds cycle/chord counting, wake sizing parameters, and batch pre-generation of `Airplane`s and `OperatingPoint`s.
 
 ### Attribute Classification
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute                  | Type                               | Defined On     | Notes                       |
-|----------------------------|------------------------------------|----------------|-----------------------------|
-| `airplane_movements`       | `tuple[AirplaneMovement, ...]`     | `CoreMovement` | Tuple prevents mutation     |
-| `operating_point_movement` | `OperatingPointMovement`           | `CoreMovement` | Operating point changes     |
-| `delta_time`               | `float`                            | `CoreMovement` | Time step                   |
-| `num_steps`                | `int`                              | `CoreMovement` | Total time steps            |
-| `max_wake_rows`            | `int \| None`                      | `CoreMovement` | Max wake rows per `Wing`    |
-| `num_cycles`               | `int \| None`                      | `Movement`     | Number of cycles            |
-| `num_chords`               | `int \| None`                      | `Movement`     | Number of chord lengths     |
-| `max_wake_chords`          | `int \| None`                      | `Movement`     | Max wake in chord lengths   |
-| `max_wake_cycles`          | `int \| None`                      | `Movement`     | Max wake in motion cycles   |
-| `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | `Movement`     | Generated `Airplane`s       |
-| `operating_points`         | `tuple[OperatingPoint, ...]`       | `Movement`     | Generated `OperatingPoint`s |
+| Attribute                  | Type                               | Defined On     | Notes                                 |
+|----------------------------|------------------------------------|----------------|---------------------------------------|
+| `airplane_movements`       | `tuple[AirplaneMovement, ...]`     | `CoreMovement` | Tuple prevents mutation               |
+| `operating_point_movement` | `OperatingPointMovement`           | `CoreMovement` | Operating point changes               |
+| `delta_time`               | `float`                            | `CoreMovement` | Time step                             |
+| `num_steps`                | `int`                              | `CoreMovement` | Total time steps                      |
+| `max_wake_rows`            | `int \| None`                      | `CoreMovement` | Max wake rows per `Wing`              |
+| `num_cycles`               | `int \| None`                      | `Movement`     | Number of cycles                      |
+| `num_chords`               | `int \| None`                      | `Movement`     | Number of chord lengths               |
+| `max_wake_chords`          | `int \| None`                      | `Movement`     | Max wake in chord lengths             |
+| `max_wake_cycles`          | `int \| None`                      | `Movement`     | Max wake in motion cycles             |
+| `_airplanes`               | `tuple[tuple[Airplane, ...], ...]` | `Movement`     | Internal, generated `Airplane`s       |
+| `_operating_points`        | `tuple[OperatingPoint, ...]`       | `Movement`     | Internal, generated `OperatingPoint`s |
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property     | Depends On                                       | Defined On     | Notes  |
-|--------------|--------------------------------------------------|----------------|--------|
-| `lcm_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
-| `max_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
-| `min_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
-| `static`     | `max_period`                                     | `CoreMovement` | Cached |
+| Property      | Depends On                                       | Defined On     | Notes  |
+|---------------|--------------------------------------------------|----------------|--------|
+| `_lcm_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `_max_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `_min_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `_static`     | `_max_period`                                    | `CoreMovement` | Cached |
 
-**Note on `airplanes` and `operating_points`**: These are defined on `Movement` and generated during `__init__` by calling the child movements' `generate_*` methods. They are stored as nested tuples to prevent modification after generation.
+**Note on `_airplanes` and `_operating_points`**: These internal read-only properties are defined on `Movement` and read the `_pregenerated_airplanes` and `_pregenerated_operating_points` slots, which are filled during `__init__` by calling the child movements' `_generate_*` methods. They are stored as nested tuples to prevent modification after generation.
 
 #### `FreeFlightMovement` and `AeroelasticMovement` variant additions
 
-`FreeFlightMovement` and `AeroelasticMovement` extend `CoreMovement` directly, as feature-specific siblings of `Movement`. They inherit every attribute above unchanged and add the immutable state below, each stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name. The pre-generation is asymmetric: `FreeFlightMovement` pre-generates only `Airplane`s (the solver produces `OperatingPoint`s from the rigid body dynamics), while `AeroelasticMovement` pre-generates only `OperatingPoint`s (deformed `Airplane` geometry depends on the solver's structural response).
+`FreeFlightMovement` and `AeroelasticMovement` extend `CoreMovement` directly, as feature-specific siblings of `Movement`. They inherit every attribute above unchanged and add the immutable state below. `prescribed_num_steps` and `free_num_steps` are each stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name. The pre-generated tuples are stored in `_pregenerated_airplanes` and `_pregenerated_operating_points` slots and exposed through the internal read-only properties `_airplanes` and `_operating_points`. The pre-generation is asymmetric: `FreeFlightMovement` pre-generates only `Airplane`s (the solver produces `OperatingPoint`s from the rigid body dynamics), while `AeroelasticMovement` pre-generates only `OperatingPoint`s (deformed `Airplane` geometry depends on the solver's structural response).
 
 | Attribute              | Type                               | Defined On            | Notes                                                                             |
 |------------------------|------------------------------------|-----------------------|-----------------------------------------------------------------------------------|
 | `prescribed_num_steps` | `int`                              | `FreeFlightMovement`  | Prescribed-flight time steps before the free-flight phase                         |
 | `free_num_steps`       | `int`                              | `FreeFlightMovement`  | Free-flight time steps after the prescribed phase                                 |
-| `airplanes`            | `tuple[tuple[Airplane, ...], ...]` | `FreeFlightMovement`  | Pre-generated prescribed `Airplane` geometry, indexed `[airplane_movement][step]` |
-| `operating_points`     | `tuple[OperatingPoint, ...]`       | `AeroelasticMovement` | Pre-generated prescribed `OperatingPoint`s                                        |
+| `_airplanes`           | `tuple[tuple[Airplane, ...], ...]` | `FreeFlightMovement`  | Pre-generated prescribed `Airplane` geometry, indexed `[airplane_movement][step]` |
+| `_operating_points`    | `tuple[OperatingPoint, ...]`       | `AeroelasticMovement` | Pre-generated prescribed `OperatingPoint`s                                        |
 
 ## `CoreAirplaneMovement` / `AirplaneMovement` Class (`_core.py`, `_movements/airplane_movement.py`)
 
@@ -341,10 +341,10 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On                        | Notes                                     |
-|---------------|-----------------------------------|-------------------------------------------|
-| `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
-| `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
+| Property       | Depends On                         | Notes                                     |
+|----------------|------------------------------------|-------------------------------------------|
+| `_all_periods` | Own periods + child `_all_periods` | Tuple of unique non zero periods (cached) |
+| `_max_period`  | Own periods + child `_max_period`  | Scalar float, longest period (cached)     |
 
 ## `CoreWingMovement` / `WingMovement` Class (`_core.py`, `_movements/wing_movement.py`)
 
@@ -370,10 +370,10 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On                        | Notes                                     |
-|---------------|-----------------------------------|-------------------------------------------|
-| `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
-| `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
+| Property       | Depends On                         | Notes                                     |
+|----------------|------------------------------------|-------------------------------------------|
+| `_all_periods` | Own periods + child `_all_periods` | Tuple of unique non zero periods (cached) |
+| `_max_period`  | Own periods + child `_max_period`  | Scalar float, longest period (cached)     |
 
 #### `AeroelasticWingMovement` variant additions
 
@@ -405,10 +405,10 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On    | Notes                                     |
-|---------------|---------------|-------------------------------------------|
-| `all_periods` | Period arrays | Tuple of unique non zero periods (cached) |
-| `max_period`  | Period arrays | Scalar float, longest period (cached)     |
+| Property       | Depends On    | Notes                                     |
+|----------------|---------------|-------------------------------------------|
+| `_all_periods` | Period arrays | Tuple of unique non zero periods (cached) |
+| `_max_period`  | Period arrays | Scalar float, longest period (cached)     |
 
 ## `CoreOperatingPointMovement` / `OperatingPointMovement` Class (`_core.py`, `_movements/operating_point_movement.py`)
 
@@ -428,9 +428,9 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property     | Depends On     | Notes  |
-|--------------|----------------|--------|
-| `max_period` | `periodVCg__E` | Cached |
+| Property      | Depends On     | Notes  |
+|---------------|----------------|--------|
+| `_max_period` | `periodVCg__E` | Cached |
 
 #### `FreeFlightOperatingPointMovement` variant additions
 
@@ -596,22 +596,22 @@ These read-only properties expose the named load components and coefficients def
 | `WnX_G`, `WnY_G`, `WnZ_G` | Above           | Basis vectors          |
 | `children_T_pas_*`        | Cross sections  | Child transformations  |
 
-#### Set Once (set by `generate_mesh`, never modified after)
+#### Set Once (set by `_generate_mesh`, never modified after)
 
-| Attribute             | Type                 | Set By          | Notes                |
-|-----------------------|----------------------|-----------------|----------------------|
-| `symmetry_type`       | `int \| None`        | `generate_mesh` | 1, 2, 3, or 4        |
-| `num_spanwise_panels` | `int \| None`        | `generate_mesh` | Total spanwise count |
-| `num_panels`          | `int \| None`        | `generate_mesh` | Total panel count    |
-| `panels`              | `np.ndarray \| None` | `generate_mesh` | Panel matrix         |
+| Attribute             | Type                 | Set By                                 | Notes                           |
+|-----------------------|----------------------|----------------------------------------|---------------------------------|
+| `symmetry_type`       | `int \| None`        | `_generate_mesh`                       | 1, 2, 3, or 4                   |
+| `num_spanwise_panels` | `int \| None`        | `_generate_mesh`                       | Total spanwise count            |
+| `num_panels`          | `int \| None`        | `_generate_mesh`                       | Total panel count               |
+| `_panels`             | `np.ndarray \| None` | `_generate_mesh`, via `_attach_panels` | Internal read-only Panel matrix |
 
 #### Derived from Set Once (use manual lazy caching)
 
 | Property                     | Depends On                           | Notes                        |
 |------------------------------|--------------------------------------|------------------------------|
-| `projected_area`             | `panels`                             | Projected area               |
-| `wetted_area`                | `panels`                             | Deprecated: total Panel area |
-| `average_panel_aspect_ratio` | `panels`                             | Average aspect ratio         |
+| `projected_area`             | `_panels`                            | Projected area               |
+| `wetted_area`                | `_panels`                            | Deprecated: total Panel area |
+| `average_panel_aspect_ratio` | `_panels`                            | Average aspect ratio         |
 | `span`                       | Wing cross sections, `symmetry_type` | Wing span                    |
 | `standard_mean_chord`        | `projected_area`, `span`             | Standard mean chord          |
 | `mean_aerodynamic_chord`     | `projected_area`, `symmetry_type`    | MAC                          |
@@ -620,7 +620,7 @@ These read-only properties expose the named load components and coefficients def
 
 **Note**: `wetted_area` is deprecated. Its value is the total area of the `Wing`'s `Panel`s, which lie on the mean camber surface, so it is not the `Wing`'s wetted area. Reading it emits a `DeprecationWarning`, and it will be removed in v6.0.0.
 
-#### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
+#### Mutable (modified by `_process_wing_symmetry` for type 5 symmetry)
 
 | Attribute            | Type                 | Notes                          |
 |----------------------|----------------------|--------------------------------|
@@ -629,7 +629,7 @@ These read-only properties expose the named load components and coefficients def
 | `symmetryNormal_G`   | `np.ndarray \| None` | Modified to `None` for type 5  |
 | `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to `None` for type 5  |
 
-**Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
+**Note**: These are modified by `Airplane._process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
 
 #### Mutable (modified during simulation for wake)
 
@@ -670,12 +670,12 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Set Once (set by parent `Wing`)
 
-| Attribute       | Type          | Set By               | Notes                   |
-|-----------------|---------------|----------------------|-------------------------|
-| `validated`     | `bool`        | `Wing.__init__`      | Validation flag         |
-| `symmetry_type` | `int \| None` | `Wing.generate_mesh` | Inherited symmetry type |
+| Attribute       | Type          | Set By                                          | Notes                             |
+|-----------------|---------------|-------------------------------------------------|-----------------------------------|
+| `_validated`    | `bool`        | `Wing.__init__`, via `_mark_validated`          | Internal validation flag          |
+| `symmetry_type` | `int \| None` | `Wing._generate_mesh`, via `_set_symmetry_type` | Read-only inherited symmetry type |
 
-#### Mutable (modified by `process_wing_symmetry`)
+#### Mutable (modified by `_process_wing_symmetry`)
 
 | Attribute                       | Type          | Notes                             |
 |---------------------------------|---------------|-----------------------------------|
@@ -697,7 +697,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `n_points_per_side` | `int`        | Points per side for resampling |
 | `mcl_A_Lp`          | `np.ndarray` | Mean camber line coordinates   |
 
-**Note**: The `add_control_surface` method creates and returns a new `Airfoil` instance rather than modifying the existing one. This is the correct immutable pattern.
+**Note**: The `_add_control_surface` method creates and returns a new `Airfoil` instance rather than modifying the existing one. This is the correct immutable pattern.
 
 **Note**: `outline_A_lp` and `mcl_A_lp` are deprecated read-only aliases for `outline_A_Lp` and `mcl_A_Lp`, and the constructor accepts a deprecated `outline_A_lp` alias for its `outline_A_Lp` parameter. Using any of the aliases emits a `DeprecationWarning`, and all three will be removed in v6.0.0.
 

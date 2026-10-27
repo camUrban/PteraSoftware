@@ -1944,10 +1944,10 @@ class TestChunkedSaveLoad(unittest.TestCase):
         movement = unsteady_problem.movement
         for step in range(self.num_steps):
             self.assertIs(
-                movement.airplanes[0][step], loaded.steady_problems[step].airplanes[0]
+                movement._airplanes[0][step], loaded.steady_problems[step].airplanes[0]
             )
             self.assertIs(
-                movement.operating_points[step],
+                movement._operating_points[step],
                 loaded.steady_problems[step].operating_point,
             )
 
@@ -2551,18 +2551,18 @@ class TestWingRoundTrip(unittest.TestCase):
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
-        assert wing.panels is not None
+        assert wing._panels is not None
         result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
-        assert result.panels is not None
-        self.assertEqual(result.panels.shape, wing.panels.shape)
-        self.assertEqual(result.panels.dtype, object)
-        for i in range(result.panels.shape[0]):
-            for j in range(result.panels.shape[1]):
-                assert isinstance(result.panels[i, j], Panel)
+        assert result._panels is not None
+        self.assertEqual(result._panels.shape, wing._panels.shape)
+        self.assertEqual(result._panels.dtype, object)
+        for i in range(result._panels.shape[0]):
+            for j in range(result._panels.shape[1]):
+                assert isinstance(result._panels[i, j], Panel)
                 npt.assert_array_equal(
-                    result.panels[i, j].Frpp_G_Cg,
-                    wing.panels[i, j].Frpp_G_Cg,
+                    result._panels[i, j].Frpp_G_Cg,
+                    wing._panels[i, j].Frpp_G_Cg,
                 )
 
     def test_wing_cross_sections_tuple_round_trip(self) -> None:
@@ -2678,9 +2678,9 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         assert isinstance(result, Airplane)
         for orig_wing, loaded_wing in zip(airplane.wings, result.wings):
             assert isinstance(loaded_wing, Wing)
-            assert loaded_wing.panels is not None
-            assert orig_wing.panels is not None
-            self.assertEqual(loaded_wing.panels.shape, orig_wing.panels.shape)
+            assert loaded_wing._panels is not None
+            assert orig_wing._panels is not None
+            self.assertEqual(loaded_wing._panels.shape, orig_wing._panels.shape)
 
     def test_save_load_round_trip(self) -> None:
         """Tests that a meshed Airplane survives a save/load round trip.
@@ -2722,12 +2722,12 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        orig_panels = problem.airplanes[0].wings[0].panels
+        orig_panels = problem.airplanes[0].wings[0]._panels
         assert orig_panels is not None
         orig_panel = orig_panels[0, 0]
         result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
-        loaded_panels = result.airplanes[0].wings[0].panels
+        loaded_panels = result.airplanes[0].wings[0]._panels
         assert loaded_panels is not None
         loaded_panel = loaded_panels[0, 0]
         assert orig_panel.Frpp_GP1_CgP1 is not None
@@ -2759,7 +2759,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.airplanes), 2)
         for i in range(2):
             assert isinstance(result.airplanes[i], Airplane)
-            assert result.airplanes[i].wings[0].panels is not None
+            assert result.airplanes[i].wings[0]._panels is not None
 
     def test_formation_flight_gp1_coordinates(self) -> None:
         """Tests that both Airplanes' Panels have correct GP1 coordinates after round
@@ -2771,8 +2771,8 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         for i in range(2):
-            orig_panels = problem.airplanes[i].wings[0].panels
-            loaded_panels = result.airplanes[i].wings[0].panels
+            orig_panels = problem.airplanes[i].wings[0]._panels
+            loaded_panels = result.airplanes[i].wings[0]._panels
             assert orig_panels is not None
             assert loaded_panels is not None
             orig_panel = orig_panels[0, 0]
@@ -2982,8 +2982,8 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         movement = problem.movement
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, Movement)
-        self.assertEqual(len(result.airplanes), len(movement.airplanes))
-        self.assertEqual(len(result.operating_points), len(movement.operating_points))
+        self.assertEqual(len(result._airplanes), len(movement._airplanes))
+        self.assertEqual(len(result._operating_points), len(movement._operating_points))
 
     def test_save_load_operating_point_movement(self) -> None:
         """Tests that an OperatingPointMovement survives a save/load round trip.
@@ -3133,7 +3133,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             save(path, movement)
             result = load(path)
         assert isinstance(result, Movement)
-        self.assertEqual(len(result.airplanes), len(movement.airplanes))
+        self.assertEqual(len(result._airplanes), len(movement._airplanes))
 
 
 class TestUnsteadyProblemRoundTrip(unittest.TestCase):
@@ -3165,7 +3165,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
                 len(result.movement.airplane_movements)
             ):
                 self.assertIs(
-                    result.movement.airplanes[airplane_movement_index][step],
+                    result.movement._airplanes[airplane_movement_index][step],
                     result.steady_problems[step].airplanes[airplane_movement_index],
                 )
 
@@ -3180,7 +3180,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyProblem)
         for step in range(result.num_steps):
             self.assertIs(
-                result.movement.operating_points[step],
+                result.movement._operating_points[step],
                 result.steady_problems[step].operating_point,
             )
 
@@ -3212,11 +3212,11 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         for step in range(result.num_steps):
             for airplane_movement_index in range(2):
                 self.assertIs(
-                    result.movement.airplanes[airplane_movement_index][step],
+                    result.movement._airplanes[airplane_movement_index][step],
                     result.steady_problems[step].airplanes[airplane_movement_index],
                 )
             self.assertIs(
-                result.movement.operating_points[step],
+                result.movement._operating_points[step],
                 result.steady_problems[step].operating_point,
             )
 
@@ -3269,7 +3269,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
                 len(unsteady_problem.movement.airplane_movements)
             ):
                 self.assertIs(
-                    unsteady_problem.movement.airplanes[airplane_movement_index][step],
+                    unsteady_problem.movement._airplanes[airplane_movement_index][step],
                     unsteady_problem.steady_problems[step].airplanes[
                         airplane_movement_index
                     ],
@@ -3324,7 +3324,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(movement, AeroelasticMovement)
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, AeroelasticMovement)
-        self.assertEqual(len(result.operating_points), len(movement.operating_points))
+        self.assertEqual(len(result._operating_points), len(movement._operating_points))
 
     def test_aeroelastic_airplane_movement(self) -> None:
         """Tests that an AeroelasticAirplaneMovement survives a full round trip.
@@ -3677,7 +3677,7 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, FreeFlightMovement)
         self.assertEqual(result.num_steps, movement.num_steps)
-        self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
+        self.assertEqual(len(result._airplanes[0]), len(movement._airplanes[0]))
 
     def test_free_flight_operating_point_movement(self) -> None:
         """Tests that a FreeFlightOperatingPointMovement survives a full round trip.

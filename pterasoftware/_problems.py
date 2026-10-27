@@ -115,7 +115,7 @@ class SteadyProblem:
         self._reynolds_numbers: tuple[float, ...] | None = None
 
         # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
-        self._airplanes[0].validate_first_airplane_constraints()
+        self._airplanes[0]._validate_first_airplane_constraints()
 
         # Populate GP1_CgP1 coordinates for all Airplanes' Panels. This finds the
         # Panels' positions in the first Airplane's geometry axes, relative to the first
@@ -127,9 +127,9 @@ class SteadyProblem:
             T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
 
             for wing in airplane.wings:
-                assert wing.panels is not None
+                assert wing._panels is not None
 
-                for panel in np.ravel(wing.panels):
+                for panel in np.ravel(wing._panels):
                     panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                         T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, is_position=True
                     )
@@ -376,7 +376,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
             delta_time=self._movement.delta_time,
             num_steps=self._movement.num_steps,
             max_wake_rows=self._movement.max_wake_rows,
-            lcm_period=self._movement.lcm_period,
+            lcm_period=self._movement._lcm_period,
         )
 
         # Initialize an empty list to hold the SteadyProblems as they are generated.
@@ -387,9 +387,9 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
 
             # Get the Airplanes and the OperatingPoint associated with this time step.
             these_airplanes = []
-            for this_base_airplane in movement.airplanes:
+            for this_base_airplane in movement._airplanes:
                 these_airplanes.append(this_base_airplane[step_id])
-            this_operating_point = movement.operating_points[step_id]
+            this_operating_point = movement._operating_points[step_id]
 
             # Initialize the SteadyProblem at this time step.
             this_steady_problem = SteadyProblem(
@@ -437,7 +437,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         the motion parameters from the provided CoreMovement.
 
         :param movement: A CoreMovement object that defines the motion parameters
-            (delta_time, num_steps, max_wake_rows, lcm_period) for this problem.
+            (delta_time, num_steps, max_wake_rows, _lcm_period) for this problem.
         :param initial_airplanes: The list of Airplanes at the first time step.
         :param initial_operating_point: The OperatingPoint at the first time step.
         :return: None
@@ -453,7 +453,7 @@ class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
             delta_time=self._movement.delta_time,
             num_steps=self._movement.num_steps,
             max_wake_rows=self._movement.max_wake_rows,
-            lcm_period=self._movement.lcm_period,
+            lcm_period=self._movement._lcm_period,
         )
 
         # Coupled-specific state: a mutable list of SteadyProblems that grows as the
@@ -1187,7 +1187,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         :return: A (12,) ndarray of floats representing the diagonal of the weighting
             matrix D.
         """
-        airplane = self.movement.airplanes[0][0]
+        airplane = self.movement._airplanes[0][0]
         L_ref = airplane.c_ref
         assert L_ref is not None
 
@@ -1225,7 +1225,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
             next_operating_point
         )
 
-        next_airplane = self.movement.airplanes[0][step + 1]
+        next_airplane = self.movement._airplanes[0][step + 1]
 
         next_steady_problem = SteadyProblem(
             airplanes=[next_airplane],
@@ -1273,7 +1273,7 @@ class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
         # trial.
         snapshot = self._mujoco_model.save_state()
         snapshot_x = self._state_to_vector(self._mujoco_model.get_state())
-        next_airplane = self.movement.airplanes[0][step + 1]
+        next_airplane = self.movement._airplanes[0][step + 1]
         transient_next_steady_problem = SteadyProblem(
             airplanes=[copy.deepcopy(next_airplane)],
             operating_point=current_operating_point,
@@ -1496,7 +1496,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         super().__init__(
             movement=movement,
             initial_airplanes=[initial_airplane],
-            initial_operating_point=movement.operating_points[0],
+            initial_operating_point=movement._operating_points[0],
         )
 
         # These are the tunable parameters.
@@ -1612,8 +1612,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             representing the mass at each Panel. The three components are identical
             (mass scalar replicated for x, y, z axes).
         """
-        assert wing.panels is not None
-        areas = np.array([[panel.area for panel in row] for row in wing.panels])
+        assert wing._panels is not None
+        areas = np.array([[panel.area for panel in row] for row in wing._panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
     def _initialize_next_problem(
@@ -1650,7 +1650,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             step=next_step,
             deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
-        operating_point = self.movement.operating_points[next_step]
+        operating_point = self.movement._operating_points[next_step]
 
         self._steady_problems.append(
             SteadyProblem(
@@ -2021,7 +2021,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         """
         torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
         flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
-        assert wing.panels is not None
+        assert wing._panels is not None
         # This is the distance from the flapping axis to the strip's centroid,
         # accumulated in half-span-width increments.
         d = 0.0
@@ -2039,7 +2039,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             else:
                 panel_span_index = span_panel
             W: float = float(
-                np.linalg.norm(wing.panels[0][panel_span_index].frontLeg_G)
+                np.linalg.norm(wing._panels[0][panel_span_index].frontLeg_G)
             )
             d += W / 2
             torsional_inertias[span_panel] = 1 / 2 * mass * (L**2)

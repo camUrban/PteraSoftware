@@ -183,7 +183,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         # are consumed by the gather below, since every strip's SLEP is a first-row
         # Panel's corner.
         outboardFrontPoints_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-        for panel_num, panel in enumerate(self.panels):
+        for panel_num, panel in enumerate(self._panels):
             if self._slep_outboard_is_left[panel_num]:
                 outboardFrontPoints_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
             else:

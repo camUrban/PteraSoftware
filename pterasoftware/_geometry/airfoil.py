@@ -254,7 +254,7 @@ class Airfoil:
     #  their respective outlines. Instead, it would be better to have everything rotate
     #  about the MCL's hinge point, however, this causes self intersections for the
     #  upper and lower outlines, so we'd need to write some logic to remove those.
-    def add_control_surface(
+    def _add_control_surface(
         self, deflection: float | int, hinge_point: float | int
     ) -> Airfoil:
         """Returns a version of the Airfoil with a control surface added at a given
@@ -622,7 +622,7 @@ class Airfoil:
 
         return None
 
-    def get_resampled_mcl(
+    def _get_resampled_mcl(
         self, mcl_fractions: np.ndarray | Sequence[float]
     ) -> np.ndarray:
         """Returns a ndarray of points along the mean camber line (MCL), resampled from
@@ -1398,7 +1398,7 @@ class Airfoil:
         normalized_mcl_fractions = _functions.cosspace(
             0.0, 1.0, self._n_points_per_side
         )
-        self._mcl_A_Lp = self.get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
+        self._mcl_A_Lp = self._get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
 
         # Normalize the MCL so that x spans from 0.0 to 1.0. This corrects for slight
         # variations in the outline data where upper and lower surfaces may not extend

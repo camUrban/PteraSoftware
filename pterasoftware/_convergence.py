@@ -887,7 +887,7 @@ def analyze_unsteady_convergence(
 
     # Validate the wake length bounds parameters.
     ref_movement: _movements.movement.Movement = ref_problem.movement
-    static = ref_movement.static
+    static = ref_movement._static
 
     # Reject a reference Movement that truncates its wake. This analysis sweeps the
     # wake's length by varying the simulation's duration, so a truncated wake would stop

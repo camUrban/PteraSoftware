@@ -192,7 +192,7 @@ class TestFreeFlightMovement(unittest.TestCase):
     def test_airplanes_structure(self) -> None:
         """Test that airplanes is a tuple of tuples of Airplanes with the correct
         dimensions."""
-        airplanes = self.basic_free_flight_movement.airplanes
+        airplanes = self.basic_free_flight_movement._airplanes
         self.assertIsInstance(airplanes, tuple)
 
         # The first index runs over the AirplaneMovements.
@@ -212,7 +212,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_airplanes_structure_with_multiple_airplanes(self) -> None:
         """Test that airplanes has one inner tuple per AirplaneMovement."""
-        airplanes = self.free_flight_movement_with_multiple_airplanes.airplanes
+        airplanes = self.free_flight_movement_with_multiple_airplanes._airplanes
         self.assertEqual(len(airplanes), 2)
         for airplane_list in airplanes:
             self.assertEqual(
@@ -222,34 +222,34 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_static_property_for_static_free_flight_movement(self) -> None:
         """Test that static returns True for a static FreeFlightMovement."""
-        self.assertTrue(self.static_free_flight_movement.static)
+        self.assertTrue(self.static_free_flight_movement._static)
 
     def test_static_property_for_non_static_free_flight_movement(self) -> None:
         """Test that static returns False for a non static FreeFlightMovement."""
-        self.assertFalse(self.basic_free_flight_movement.static)
+        self.assertFalse(self.basic_free_flight_movement._static)
 
     def test_max_period_for_static_free_flight_movement(self) -> None:
         """Test that max_period returns 0.0 for a static FreeFlightMovement."""
-        self.assertEqual(self.static_free_flight_movement.max_period, 0.0)
+        self.assertEqual(self.static_free_flight_movement._max_period, 0.0)
 
     def test_max_period_for_non_static_free_flight_movement(self) -> None:
         """Test that max_period returns the correct value for a non static
         FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
-        self.assertEqual(self.basic_free_flight_movement.max_period, 2.0)
+        self.assertEqual(self.basic_free_flight_movement._max_period, 2.0)
 
     def test_min_period_for_non_static_free_flight_movement(self) -> None:
         """Test that min_period returns the correct value for a non static
         FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
-        self.assertEqual(self.basic_free_flight_movement.min_period, 2.0)
+        self.assertEqual(self.basic_free_flight_movement._min_period, 2.0)
 
     def test_lcm_period_for_non_static_free_flight_movement(self) -> None:
         """Test that lcm_period returns the correct value for a non static
         FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0, so the
         # LCM of its identical periods is that period.
-        self.assertEqual(self.basic_free_flight_movement.lcm_period, 2.0)
+        self.assertEqual(self.basic_free_flight_movement._lcm_period, 2.0)
 
     def test_max_wake_rows_default_none(self) -> None:
         """Test that max_wake_rows defaults to None."""
@@ -431,9 +431,9 @@ class TestFreeFlightMovementImmutability(unittest.TestCase):
             setattr(self.basic_free_flight_movement, "free_num_steps", 100)
 
     def test_immutable_airplanes_property(self) -> None:
-        """Test that airplanes property is read only."""
+        """Test that _airplanes property is read only."""
         with self.assertRaises(AttributeError):
-            setattr(self.basic_free_flight_movement, "airplanes", ())
+            setattr(self.basic_free_flight_movement, "_airplanes", ())
 
     def test_immutable_airplane_movements_property(self) -> None:
         """Test that airplane_movements property is read only."""

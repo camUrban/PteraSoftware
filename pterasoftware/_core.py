@@ -72,7 +72,7 @@ class CoreOperatingPointMovement:
         "_periodVCg__E",
         "_spacingVCg__E",
         "_phaseVCg__E",
-        "_max_period",
+        "_max_period_cache",
     )
 
     def __init__(
@@ -132,7 +132,7 @@ class CoreOperatingPointMovement:
         self._phaseVCg__E = phaseVCg__E
 
         # Initialize the cache for the property derived from the immutable attributes.
-        self._max_period: float | None = None
+        self._max_period_cache: float | None = None
 
     # --- Immutable: read only properties ---
     @property
@@ -157,15 +157,15 @@ class CoreOperatingPointMovement:
 
     # --- Immutable derived: manual lazy caching ---
     @property
-    def max_period(self) -> float:
+    def _max_period(self) -> float:
         """The longest period of this OperatingPoint's motion.
 
         :return: The longest period in seconds. If the motion is static, this will be
             0.0.
         """
-        if self._max_period is None:
-            self._max_period = self._periodVCg__E
-        return self._max_period
+        if self._max_period_cache is None:
+            self._max_period_cache = self._periodVCg__E
+        return self._max_period_cache
 
     # --- Other methods ---
     def _generate_operating_point_at_time_step(
@@ -276,8 +276,8 @@ class CoreWingCrossSectionMovement:
         "_periodAngles_Wcsp_to_Wcs_ixyz",
         "_spacingAngles_Wcsp_to_Wcs_ixyz",
         "_phaseAngles_Wcsp_to_Wcs_ixyz",
-        "_all_periods",
-        "_max_period",
+        "_all_periods_cache",
+        "_max_period_cache",
     )
 
     def __init__(
@@ -468,8 +468,8 @@ class CoreWingCrossSectionMovement:
 
         # Initialize the caches for the properties derived from the immutable
         # attributes.
-        self._all_periods: tuple[float, ...] | None = None
-        self._max_period: float | None = None
+        self._all_periods_cache: tuple[float, ...] | None = None
+        self._max_period_cache: float | None = None
 
     # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> CoreWingCrossSectionMovement:
@@ -525,8 +525,8 @@ class CoreWingCrossSectionMovement:
         )
 
         # Initialize cache variables to None (caches will be recomputed on access).
-        new_movement._all_periods = None
-        new_movement._max_period = None
+        new_movement._all_periods_cache = None
+        new_movement._max_period_cache = None
 
         return new_movement
 
@@ -575,13 +575,13 @@ class CoreWingCrossSectionMovement:
 
     # --- Immutable derived: manual lazy caching ---
     @property
-    def all_periods(self) -> tuple[float, ...]:
+    def _all_periods(self) -> tuple[float, ...]:
         """All unique non zero periods of this WingCrossSection's motion.
 
         :return: A tuple of all unique non zero periods in seconds. If the motion is
             static, this will be an empty tuple.
         """
-        if self._all_periods is None:
+        if self._all_periods_cache is None:
             periods = []
 
             # Collect all periods from positional motion.
@@ -594,24 +594,24 @@ class CoreWingCrossSectionMovement:
                 if period > 0.0:
                     periods.append(float(period))
 
-            self._all_periods = tuple(periods)
-        return self._all_periods
+            self._all_periods_cache = tuple(periods)
+        return self._all_periods_cache
 
     @property
-    def max_period(self) -> float:
+    def _max_period(self) -> float:
         """The longest period of this WingCrossSection's motion.
 
         :return: The longest period in seconds. If the motion is static, this will be
             0.0.
         """
-        if self._max_period is None:
-            self._max_period = float(
+        if self._max_period_cache is None:
+            self._max_period_cache = float(
                 max(
                     np.max(self._periodLp_Wcsp_Lpp),
                     np.max(self._periodAngles_Wcsp_to_Wcs_ixyz),
                 )
             )
-        return self._max_period
+        return self._max_period_cache
 
     # --- Other methods ---
     def _generate_wing_cross_section_at_time_step(
@@ -780,8 +780,8 @@ class CoreWingMovement:
         "_spacingAngles_Gs_to_Wn_ixyz",
         "_phaseAngles_Gs_to_Wn_ixyz",
         "_rotationPointOffset_Gs_Ler",
-        "_all_periods",
-        "_max_period",
+        "_all_periods_cache",
+        "_max_period_cache",
     )
 
     def __init__(
@@ -1024,8 +1024,8 @@ class CoreWingMovement:
 
         # Initialize the caches for the properties derived from the immutable
         # attributes.
-        self._all_periods: tuple[float, ...] | None = None
-        self._max_period: float | None = None
+        self._all_periods_cache: tuple[float, ...] | None = None
+        self._max_period_cache: float | None = None
 
     # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> CoreWingMovement:
@@ -1084,8 +1084,8 @@ class CoreWingMovement:
         new_movement._spacingAngles_Gs_to_Wn_ixyz = self._spacingAngles_Gs_to_Wn_ixyz
 
         # Initialize cache variables to None (caches will be recomputed on access).
-        new_movement._all_periods = None
-        new_movement._max_period = None
+        new_movement._all_periods_cache = None
+        new_movement._max_period_cache = None
 
         return new_movement
 
@@ -1142,19 +1142,19 @@ class CoreWingMovement:
 
     # --- Immutable derived: manual lazy caching ---
     @property
-    def all_periods(self) -> tuple[float, ...]:
+    def _all_periods(self) -> tuple[float, ...]:
         """All unique non zero periods of motion from this Wing and each
         WingCrossSection's movement class.
 
         :return: A tuple of all unique non zero periods in seconds. If all motion is
             static, this will be an empty tuple.
         """
-        if self._all_periods is None:
+        if self._all_periods_cache is None:
             periods: list[float] = []
 
             # Collect all periods from WingCrossSectionMovements.
             for wing_cross_section_movement in self._wing_cross_section_movements:
-                periods.extend(wing_cross_section_movement.all_periods)
+                periods.extend(wing_cross_section_movement._all_periods)
 
             # Collect all periods from CoreWingMovement's own motion.
             for period in self._periodLer_Gs_Cgs:
@@ -1164,35 +1164,35 @@ class CoreWingMovement:
                 if period > 0.0:
                     periods.append(float(period))
 
-            self._all_periods = tuple(periods)
-        return self._all_periods
+            self._all_periods_cache = tuple(periods)
+        return self._all_periods_cache
 
     @property
-    def max_period(self) -> float:
+    def _max_period(self) -> float:
         """The longest period of motion across this Wing and each WingCrossSection's
         movement class.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.
         """
-        if self._max_period is None:
+        if self._max_period_cache is None:
             wing_cross_section_movement_max_periods = []
             for wing_cross_section_movement in self._wing_cross_section_movements:
                 wing_cross_section_movement_max_periods.append(
-                    wing_cross_section_movement.max_period
+                    wing_cross_section_movement._max_period
                 )
             max_wing_cross_section_movement_period = max(
                 wing_cross_section_movement_max_periods
             )
 
-            self._max_period = float(
+            self._max_period_cache = float(
                 max(
                     max_wing_cross_section_movement_period,
                     np.max(self._periodLer_Gs_Cgs),
                     np.max(self._periodAngles_Gs_to_Wn_ixyz),
                 )
             )
-        return self._max_period
+        return self._max_period_cache
 
     # --- Other methods ---
     def _generate_wing_at_time_step(
@@ -1375,8 +1375,8 @@ class CoreAirplaneMovement:
         "_periodCg_GP1_CgP1",
         "_spacingCg_GP1_CgP1",
         "_phaseCg_GP1_CgP1",
-        "_all_periods",
-        "_max_period",
+        "_all_periods_cache",
+        "_max_period_cache",
     )
 
     def __init__(
@@ -1501,8 +1501,8 @@ class CoreAirplaneMovement:
 
         # Initialize the caches for the properties derived from the immutable
         # attributes.
-        self._all_periods: tuple[float, ...] | None = None
-        self._max_period: float | None = None
+        self._all_periods_cache: tuple[float, ...] | None = None
+        self._max_period_cache: float | None = None
 
     # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> CoreAirplaneMovement:
@@ -1543,8 +1543,8 @@ class CoreAirplaneMovement:
         new_movement._spacingCg_GP1_CgP1 = self._spacingCg_GP1_CgP1
 
         # Initialize cache variables to None (caches will be recomputed on access).
-        new_movement._all_periods = None
-        new_movement._max_period = None
+        new_movement._all_periods_cache = None
+        new_movement._max_period_cache = None
 
         return new_movement
 
@@ -1577,49 +1577,49 @@ class CoreAirplaneMovement:
 
     # --- Immutable derived: manual lazy caching ---
     @property
-    def all_periods(self) -> tuple[float, ...]:
+    def _all_periods(self) -> tuple[float, ...]:
         """All unique non zero periods of motion from this Airplane, each Wing's
         movement class, and each WingCrossSection's movement class.
 
         :return: A tuple of all unique non zero periods in seconds. If all motion is
             static, this will be an empty tuple.
         """
-        if self._all_periods is None:
+        if self._all_periods_cache is None:
             periods: list[float] = []
 
             # Collect all periods from WingMovement(s).
             for wing_movement in self._wing_movements:
-                periods.extend(wing_movement.all_periods)
+                periods.extend(wing_movement._all_periods)
 
             # Collect all periods from CoreAirplaneMovement's own motion.
             for period in self._periodCg_GP1_CgP1:
                 if period > 0.0:
                     periods.append(float(period))
 
-            self._all_periods = tuple(periods)
-        return self._all_periods
+            self._all_periods_cache = tuple(periods)
+        return self._all_periods_cache
 
     @property
-    def max_period(self) -> float:
+    def _max_period(self) -> float:
         """The longest period of motion across this Airplane, each Wing's movement
         class, and each WingCrossSection's movement class.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.
         """
-        if self._max_period is None:
+        if self._max_period_cache is None:
             wing_movement_max_periods = []
             for wing_movement in self._wing_movements:
-                wing_movement_max_periods.append(wing_movement.max_period)
+                wing_movement_max_periods.append(wing_movement._max_period)
             max_wing_movement_period = max(wing_movement_max_periods)
 
-            self._max_period = float(
+            self._max_period_cache = float(
                 max(
                     max_wing_movement_period,
                     np.max(self._periodCg_GP1_CgP1),
                 )
             )
-        return self._max_period
+        return self._max_period_cache
 
     # --- Other methods ---
     def _generate_airplane_at_time_step(
@@ -1719,7 +1719,7 @@ class CoreAirplaneMovement:
         )
 
         # Check if geometry is static (no periodic motion).
-        is_static_geometry = self.max_period == 0.0
+        is_static_geometry = self._max_period == 0.0
 
         if is_static_geometry:
             # Optimization for static geometry: create first Airplane with full mesh
@@ -1788,7 +1788,9 @@ class CoreAirplaneMovement:
                 else:
                     raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-            copied_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            copied_airplane = first_airplane._deep_copy_with_Cg_GP1_CgP1(
+                thisCg_GP1_CgP1
+            )
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -1901,7 +1903,7 @@ class CoreAirplaneMovement:
 
             copied_airplane = first_period_airplanes[
                 source_step
-            ].deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
+            ]._deep_copy_with_Cg_GP1_CgP1(thisCg_GP1_CgP1)
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -1927,12 +1929,12 @@ class CoreAirplaneMovement:
         """Calculates the LCM of all geometry related periods.
 
         Excludes OperatingPoint periods since those don't affect geometry. Uses the
-        all_periods property which already collects only geometry related periods.
+        _all_periods property which already collects only geometry related periods.
 
         :return: The LCM of all geometry related periods in seconds. Returns 0.0 if all
             geometry is static.
         """
-        return lcm_multiple(list(self.all_periods))
+        return lcm_multiple(list(self._all_periods))
 
     @staticmethod
     def _geometry_matches(
@@ -1972,14 +1974,14 @@ class CoreAirplaneMovement:
                 return False
 
             # Check Panel corner positions if Wings are meshed.
-            if wing_a.panels is not None and wing_b.panels is not None:
-                if wing_a.panels.shape != wing_b.panels.shape:
+            if wing_a._panels is not None and wing_b._panels is not None:
+                if wing_a._panels.shape != wing_b._panels.shape:
                     return False
 
-                for i in range(wing_a.panels.shape[0]):
-                    for j in range(wing_a.panels.shape[1]):
-                        panel_a = wing_a.panels[i, j]
-                        panel_b = wing_b.panels[i, j]
+                for i in range(wing_a._panels.shape[0]):
+                    for j in range(wing_a._panels.shape[1]):
+                        panel_a = wing_a._panels[i, j]
+                        panel_b = wing_b._panels[i, j]
 
                         # Check all four corner positions.
                         if not np.allclose(
@@ -2032,10 +2034,10 @@ class CoreMovement:
         "_delta_time",
         "_num_steps",
         "_max_wake_rows",
-        "_lcm_period",
-        "_max_period",
-        "_min_period",
-        "_static",
+        "_lcm_period_cache",
+        "_max_period_cache",
+        "_min_period_cache",
+        "_static_cache",
     )
 
     def __init__(
@@ -2088,10 +2090,10 @@ class CoreMovement:
         # Initialize the caches for the properties derived from the immutable
         # attributes. These are initialized early because static is accessed below
         # during __init__ to validate max_wake_rows.
-        self._lcm_period: float | None = None
-        self._max_period: float | None = None
-        self._min_period: float | None = None
-        self._static: bool | None = None
+        self._lcm_period_cache: float | None = None
+        self._max_period_cache: float | None = None
+        self._min_period_cache: float | None = None
+        self._static_cache: bool | None = None
 
         # Validate and store delta_time.
         delta_time = _parameter_validation.number_in_range_return_float(
@@ -2145,7 +2147,7 @@ class CoreMovement:
 
     # --- Immutable derived: manual lazy caching ---
     @property
-    def lcm_period(self) -> float:
+    def _lcm_period(self) -> float:
         """The least common multiple of all motion periods, ensuring all motions
         complete an integer number of cycles when cycle averaging forces and moments.
 
@@ -2157,48 +2159,48 @@ class CoreMovement:
         :return: The LCM period in seconds. If all the motion is static, this will be
             0.0.
         """
-        if self._lcm_period is None:
+        if self._lcm_period_cache is None:
             # Collect all periods from AirplaneMovements.
             all_periods: list[float] = []
             for airplane_movement in self._airplane_movements:
-                all_periods.extend(airplane_movement.all_periods)
+                all_periods.extend(airplane_movement._all_periods)
 
             # Add the OperatingPointMovement period.
-            all_periods.append(self._operating_point_movement.max_period)
+            all_periods.append(self._operating_point_movement._max_period)
 
-            self._lcm_period = lcm_multiple(all_periods)
-        return self._lcm_period
+            self._lcm_period_cache = lcm_multiple(all_periods)
+        return self._lcm_period_cache
 
     @property
-    def max_period(self) -> float:
+    def _max_period(self) -> float:
         """The longest period of motion across each Airplane's movement class, each
         Wing's movement class, each WingCrossSection's movement class, and the
         OperatingPoint's movement class.
 
-        For cycle averaging calculations, lcm_period should be used instead of
-        max_period to ensure all motions complete an integer number of cycles.
+        For cycle averaging calculations, _lcm_period should be used instead of
+        _max_period to ensure all motions complete an integer number of cycles.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.
         """
-        if self._max_period is None:
+        if self._max_period_cache is None:
             # Iterate through the AirplaneMovements and find the one with the largest
             # max period.
             airplane_movement_max_periods = []
             for airplane_movement in self._airplane_movements:
-                airplane_movement_max_periods.append(airplane_movement.max_period)
+                airplane_movement_max_periods.append(airplane_movement._max_period)
             max_airplane_period = max(airplane_movement_max_periods)
 
             # The global max period is the maximum of the max AirplaneMovement period
             # and the OperatingPointMovement max period.
-            self._max_period = max(
+            self._max_period_cache = max(
                 max_airplane_period,
-                self._operating_point_movement.max_period,
+                self._operating_point_movement._max_period,
             )
-        return self._max_period
+        return self._max_period_cache
 
     @property
-    def min_period(self) -> float:
+    def _min_period(self) -> float:
         """The shortest non zero period of motion across each Airplane's movement class,
         each Wing's movement class, each WingCrossSection's movement class, and the
         OperatingPoint's movement class.
@@ -2206,36 +2208,36 @@ class CoreMovement:
         :return: The shortest non zero period in seconds. If all the motion is static,
             this will be 0.0.
         """
-        if self._min_period is None:
+        if self._min_period_cache is None:
             # Collect all periods from AirplaneMovements.
             all_periods: list[float] = []
             for airplane_movement in self._airplane_movements:
-                all_periods.extend(airplane_movement.all_periods)
+                all_periods.extend(airplane_movement._all_periods)
 
             # Add the OperatingPointMovement period.
-            op_period = self._operating_point_movement.max_period
+            op_period = self._operating_point_movement._max_period
             if op_period != 0.0:
                 all_periods.append(op_period)
 
             # Filter out zero periods and find the minimum.
             non_zero_periods = [p for p in all_periods if p != 0.0]
             if not non_zero_periods:
-                self._min_period = 0.0
+                self._min_period_cache = 0.0
             else:
-                self._min_period = min(non_zero_periods)
-        return self._min_period
+                self._min_period_cache = min(non_zero_periods)
+        return self._min_period_cache
 
     @property
-    def static(self) -> bool:
+    def _static(self) -> bool:
         """Flags if all motion across each Airplane's movement class, each Wing's
         movement class, each WingCrossSection's movement class, and the OperatingPoint's
         movement class is static.
 
         :return: True if all motion is static. False otherwise.
         """
-        if self._static is None:
-            self._static = self.max_period == 0
-        return self._static
+        if self._static_cache is None:
+            self._static_cache = self._max_period == 0
+        return self._static_cache
 
 
 class CoreUnsteadyProblem:

@@ -642,8 +642,8 @@ class TestGetCollocationPoints(unittest.TestCase):
     def test_returns_every_panel_row_by_row(self) -> None:
         """Test that every Panel's collocation point is returned, row by row."""
         wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
-        assert wing.panels is not None
-        num_rows, num_columns = wing.panels.shape
+        assert wing._panels is not None
+        num_rows, num_columns = wing._panels.shape
         ids, _, _, _ = _output_rendering.get_collocation_points(
             wing, "", np.eye(4, dtype=float)
         )
@@ -660,8 +660,8 @@ class TestGetCollocationPoints(unittest.TestCase):
         """Test that each ID numbers its Panel's row and column from one and ends with
         the suffix."""
         wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
-        assert wing.panels is not None
-        num_columns = wing.panels.shape[1]
+        assert wing._panels is not None
+        num_columns = wing._panels.shape[1]
         ids, _, _, _ = _output_rendering.get_collocation_points(
             wing, "Wn1", np.eye(4, dtype=float)
         )
@@ -672,26 +672,26 @@ class TestGetCollocationPoints(unittest.TestCase):
         """Test that each position is its Panel's collocation point, mapped through the
         transformation."""
         wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
-        assert wing.panels is not None
+        assert wing._panels is not None
         T_pas_G_Cg_to_D_Do = _transformations.generate_trans_T(
             np.array([1.0, -2.0, 0.5]), passive=True
         )
-        num_columns = wing.panels.shape[1]
+        num_columns = wing._panels.shape[1]
         _, listCollocationPoints_D_Do, _, _ = _output_rendering.get_collocation_points(
             wing, "", T_pas_G_Cg_to_D_Do
         )
         npt.assert_allclose(
             listCollocationPoints_D_Do[num_columns + 2],
             _transformations.apply_T_to_vectors(
-                T_pas_G_Cg_to_D_Do, wing.panels[1, 2].Cpp_G_Cg, is_position=True
+                T_pas_G_Cg_to_D_Do, wing._panels[1, 2].Cpp_G_Cg, is_position=True
             ),
         )
 
     def test_lays_each_cross_along_its_panels_diagonals(self) -> None:
         """Test that each cross's arms are unit vectors along its Panel's diagonals."""
         wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
-        assert wing.panels is not None
-        panel = wing.panels[0, 0]
+        assert wing._panels is not None
+        panel = wing._panels[0, 0]
         _, _, _, listCrossDirections_D = _output_rendering.get_collocation_points(
             wing, "", np.eye(4, dtype=float)
         )
@@ -708,7 +708,7 @@ class TestGetCollocationPoints(unittest.TestCase):
     def test_returns_nothing_for_an_unmeshed_wing(self) -> None:
         """Test that a Wing without Panels gives empty lists."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        self.assertIsNone(wing.panels)
+        self.assertIsNone(wing._panels)
         self.assertEqual(
             _output_rendering.get_collocation_points(wing, "", np.eye(4, dtype=float)),
             ([], [], [], []),
@@ -721,8 +721,8 @@ class TestGetPanelSurfaces(unittest.TestCase):
     def test_builds_one_quadrilateral_per_panel(self) -> None:
         """Test that every Panel becomes one four sided cell."""
         airplanes = output_rendering_fixtures.make_placed_airplanes_fixture()
-        assert airplanes[0].wings[0].panels is not None
-        panels = np.ravel(airplanes[0].wings[0].panels)
+        assert airplanes[0].wings[0]._panels is not None
+        panels = np.ravel(airplanes[0].wings[0]._panels)
         surfaces = _output_rendering.get_panel_surfaces(airplanes)
         self.assertEqual(surfaces.n_cells, len(panels))
         self.assertEqual(surfaces.n_points, 4 * len(panels))
@@ -734,8 +734,8 @@ class TestGetPanelSurfaces(unittest.TestCase):
         the cell traces the Panel's outline rather than crossing it.
         """
         airplanes = output_rendering_fixtures.make_placed_airplanes_fixture()
-        assert airplanes[0].wings[0].panels is not None
-        panel = np.ravel(airplanes[0].wings[0].panels)[0]
+        assert airplanes[0].wings[0]._panels is not None
+        panel = np.ravel(airplanes[0].wings[0]._panels)[0]
         surfaces = _output_rendering.get_panel_surfaces(airplanes)
         npt.assert_allclose(
             surfaces.points[:4],
@@ -1079,8 +1079,8 @@ class TestGetScalars(unittest.TestCase):
         carries the negated force.
         """
         airplanes = output_rendering_fixtures.make_loaded_airplanes_fixture()
-        assert airplanes[0].wings[0].panels is not None
-        panels = np.ravel(airplanes[0].wings[0].panels)
+        assert airplanes[0].wings[0]._panels is not None
+        panels = np.ravel(airplanes[0].wings[0]._panels)
         scalars = _output_rendering.get_scalars(airplanes, "induced drag", 2.0)
         expected = [-panel.forces_W[0] / 2.0 / panel.area for panel in panels]
         npt.assert_allclose(scalars, expected)
@@ -1092,8 +1092,8 @@ class TestGetScalars(unittest.TestCase):
         negated force.
         """
         airplanes = output_rendering_fixtures.make_loaded_airplanes_fixture()
-        assert airplanes[0].wings[0].panels is not None
-        panels = np.ravel(airplanes[0].wings[0].panels)
+        assert airplanes[0].wings[0]._panels is not None
+        panels = np.ravel(airplanes[0].wings[0]._panels)
         scalars = _output_rendering.get_scalars(airplanes, "crosswind force", 2.0)
         expected = [-panel.forces_W[1] / 2.0 / panel.area for panel in panels]
         npt.assert_allclose(scalars, expected)
@@ -1104,8 +1104,8 @@ class TestGetScalars(unittest.TestCase):
         Wind axes z points down, so the coefficient carries the negated force.
         """
         airplanes = output_rendering_fixtures.make_loaded_airplanes_fixture()
-        assert airplanes[0].wings[0].panels is not None
-        panels = np.ravel(airplanes[0].wings[0].panels)
+        assert airplanes[0].wings[0]._panels is not None
+        panels = np.ravel(airplanes[0].wings[0]._panels)
         scalars = _output_rendering.get_scalars(airplanes, "lift", 2.0)
         expected = [-panel.forces_W[2] / 2.0 / panel.area for panel in panels]
         npt.assert_allclose(scalars, expected)

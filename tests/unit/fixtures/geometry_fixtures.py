@@ -422,7 +422,7 @@ def make_symmetric_dihedral_wing_fixture() -> ps.Wing:
     (the y = 0 plane), with dihedral so that the panel normals carry a non zero spanwise
     (y) component.
 
-    The Wing is returned unmeshed; call generate_mesh before reading its Panels.
+    The Wing is returned unmeshed; call _generate_mesh before reading its Panels.
 
     :return symmetric_dihedral_wing_fixture: Wing
         This is the symmetric dihedral Wing.
@@ -466,7 +466,7 @@ def make_type_5_wing_fixture() -> ps.Wing:
     """This method makes a fixture that is a Wing with type 5 symmetry (symmetric=True,
     coincident_symmetry_plane=False).
 
-    Type 5 wings are automatically processed by Airplane.process_wing_symmetry() into
+    Type 5 wings are automatically processed by Airplane._process_wing_symmetry() into
     type 1 and type 3 wings, so this fixture represents the initial state before
     processing.
 

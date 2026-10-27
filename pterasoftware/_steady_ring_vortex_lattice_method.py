@@ -55,7 +55,7 @@ class SteadyRingVortexLatticeMethodSolver:
         "stackFreestreamWingInfluences__E",
         "_gridWingWingInfluences__E",
         "_vortex_strengths",
-        "panels",
+        "_panels",
         "stackUnitNormals_GP1",
         "panel_areas",
         "stackCpp_GP1_CgP1",
@@ -127,7 +127,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
-        self.panels = np.empty(self.num_panels, dtype=object)
+        self._panels = np.empty(self.num_panels, dtype=object)
         self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self.panel_areas = np.zeros(self.num_panels, dtype=float)
 
@@ -500,7 +500,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 _num_spanwise_panels = wing.num_spanwise_panels
                 assert _num_spanwise_panels is not None
 
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 # Based on results from Ramasamy and Leishman (2007), the wake's initial
@@ -897,7 +897,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # position: +1 right, -1 left, +num_spanwise back, -num_spanwise front.
         for airplane in self.airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_spanwise = wing.num_spanwise_panels

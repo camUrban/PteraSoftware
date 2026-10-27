@@ -58,7 +58,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_currentStackWakeWingInfluences__E",
         "_current_bound_vortex_strengths",
         "_last_bound_vortex_strengths",
-        "panels",
+        "_panels",
         "stackUnitNormals_GP1",
         "panel_areas",
         "stackCpp_GP1_CgP1",
@@ -198,7 +198,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
-        self.panels: np.ndarray = np.empty(0, dtype=object)
+        self._panels: np.ndarray = np.empty(0, dtype=object)
         self.stackUnitNormals_GP1: np.ndarray = np.empty(0, dtype=float)
         self.panel_areas: np.ndarray = np.empty(0, dtype=float)
 
@@ -846,7 +846,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
-        self.panels = np.empty(self.num_panels, dtype=object)
+        self._panels = np.empty(self.num_panels, dtype=object)
         self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self.panel_areas = np.zeros(self.num_panels, dtype=float)
 

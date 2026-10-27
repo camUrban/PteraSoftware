@@ -320,8 +320,8 @@ def process_solver_loads(
     T_pas_GP1_CgP1_to_W_CgP1 = this_operating_point.T_pas_GP1_CgP1_to_W_CgP1
 
     # Iterate through this solver's Panels.
-    assert solver.panels is not None
-    for panel_num, panel in enumerate(solver.panels):
+    assert solver._panels is not None
+    for panel_num, panel in enumerate(solver._panels):
         theseForces_GP1 = stackPanelForces_GP1[panel_num, :]
         theseMoments_GP1_CgP1 = stackPanelMoments_GP1_CgP1[panel_num, :]
 
@@ -477,8 +477,8 @@ def update_ring_vortex_solvers_panel_attributes(
         axes, relative to the first Airplane's CG). The units are in meters.
     :return: None
     """
-    assert ring_vortex_solver.panels is not None
-    ring_vortex_solver.panels[global_panel_position] = panel
+    assert ring_vortex_solver._panels is not None
+    ring_vortex_solver._panels[global_panel_position] = panel
     assert ring_vortex_solver.stackUnitNormals_GP1 is not None
     ring_vortex_solver.stackUnitNormals_GP1[global_panel_position, :] = (
         panel.unitNormal_GP1

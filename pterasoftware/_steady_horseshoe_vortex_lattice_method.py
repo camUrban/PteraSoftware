@@ -61,7 +61,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "_stackFrhvp_GP1_CgP1",
         "_stackFlhvp_GP1_CgP1",
         "_stackBlhvp_GP1_CgP1",
-        "panels",
+        "_panels",
         "_stackBoundVortexCenters_GP1_CgP1",
         "_stackBoundVortexVectors_GP1",
         "_r_c0s",
@@ -121,7 +121,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._stackFlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackBlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
-        self.panels = np.empty(self.num_panels, dtype=object)
+        self._panels = np.empty(self.num_panels, dtype=object)
         self._stackBoundVortexCenters_GP1_CgP1 = np.zeros(
             (self.num_panels, 3), dtype=float
         )
@@ -449,7 +449,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # Update the solver's list of attributes with this Panel's
                     # attributes (in the first Airplane's geometry axes, relative to the
                     # first Airplane's CG).
-                    self.panels[global_panel_position] = panel
+                    self._panels[global_panel_position] = panel
                     self.stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
                     )

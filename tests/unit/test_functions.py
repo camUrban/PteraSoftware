@@ -674,7 +674,7 @@ class TestProcessSolverLoads(unittest.TestCase):
             for wing in airplane.wings:
                 assert wing._panels is not None
                 for panel in np.ravel(wing._panels):
-                    solver.panels[global_panel_position] = panel
+                    solver._panels[global_panel_position] = panel
                     global_panel_position += 1
 
         # Create deterministic synthetic loads for the first Airplane's Panels.

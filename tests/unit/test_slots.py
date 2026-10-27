@@ -1658,7 +1658,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.vInf_GP1__E, np.ndarray)
         self.assertIsInstance(self.solver.stackFreestreamWingInfluences__E, np.ndarray)
         self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
-        self.assertIsInstance(self.solver.panels, np.ndarray)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
         self.assertIsInstance(self.solver.stackSeedPoints_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
@@ -1720,7 +1720,7 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.vInf_GP1__E, np.ndarray)
         self.assertIsInstance(self.solver.stackFreestreamWingInfluences__E, np.ndarray)
         self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
-        self.assertIsInstance(self.solver.panels, np.ndarray)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
         self.assertIsInstance(self.solver.panel_areas, np.ndarray)
         self.assertIsInstance(self.solver.stackCpp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.stackBrbrvp_GP1_CgP1, np.ndarray)
@@ -1797,7 +1797,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
             self.solver.current_operating_point,
             ps.OperatingPoint,
         )
-        self.assertIsInstance(self.solver.panels, np.ndarray)
+        self.assertIsInstance(self.solver._panels, np.ndarray)
         self.assertIsInstance(self.solver.stackUnitNormals_GP1, np.ndarray)
         self.assertIsInstance(self.solver.panel_areas, np.ndarray)
         self.assertIsInstance(self.solver.stackCpp_GP1_CgP1, np.ndarray)

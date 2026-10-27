@@ -230,14 +230,14 @@ class Wing:
                 )
             if wing_cross_section_id == 0:
                 # Validate root WingCrossSection constraints.
-                wing_cross_section.validate_root_constraints()
+                wing_cross_section._validate_root_constraints()
             elif wing_cross_section_id == num_wing_cross_sections - 1:
                 # Validate tip WingCrossSection constraints.
-                wing_cross_section.validate_tip_constraints()
+                wing_cross_section._validate_tip_constraints()
             else:
-                wing_cross_section.validate_mid_constraints()
+                wing_cross_section._validate_mid_constraints()
             # Set the validated flag for this WingCrossSection.
-            wing_cross_section.validated = True
+            wing_cross_section._mark_validated()
         # Store as tuple to prevent external mutation.
         self._wing_cross_sections: tuple[
             wing_cross_section_mod.WingCrossSection, ...
@@ -1530,7 +1530,7 @@ class Wing:
 
         # Set this Wing's children WingCrossSections' symmetry type parameters.
         for wing_cross_section in self.wing_cross_sections:
-            wing_cross_section.symmetry_type = validated_symmetry_type
+            wing_cross_section._set_symmetry_type(validated_symmetry_type)
 
         # Find the number of spanwise Panels on this Wing by adding each
         # WingCrossSection's number of spanwise Panels. Exclude the last

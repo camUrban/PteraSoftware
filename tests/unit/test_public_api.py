@@ -698,10 +698,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "num_spanwise_panels",
         "spanwise_spacing",
         "symmetry_type",
-        "validate_mid_constraints",
-        "validate_root_constraints",
-        "validate_tip_constraints",
-        "validated",
     ),
     "WingCrossSectionMovement": (
         "all_periods",
@@ -1135,9 +1131,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
     ),
-    "WingCrossSection.validate_mid_constraints": (),
-    "WingCrossSection.validate_root_constraints": (),
-    "WingCrossSection.validate_tip_constraints": (),
     "WingCrossSectionMovement.__init__": (
         "*",
         "base_wing_cross_section",

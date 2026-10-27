@@ -670,10 +670,10 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Set Once (set by parent `Wing`)
 
-| Attribute       | Type          | Set By               | Notes                   |
-|-----------------|---------------|----------------------|-------------------------|
-| `validated`     | `bool`        | `Wing.__init__`      | Validation flag         |
-| `symmetry_type` | `int \| None` | `Wing.generate_mesh` | Inherited symmetry type |
+| Attribute       | Type          | Set By                                         | Notes                             |
+|-----------------|---------------|------------------------------------------------|-----------------------------------|
+| `_validated`    | `bool`        | `Wing.__init__`, via `_mark_validated`         | Internal validation flag          |
+| `symmetry_type` | `int \| None` | `Wing.generate_mesh`, via `_set_symmetry_type` | Read-only inherited symmetry type |
 
 #### Mutable (modified by `process_wing_symmetry`)
 

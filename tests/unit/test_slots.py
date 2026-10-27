@@ -282,7 +282,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
         )
 
         # These are set once attributes that have not yet been set by a parent Wing.
-        self.assertFalse(self.wing_cross_section.validated)
+        self.assertFalse(self.wing_cross_section._validated)
         self.assertIsNone(self.wing_cross_section.symmetry_type)
 
         # Cached transformation properties return None when not validated.

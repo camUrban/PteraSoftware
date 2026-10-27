@@ -587,7 +587,7 @@ class TestWing(unittest.TestCase):
 
         # Verify all WingCrossSections are validated.
         for wing_cross_section in wing.wing_cross_sections:
-            self.assertTrue(wing_cross_section.validated)
+            self.assertTrue(wing_cross_section._validated)
 
     def test_four_section_wing_validation(self) -> None:
         """Test Wing with 4 WingCrossSections validates correctly."""
@@ -598,7 +598,7 @@ class TestWing(unittest.TestCase):
 
         # Verify all WingCrossSections are validated.
         for wing_cross_section in wing.wing_cross_sections:
-            self.assertTrue(wing_cross_section.validated)
+            self.assertTrue(wing_cross_section._validated)
 
     def test_invalid_middle_wing_cross_section_raises_error(self) -> None:
         """Test that Wing with invalid middle WingCrossSection raises ValueError."""

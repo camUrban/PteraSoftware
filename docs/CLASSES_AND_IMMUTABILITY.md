@@ -598,20 +598,20 @@ These read-only properties expose the named load components and coefficients def
 
 #### Set Once (set by `_generate_mesh`, never modified after)
 
-| Attribute             | Type                 | Set By           | Notes                |
-|-----------------------|----------------------|------------------|----------------------|
-| `symmetry_type`       | `int \| None`        | `_generate_mesh` | 1, 2, 3, or 4        |
-| `num_spanwise_panels` | `int \| None`        | `_generate_mesh` | Total spanwise count |
-| `num_panels`          | `int \| None`        | `_generate_mesh` | Total panel count    |
-| `panels`              | `np.ndarray \| None` | `_generate_mesh` | Panel matrix         |
+| Attribute             | Type                 | Set By                                 | Notes                           |
+|-----------------------|----------------------|----------------------------------------|---------------------------------|
+| `symmetry_type`       | `int \| None`        | `_generate_mesh`                       | 1, 2, 3, or 4                   |
+| `num_spanwise_panels` | `int \| None`        | `_generate_mesh`                       | Total spanwise count            |
+| `num_panels`          | `int \| None`        | `_generate_mesh`                       | Total panel count               |
+| `_panels`             | `np.ndarray \| None` | `_generate_mesh`, via `_attach_panels` | Internal read-only Panel matrix |
 
 #### Derived from Set Once (use manual lazy caching)
 
 | Property                     | Depends On                           | Notes                        |
 |------------------------------|--------------------------------------|------------------------------|
-| `projected_area`             | `panels`                             | Projected area               |
-| `wetted_area`                | `panels`                             | Deprecated: total Panel area |
-| `average_panel_aspect_ratio` | `panels`                             | Average aspect ratio         |
+| `projected_area`             | `_panels`                            | Projected area               |
+| `wetted_area`                | `_panels`                            | Deprecated: total Panel area |
+| `average_panel_aspect_ratio` | `_panels`                            | Average aspect ratio         |
 | `span`                       | Wing cross sections, `symmetry_type` | Wing span                    |
 | `standard_mean_chord`        | `projected_area`, `span`             | Standard mean chord          |
 | `mean_aerodynamic_chord`     | `projected_area`, `symmetry_type`    | MAC                          |

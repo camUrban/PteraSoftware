@@ -672,8 +672,8 @@ class TestProcessSolverLoads(unittest.TestCase):
         global_panel_position = 0
         for airplane in solver.airplanes:
             for wing in airplane.wings:
-                assert wing.panels is not None
-                for panel in np.ravel(wing.panels):
+                assert wing._panels is not None
+                for panel in np.ravel(wing._panels):
                     solver.panels[global_panel_position] = panel
                     global_panel_position += 1
 

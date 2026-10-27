@@ -2551,18 +2551,18 @@ class TestWingRoundTrip(unittest.TestCase):
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
-        assert wing.panels is not None
+        assert wing._panels is not None
         result = deserialize_value(serialize_value(wing))
         assert isinstance(result, Wing)
-        assert result.panels is not None
-        self.assertEqual(result.panels.shape, wing.panels.shape)
-        self.assertEqual(result.panels.dtype, object)
-        for i in range(result.panels.shape[0]):
-            for j in range(result.panels.shape[1]):
-                assert isinstance(result.panels[i, j], Panel)
+        assert result._panels is not None
+        self.assertEqual(result._panels.shape, wing._panels.shape)
+        self.assertEqual(result._panels.dtype, object)
+        for i in range(result._panels.shape[0]):
+            for j in range(result._panels.shape[1]):
+                assert isinstance(result._panels[i, j], Panel)
                 npt.assert_array_equal(
-                    result.panels[i, j].Frpp_G_Cg,
-                    wing.panels[i, j].Frpp_G_Cg,
+                    result._panels[i, j].Frpp_G_Cg,
+                    wing._panels[i, j].Frpp_G_Cg,
                 )
 
     def test_wing_cross_sections_tuple_round_trip(self) -> None:
@@ -2678,9 +2678,9 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         assert isinstance(result, Airplane)
         for orig_wing, loaded_wing in zip(airplane.wings, result.wings):
             assert isinstance(loaded_wing, Wing)
-            assert loaded_wing.panels is not None
-            assert orig_wing.panels is not None
-            self.assertEqual(loaded_wing.panels.shape, orig_wing.panels.shape)
+            assert loaded_wing._panels is not None
+            assert orig_wing._panels is not None
+            self.assertEqual(loaded_wing._panels.shape, orig_wing._panels.shape)
 
     def test_save_load_round_trip(self) -> None:
         """Tests that a meshed Airplane survives a save/load round trip.
@@ -2722,12 +2722,12 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        orig_panels = problem.airplanes[0].wings[0].panels
+        orig_panels = problem.airplanes[0].wings[0]._panels
         assert orig_panels is not None
         orig_panel = orig_panels[0, 0]
         result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
-        loaded_panels = result.airplanes[0].wings[0].panels
+        loaded_panels = result.airplanes[0].wings[0]._panels
         assert loaded_panels is not None
         loaded_panel = loaded_panels[0, 0]
         assert orig_panel.Frpp_GP1_CgP1 is not None
@@ -2759,7 +2759,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.airplanes), 2)
         for i in range(2):
             assert isinstance(result.airplanes[i], Airplane)
-            assert result.airplanes[i].wings[0].panels is not None
+            assert result.airplanes[i].wings[0]._panels is not None
 
     def test_formation_flight_gp1_coordinates(self) -> None:
         """Tests that both Airplanes' Panels have correct GP1 coordinates after round
@@ -2771,8 +2771,8 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         result = deserialize_value(serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         for i in range(2):
-            orig_panels = problem.airplanes[i].wings[0].panels
-            loaded_panels = result.airplanes[i].wings[0].panels
+            orig_panels = problem.airplanes[i].wings[0]._panels
+            loaded_panels = result.airplanes[i].wings[0]._panels
             assert orig_panels is not None
             assert loaded_panels is not None
             orig_panel = orig_panels[0, 0]

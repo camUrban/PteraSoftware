@@ -667,7 +667,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "num_chordwise_panels",
         "num_panels",
         "num_spanwise_panels",
-        "panels",
         "projected_area",
         "span",
         "spanwise_mesh",

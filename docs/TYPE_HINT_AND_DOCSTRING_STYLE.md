@@ -265,9 +265,9 @@ def test_chord_is_read_only(self) -> None:
 mypy does not narrow a type on `self.assertIsNotNone(x)`. Keep the unittest assertion, and add a bare `assert x is not None` after it before the first use that needs the narrowed type:
 
 ```python
-self.assertIsNotNone(wing.panels)
-assert wing.panels is not None
-self.assertEqual(wing.panels.shape, (4, 8))
+self.assertIsNotNone(wing._panels)
+assert wing._panels is not None
+self.assertEqual(wing._panels.shape, (4, 8))
 ```
 
 #### Returning Floats from numpy Expressions

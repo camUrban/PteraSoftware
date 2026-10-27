@@ -500,7 +500,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 _num_spanwise_panels = wing.num_spanwise_panels
                 assert _num_spanwise_panels is not None
 
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 # Based on results from Ramasamy and Leishman (2007), the wake's initial
@@ -897,7 +897,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # position: +1 right, -1 left, +num_spanwise back, -num_spanwise front.
         for airplane in self.airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_spanwise = wing.num_spanwise_panels

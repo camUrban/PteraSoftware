@@ -895,8 +895,8 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         wings_array_3 = np.array(wings_3)
 
         # Verify Wings have panels.
-        panels_2 = wings_2[0].panels
-        panels_3 = wings_3[0].panels
+        panels_2 = wings_2[0]._panels
+        panels_3 = wings_3[0]._panels
         self.assertIsNotNone(panels_2)
         self.assertIsNotNone(panels_3)
         assert panels_2 is not None

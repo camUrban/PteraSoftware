@@ -884,9 +884,9 @@ class Airplane:
         # Iterate through this Airplane's Wings.
         for wing in self._wings:
             # Unravel the Wing's Panel matrix and iterate through it.
-            if wing.panels is None:
+            if wing._panels is None:
                 continue
-            panels = np.ravel(wing.panels)
+            panels = np.ravel(wing._panels)
             for panel in panels:
                 # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(
@@ -1158,7 +1158,7 @@ class Airplane:
 
                     plotter.add_actor(AxesWcsLp_G_Cg)
 
-            if wing.panels is not None:
+            if wing._panels is not None:
                 # Initialize empty arrays to hold the Panels' vertices and faces.
                 panel_vertices = np.empty((0, 3), dtype=float)
                 panel_faces = np.empty(0, dtype=int)
@@ -1168,7 +1168,7 @@ class Airplane:
                 panel_num = 0
 
                 # Unravel the Wing's Panel matrix and iterate through it.
-                panels = np.ravel(wing.panels)
+                panels = np.ravel(wing._panels)
                 for panel in panels:
                     # Stack this Panel's vertices and faces.
                     panel_vertices_to_add = np.vstack(

@@ -346,8 +346,8 @@ def process_solver_loads(
     # contributions from its Panels.
     for airplane_num, airplane in enumerate(these_airplanes):
         for wing in airplane.wings:
-            assert wing.panels is not None
-            for panel in np.ravel(wing.panels):
+            assert wing._panels is not None
+            for panel in np.ravel(wing._panels):
                 stackAirplaneForces_GP1[airplane_num, :] += panel.forces_GP1
                 stackAirplaneMoments_GP1_CgP1[airplane_num, :] += panel.moments_GP1_CgP1
 

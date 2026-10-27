@@ -509,7 +509,7 @@ class TestWingSlots(unittest.TestCase):
         self.assertIsNone(self.unmeshed_wing.symmetry_type)
         self.assertIsNone(self.unmeshed_wing.num_spanwise_panels)
         self.assertIsNone(self.unmeshed_wing.num_panels)
-        self.assertIsNone(self.unmeshed_wing.panels)
+        self.assertIsNone(self.unmeshed_wing._panels)
 
     def test_property_access_cached(self) -> None:
         """Test that cached transformation properties are accessible."""

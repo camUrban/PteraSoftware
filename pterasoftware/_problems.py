@@ -127,9 +127,9 @@ class SteadyProblem:
             T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
 
             for wing in airplane.wings:
-                assert wing.panels is not None
+                assert wing._panels is not None
 
-                for panel in np.ravel(wing.panels):
+                for panel in np.ravel(wing._panels):
                     panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                         T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, is_position=True
                     )
@@ -1612,8 +1612,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             representing the mass at each Panel. The three components are identical
             (mass scalar replicated for x, y, z axes).
         """
-        assert wing.panels is not None
-        areas = np.array([[panel.area for panel in row] for row in wing.panels])
+        assert wing._panels is not None
+        areas = np.array([[panel.area for panel in row] for row in wing._panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
     def _initialize_next_problem(
@@ -2021,7 +2021,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         """
         torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
         flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
-        assert wing.panels is not None
+        assert wing._panels is not None
         # This is the distance from the flapping axis to the strip's centroid,
         # accumulated in half-span-width increments.
         d = 0.0
@@ -2039,7 +2039,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             else:
                 panel_span_index = span_panel
             W: float = float(
-                np.linalg.norm(wing.panels[0][panel_span_index].frontLeg_G)
+                np.linalg.norm(wing._panels[0][panel_span_index].frontLeg_G)
             )
             d += W / 2
             torsional_inertias[span_panel] = 1 / 2 * mass * (L**2)

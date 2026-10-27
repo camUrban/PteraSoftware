@@ -587,10 +587,10 @@ def compute_wake_area_mismatch(
             for wing_id, current_wing in enumerate(current_airplane.wings):
                 previous_wing = previous_airplane.wings[wing_id]
 
-                current_panels = current_wing.panels
+                current_panels = current_wing._panels
                 if current_panels is None:
                     continue
-                previous_panels = previous_wing.panels
+                previous_panels = previous_wing._panels
                 if previous_panels is None:
                     continue
 
@@ -650,7 +650,7 @@ def compute_wake_area_mismatch(
                     previous_previous_panels = (
                         previous_previous_problem.airplanes[airplane_id]
                         .wings[wing_id]
-                        .panels
+                        ._panels
                     )
                     assert previous_previous_panels is not None
                     Blpp_prev_prev = np.stack(
@@ -799,11 +799,11 @@ def compute_wake_area_mismatches_cached_non_static(
     cache_per_wing: list[dict] = []
     for airplane_id, airplane in enumerate(first_problem.airplanes):
         for wing_id, wing in enumerate(airplane.wings):
-            if wing.panels is None:
+            if wing._panels is None:
                 continue
             num_chordwise = wing.num_chordwise_panels
             te_idx = num_chordwise - 1
-            num_spanwise = wing.panels.shape[1]
+            num_spanwise = wing._panels.shape[1]
 
             Flpp = np.empty((high_res_num_steps, num_spanwise, 3), dtype=float)
             Frpp = np.empty_like(Flpp)
@@ -815,7 +815,7 @@ def compute_wake_area_mismatches_cached_non_static(
                     temp_problem.steady_problems[step]
                     .airplanes[airplane_id]
                     .wings[wing_id]
-                    .panels
+                    ._panels
                 )
                 assert step_panels is not None
                 for s in range(num_spanwise):
@@ -1302,7 +1302,7 @@ def mean_trailing_edge_panel_chord(wing: _geometry.wing.Wing) -> float:
     :return: The mean over the trailing edge Panels of the average of each Panel's left
         and right leg lengths. Its units are in meters.
     """
-    _panels = wing.panels
+    _panels = wing._panels
     assert _panels is not None
     num_spanwise = wing.num_spanwise_panels
     assert num_spanwise is not None
@@ -1422,7 +1422,7 @@ def analytically_optimize_delta_time(
         first_airplane = temp_problem.steady_problems[0].airplanes[airplane_id]
         for wing_id, wing in enumerate(first_airplane.wings):
             num_chordwise = wing.num_chordwise_panels
-            _panels = wing.panels
+            _panels = wing._panels
             assert _panels is not None
             num_spanwise = _panels.shape[1]
 
@@ -1446,8 +1446,8 @@ def analytically_optimize_delta_time(
                         airplane_id
                     ]
 
-                    _this_panels = this_airplane.wings[wing_id].panels
-                    _next_panels = next_airplane.wings[wing_id].panels
+                    _this_panels = this_airplane.wings[wing_id]._panels
+                    _next_panels = next_airplane.wings[wing_id]._panels
                     assert _this_panels is not None
                     assert _next_panels is not None
 

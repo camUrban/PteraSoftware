@@ -1671,7 +1671,7 @@ def add_panels(
         diagram origin.
     :return: None
     """
-    _panels = wing.panels
+    _panels = wing._panels
     if _panels is None:
         return
     panels = np.ravel(_panels)
@@ -1732,7 +1732,7 @@ def get_collocation_points(
     listWingBasisDirections_D: list[np.ndarray] = []
     listCrossDirections_D: list[np.ndarray] = []
 
-    panels = wing.panels
+    panels = wing._panels
     if panels is None:
         return (
             ids,
@@ -2570,7 +2570,7 @@ def get_panel_surfaces(
     wing_panels = []
     for airplane in airplanes:
         for wing in airplane.wings:
-            _panels = wing.panels
+            _panels = wing._panels
             assert _panels is not None
             wing_panels.append(np.ravel(_panels))
     num_panels = sum(panels.size for panels in wing_panels)
@@ -3160,7 +3160,7 @@ def get_scalars(
     # Iterate through the Airplanes' Wings.
     for airplane in airplanes:
         for wing in airplane.wings:
-            _panels = wing.panels
+            _panels = wing._panels
             assert _panels is not None
 
             # Unravel this Wing's ndarray of Panels and iterate through them.

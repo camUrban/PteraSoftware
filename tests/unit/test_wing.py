@@ -199,8 +199,8 @@ class TestWing(unittest.TestCase):
         """
         wing = geometry_fixtures.make_symmetric_dihedral_wing_fixture()
         wing._generate_mesh(4)
-        assert wing.panels is not None
-        panels = wing.panels.flatten()
+        assert wing._panels is not None
+        panels = wing._panels.flatten()
 
         centroids = np.array(
             [
@@ -232,40 +232,36 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing._generate_mesh(1)
         self.assertEqual(wing.symmetry_type, 1)
-        self.assertTrue(hasattr(wing, "panels"))
-        self.assertIsInstance(wing.panels, np.ndarray)
-        assert wing.panels is not None
-        self.assertEqual(wing.panels.ndim, 2)
+        self.assertIsInstance(wing._panels, np.ndarray)
+        assert wing._panels is not None
+        self.assertEqual(wing._panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_2(self) -> None:
         """Test _generate_mesh method with type 2 symmetry."""
         wing = geometry_fixtures.make_type_2_wing_fixture()
         wing._generate_mesh(2)
         self.assertEqual(wing.symmetry_type, 2)
-        self.assertTrue(hasattr(wing, "panels"))
-        self.assertIsInstance(wing.panels, np.ndarray)
-        assert wing.panels is not None
-        self.assertEqual(wing.panels.ndim, 2)
+        self.assertIsInstance(wing._panels, np.ndarray)
+        assert wing._panels is not None
+        self.assertEqual(wing._panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_3(self) -> None:
         """Test _generate_mesh method with type 3 symmetry."""
         wing = geometry_fixtures.make_type_3_wing_fixture()
         wing._generate_mesh(3)
         self.assertEqual(wing.symmetry_type, 3)
-        self.assertTrue(hasattr(wing, "panels"))
-        self.assertIsInstance(wing.panels, np.ndarray)
-        assert wing.panels is not None
-        self.assertEqual(wing.panels.ndim, 2)
+        self.assertIsInstance(wing._panels, np.ndarray)
+        assert wing._panels is not None
+        self.assertEqual(wing._panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_4(self) -> None:
         """Test _generate_mesh method with type 4 symmetry."""
         wing = geometry_fixtures.make_type_4_wing_fixture()
         wing._generate_mesh(4)
         self.assertEqual(wing.symmetry_type, 4)
-        self.assertTrue(hasattr(wing, "panels"))
-        self.assertIsInstance(wing.panels, np.ndarray)
-        assert wing.panels is not None
-        self.assertEqual(wing.panels.ndim, 2)
+        self.assertIsInstance(wing._panels, np.ndarray)
+        assert wing._panels is not None
+        self.assertEqual(wing._panels.ndim, 2)
 
     def test_generate_mesh_invalid_symmetry_type(self) -> None:
         """Test _generate_mesh method with invalid symmetry types."""
@@ -1280,14 +1276,14 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_unmeshed_wing(self) -> None:
         """Test that deepcopy handles unmeshed Wings correctly."""
         original = self.type_1_wing
-        self.assertIsNone(original.panels)
+        self.assertIsNone(original._panels)
 
         copied = copy.deepcopy(original)
 
         self.assertIsNone(copied.symmetry_type)
         self.assertIsNone(copied.num_spanwise_panels)
         self.assertIsNone(copied.num_panels)
-        self.assertIsNone(copied.panels)
+        self.assertIsNone(copied._panels)
         self.assertIsNone(copied.gridWrvp_GP1_CgP1)
 
     def test_deepcopy_meshed_wing_preserves_mesh_metadata(self) -> None:
@@ -1308,15 +1304,16 @@ class TestWingDeepCopy(unittest.TestCase):
 
         copied = copy.deepcopy(original)
 
-        self.assertIsNotNone(copied.panels)
-        assert copied.panels is not None
-        assert original.panels is not None
-        self.assertEqual(copied.panels.shape, original.panels.shape)
+        self.assertIsNotNone(copied._panels)
+        assert copied._panels is not None
+        assert original._panels is not None
+        self.assertEqual(copied._panels.shape, original._panels.shape)
+        self.assertFalse(copied._panels.flags.writeable)
 
-        for i in range(original.panels.shape[0]):
-            for j in range(original.panels.shape[1]):
-                orig_panel = original.panels[i, j]
-                copied_panel = copied.panels[i, j]
+        for i in range(original._panels.shape[0]):
+            for j in range(original._panels.shape[1]):
+                orig_panel = original._panels[i, j]
+                copied_panel = copied._panels[i, j]
                 self.assertIsNot(orig_panel, copied_panel)
                 npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
 
@@ -1413,7 +1410,7 @@ class TestWingDeepCopy(unittest.TestCase):
             setattr(wing, "num_panels", 1000)
 
         with self.assertRaises(AttributeError):
-            wing.panels = np.empty((1, 1), dtype=object)
+            wing._attach_panels(np.empty((1, 1), dtype=object))
 
         # Test that meshing the Wing again raises AttributeError.
         with self.assertRaises(AttributeError):
@@ -1457,7 +1454,7 @@ class TestWingDeepCopy(unittest.TestCase):
 
         self.assertEqual(copied.symmetry_type, 4)
         self.assertEqual(copied.symmetric, True)
-        self.assertIsNotNone(copied.panels)
+        self.assertIsNotNone(copied._panels)
         assert copied.span is not None
         assert original.span is not None
         self.assertAlmostEqual(copied.span, original.span, places=10)
@@ -1758,6 +1755,16 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             wing.WnZ_G[0] = 999.0
+
+    def test_panels_array_is_read_only(self) -> None:
+        """Test that the Panels array is read only."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing._generate_mesh(1)
+
+        assert wing._panels is not None
+
+        with self.assertRaises(ValueError):
+            wing._panels[0, 0] = None
 
     def test_children_transformation_matrices_are_read_only(self) -> None:
         """Test that children transformation matrices are read only."""
@@ -2206,7 +2213,7 @@ class TestFromEdgePoints(unittest.TestCase):
         airplane = ps.Airplane(wings=[wing], name="Edge Airplane")
         meshed_wing = airplane.wings[0]
         self.assertEqual(meshed_wing.symmetry_type, 4)
-        self.assertIsNotNone(meshed_wing.panels)
+        self.assertIsNotNone(meshed_wing._panels)
 
     def test_tip_trim_moves_outermost_section_inboard(self) -> None:
         """Test that a tip trim resamples over a shortened span, leaving the outermost
@@ -2384,7 +2391,7 @@ class TestWingDeprecatedWettedArea(unittest.TestCase):
     def test_wetted_area_warns_and_matches_total_panel_area(self) -> None:
         """Test that reading wetted_area warns and returns the total area of the Wing's
         Panels."""
-        panels = self.type_1_wing.panels
+        panels = self.type_1_wing._panels
         assert panels is not None
         total_panel_area = sum(panel.area for panel in panels.flatten())
         with self.assertWarns(DeprecationWarning):

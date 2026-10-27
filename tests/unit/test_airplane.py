@@ -608,7 +608,7 @@ class TestAirplane(unittest.TestCase):
         # All Wings should be processed and meshed
         for wing in airplane.wings:
             self.assertIsNotNone(wing.symmetry_type)
-            self.assertIsNotNone(wing.panels)
+            self.assertIsNotNone(wing._panels)
 
 
 class TestAirplaneDeepCopy(unittest.TestCase):
@@ -708,15 +708,15 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         for orig_wing, copied_wing in zip(original.wings, copied.wings):
-            self.assertIsNotNone(copied_wing.panels)
-            assert orig_wing.panels is not None
-            assert copied_wing.panels is not None
-            self.assertEqual(copied_wing.panels.shape, orig_wing.panels.shape)
+            self.assertIsNotNone(copied_wing._panels)
+            assert orig_wing._panels is not None
+            assert copied_wing._panels is not None
+            self.assertEqual(copied_wing._panels.shape, orig_wing._panels.shape)
 
-            for i in range(orig_wing.panels.shape[0]):
-                for j in range(orig_wing.panels.shape[1]):
-                    orig_panel = orig_wing.panels[i, j]
-                    copied_panel = copied_wing.panels[i, j]
+            for i in range(orig_wing._panels.shape[0]):
+                for j in range(orig_wing._panels.shape[1]):
+                    orig_panel = orig_wing._panels[i, j]
+                    copied_panel = copied_wing._panels[i, j]
                     self.assertIsNot(orig_panel, copied_panel)
                     npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
 

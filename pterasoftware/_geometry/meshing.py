@@ -375,7 +375,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 this_panel.is_right_edge = False
 
     # Populate the Wing's Panels attribute.
-    wing.panels = wing_panels
+    wing._attach_panels(wing_panels)
 
 
 def get_mcl_points(

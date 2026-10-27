@@ -44,9 +44,8 @@ class Wing:
     wetted_area, average_panel_aspect_ratio, span, standard_mean_chord, and
     mean_aerodynamic_chord) are also lazily evaluated and cached.
 
-    The symmetry_type, num_spanwise_panels, num_panels, and panels attributes are set
-    once when the parent Airplane meshes this Wing and cannot be modified after being
-    set.
+    The symmetry_type, num_spanwise_panels, and num_panels attributes are set once when
+    the parent Airplane meshes this Wing and cannot be modified after being set.
 
     The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
     remain mutable as they may be modified by the parent Airplane for type 5 symmetry
@@ -688,6 +687,7 @@ class Wing:
             for i in range(self._panels.shape[0]):
                 for j in range(self._panels.shape[1]):
                     new_wing._panels[i, j] = copy.deepcopy(self._panels[i, j], memo)
+            new_wing._panels.flags.writeable = False
         else:
             new_wing._panels = None
 
@@ -1166,20 +1166,19 @@ class Wing:
         """
         return self._num_panels
 
-    @property
-    def panels(self) -> np.ndarray | None:
-        """The 2D array of Panels on this Wing.
+    def _attach_panels(self, panels: np.ndarray) -> None:
+        """Attaches the meshed Panels to this Wing and makes their array read only.
 
-        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
-            or None if the Wing hasn't been meshed yet.
+        It is called by the meshing function.
+
+        :param panels: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel
+            objects.
+        :return: None
         """
-        return self._panels
-
-    @panels.setter
-    def panels(self, value: np.ndarray) -> None:
         if self._panels is not None:
             raise AttributeError("panels can only be set once")
-        self._panels = value
+        panels.flags.writeable = False
+        self._panels = panels
 
     # --- Set once derived: manual lazy caching ---
     @property
@@ -1639,7 +1638,7 @@ class Wing:
             quality, "quality", 0.0, True, 100.0, True
         )
 
-        if self.symmetry_type is None or self.panels is None:
+        if self.symmetry_type is None or self._panels is None:
             raise ValueError(
                 "A Wing can only be diagrammed after its parent Airplane has set its "
                 "symmetry type and meshed it."
@@ -1903,7 +1902,7 @@ class Wing:
 
                 plotter.add_actor(AxesWcsLp_G_Cg)
 
-        if self.panels is not None:
+        if self._panels is not None:
             # Initialize empty arrays to hold the Panels' vertices and faces.
             panel_vertices = np.empty((0, 3), dtype=float)
             panel_faces = np.empty(0, dtype=int)
@@ -1913,7 +1912,7 @@ class Wing:
             panel_num = 0
 
             # Unravel the Wing's Panel matrix and iterate through it.
-            panels = np.ravel(self.panels)
+            panels = np.ravel(self._panels)
             for panel in panels:
                 # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(

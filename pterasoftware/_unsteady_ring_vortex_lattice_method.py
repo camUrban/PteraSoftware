@@ -755,7 +755,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         listRingUnitNormals_GP1 = []
         for airplane in steady_problem.airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
                 listRingUnitNormals_GP1 += [
                     panel.unitNormal_GP1 for panel in np.ravel(_panels)
@@ -1041,7 +1041,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 assert _standard_mean_chord is not None
                 wing_r_c0 = 0.03 * _standard_mean_chord
 
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 _num_spanwise_panels = wing.num_spanwise_panels
@@ -1124,7 +1124,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             last_problem = self._get_steady_problem_at(last_step)
             for last_airplane in last_problem.airplanes:
                 for last_wing in last_airplane.wings:
-                    _last_panels = last_wing.panels
+                    _last_panels = last_wing._panels
                     assert _last_panels is not None
                     for last_panel in np.ravel(_last_panels):
                         self._stackLastCpp_GP1_CgP1[global_panel_position, :] = (
@@ -1141,7 +1141,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 panels = np.ravel(_panels)
@@ -1722,7 +1722,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # front.
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_spanwise = wing.num_spanwise_panels
@@ -2303,7 +2303,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_chordwise, num_spanwise = _panels.shape
@@ -2376,7 +2376,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_chordwise, num_spanwise = _panels.shape
@@ -2672,7 +2672,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 num_chordwise, num_spanwise = _panels.shape
@@ -3372,7 +3372,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 _num_spanwise_panels = wing.num_spanwise_panels
                 assert _num_spanwise_panels is not None
 
-                _panels = wing.panels
+                _panels = wing._panels
                 assert _panels is not None
 
                 # Iterate through the Wing's chordwise and spanwise positions.
@@ -3442,7 +3442,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 ]
                                 last_wing = last_airplane.wings[wing_id]
 
-                                _last_panels = last_wing.panels
+                                _last_panels = last_wing._panels
                                 assert _last_panels is not None
 
                                 last_panel: _panel.Panel = _last_panels[

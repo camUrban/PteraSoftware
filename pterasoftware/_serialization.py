@@ -73,7 +73,7 @@ CALLABLE_FUNC_TO_NAME = {func: name for name, func in CALLABLE_NAME_TO_FUNC.item
 # class registry changed, encoding strategy changed), and also when the meaning of a
 # serialized value changes, so that a file saved under the old meaning fails to load
 # loudly instead of being read under the new one.
-FORMAT_VERSION = 32
+FORMAT_VERSION = 33
 
 # This is the default maximum decompressed size in bytes when reading archives. The cap
 # is cumulative across every member read during one load(). Prevents zip bombs from

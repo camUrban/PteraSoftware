@@ -841,7 +841,7 @@ class TestWingCrossSectionDiagram(unittest.TestCase):
         # it, set its symmetry type, and set its transformation to its parent axes, so
         # take the meshed WingCrossSections from a meshed Wing.
         meshed_wing = geometry_fixtures.make_type_1_wing_fixture()
-        meshed_wing.generate_mesh(1)
+        meshed_wing._generate_mesh(1)
         self.meshed_root_wing_cross_section = meshed_wing.wing_cross_sections[0]
         self.meshed_tip_wing_cross_section = meshed_wing.wing_cross_sections[1]
 

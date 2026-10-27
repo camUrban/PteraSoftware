@@ -198,7 +198,7 @@ class TestWing(unittest.TestCase):
         components instead.
         """
         wing = geometry_fixtures.make_symmetric_dihedral_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
         assert wing.panels is not None
         panels = wing.panels.flatten()
 
@@ -228,9 +228,9 @@ class TestWing(unittest.TestCase):
             npt.assert_allclose(normals[partner], normal * y_flip, atol=1e-10)
 
     def test_generate_mesh_symmetry_type_1(self) -> None:
-        """Test generate_mesh method with type 1 symmetry."""
+        """Test _generate_mesh method with type 1 symmetry."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
         self.assertEqual(wing.symmetry_type, 1)
         self.assertTrue(hasattr(wing, "panels"))
         self.assertIsInstance(wing.panels, np.ndarray)
@@ -238,9 +238,9 @@ class TestWing(unittest.TestCase):
         self.assertEqual(wing.panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_2(self) -> None:
-        """Test generate_mesh method with type 2 symmetry."""
+        """Test _generate_mesh method with type 2 symmetry."""
         wing = geometry_fixtures.make_type_2_wing_fixture()
-        wing.generate_mesh(2)
+        wing._generate_mesh(2)
         self.assertEqual(wing.symmetry_type, 2)
         self.assertTrue(hasattr(wing, "panels"))
         self.assertIsInstance(wing.panels, np.ndarray)
@@ -248,9 +248,9 @@ class TestWing(unittest.TestCase):
         self.assertEqual(wing.panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_3(self) -> None:
-        """Test generate_mesh method with type 3 symmetry."""
+        """Test _generate_mesh method with type 3 symmetry."""
         wing = geometry_fixtures.make_type_3_wing_fixture()
-        wing.generate_mesh(3)
+        wing._generate_mesh(3)
         self.assertEqual(wing.symmetry_type, 3)
         self.assertTrue(hasattr(wing, "panels"))
         self.assertIsInstance(wing.panels, np.ndarray)
@@ -258,9 +258,9 @@ class TestWing(unittest.TestCase):
         self.assertEqual(wing.panels.ndim, 2)
 
     def test_generate_mesh_symmetry_type_4(self) -> None:
-        """Test generate_mesh method with type 4 symmetry."""
+        """Test _generate_mesh method with type 4 symmetry."""
         wing = geometry_fixtures.make_type_4_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
         self.assertEqual(wing.symmetry_type, 4)
         self.assertTrue(hasattr(wing, "panels"))
         self.assertIsInstance(wing.panels, np.ndarray)
@@ -268,7 +268,7 @@ class TestWing(unittest.TestCase):
         self.assertEqual(wing.panels.ndim, 2)
 
     def test_generate_mesh_invalid_symmetry_type(self) -> None:
-        """Test generate_mesh method with invalid symmetry types."""
+        """Test _generate_mesh method with invalid symmetry types."""
         wing = self.type_1_wing
 
         invalid_types: list[Any] = [0, 5, -1, 10, "invalid", None]
@@ -276,7 +276,7 @@ class TestWing(unittest.TestCase):
             with self.subTest(invalid_type=invalid_type):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    wing.generate_mesh(invalid_type)
+                    wing._generate_mesh(invalid_type)
 
     def test_transformation_matrices_before_meshing(self) -> None:
         """Test that transformation matrices are None before meshing."""
@@ -289,7 +289,7 @@ class TestWing(unittest.TestCase):
     def test_transformation_matrices_after_meshing(self) -> None:
         """Test that transformation matrices are available after meshing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Transformation matrices should be available after meshing.
         self.assertIsNotNone(wing.T_pas_G_Cg_to_Wn_Ler)
@@ -308,7 +308,7 @@ class TestWing(unittest.TestCase):
     def test_wing_axes_vectors_after_meshing(self) -> None:
         """Test wing axes vectors after meshing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Wing axes basis vectors should be available.
         self.assertIsNotNone(wing.WnX_G)
@@ -336,7 +336,7 @@ class TestWing(unittest.TestCase):
     def test_wing_cross_section_transformations_after_meshing(self) -> None:
         """Test WingCrossSection transformation matrices after meshing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # It should have transformation lists for each WingCrossSection.
         num_wing_cross_sections = len(wing.wing_cross_sections)
@@ -363,7 +363,7 @@ class TestWing(unittest.TestCase):
     def test_geometric_properties_after_meshing(self) -> None:
         """Test geometric property calculations after meshing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Test that geometric properties are available and positive.
         assert wing.projected_area is not None
@@ -647,7 +647,7 @@ class TestWing(unittest.TestCase):
     def test_span_simple_rectangular_wing(self) -> None:
         """Test span calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 2.0 meters (from y = 0.0 to y = 2.0).
         expected_span = 2.0
@@ -660,7 +660,7 @@ class TestWing(unittest.TestCase):
     def test_span_simple_tapered_wing(self) -> None:
         """Test span calculation for simple tapered Wing."""
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 3.0 meters (from y = 0.0 to y = 3.0).
         expected_span = 3.0
@@ -673,7 +673,7 @@ class TestWing(unittest.TestCase):
     def test_span_symmetric_continuous_rectangular_wing(self) -> None:
         """Test span calculation for symmetric continuous rectangular Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         # Expected span: 5.0 meters (2.0 * 2.5, due to symmetry).
         expected_span = 5.0
@@ -686,7 +686,7 @@ class TestWing(unittest.TestCase):
     def test_span_three_section_tapered_wing(self) -> None:
         """Test span calculation for three section tapered Wing."""
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 4.0 meters (from y = 0.0 to y = 4.0).
         expected_span = 4.0
@@ -699,7 +699,7 @@ class TestWing(unittest.TestCase):
     def test_projected_area_simple_rectangular_wing(self) -> None:
         """Test projected area calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected projected area: 2.0 square meters (1.0 m chord * 2.0 m span).
         expected_area = 2.0
@@ -712,7 +712,7 @@ class TestWing(unittest.TestCase):
     def test_projected_area_simple_tapered_wing(self) -> None:
         """Test projected area calculation for simple tapered Wing."""
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected projected area: 4.5 square meters. Trapezoid: (chord_root +
         # chord_tip) / 2.0 * span = (2.0 + 1.0) / 2.0 * 3.0 = 4.5.
@@ -726,7 +726,7 @@ class TestWing(unittest.TestCase):
     def test_projected_area_symmetric_continuous_rectangular_wing(self) -> None:
         """Test projected area calculation for symmetric continuous rectangular Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         # Expected projected area: 7.5 square meters. Rectangle: chord * span = 1.5 *
         # 5.0 = 7.5.
@@ -740,7 +740,7 @@ class TestWing(unittest.TestCase):
     def test_projected_area_three_section_tapered_wing(self) -> None:
         """Test projected area calculation for three section tapered Wing."""
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected projected area: 8.0 square meters. Section 1 (root to middle): (3.0 +
         # 2.0) / 2.0 * 2.0 = 5.0. Section 2 (middle to tip): (2.0 + 1.0) / 2.0 * 2.0 =
@@ -755,7 +755,7 @@ class TestWing(unittest.TestCase):
     def test_standard_mean_chord_simple_rectangular_wing(self) -> None:
         """Test standard mean chord calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Standard mean chord = projected_area / span = 2.0 / 2.0 = 1.0.
         expected_smc = 1.0
@@ -768,7 +768,7 @@ class TestWing(unittest.TestCase):
     def test_standard_mean_chord_simple_tapered_wing(self) -> None:
         """Test standard mean chord calculation for simple tapered Wing."""
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Standard mean chord = projected_area / span = 4.5 / 3.0 = 1.5.
         expected_smc = 1.5
@@ -782,7 +782,7 @@ class TestWing(unittest.TestCase):
         """Test standard mean chord calculation for symmetric continuous rectangular
         Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         # Standard mean chord = projected_area / span = 7.5 / 5.0 = 1.5.
         expected_smc = 1.5
@@ -795,7 +795,7 @@ class TestWing(unittest.TestCase):
     def test_standard_mean_chord_three_section_tapered_wing(self) -> None:
         """Test standard mean chord calculation for three section tapered Wing."""
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Standard mean chord = projected_area / span = 8.0 / 4.0 = 2.0.
         expected_smc = 2.0
@@ -808,7 +808,7 @@ class TestWing(unittest.TestCase):
     def test_mean_aerodynamic_chord_simple_rectangular_wing(self) -> None:
         """Test mean aerodynamic chord calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # For a rectangular wing (constant chord), MAC = chord = 1.0.
         expected_mac = 1.0
@@ -821,7 +821,7 @@ class TestWing(unittest.TestCase):
     def test_mean_aerodynamic_chord_simple_tapered_wing(self) -> None:
         """Test mean aerodynamic chord calculation for simple tapered Wing."""
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # For a linearly tapered wing:
         # MAC = (2.0 / 3.0) * (c_root + c_tip - c_root * c_tip / (c_root + c_tip))
@@ -844,7 +844,7 @@ class TestWing(unittest.TestCase):
         """Test mean aerodynamic chord calculation for symmetric continuous rectangular
         Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         # For a rectangular wing (constant chord), MAC = chord = 1.5.
         expected_mac = 1.5
@@ -869,7 +869,7 @@ class TestWing(unittest.TestCase):
 
         for wing, symmetry_type in wings_data:
             with self.subTest(wing=wing.name):
-                wing.generate_mesh(symmetry_type)
+                wing._generate_mesh(symmetry_type)
 
                 # Get properties.
                 span = wing.span
@@ -893,7 +893,7 @@ class TestWing(unittest.TestCase):
         """Test span calculation invariance for Wing rotated about x axis."""
         # Create a Wing rotated 45.0 degrees about x axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 2.0 meters (rotation about x axis does not affect y extent).
         expected_span = 2.0
@@ -908,7 +908,7 @@ class TestWing(unittest.TestCase):
         """Test span calculation invariance for Wing rotated about y axis."""
         # Create a Wing rotated 30.0 degrees about y axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 30.0, 0.0])
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 2.0 meters (rotation about y axis does not affect y extent).
         expected_span = 2.0
@@ -923,7 +923,7 @@ class TestWing(unittest.TestCase):
         """Test span calculation invariance for Wing rotated about z axis."""
         # Create a Wing rotated 60.0 degrees about z axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 0.0, 60.0])
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 2.0 meters (rotation about z axis does not affect y extent).
         expected_span = 2.0
@@ -940,7 +940,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
             [15.0, 25.0, 35.0]
         )
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 2.0 meters (rotations do not affect y extent in wing axes).
         expected_span = 2.0
@@ -954,7 +954,7 @@ class TestWing(unittest.TestCase):
     def test_span_wing_with_rotated_cross_sections(self) -> None:
         """Test span calculation for Wing with rotated WingCrossSections."""
         wing = geometry_fixtures.make_wing_with_rotated_cross_sections_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 5.0 meters (rotation about y axis does not affect y position).
         expected_span = 5.0
@@ -968,7 +968,7 @@ class TestWing(unittest.TestCase):
     def test_span_swept_wing(self) -> None:
         """Test span calculation for swept Wing."""
         wing = geometry_fixtures.make_swept_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 3.0 meters (sweep in x direction does not affect y extent).
         expected_span = 3.0
@@ -982,7 +982,7 @@ class TestWing(unittest.TestCase):
     def test_span_dihedral_wing(self) -> None:
         """Test span calculation for Wing with dihedral."""
         wing = geometry_fixtures.make_dihedral_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected span: 3.0 meters (dihedral in z direction does not affect y extent in
         # wing axes).
@@ -998,7 +998,7 @@ class TestWing(unittest.TestCase):
         """Test standard mean chord calculation for rotated Wing."""
         # Create a Wing rotated 45.0 degrees about x axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected standard mean chord: 1.0 (projected_area / span = 2.0 / 2.0).
         expected_smc = 1.0
@@ -1012,7 +1012,7 @@ class TestWing(unittest.TestCase):
     def test_standard_mean_chord_swept_wing(self) -> None:
         """Test standard mean chord calculation for swept Wing."""
         wing = geometry_fixtures.make_swept_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Expected standard mean chord: projected_area / span = 4.5 / 3.0 = 1.5.
         expected_smc = 1.5
@@ -1033,7 +1033,7 @@ class TestWing(unittest.TestCase):
         """Test that average_panel_aspect_ratio returns a positive value after
         meshing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         average_aspect_ratio = wing.average_panel_aspect_ratio
         self.assertIsNotNone(average_aspect_ratio)
@@ -1043,7 +1043,7 @@ class TestWing(unittest.TestCase):
     def test_average_panel_aspect_ratio_simple_rectangular_wing(self) -> None:
         """Test average_panel_aspect_ratio calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         average_aspect_ratio = wing.average_panel_aspect_ratio
         self.assertIsNotNone(average_aspect_ratio)
@@ -1061,7 +1061,7 @@ class TestWing(unittest.TestCase):
     def test_average_panel_aspect_ratio_type_4_symmetric_wing(self) -> None:
         """Test average_panel_aspect_ratio for type 4 symmetric Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         average_aspect_ratio = wing.average_panel_aspect_ratio
         self.assertIsNotNone(average_aspect_ratio)
@@ -1071,7 +1071,7 @@ class TestWing(unittest.TestCase):
     def test_average_panel_aspect_ratio_caching(self) -> None:
         """Test that average_panel_aspect_ratio is cached after first access."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Access twice.
         first_access = wing.average_panel_aspect_ratio
@@ -1293,7 +1293,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_meshed_wing_preserves_mesh_metadata(self) -> None:
         """Test that deepcopy preserves mesh metadata for meshed Wings."""
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         copied = copy.deepcopy(original)
 
@@ -1304,7 +1304,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_meshed_wing_preserves_panels(self) -> None:
         """Test that deepcopy preserves Panels for meshed Wings."""
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         copied = copy.deepcopy(original)
 
@@ -1323,7 +1323,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_resets_wake_state(self) -> None:
         """Test that deepcopy resets wake state to an empty array."""
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         copied = copy.deepcopy(original)
 
@@ -1339,7 +1339,7 @@ class TestWingDeepCopy(unittest.TestCase):
         """Test that modifying mutable attributes on the copy does not affect the
         original."""
         original = self.type_4_wing
-        original.generate_mesh(4)
+        original._generate_mesh(4)
         original_symmetric = original.symmetric
         assert original.symmetryNormal_G is not None
         original_symmetryNormal = original.symmetryNormal_G.copy()
@@ -1359,7 +1359,7 @@ class TestWingDeepCopy(unittest.TestCase):
         """Test that modifying mutable attributes on the original does not affect the
         copy."""
         original = self.type_4_wing
-        original.generate_mesh(4)
+        original._generate_mesh(4)
 
         copied = copy.deepcopy(original)
         copied_symmetric = copied.symmetric
@@ -1378,7 +1378,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_immutable_attributes_are_read_only(self) -> None:
         """Test that immutable Wing attributes cannot be modified."""
         wing = self.type_1_wing
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Test that setting immutable attributes raises AttributeError.
         with self.assertRaises(AttributeError):
@@ -1400,20 +1400,24 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_set_once_attributes_cannot_be_reassigned(self) -> None:
         """Test that set-once attributes raise AttributeError on second assignment."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Test that set-once attributes raise AttributeError when set again.
         with self.assertRaises(AttributeError):
-            wing.symmetry_type = 2
+            setattr(wing, "symmetry_type", 2)
 
         with self.assertRaises(AttributeError):
-            wing.num_spanwise_panels = 100
+            setattr(wing, "num_spanwise_panels", 100)
 
         with self.assertRaises(AttributeError):
-            wing.num_panels = 1000
+            setattr(wing, "num_panels", 1000)
 
         with self.assertRaises(AttributeError):
             wing.panels = np.empty((1, 1), dtype=object)
+
+        # Test that meshing the Wing again raises AttributeError.
+        with self.assertRaises(AttributeError):
+            wing._generate_mesh(1)
 
     def test_wing_cross_sections_tuple_immutability(self) -> None:
         """Test that wing_cross_sections tuple cannot be mutated."""
@@ -1431,7 +1435,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_preserves_geometric_properties(self) -> None:
         """Test that deepcopy preserves geometric property calculations."""
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         copied = copy.deepcopy(original)
 
@@ -1447,7 +1451,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_type_4_wing(self) -> None:
         """Test that deepcopy works correctly for type 4 symmetric Wings."""
         original = self.type_4_wing
-        original.generate_mesh(4)
+        original._generate_mesh(4)
 
         copied = copy.deepcopy(original)
 
@@ -1461,7 +1465,7 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_copied_wing_is_functional(self) -> None:
         """Test that copied Wings are fully functional."""
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         copied = copy.deepcopy(original)
 
@@ -1485,10 +1489,10 @@ class TestWingDeepCopy(unittest.TestCase):
 
         Accessing the axis-vector properties forces the lazy-computed arrays to be
         cached as non-None, which exercises the not-None copy branches inside
-        __deepcopy__ that are skipped when only calling generate_mesh.
+        __deepcopy__ that are skipped when only calling _generate_mesh.
         """
         original = self.type_1_wing
-        original.generate_mesh(1)
+        original._generate_mesh(1)
 
         # Access cached properties to populate internal caches before deepcopy.
         _WnX_G = original.WnX_G
@@ -1532,7 +1536,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_shows_the_diagram_when_meshed(self) -> None:
         """Test that diagram shows the diagram once when meshed."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         # Patch the Plotter's show method to avoid blocking on window close.
         with patch.object(pv.Plotter, "show") as mock_show:
@@ -1543,7 +1547,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_three_section_wing(self) -> None:
         """Test diagram for Wing with 3 WingCrossSections."""
         wing = geometry_fixtures.make_three_section_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         with patch.object(pv.Plotter, "show") as mock_show:
             wing.diagram(show_airfoils=True, show_mcls=True)
@@ -1553,7 +1557,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_type_4_symmetric_wing(self) -> None:
         """Test diagram for type 4 symmetric Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
-        wing.generate_mesh(4)
+        wing._generate_mesh(4)
 
         with patch.object(pv.Plotter, "show") as mock_show:
             wing.diagram()
@@ -1563,7 +1567,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_type_2_wing(self) -> None:
         """Test diagram for type 2 Wing."""
         wing = geometry_fixtures.make_type_2_wing_fixture()
-        wing.generate_mesh(2)
+        wing._generate_mesh(2)
 
         with patch.object(pv.Plotter, "show") as mock_show:
             wing.diagram()
@@ -1573,7 +1577,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_type_3_wing(self) -> None:
         """Test diagram for type 3 Wing."""
         wing = geometry_fixtures.make_type_3_wing_fixture()
-        wing.generate_mesh(3)
+        wing._generate_mesh(3)
 
         with patch.object(pv.Plotter, "show") as mock_show:
             wing.diagram()
@@ -1583,7 +1587,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_accepts_numpy_bools(self) -> None:
         """Test that diagram accepts numpy bools for its flags."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         with patch.object(pv.Plotter, "show") as mock_show:
             wing.diagram(
@@ -1602,7 +1606,7 @@ class TestWingDiagram(unittest.TestCase):
     def test_diagram_invalid_save_type_raises(self) -> None:
         """Test that diagram raises error for invalid save type."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         bad_save: Any = "invalid"
         with self.assertRaises(TypeError):
@@ -1616,7 +1620,7 @@ class TestWingDeprecatedPlottingMethods(unittest.TestCase):
     def test_get_plottable_data_warns(self) -> None:
         """Test that calling get_plottable_data emits a DeprecationWarning."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         with self.assertWarns(DeprecationWarning):
             wing.get_plottable_data(show=False)
@@ -1628,7 +1632,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_T_pas_G_Cg_to_Wn_Ler_returns_same_object_on_repeated_access(self) -> None:
         """Test that T_pas_G_Cg_to_Wn_Ler returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         T1 = wing.T_pas_G_Cg_to_Wn_Ler
         T2 = wing.T_pas_G_Cg_to_Wn_Ler
@@ -1638,7 +1642,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_T_pas_Wn_Ler_to_G_Cg_returns_same_object_on_repeated_access(self) -> None:
         """Test that T_pas_Wn_Ler_to_G_Cg returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         T1 = wing.T_pas_Wn_Ler_to_G_Cg
         T2 = wing.T_pas_Wn_Ler_to_G_Cg
@@ -1648,7 +1652,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_WnX_G_returns_same_object_on_repeated_access(self) -> None:
         """Test that WnX_G returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         v1 = wing.WnX_G
         v2 = wing.WnX_G
@@ -1658,7 +1662,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_WnY_G_returns_same_object_on_repeated_access(self) -> None:
         """Test that WnY_G returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         v1 = wing.WnY_G
         v2 = wing.WnY_G
@@ -1668,7 +1672,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_WnZ_G_returns_same_object_on_repeated_access(self) -> None:
         """Test that WnZ_G returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         v1 = wing.WnZ_G
         v2 = wing.WnZ_G
@@ -1680,7 +1684,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     ) -> None:
         """Test that children_T_pas_Wn_Ler_to_Wcs_Lp returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         list1 = wing.children_T_pas_Wn_Ler_to_Wcs_Lp
         list2 = wing.children_T_pas_Wn_Ler_to_Wcs_Lp
@@ -1692,7 +1696,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     ) -> None:
         """Test that children_T_pas_Wcs_Lp_to_Wn_Ler returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         list1 = wing.children_T_pas_Wcs_Lp_to_Wn_Ler
         list2 = wing.children_T_pas_Wcs_Lp_to_Wn_Ler
@@ -1704,7 +1708,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     ) -> None:
         """Test that children_T_pas_G_Cg_to_Wcs_Lp returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         list1 = wing.children_T_pas_G_Cg_to_Wcs_Lp
         list2 = wing.children_T_pas_G_Cg_to_Wcs_Lp
@@ -1716,7 +1720,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     ) -> None:
         """Test that children_T_pas_Wcs_Lp_to_G_Cg returns the same cached object."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         list1 = wing.children_T_pas_Wcs_Lp_to_G_Cg
         list2 = wing.children_T_pas_Wcs_Lp_to_G_Cg
@@ -1726,7 +1730,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_transformation_matrices_are_read_only(self) -> None:
         """Test that transformation matrices are read only."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         assert wing.T_pas_G_Cg_to_Wn_Ler is not None
         assert wing.T_pas_Wn_Ler_to_G_Cg is not None
@@ -1740,7 +1744,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_basis_vectors_are_read_only(self) -> None:
         """Test that basis vectors are read only."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         assert wing.WnX_G is not None
         assert wing.WnY_G is not None
@@ -1758,7 +1762,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
     def test_children_transformation_matrices_are_read_only(self) -> None:
         """Test that children transformation matrices are read only."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
+        wing._generate_mesh(1)
 
         for T in wing.children_T_pas_Wn_Ler_to_Wcs_Lp:
             with self.assertRaises(ValueError):
@@ -2375,7 +2379,7 @@ class TestWingDeprecatedWettedArea(unittest.TestCase):
     def setUp(self) -> None:
         """Set up test fixtures for the deprecated property tests."""
         self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
-        self.type_1_wing.generate_mesh(1)
+        self.type_1_wing._generate_mesh(1)
 
     def test_wetted_area_warns_and_matches_total_panel_area(self) -> None:
         """Test that reading wetted_area warns and returns the total area of the Wing's

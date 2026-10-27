@@ -659,7 +659,6 @@ PUBLIC_MEMBERS: dict[str, tuple[str, ...]] = {
         "chordwise_spacing",
         "diagram",
         "from_edge_points",
-        "generate_mesh",
         "gridWrvp_GP1_CgP1",
         "leadingEdgePoints_Wn_Ler",
         "mean_aerodynamic_chord",
@@ -1102,7 +1101,6 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "chordwise_spacing",
         "tip_trim_fraction",
     ),
-    "Wing.generate_mesh": ("symmetry_type",),
     "WingCrossSection.__init__": (
         "*",
         "airfoil",

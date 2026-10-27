@@ -596,14 +596,14 @@ These read-only properties expose the named load components and coefficients def
 | `WnX_G`, `WnY_G`, `WnZ_G` | Above           | Basis vectors          |
 | `children_T_pas_*`        | Cross sections  | Child transformations  |
 
-#### Set Once (set by `generate_mesh`, never modified after)
+#### Set Once (set by `_generate_mesh`, never modified after)
 
-| Attribute             | Type                 | Set By          | Notes                |
-|-----------------------|----------------------|-----------------|----------------------|
-| `symmetry_type`       | `int \| None`        | `generate_mesh` | 1, 2, 3, or 4        |
-| `num_spanwise_panels` | `int \| None`        | `generate_mesh` | Total spanwise count |
-| `num_panels`          | `int \| None`        | `generate_mesh` | Total panel count    |
-| `panels`              | `np.ndarray \| None` | `generate_mesh` | Panel matrix         |
+| Attribute             | Type                 | Set By           | Notes                |
+|-----------------------|----------------------|------------------|----------------------|
+| `symmetry_type`       | `int \| None`        | `_generate_mesh` | 1, 2, 3, or 4        |
+| `num_spanwise_panels` | `int \| None`        | `_generate_mesh` | Total spanwise count |
+| `num_panels`          | `int \| None`        | `_generate_mesh` | Total panel count    |
+| `panels`              | `np.ndarray \| None` | `_generate_mesh` | Panel matrix         |
 
 #### Derived from Set Once (use manual lazy caching)
 
@@ -670,10 +670,10 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Set Once (set by parent `Wing`)
 
-| Attribute       | Type          | Set By                                         | Notes                             |
-|-----------------|---------------|------------------------------------------------|-----------------------------------|
-| `_validated`    | `bool`        | `Wing.__init__`, via `_mark_validated`         | Internal validation flag          |
-| `symmetry_type` | `int \| None` | `Wing.generate_mesh`, via `_set_symmetry_type` | Read-only inherited symmetry type |
+| Attribute       | Type          | Set By                                          | Notes                             |
+|-----------------|---------------|-------------------------------------------------|-----------------------------------|
+| `_validated`    | `bool`        | `Wing.__init__`, via `_mark_validated`          | Internal validation flag          |
+| `symmetry_type` | `int \| None` | `Wing._generate_mesh`, via `_set_symmetry_type` | Read-only inherited symmetry type |
 
 #### Mutable (modified by `_process_wing_symmetry`)
 

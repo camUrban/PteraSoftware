@@ -422,7 +422,7 @@ def make_symmetric_dihedral_wing_fixture() -> ps.Wing:
     (the y = 0 plane), with dihedral so that the panel normals carry a non zero spanwise
     (y) component.
 
-    The Wing is returned unmeshed; call generate_mesh before reading its Panels.
+    The Wing is returned unmeshed; call _generate_mesh before reading its Panels.
 
     :return symmetric_dihedral_wing_fixture: Wing
         This is the symmetric dihedral Wing.

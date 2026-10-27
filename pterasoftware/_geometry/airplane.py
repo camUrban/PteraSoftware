@@ -1244,7 +1244,7 @@ class Airplane:
         :return: The list of processed Wings. For types 1-4 symmetry it contains only
             the one modified Wing, but for type 5 symmetry it contains the modified Wing
             followed by the new reflected Wing. Before returning them, it also calls
-            each Wing's generate_mesh method, preparing them for use simulation.
+            each Wing's _generate_mesh method, preparing them for use simulation.
         """
         # Determine if the symmetry plane is coincident with the wing axes' xz plane. If
         # symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no symmetry and
@@ -1389,7 +1389,7 @@ class Airplane:
 
         # Based on symmetry type, generate the mesh and return the Wing(s).
         if symmetry_type in [1, 2, 3, 4]:
-            wing.generate_mesh(symmetry_type)
+            wing._generate_mesh(symmetry_type)
             return [wing]
         else:
             assert wing.symmetryNormal_G is not None
@@ -1480,8 +1480,8 @@ class Airplane:
             for wing_cross_section in wing.wing_cross_sections:
                 wing_cross_section.control_surface_symmetry_type = None
 
-            wing.generate_mesh(symmetry_type=1)
-            reflected_wing.generate_mesh(symmetry_type=3)
+            wing._generate_mesh(symmetry_type=1)
+            reflected_wing._generate_mesh(symmetry_type=3)
             return [wing, reflected_wing]
 
 

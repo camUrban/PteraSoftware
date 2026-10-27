@@ -45,7 +45,8 @@ class Wing:
     mean_aerodynamic_chord) are also lazily evaluated and cached.
 
     The symmetry_type, num_spanwise_panels, num_panels, and panels attributes are set
-    once by generate_mesh and cannot be modified after being set.
+    once when the parent Airplane meshes this Wing and cannot be modified after being
+    set.
 
     The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
     remain mutable as they may be modified by the parent Airplane for type 5 symmetry
@@ -350,7 +351,7 @@ class Wing:
         self._chordwise_spacing = chordwise_spacing
 
         # These are the set once attributes. They will be initialized or populated once
-        # this Wing's parent Airplane calls generate_mesh.
+        # this Wing's parent Airplane calls _generate_mesh.
         self._symmetry_type: int | None = None
         self._num_spanwise_panels: int | None = None
         self._num_panels: int | None = None
@@ -1147,12 +1148,6 @@ class Wing:
         """
         return self._symmetry_type
 
-    @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:
-        if self._symmetry_type is not None:
-            raise AttributeError("symmetry_type can only be set once")
-        self._symmetry_type = value
-
     @property
     def num_spanwise_panels(self) -> int | None:
         """The total number of spanwise Panels on this Wing.
@@ -1162,12 +1157,6 @@ class Wing:
         """
         return self._num_spanwise_panels
 
-    @num_spanwise_panels.setter
-    def num_spanwise_panels(self, value: int) -> None:
-        if self._num_spanwise_panels is not None:
-            raise AttributeError("num_spanwise_panels can only be set once")
-        self._num_spanwise_panels = value
-
     @property
     def num_panels(self) -> int | None:
         """The total number of Panels on this Wing.
@@ -1176,12 +1165,6 @@ class Wing:
             the Wing hasn't been meshed yet.
         """
         return self._num_panels
-
-    @num_panels.setter
-    def num_panels(self, value: int) -> None:
-        if self._num_panels is not None:
-            raise AttributeError("num_panels can only be set once")
-        self._num_panels = value
 
     @property
     def panels(self) -> np.ndarray | None:
@@ -1505,7 +1488,7 @@ class Wing:
         return self._mean_aerodynamic_chord
 
     # --- Other methods ---
-    def generate_mesh(self, symmetry_type: int) -> None:
+    def _generate_mesh(self, symmetry_type: int) -> None:
         """Generates this Wing's mesh, which finishes the process of preparing the Wing
         to be used in a simulation. It is called by the Wing's parent Airplane, after
         it's determined its symmetry type.
@@ -1526,7 +1509,9 @@ class Wing:
             max_val=4,
             max_inclusive=True,
         )
-        self.symmetry_type = validated_symmetry_type
+        if self._symmetry_type is not None:
+            raise AttributeError("symmetry_type can only be set once")
+        self._symmetry_type = validated_symmetry_type
 
         # Set this Wing's children WingCrossSections' symmetry type parameters.
         for wing_cross_section in self.wing_cross_sections:
@@ -1542,10 +1527,14 @@ class Wing:
             computed_num_spanwise_panels += wing_cross_section.num_spanwise_panels
         if validated_symmetry_type == 4:
             computed_num_spanwise_panels *= 2
-        self.num_spanwise_panels = computed_num_spanwise_panels
+        if self._num_spanwise_panels is not None:
+            raise AttributeError("num_spanwise_panels can only be set once")
+        self._num_spanwise_panels = computed_num_spanwise_panels
 
         # Calculate the number of Panels on this Wing.
-        self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
+        if self._num_panels is not None:
+            raise AttributeError("num_panels can only be set once")
+        self._num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize an empty array to hold this Wing's wake ring vortex points.
         self.gridWrvp_GP1_CgP1 = np.empty(

@@ -893,15 +893,15 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
         self.assertEqual(self.sine_copm.phaseVCg__E, 0.0)
 
         # This is a cached computed property.
-        self.assertEqual(self.sine_copm.max_period, 1.0)
+        self.assertEqual(self.sine_copm._max_period, 1.0)
 
         # Static fixture has zero max_period.
-        self.assertEqual(self.static_copm.max_period, 0.0)
+        self.assertEqual(self.static_copm._max_period, 0.0)
 
     def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         # Access cached property before copying.
-        _ = self.sine_copm.max_period
+        _ = self.sine_copm._max_period
 
         copied = copy.deepcopy(self.sine_copm)
 
@@ -913,7 +913,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
         self.assertEqual(copied.periodVCg__E, self.sine_copm.periodVCg__E)
         self.assertEqual(copied.spacingVCg__E, self.sine_copm.spacingVCg__E)
         self.assertEqual(copied.phaseVCg__E, self.sine_copm.phaseVCg__E)
-        self.assertEqual(copied.max_period, self.sine_copm.max_period)
+        self.assertEqual(copied._max_period, self.sine_copm._max_period)
 
         # Verify base OperatingPoint is independent.
         self.assertIsNot(
@@ -979,14 +979,14 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
         )
 
         # These are cached computed properties.
-        self.assertIsInstance(self.core_wing_cross_section_movement.all_periods, tuple)
-        self.assertIsInstance(self.core_wing_cross_section_movement.max_period, float)
+        self.assertIsInstance(self.core_wing_cross_section_movement._all_periods, tuple)
+        self.assertIsInstance(self.core_wing_cross_section_movement._max_period, float)
 
     def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
-        _ = self.core_wing_cross_section_movement.all_periods
-        _ = self.core_wing_cross_section_movement.max_period
+        _ = self.core_wing_cross_section_movement._all_periods
+        _ = self.core_wing_cross_section_movement._max_period
 
         copied = copy.deepcopy(self.core_wing_cross_section_movement)
 
@@ -1089,14 +1089,14 @@ class TestCoreWingMovementSlots(unittest.TestCase):
         self.assertEqual(self.core_wing_movement.rotationPointOffset_Gs_Ler.shape, (3,))
 
         # These are cached computed properties.
-        self.assertIsInstance(self.core_wing_movement.all_periods, tuple)
-        self.assertIsInstance(self.core_wing_movement.max_period, float)
+        self.assertIsInstance(self.core_wing_movement._all_periods, tuple)
+        self.assertIsInstance(self.core_wing_movement._max_period, float)
 
     def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
-        _ = self.core_wing_movement.all_periods
-        _ = self.core_wing_movement.max_period
+        _ = self.core_wing_movement._all_periods
+        _ = self.core_wing_movement._max_period
 
         copied = copy.deepcopy(self.core_wing_movement)
 
@@ -1185,14 +1185,14 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
         self.assertEqual(self.core_airplane_movement.phaseCg_GP1_CgP1.shape, (3,))
 
         # These are cached computed properties.
-        self.assertIsInstance(self.core_airplane_movement.all_periods, tuple)
-        self.assertIsInstance(self.core_airplane_movement.max_period, float)
+        self.assertIsInstance(self.core_airplane_movement._all_periods, tuple)
+        self.assertIsInstance(self.core_airplane_movement._max_period, float)
 
     def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
-        _ = self.core_airplane_movement.all_periods
-        _ = self.core_airplane_movement.max_period
+        _ = self.core_airplane_movement._all_periods
+        _ = self.core_airplane_movement._max_period
 
         copied = copy.deepcopy(self.core_airplane_movement)
 
@@ -1274,16 +1274,16 @@ class TestCoreMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.static_core_movement.num_steps, int)
 
         # These are cached computed properties.
-        self.assertTrue(self.static_core_movement.static)
-        self.assertEqual(self.static_core_movement.max_period, 0.0)
-        self.assertEqual(self.static_core_movement.lcm_period, 0.0)
+        self.assertTrue(self.static_core_movement._static)
+        self.assertEqual(self.static_core_movement._max_period, 0.0)
+        self.assertEqual(self.static_core_movement._lcm_period, 0.0)
 
     def test_property_access_basic(self) -> None:
         """Test that all properties are accessible on a non-static CoreMovement."""
-        self.assertFalse(self.basic_core_movement.static)
-        self.assertGreater(self.basic_core_movement.max_period, 0.0)
-        self.assertGreater(self.basic_core_movement.min_period, 0.0)
-        self.assertGreater(self.basic_core_movement.lcm_period, 0.0)
+        self.assertFalse(self.basic_core_movement._static)
+        self.assertGreater(self.basic_core_movement._max_period, 0.0)
+        self.assertGreater(self.basic_core_movement._min_period, 0.0)
+        self.assertGreater(self.basic_core_movement._lcm_period, 0.0)
 
 
 class TestCoreUnsteadyProblemSlots(unittest.TestCase):
@@ -1551,10 +1551,10 @@ class TestMovementSlots(unittest.TestCase):
 
     def test_property_access(self) -> None:
         """Test that Movement-specific properties are accessible."""
-        self.assertIsInstance(self.static_movement.airplanes, tuple)
-        self.assertIsInstance(self.static_movement.operating_points, tuple)
+        self.assertIsInstance(self.static_movement._airplanes, tuple)
+        self.assertIsInstance(self.static_movement._operating_points, tuple)
         self.assertEqual(
-            len(self.static_movement.operating_points),
+            len(self.static_movement._operating_points),
             self.static_movement.num_steps,
         )
 
@@ -1566,10 +1566,10 @@ class TestMovementSlots(unittest.TestCase):
         self.assertIsNot(copied, self.static_movement)
 
         # Verify Movement-specific property values match.
-        self.assertEqual(len(copied.airplanes), len(self.static_movement.airplanes))
+        self.assertEqual(len(copied._airplanes), len(self.static_movement._airplanes))
         self.assertEqual(
-            len(copied.operating_points),
-            len(self.static_movement.operating_points),
+            len(copied._operating_points),
+            len(self.static_movement._operating_points),
         )
 
         # Verify AirplaneMovements are independent.
@@ -1996,9 +1996,9 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
         AeroelasticMovement pre generates OperatingPoints but not Airplanes, so it
         exposes operating_points but no airplanes property.
         """
-        self.assertIsInstance(self.aeroelastic_movement.operating_points, tuple)
+        self.assertIsInstance(self.aeroelastic_movement._operating_points, tuple)
         self.assertEqual(
-            len(self.aeroelastic_movement.operating_points),
+            len(self.aeroelastic_movement._operating_points),
             self.aeroelastic_movement.num_steps,
         )
 
@@ -2011,8 +2011,8 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
 
         # Verify AeroelasticMovement-specific property values match.
         self.assertEqual(
-            len(copied.operating_points),
-            len(self.aeroelastic_movement.operating_points),
+            len(copied._operating_points),
+            len(self.aeroelastic_movement._operating_points),
         )
 
         # Verify AeroelasticAirplaneMovements are independent.
@@ -2229,7 +2229,7 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
         FreeFlightMovement pre generates Airplanes, so it exposes airplanes along with
         its prescribed and free step counts.
         """
-        self.assertIsInstance(self.free_flight_movement.airplanes, tuple)
+        self.assertIsInstance(self.free_flight_movement._airplanes, tuple)
         self.assertIsInstance(self.free_flight_movement.prescribed_num_steps, int)
         self.assertIsInstance(self.free_flight_movement.free_num_steps, int)
 
@@ -2242,8 +2242,8 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
 
         # Verify FreeFlightMovement-specific property values match.
         self.assertEqual(
-            len(copied.airplanes),
-            len(self.free_flight_movement.airplanes),
+            len(copied._airplanes),
+            len(self.free_flight_movement._airplanes),
         )
 
         # Verify AirplaneMovements are independent.

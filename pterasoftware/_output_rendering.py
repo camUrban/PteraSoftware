@@ -368,13 +368,13 @@ def resolve_playback(
     # A static geometry has nothing to alias, a stride of 1 drops nothing, and an
     # animation that is not saved keeps every frame, so none of the three is tested.
     movement = unsteady_solver.unsteady_problem.movement
-    if save and keep_every > 1 and not movement.static:
-        frames_per_period = movement.min_period / (keep_every * delta_time)
+    if save and keep_every > 1 and not movement._static:
+        frames_per_period = movement._min_period / (keep_every * delta_time)
         if frames_per_period < MIN_FRAMES_PER_PERIOD:
             logger.warning(
                 _logging.indent() + f"The animation saves {frames_per_period:.1f} "
                 f"frames per cycle of its fastest motion, whose period is "
-                f"{movement.min_period} seconds. Below {MIN_FRAMES_PER_PERIOD} frames "
+                f"{movement._min_period} seconds. Below {MIN_FRAMES_PER_PERIOD} frames "
                 f"per cycle the motion looks jerky, and below the Nyquist floor of 2.0 "
                 f"it can appear to reverse direction or stand still. Animate at a "
                 f"slower speed to save more frames."

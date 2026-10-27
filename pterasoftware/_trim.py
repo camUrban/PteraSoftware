@@ -894,7 +894,7 @@ def analyze_unsteady_trim(
             force_method=force_method,
         )
 
-        if this_movement.static:
+        if this_movement._static:
             finalForceCoefficients_W = (
                 this_solver.unsteady_problem.finalForceCoefficients_W
             )

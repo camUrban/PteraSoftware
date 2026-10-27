@@ -113,13 +113,13 @@ class TestAeroelasticMovement(unittest.TestCase):
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
-        self.assertIsInstance(aeroelastic_movement.operating_points, tuple)
+        self.assertIsInstance(aeroelastic_movement._operating_points, tuple)
         # The OperatingPoints are prescribed and generated upfront, one per time step.
         self.assertEqual(
-            len(aeroelastic_movement.operating_points),
+            len(aeroelastic_movement._operating_points),
             aeroelastic_movement.num_steps,
         )
-        for operating_point in aeroelastic_movement.operating_points:
+        for operating_point in aeroelastic_movement._operating_points:
             self.assertIsInstance(
                 operating_point,
                 ps.OperatingPoint,

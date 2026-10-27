@@ -255,7 +255,7 @@ def build_unsteady_problem(
     :return: The UnsteadyProblem for this iteration.
     """
     ref_movement = ref_problem.movement
-    static = ref_movement.static
+    static = ref_movement._static
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement
 
@@ -449,7 +449,7 @@ def build_unsteady_problem(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_base_wing.chordwise_spacing,
-                                ref_movement.airplanes[ref_airplane_movement_id],
+                                ref_movement._airplanes[ref_airplane_movement_id],
                                 ref_wing_movement_id,
                                 ref_wing_cross_section_movement_id,
                                 ref_wing_cross_section_movement_id + 1,

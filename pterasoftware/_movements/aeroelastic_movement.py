@@ -25,7 +25,7 @@ class AeroelasticMovement(_core.CoreMovement):
     at each time step depends on the solver's structural response calculation.
     """
 
-    __slots__ = ("_operating_points",)
+    __slots__ = ("_pregenerated_operating_points",)
 
     @_deprecation.keyword_only()
     def __init__(
@@ -96,9 +96,9 @@ class AeroelasticMovement(_core.CoreMovement):
         operating_points_list = operating_point_movement._generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
         )
-        self._operating_points: tuple[operating_point_mod.OperatingPoint, ...] = tuple(
-            operating_points_list
-        )
+        self._pregenerated_operating_points: tuple[
+            operating_point_mod.OperatingPoint, ...
+        ] = tuple(operating_points_list)
 
     # --- Immutable: read only properties ---
     @property
@@ -121,8 +121,8 @@ class AeroelasticMovement(_core.CoreMovement):
         )
 
     @property
-    def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
-        return self._operating_points
+    def _operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
+        return self._pregenerated_operating_points
 
     def _generate_airplane_at_time_step(
         self,

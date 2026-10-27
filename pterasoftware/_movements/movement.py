@@ -40,8 +40,8 @@ class Movement(_core.CoreMovement):
         "_num_chords",
         "_max_wake_chords",
         "_max_wake_cycles",
-        "_airplanes",
-        "_operating_points",
+        "_pregenerated_airplanes",
+        "_pregenerated_operating_points",
     )
 
     @_deprecation.keyword_only()
@@ -145,10 +145,10 @@ class Movement(_core.CoreMovement):
         # will be lazily cached by CoreMovement when accessed via properties.
         _airplane_movement_max_periods = []
         for airplane_movement in airplane_movements:
-            _airplane_movement_max_periods.append(airplane_movement.max_period)
+            _airplane_movement_max_periods.append(airplane_movement._max_period)
         _max_period = max(
             max(_airplane_movement_max_periods),
-            operating_point_movement.max_period,
+            operating_point_movement._max_period,
         )
         _static = _max_period == 0
 
@@ -156,8 +156,8 @@ class Movement(_core.CoreMovement):
         if not _static:
             _all_periods: list[float] = []
             for airplane_movement in airplane_movements:
-                _all_periods.extend(airplane_movement.all_periods)
-            _all_periods.append(operating_point_movement.max_period)
+                _all_periods.extend(airplane_movement._all_periods)
+            _all_periods.append(operating_point_movement._max_period)
             _lcm_period = _core.lcm_multiple(_all_periods)
 
         # --- Resolve delta_time ---
@@ -374,11 +374,12 @@ class Movement(_core.CoreMovement):
 
         # Pre-populate the lazy caches with values already computed above so that
         # accessing the inherited properties does not redundantly recompute them.
-        # _max_period, _lcm_period, and _static are set here because they are always
-        # needed during __init__ (via the static check). _min_period remains lazy.
-        self._max_period = _max_period
-        self._lcm_period = _lcm_period
-        self._static = _static
+        # _max_period_cache, _lcm_period_cache, and _static_cache are set here because
+        # they are always needed during __init__ (via the static check).
+        # _min_period_cache remains lazy.
+        self._max_period_cache = _max_period
+        self._lcm_period_cache = _lcm_period
+        self._static_cache = _static
 
         # --- Store Movement only attributes ---
         self._num_cycles = num_cycles
@@ -426,9 +427,9 @@ class Movement(_core.CoreMovement):
                         )
 
         # Store as tuple of tuples to prevent external mutation.
-        self._airplanes: tuple[tuple[_geometry.airplane.Airplane, ...], ...] = tuple(
-            tuple(airplane_list) for airplane_list in airplanes_temp
-        )
+        self._pregenerated_airplanes: tuple[
+            tuple[_geometry.airplane.Airplane, ...], ...
+        ] = tuple(tuple(airplane_list) for airplane_list in airplanes_temp)
 
         # Generate a list of OperatingPoints that are the steps through the
         # OperatingPointMovement.
@@ -436,9 +437,9 @@ class Movement(_core.CoreMovement):
             num_steps=self._num_steps, delta_time=self._delta_time
         )
         # Store as tuple to prevent external mutation.
-        self._operating_points: tuple[operating_point_mod.OperatingPoint, ...] = tuple(
-            operating_points_temp
-        )
+        self._pregenerated_operating_points: tuple[
+            operating_point_mod.OperatingPoint, ...
+        ] = tuple(operating_points_temp)
 
     # --- Immutable: read only properties ---
     @property
@@ -477,12 +478,12 @@ class Movement(_core.CoreMovement):
         return self._max_wake_cycles
 
     @property
-    def airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
-        return self._airplanes
+    def _airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
+        return self._pregenerated_airplanes
 
     @property
-    def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
-        return self._operating_points
+    def _operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
+        return self._pregenerated_operating_points
 
 
 def compute_wake_area_mismatch(
@@ -539,11 +540,11 @@ def compute_wake_area_mismatch(
         max_airplane_movement_period = 0.0
         for airplane_movement in airplane_movements_copy:
             max_airplane_movement_period = max(
-                airplane_movement.max_period, max_airplane_movement_period
+                airplane_movement._max_period, max_airplane_movement_period
             )
 
         max_period = max(
-            max_airplane_movement_period, operating_point_movement_copy.max_period
+            max_airplane_movement_period, operating_point_movement_copy._max_period
         )
 
         # Calculate the number of time steps to traverse the max period (or just a
@@ -1071,8 +1072,8 @@ def optimize_delta_time(
     # Collect all non zero periods to determine if static.
     all_periods: list[float] = []
     for airplane_movement in airplane_movements:
-        all_periods.extend(airplane_movement.all_periods)
-    op_period = operating_point_movement.max_period
+        all_periods.extend(airplane_movement._all_periods)
+    op_period = operating_point_movement._max_period
     if op_period != 0.0:
         all_periods.append(op_period)
     non_zero_periods = [p for p in all_periods if p != 0.0]
@@ -1355,8 +1356,8 @@ def analytically_optimize_delta_time(
     # Collect all non zero periods.
     all_periods: list[float] = []
     for airplane_movement in airplane_movements:
-        all_periods.extend(airplane_movement.all_periods)
-    op_period = operating_point_movement.max_period
+        all_periods.extend(airplane_movement._all_periods)
+    op_period = operating_point_movement._max_period
     if op_period != 0.0:
         all_periods.append(op_period)
     non_zero_periods = [p for p in all_periods if p != 0.0]
@@ -1478,7 +1479,7 @@ def analytically_optimize_delta_time(
 
                     # Flow displacement during this time step (in the first Airplane's
                     # geometry axes).
-                    vInf_GP1__E = temp_movement.operating_points[step].vInf_GP1__E
+                    vInf_GP1__E = temp_movement._operating_points[step].vInf_GP1__E
                     flowDisplacement_GP1 = vInf_GP1__E * preliminary_delta_time
 
                     # Wake displacement is the combination of freestream flow and the

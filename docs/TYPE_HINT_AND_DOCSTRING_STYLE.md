@@ -568,12 +568,12 @@ def wing_cross_section_movements(self) -> tuple:
 
 # Uses deferral language
 @property
-def max_period(self) -> float:
-    """The longest period of this Wing's motion.
+def base_wing(self) -> Wing:
+    """The Wing at the first time step.
 
     See WingMovement for full details.
 
-    :return: The longest period in seconds.
+    :return: The base Wing.
     """
 ```
 

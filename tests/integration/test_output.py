@@ -1246,7 +1246,7 @@ class TestAnimatePlayback(unittest.TestCase):
         stride = max(
             2,
             math.floor(
-                movement.min_period
+                movement._min_period
                 / (_output_rendering.MIN_FRAMES_PER_PERIOD * delta_time)
             )
             + 1,

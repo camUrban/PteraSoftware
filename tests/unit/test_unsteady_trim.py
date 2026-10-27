@@ -689,7 +689,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         self.assertEqual(trial_movement.num_chords, movement.num_chords)
         self.assertEqual(trial_movement.max_wake_cycles, movement.max_wake_cycles)
         self.assertEqual(trial_movement.max_wake_chords, movement.max_wake_chords)
-        self.assertEqual(trial_movement.static, movement.static)
+        self.assertEqual(trial_movement._static, movement._static)
 
 
 if __name__ == "__main__":

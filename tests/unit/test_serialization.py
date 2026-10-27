@@ -1944,10 +1944,10 @@ class TestChunkedSaveLoad(unittest.TestCase):
         movement = unsteady_problem.movement
         for step in range(self.num_steps):
             self.assertIs(
-                movement.airplanes[0][step], loaded.steady_problems[step].airplanes[0]
+                movement._airplanes[0][step], loaded.steady_problems[step].airplanes[0]
             )
             self.assertIs(
-                movement.operating_points[step],
+                movement._operating_points[step],
                 loaded.steady_problems[step].operating_point,
             )
 
@@ -2982,8 +2982,8 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         movement = problem.movement
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, Movement)
-        self.assertEqual(len(result.airplanes), len(movement.airplanes))
-        self.assertEqual(len(result.operating_points), len(movement.operating_points))
+        self.assertEqual(len(result._airplanes), len(movement._airplanes))
+        self.assertEqual(len(result._operating_points), len(movement._operating_points))
 
     def test_save_load_operating_point_movement(self) -> None:
         """Tests that an OperatingPointMovement survives a save/load round trip.
@@ -3133,7 +3133,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             save(path, movement)
             result = load(path)
         assert isinstance(result, Movement)
-        self.assertEqual(len(result.airplanes), len(movement.airplanes))
+        self.assertEqual(len(result._airplanes), len(movement._airplanes))
 
 
 class TestUnsteadyProblemRoundTrip(unittest.TestCase):
@@ -3165,7 +3165,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
                 len(result.movement.airplane_movements)
             ):
                 self.assertIs(
-                    result.movement.airplanes[airplane_movement_index][step],
+                    result.movement._airplanes[airplane_movement_index][step],
                     result.steady_problems[step].airplanes[airplane_movement_index],
                 )
 
@@ -3180,7 +3180,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyProblem)
         for step in range(result.num_steps):
             self.assertIs(
-                result.movement.operating_points[step],
+                result.movement._operating_points[step],
                 result.steady_problems[step].operating_point,
             )
 
@@ -3212,11 +3212,11 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         for step in range(result.num_steps):
             for airplane_movement_index in range(2):
                 self.assertIs(
-                    result.movement.airplanes[airplane_movement_index][step],
+                    result.movement._airplanes[airplane_movement_index][step],
                     result.steady_problems[step].airplanes[airplane_movement_index],
                 )
             self.assertIs(
-                result.movement.operating_points[step],
+                result.movement._operating_points[step],
                 result.steady_problems[step].operating_point,
             )
 
@@ -3269,7 +3269,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
                 len(unsteady_problem.movement.airplane_movements)
             ):
                 self.assertIs(
-                    unsteady_problem.movement.airplanes[airplane_movement_index][step],
+                    unsteady_problem.movement._airplanes[airplane_movement_index][step],
                     unsteady_problem.steady_problems[step].airplanes[
                         airplane_movement_index
                     ],
@@ -3324,7 +3324,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(movement, AeroelasticMovement)
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, AeroelasticMovement)
-        self.assertEqual(len(result.operating_points), len(movement.operating_points))
+        self.assertEqual(len(result._operating_points), len(movement._operating_points))
 
     def test_aeroelastic_airplane_movement(self) -> None:
         """Tests that an AeroelasticAirplaneMovement survives a full round trip.
@@ -3677,7 +3677,7 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         result = deserialize_value(serialize_value(movement))
         assert isinstance(result, FreeFlightMovement)
         self.assertEqual(result.num_steps, movement.num_steps)
-        self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
+        self.assertEqual(len(result._airplanes[0]), len(movement._airplanes[0]))
 
     def test_free_flight_operating_point_movement(self) -> None:
         """Tests that a FreeFlightOperatingPointMovement survives a full round trip.

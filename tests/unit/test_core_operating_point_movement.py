@@ -321,19 +321,19 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
     def test_max_period_static_movement(self) -> None:
         """Test that max_period returns 0.0 for static movement."""
         core_op_movement = self.static_core_op_movement
-        self.assertEqual(core_op_movement.max_period, 0.0)
+        self.assertEqual(core_op_movement._max_period, 0.0)
 
     def test_max_period_with_movement(self) -> None:
         """Test that max_period returns correct period for movement."""
         core_op_movement = self.basic_core_op_movement
         # periodVCg__E is 2.0, so max should be 2.0.
-        self.assertEqual(core_op_movement.max_period, 2.0)
+        self.assertEqual(core_op_movement._max_period, 2.0)
 
     def test_max_period_long_period(self) -> None:
         """Test that max_period returns correct value for long period movement."""
         core_op_movement = self.long_period_core_op_movement
         # periodVCg__E is 10.0, so max should be 10.0.
-        self.assertEqual(core_op_movement.max_period, 10.0)
+        self.assertEqual(core_op_movement._max_period, 10.0)
 
     def test_generate_operating_points_parameter_validation(self) -> None:
         """Test that _generate_operating_points validates num_steps and delta_time."""

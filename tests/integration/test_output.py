@@ -191,8 +191,8 @@ class TestOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_returning_camera_state_alone_keeps_legacy_camera_setup(self) -> None:
-        """Returning camera state preserves the original default camera framing."""
+    def test_draw_and_animate_preserve_original_default_camera_framing(self) -> None:
+        """Both rendering methods preserve the original default camera framing."""
         expected_camera_state = {
             "camera_position": (
                 -10.37451463829966,

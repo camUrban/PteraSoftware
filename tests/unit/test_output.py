@@ -13,8 +13,8 @@ class TestValidateCameraInputs(unittest.TestCase):
     """Tests validation of the shared camera arguments."""
 
     def test_valid_camera_inputs_are_normalized_to_float_arrays(self) -> None:
-        position, focal_point, up, scale, return_state = (
-            _output._validate_camera_inputs([3, 2, 1], [0, 0, 0], [0, 0, 1], 4, True)
+        position, focal_point, up, scale, return_state = _output.validate_camera_inputs(
+            [3, 2, 1], [0, 0, 0], [0, 0, 1], 4, True
         )
         npt.assert_array_equal(position, [3.0, 2.0, 1.0])
         npt.assert_array_equal(focal_point, [0.0, 0.0, 0.0])
@@ -24,15 +24,15 @@ class TestValidateCameraInputs(unittest.TestCase):
 
     def test_invalid_vector_shape_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "camera_position"):
-            _output._validate_camera_inputs([1, 2], None, None, None, False)
+            _output.validate_camera_inputs([1, 2], None, None, None, False)
 
     def test_non_positive_parallel_scale_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "camera_parallel_scale"):
-            _output._validate_camera_inputs(None, None, None, 0, False)
+            _output.validate_camera_inputs(None, None, None, 0, False)
 
     def test_non_boolean_return_flag_is_rejected(self) -> None:
         with self.assertRaisesRegex(TypeError, "return_camera_state"):
-            _output._validate_camera_inputs(None, None, None, None, 1)
+            _output.validate_camera_inputs(None, None, None, None, 1)
 
 
 class TestApplyCameraParameters(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestApplyCameraParameters(unittest.TestCase):
         up: np.ndarray | None = None,
         scale: float | None = None,
     ) -> None:
-        _output._apply_camera_parameters(
+        _output.apply_camera_parameters(
             self.plotter,
             position,
             focal_point,

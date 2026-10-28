@@ -409,8 +409,8 @@ class TestMovement(unittest.TestCase):
         self.assertEqual(len(movement.airplane_movements), 2)
 
         # Check that airplanes list has correct structure.
-        self.assertEqual(len(movement.airplanes), 2)
-        for airplane_list in movement.airplanes:
+        self.assertEqual(len(movement._airplanes), 2)
+        for airplane_list in movement._airplanes:
             self.assertEqual(len(airplane_list), movement.num_steps)
 
     def test_delta_time_averaging_with_multiple_airplanes(self) -> None:
@@ -773,7 +773,7 @@ class TestMovement(unittest.TestCase):
         self.assertIsInstance(movement, ps.Movement)
         self.assertIsInstance(movement.delta_time, float)
         self.assertGreater(movement.delta_time, 0.0)
-        self.assertTrue(movement.static)
+        self.assertTrue(movement._static)
 
     def test_delta_time_optimize_calls_both_optimizers(self) -> None:
         """Test that delta_time="optimize" calls both analytical and iterative
@@ -831,20 +831,20 @@ class TestMovement(unittest.TestCase):
     def test_min_period_for_static_movement(self) -> None:
         """Test that min_period returns 0.0 for static Movement."""
         movement = self.static_movement
-        self.assertEqual(movement.min_period, 0.0)
+        self.assertEqual(movement._min_period, 0.0)
 
     def test_min_period_for_single_period_movement(self) -> None:
         """Test that min_period returns correct value when all periods are the same."""
         movement = self.basic_movement
         # The basic_movement has period of 2.0 for all motion.
-        self.assertEqual(movement.min_period, 2.0)
+        self.assertEqual(movement._min_period, 2.0)
 
     def test_min_period_with_multiple_periods(self) -> None:
         """Test that min_period returns the smallest non zero period."""
         # Reuse the multi airplane fixture which has periods 2.0 and 0.0. The min non
         # zero period should be 2.0.
         movement = self.movement_with_multiple_airplanes
-        self.assertEqual(movement.min_period, 2.0)
+        self.assertEqual(movement._min_period, 2.0)
 
     def test_min_period_with_different_periods(self) -> None:
         """Test that min_period returns the smallest period across Wings with different
@@ -912,7 +912,7 @@ class TestMovement(unittest.TestCase):
         )
 
         # The min non zero period should be 3.0 (the smaller of 3.0 and 4.0).
-        self.assertEqual(movement.min_period, 3.0)
+        self.assertEqual(movement._min_period, 3.0)
 
     def test_delta_time_none_calls_analytical_optimizer(self) -> None:
         """Test that delta_time=None (default) calls the analytical optimizer.
@@ -988,7 +988,7 @@ class TestMovement(unittest.TestCase):
 
             # Verify the Movement clamped the optimizer's return value to the LCM period
             # divided by the minimum number of time steps per LCM period.
-            self.assertEqual(movement.delta_time, movement.lcm_period / 30)
+            self.assertEqual(movement.delta_time, movement._lcm_period / 30)
 
     def test_delta_time_estimate_not_clamped_for_static_movement(self) -> None:
         """Test that a static Movement does not clamp the default delta_time estimate.
@@ -1395,7 +1395,7 @@ class TestMeanTrailingEdgePanelChord(unittest.TestCase):
         # positions, which only a problem sets.
         ps.Airplane(wings=[wing])
 
-        _panels = wing.panels
+        _panels = wing._panels
         assert _panels is not None
         self.assertIsNone(_panels[-1, 0].leftLeg_GP1)
 
@@ -1644,7 +1644,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         # Calculate the LCM period.
         all_periods: list[float] = []
         for airplane_movement in airplane_movements:
-            all_periods.extend(airplane_movement.all_periods)
+            all_periods.extend(airplane_movement._all_periods)
         lcm_period = lcm_multiple(all_periods)
 
         # Seed with the analytical result so the brute force bracket is centered near
@@ -1685,7 +1685,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         # Calculate the LCM period.
         all_periods: list[float] = []
         for airplane_movement in airplane_movements:
-            all_periods.extend(airplane_movement.all_periods)
+            all_periods.extend(airplane_movement._all_periods)
         lcm_period = lcm_multiple(all_periods)
 
         # Seed with the analytical result so the brute force bracket is centered near
@@ -1866,30 +1866,30 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         movement = self.basic_movement
 
         # Check outer dimension matches number of AirplaneMovements.
-        self.assertEqual(len(movement.airplanes), len(movement.airplane_movements))
+        self.assertEqual(len(movement._airplanes), len(movement.airplane_movements))
 
         # Check each inner dimension matches num_steps.
-        for airplane_list in movement.airplanes:
+        for airplane_list in movement._airplanes:
             self.assertEqual(len(airplane_list), movement.num_steps)
 
     def test_airplanes_correct_types(self) -> None:
         """Test that airplanes contains Airplane objects."""
         movement = self.basic_movement
 
-        for airplane_list in movement.airplanes:
+        for airplane_list in movement._airplanes:
             for airplane in airplane_list:
                 self.assertIsInstance(airplane, ps.Airplane)
 
     def test_operating_points_correct_length(self) -> None:
         """Test that operating_points has correct length (num_steps)."""
         movement = self.basic_movement
-        self.assertEqual(len(movement.operating_points), movement.num_steps)
+        self.assertEqual(len(movement._operating_points), movement.num_steps)
 
     def test_operating_points_correct_types(self) -> None:
         """Test that operating_points contains OperatingPoint objects."""
         movement = self.basic_movement
 
-        for operating_point in movement.operating_points:
+        for operating_point in movement._operating_points:
             self.assertIsInstance(operating_point, ps.OperatingPoint)
 
     def test_airplanes_with_multiple_airplane_movements(self) -> None:
@@ -1897,10 +1897,10 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         movement = self.movement_with_multiple_airplanes
 
         # Should have 2 airplane lists (one per AirplaneMovement).
-        self.assertEqual(len(movement.airplanes), 2)
+        self.assertEqual(len(movement._airplanes), 2)
 
         # Each list should have num_steps Airplanes.
-        for airplane_list in movement.airplanes:
+        for airplane_list in movement._airplanes:
             self.assertEqual(len(airplane_list), movement.num_steps)
 
     def test_airplanes_static_movement_are_consistent(self) -> None:
@@ -1909,8 +1909,8 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         movement = self.static_movement
 
         # For static movement, all Airplanes should have the same Wing positions.
-        first_airplane = movement.airplanes[0][0]
-        for airplane in movement.airplanes[0][1:]:
+        first_airplane = movement._airplanes[0][0]
+        for airplane in movement._airplanes[0][1:]:
             # Check that Wing positions are the same.
             for wing_id, wing in enumerate(airplane.wings):
                 first_wing = first_airplane.wings[wing_id]
@@ -1943,25 +1943,25 @@ class TestMovementImmutability(unittest.TestCase):
             setattr(self.static_movement, "num_chords", 10)
 
     def test_immutable_airplanes_property(self) -> None:
-        """Test that airplanes property is read only."""
+        """Test that _airplanes property is read only."""
         with self.assertRaises(AttributeError):
-            setattr(self.basic_movement, "airplanes", ())
+            setattr(self.basic_movement, "_airplanes", ())
 
     def test_immutable_airplanes_tuple_of_tuples(self) -> None:
         """Test that airplanes returns a tuple of tuples (immutable structure)."""
-        airplanes = self.basic_movement.airplanes
+        airplanes = self.basic_movement._airplanes
         self.assertIsInstance(airplanes, tuple)
         for airplane_list in airplanes:
             self.assertIsInstance(airplane_list, tuple)
 
     def test_immutable_operating_points_property(self) -> None:
-        """Test that operating_points property is read only."""
+        """Test that _operating_points property is read only."""
         with self.assertRaises(AttributeError):
-            setattr(self.basic_movement, "operating_points", ())
+            setattr(self.basic_movement, "_operating_points", ())
 
     def test_immutable_operating_points_tuple(self) -> None:
         """Test that operating_points returns a tuple (immutable sequence)."""
-        operating_points = self.basic_movement.operating_points
+        operating_points = self.basic_movement._operating_points
         self.assertIsInstance(operating_points, tuple)
 
 
@@ -2001,10 +2001,10 @@ class TestMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.num_steps, original.num_steps)
 
         # Check derived properties.
-        self.assertEqual(copied.static, original.static)
-        self.assertEqual(copied.max_period, original.max_period)
-        self.assertEqual(copied.min_period, original.min_period)
-        self.assertEqual(copied.lcm_period, original.lcm_period)
+        self.assertEqual(copied._static, original._static)
+        self.assertEqual(copied._max_period, original._max_period)
+        self.assertEqual(copied._min_period, original._min_period)
+        self.assertEqual(copied._lcm_period, original._lcm_period)
 
     def test_deepcopy_airplane_movements_are_independent(self) -> None:
         """Test that deepcopied airplane_movements are independent objects."""
@@ -2042,11 +2042,11 @@ class TestMovementDeepcopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         # Verify airplanes tuples are different objects.
-        self.assertIsNot(copied.airplanes, original.airplanes)
+        self.assertIsNot(copied._airplanes, original._airplanes)
 
         # Verify each airplane list is a different tuple.
         for orig_airplane_list, copied_airplane_list in zip(
-            original.airplanes, copied.airplanes
+            original._airplanes, copied._airplanes
         ):
             self.assertIsNot(copied_airplane_list, orig_airplane_list)
 
@@ -2058,11 +2058,11 @@ class TestMovementDeepcopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         # Verify operating_points tuple is a different object.
-        self.assertIsNot(copied.operating_points, original.operating_points)
+        self.assertIsNot(copied._operating_points, original._operating_points)
 
         # Verify each OperatingPoint is a different object.
         for orig_op, copied_op in zip(
-            original.operating_points, copied.operating_points
+            original._operating_points, copied._operating_points
         ):
             self.assertIsNot(copied_op, orig_op)
 
@@ -2075,8 +2075,8 @@ class TestMovementDeepcopy(unittest.TestCase):
 
         self.assertIsInstance(copied, ps.Movement)
         self.assertIsNot(original, copied)
-        self.assertTrue(copied.static)
-        self.assertEqual(copied.max_period, 0.0)
+        self.assertTrue(copied._static)
+        self.assertEqual(copied._max_period, 0.0)
 
 
 class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):

@@ -265,9 +265,9 @@ def test_chord_is_read_only(self) -> None:
 mypy does not narrow a type on `self.assertIsNotNone(x)`. Keep the unittest assertion, and add a bare `assert x is not None` after it before the first use that needs the narrowed type:
 
 ```python
-self.assertIsNotNone(wing.panels)
-assert wing.panels is not None
-self.assertEqual(wing.panels.shape, (4, 8))
+self.assertIsNotNone(wing._panels)
+assert wing._panels is not None
+self.assertEqual(wing._panels.shape, (4, 8))
 ```
 
 #### Returning Floats from numpy Expressions
@@ -568,12 +568,12 @@ def wing_cross_section_movements(self) -> tuple:
 
 # Uses deferral language
 @property
-def max_period(self) -> float:
-    """The longest period of this Wing's motion.
+def base_wing(self) -> Wing:
+    """The Wing at the first time step.
 
     See WingMovement for full details.
 
-    :return: The longest period in seconds.
+    :return: The base Wing.
     """
 ```
 
@@ -593,7 +593,7 @@ The API reference documents only the names in `pterasoftware.__all__`. Every oth
 2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
 3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
 4. **Do not defer to a private parent.** "See CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
-5. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
+5. **Contributor detail that needs private names goes in a comment.** The comment is the right home for anything a contributor needs and a user does not.
 6. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
 
 #### Signatures
@@ -601,7 +601,7 @@ The API reference documents only the names in `pterasoftware.__all__`. Every oth
 1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked class name.
 2. **When an annotation must be a private type, add an override.** One shape forces this: a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For it, add an entry to `ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method where it is defined, such as `pterasoftware._unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver`, then by parameter name, giving the one public type that actually works. The build checks each key and parameter against the package source and fails on a stale one, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
 3. **Bases are not shown.** The reference shows no Bases line for any class, so a public class extending a private parent never mentions it. Its docstring must stand on its own for that reason.
-4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
+4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil._add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
 
 #### Deprecated API
 
@@ -872,7 +872,7 @@ def __init__(
 ### Example 5: Method Returning Self-Reference
 
 ```python
-def add_control_surface(
+def _add_control_surface(
     self, deflection: float | int, hinge_point: float | int
 ) -> Airfoil:
     """Returns a version of the Airfoil with a control surface added at a given point.
@@ -907,7 +907,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
 ### Example 7: Method Returning Array
 
 ```python
-def get_resampled_mcl(
+def _get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
     """Returns a ndarray of points along the mean camber line (MCL), resampled from the

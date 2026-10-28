@@ -96,11 +96,11 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
 
         # Define the Airfoils at each WingCrossSection and modify them with their
         # control surfaces.
-        inner_airfoil = inner_wing_cross_section.airfoil.add_control_surface(
+        inner_airfoil = inner_wing_cross_section.airfoil._add_control_surface(
             deflection=inner_wing_cross_section.control_surface_deflection,
             hinge_point=inner_wing_cross_section.control_surface_hinge_point,
         )
-        outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
+        outer_airfoil = outer_wing_cross_section.airfoil._add_control_surface(
             deflection=outer_wing_cross_section.control_surface_deflection,
             hinge_point=outer_wing_cross_section.control_surface_hinge_point,
         )
@@ -213,28 +213,28 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             if inner_wing_cross_section.control_surface_symmetry_type == "symmetric":
                 # Define the Airfoil at the inner WingCrossSection with flap-like
                 # control surface symmetry.
-                inner_airfoil = inner_wing_cross_section.airfoil.add_control_surface(
+                inner_airfoil = inner_wing_cross_section.airfoil._add_control_surface(
                     deflection=inner_wing_cross_section.control_surface_deflection,
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
             else:  # If not "symmetric", this must be "asymmetric" for type 4 symmetry.
                 # Define the Airfoil at the inner WingCrossSection with aileron-like
                 # control surface symmetry.
-                inner_airfoil = inner_wing_cross_section.airfoil.add_control_surface(
+                inner_airfoil = inner_wing_cross_section.airfoil._add_control_surface(
                     deflection=-inner_wing_cross_section.control_surface_deflection,
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
             if outer_wing_cross_section.control_surface_symmetry_type == "symmetric":
                 # Define the Airfoil at the outer WingCrossSection with flap-like
                 # control surface symmetry.
-                outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
+                outer_airfoil = outer_wing_cross_section.airfoil._add_control_surface(
                     deflection=outer_wing_cross_section.control_surface_deflection,
                     hinge_point=outer_wing_cross_section.control_surface_hinge_point,
                 )
             else:  # If not "symmetric", this must be "asymmetric" for type 4 symmetry.
                 # Define the Airfoil at the outer WingCrossSection with aileron-like
                 # control surface symmetry.
-                outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
+                outer_airfoil = outer_wing_cross_section.airfoil._add_control_surface(
                     deflection=-outer_wing_cross_section.control_surface_deflection,
                     hinge_point=outer_wing_cross_section.control_surface_hinge_point,
                 )
@@ -375,7 +375,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 this_panel.is_right_edge = False
 
     # Populate the Wing's Panels attribute.
-    wing.panels = wing_panels
+    wing._attach_panels(wing_panels)
 
 
 def get_mcl_points(
@@ -404,8 +404,8 @@ def get_mcl_points(
     # Make the MCLs for each Airfoil. First index is point number, second index is the
     # coordinates of that point on the MCL (in each Airfoil's axes, relative to each
     # Airfoil's leading point).
-    inner_mcl_points_Ai_LpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
-    outer_mcl_points_Ao_LpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
+    inner_mcl_points_Ai_LpAi = inner_airfoil._get_resampled_mcl(chordwise_coordinates)
+    outer_mcl_points_Ao_LpAo = outer_airfoil._get_resampled_mcl(chordwise_coordinates)
 
     # Extract the y components of the inner Airfoil's MCL points (in the inner Airfoil's
     # axes, relative to the inner Airfoil's leading point) and put them in a column

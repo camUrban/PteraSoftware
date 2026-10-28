@@ -233,22 +233,22 @@ class TestAirplane(unittest.TestCase):
         self.assertIsNone(airplane.momentCoefficients_W_Cg)
 
     def test_validate_first_airplane_constraints_valid(self) -> None:
-        """Test validate_first_airplane_constraints with valid first Airplane."""
+        """Test _validate_first_airplane_constraints with valid first Airplane."""
         # First Airplane should pass validation (Cg_GP1_CgP1 is all zeros)
         try:
-            self.first_airplane.validate_first_airplane_constraints()
+            self.first_airplane._validate_first_airplane_constraints()
         except Exception as e:
             self.fail(f"First airplane validation failed unexpectedly: {e}")
 
     def test_validate_first_airplane_constraints_invalid(self) -> None:
-        """Test validate_first_airplane_constraints with invalid Airplane."""
+        """Test _validate_first_airplane_constraints with invalid Airplane."""
         # Basic Airplane should fail validation (Cg_GP1_CgP1 is not all zeros)
         with self.assertRaises(ValueError):
-            self.basic_airplane.validate_first_airplane_constraints()
+            self.basic_airplane._validate_first_airplane_constraints()
 
         # Custom reference Airplane should fail validation
         with self.assertRaises(ValueError):
-            self.custom_reference_airplane.validate_first_airplane_constraints()
+            self.custom_reference_airplane._validate_first_airplane_constraints()
 
     def test_multi_wing_configuration(self) -> None:
         """Test Airplane with multiple Wings."""
@@ -281,9 +281,9 @@ class TestAirplane(unittest.TestCase):
         self.assertTrue(second_wing.name.startswith("Reflected"))
 
     def test_process_wing_symmetry_type_1(self) -> None:
-        """Test process_wing_symmetry with type 1 Wing."""
+        """Test _process_wing_symmetry with type 1 Wing."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -291,9 +291,9 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(result[0].symmetry_type, 1)
 
     def test_process_wing_symmetry_type_2(self) -> None:
-        """Test process_wing_symmetry with type 2 Wing."""
+        """Test _process_wing_symmetry with type 2 Wing."""
         wing = geometry_fixtures.make_type_2_wing_fixture()
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -301,9 +301,9 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(result[0].symmetry_type, 2)
 
     def test_process_wing_symmetry_type_3(self) -> None:
-        """Test process_wing_symmetry with type 3 Wing."""
+        """Test _process_wing_symmetry with type 3 Wing."""
         wing = geometry_fixtures.make_type_3_wing_fixture()
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -311,9 +311,9 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(result[0].symmetry_type, 3)
 
     def test_process_wing_symmetry_type_4(self) -> None:
-        """Test process_wing_symmetry with type 4 Wing."""
+        """Test _process_wing_symmetry with type 4 Wing."""
         wing = geometry_fixtures.make_type_4_wing_fixture()
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return list with one Wing
         self.assertIsInstance(result, list)
@@ -321,9 +321,9 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(result[0].symmetry_type, 4)
 
     def test_process_wing_symmetry_type_5(self) -> None:
-        """Test process_wing_symmetry with type 5 Wing."""
+        """Test _process_wing_symmetry with type 5 Wing."""
         wing = geometry_fixtures.make_type_5_wing_fixture()
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return list with two Wings
         self.assertIsInstance(result, list)
@@ -363,7 +363,7 @@ class TestAirplane(unittest.TestCase):
             tip_trim_fraction=0.2,
         )
 
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         original_wing = result[0]
         reflected_wing = result[1]
@@ -412,7 +412,7 @@ class TestAirplane(unittest.TestCase):
             explode_into_strips=True,
         )
 
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         original_wing = result[0]
         reflected_wing = result[1]
@@ -456,7 +456,7 @@ class TestAirplane(unittest.TestCase):
                 symmetric=False,
                 mirror_only=False,
             )
-            ps.Airplane.process_wing_symmetry(wing_type_1)
+            ps.Airplane._process_wing_symmetry(wing_type_1)
 
         # Type 2: should fail with control surfaces. Create fresh fixtures since
         # WingCrossSections can only be validated once.
@@ -473,7 +473,7 @@ class TestAirplane(unittest.TestCase):
                 symmetryNormal_G=[0.0, 1.0, 0.0],
                 symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
             )
-            ps.Airplane.process_wing_symmetry(wing_type_2)
+            ps.Airplane._process_wing_symmetry(wing_type_2)
 
     def test_process_wing_symmetry_control_surface_validation_types_4_5(self) -> None:
         """Test control surface validation for symmetry types 4, 5."""
@@ -493,7 +493,7 @@ class TestAirplane(unittest.TestCase):
                 symmetryNormal_G=[0.0, 1.0, 0.0],
                 symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
             )
-            ps.Airplane.process_wing_symmetry(wing_type_4)
+            ps.Airplane._process_wing_symmetry(wing_type_4)
 
     def test_process_wing_symmetry_type_5_control_surface_deflections(self) -> None:
         """Test type 5 Wing processing with different control surface deflections."""
@@ -517,7 +517,7 @@ class TestAirplane(unittest.TestCase):
             symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
         )
 
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
 
         # Should return two Wings
         self.assertEqual(len(result), 2)
@@ -560,7 +560,7 @@ class TestAirplane(unittest.TestCase):
             chordwise_spacing="cosine",
         )
         with self.assertRaises(ValueError):
-            ps.Airplane.process_wing_symmetry(wing)
+            ps.Airplane._process_wing_symmetry(wing)
 
     def test_process_wing_symmetry_type_4_asymmetric_tip_allowed(self) -> None:
         """A type 4 Wing may carry an asymmetric control surface on an off-plane cross
@@ -587,7 +587,7 @@ class TestAirplane(unittest.TestCase):
             num_chordwise_panels=8,
             chordwise_spacing="cosine",
         )
-        result = ps.Airplane.process_wing_symmetry(wing)
+        result = ps.Airplane._process_wing_symmetry(wing)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].symmetry_type, 4)
 
@@ -608,7 +608,7 @@ class TestAirplane(unittest.TestCase):
         # All Wings should be processed and meshed
         for wing in airplane.wings:
             self.assertIsNotNone(wing.symmetry_type)
-            self.assertIsNotNone(wing.panels)
+            self.assertIsNotNone(wing._panels)
 
 
 class TestAirplaneDeepCopy(unittest.TestCase):
@@ -708,15 +708,15 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         for orig_wing, copied_wing in zip(original.wings, copied.wings):
-            self.assertIsNotNone(copied_wing.panels)
-            assert orig_wing.panels is not None
-            assert copied_wing.panels is not None
-            self.assertEqual(copied_wing.panels.shape, orig_wing.panels.shape)
+            self.assertIsNotNone(copied_wing._panels)
+            assert orig_wing._panels is not None
+            assert copied_wing._panels is not None
+            self.assertEqual(copied_wing._panels.shape, orig_wing._panels.shape)
 
-            for i in range(orig_wing.panels.shape[0]):
-                for j in range(orig_wing.panels.shape[1]):
-                    orig_panel = orig_wing.panels[i, j]
-                    copied_panel = copied_wing.panels[i, j]
+            for i in range(orig_wing._panels.shape[0]):
+                for j in range(orig_wing._panels.shape[1]):
+                    orig_panel = orig_wing._panels[i, j]
+                    copied_panel = copied_wing._panels[i, j]
                     self.assertIsNot(orig_panel, copied_panel)
                     npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
 
@@ -750,7 +750,7 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         npt.assert_array_equal(copied.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0]))
-        copied.validate_first_airplane_constraints()
+        copied._validate_first_airplane_constraints()
 
 
 class TestAirplaneImmutability(unittest.TestCase):
@@ -877,38 +877,38 @@ class TestAirplaneImmutability(unittest.TestCase):
 
 
 class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
-    """Tests for Airplane.deep_copy_with_Cg_GP1_CgP1 method."""
+    """Tests for Airplane._deep_copy_with_Cg_GP1_CgP1 method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for deep_copy_with_Cg_GP1_CgP1 tests."""
+        """Set up test fixtures for _deep_copy_with_Cg_GP1_CgP1 tests."""
         self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
         self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
         self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
 
     def test_deep_copy_with_Cg_GP1_CgP1_creates_new_instance(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 creates a new Airplane instance."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 creates a new Airplane instance."""
         original = self.first_airplane
         new_position = [5.0, 2.0, -1.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertIsInstance(copied, ps.Airplane)
         self.assertIsNot(original, copied)
 
     def test_deep_copy_with_Cg_GP1_CgP1_uses_new_position(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 uses the specified position."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 uses the specified position."""
         original = self.first_airplane
         new_position = [5.0, 2.0, -1.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         npt.assert_array_equal(copied.Cg_GP1_CgP1, new_position)
         # Original should be unchanged.
         npt.assert_array_equal(original.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0]))
 
     def test_deep_copy_with_Cg_GP1_CgP1_preserves_other_parameters(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 preserves all other parameters."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 preserves all other parameters."""
         original = self.basic_airplane
         new_position = [10.0, -5.0, 3.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertEqual(copied.name, original.name)
         self.assertEqual(copied.weight, original.weight)
@@ -917,10 +917,10 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         self.assertEqual(copied.b_ref, original.b_ref)
 
     def test_deep_copy_with_Cg_GP1_CgP1_creates_independent_wings(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 creates independent Wing copies."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 creates independent Wing copies."""
         original = self.basic_airplane
         new_position = [10.0, -5.0, 3.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertEqual(len(copied.wings), len(original.wings))
         for orig_wing, copied_wing in zip(original.wings, copied.wings):
@@ -928,15 +928,15 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
             self.assertEqual(copied_wing.name, orig_wing.name)
 
     def test_deep_copy_with_Cg_GP1_CgP1_preserves_num_panels(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 preserves num_panels."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 preserves num_panels."""
         original = self.basic_airplane
         new_position = [10.0, -5.0, 3.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertEqual(copied.num_panels, original.num_panels)
 
     def test_deep_copy_with_Cg_GP1_CgP1_resets_forces_and_moments(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 resets forces and moments to None."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 resets forces and moments to None."""
         original = self.basic_airplane
         original.forces_W = np.array([1.0, 2.0, 3.0])
         original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
@@ -950,7 +950,7 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         original.momentCoefficients_W_Cg = np.array([0.001, 0.002, 0.003])
 
         new_position = [10.0, -5.0, 3.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertIsNone(copied.forces_W)
         self.assertIsNone(copied.moments_W_CgP1)
@@ -964,13 +964,13 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deep_copy_with_Cg_GP1_CgP1_resets_transformation_cache(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 resets T_pas_G_Cg_to_GP1_CgP1 cache."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 resets T_pas_G_Cg_to_GP1_CgP1 cache."""
         original = self.basic_airplane
         # Access the transformation matrix to cache it.
         _ = original.T_pas_G_Cg_to_GP1_CgP1
 
         new_position = [10.0, -5.0, 3.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         # The cached transformation should be None and will be recomputed on access.
         # Access it and verify it uses the new position.
@@ -979,7 +979,7 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         npt.assert_array_almost_equal(T[:3, 3], new_position)
 
     def test_deep_copy_with_Cg_GP1_CgP1_accepts_various_array_types(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 accepts various array-like inputs."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 accepts various array-like inputs."""
         _ = self.first_airplane
         valid_positions: list[np.ndarray | Sequence[float]] = [
             [1.0, 2.0, 3.0],  # list
@@ -992,11 +992,11 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
             with self.subTest(position=position):
                 # Create fresh fixture since Wings can only be processed once.
                 test_airplane = geometry_fixtures.make_first_airplane_fixture()
-                copied = test_airplane.deep_copy_with_Cg_GP1_CgP1(position)
+                copied = test_airplane._deep_copy_with_Cg_GP1_CgP1(position)
                 npt.assert_array_equal(copied.Cg_GP1_CgP1, position)
 
     def test_deep_copy_with_Cg_GP1_CgP1_validates_position(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 validates the position parameter."""
+        """Test that _deep_copy_with_Cg_GP1_CgP1 validates the position parameter."""
         original = self.first_airplane
 
         # Test invalid position shapes.
@@ -1010,14 +1010,14 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
             with self.subTest(invalid_position=invalid_position):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    original.deep_copy_with_Cg_GP1_CgP1(invalid_position)
+                    original._deep_copy_with_Cg_GP1_CgP1(invalid_position)
 
     def test_deep_copy_with_Cg_GP1_CgP1_multi_wing(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 works correctly for multi wing
+        """Test that _deep_copy_with_Cg_GP1_CgP1 works correctly for multi wing
         Airplanes."""
         original = self.multi_wing_airplane
         new_position = [15.0, -10.0, 5.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         self.assertEqual(len(copied.wings), len(original.wings))
         npt.assert_array_equal(copied.Cg_GP1_CgP1, new_position)
@@ -1032,7 +1032,7 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         """Test that the new position array is read only after copying."""
         original = self.first_airplane
         new_position = [5.0, 2.0, -1.0]
-        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+        copied = original._deep_copy_with_Cg_GP1_CgP1(new_position)
 
         with self.assertRaises(ValueError):
             copied.Cg_GP1_CgP1[0] = 999.0
@@ -1244,7 +1244,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
         wing: ps.Wing,
     ) -> tuple[float, float, float]:
         """Process a Wing's symmetry and return its planform reference dimensions."""
-        first_wings = ps.Airplane.process_wing_symmetry(wing)
+        first_wings = ps.Airplane._process_wing_symmetry(wing)
         return _geometry.airplane.get_planform_reference_dimensions(first_wings)
 
     def test_type_5_includes_gap_between_halves(self) -> None:

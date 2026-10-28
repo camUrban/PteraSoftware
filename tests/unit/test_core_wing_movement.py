@@ -337,25 +337,25 @@ class TestCoreWingMovement(unittest.TestCase):
 
     def test_max_period_static_movement(self) -> None:
         """Test that max_period returns 0.0 for static CoreWingMovement."""
-        max_period = self.static_wing_movement.max_period
+        max_period = self.static_wing_movement._max_period
         self.assertEqual(max_period, 0.0)
 
     def test_max_period_Ler_only_movement(self) -> None:
         """Test that max_period correctly identifies the maximum period for Ler-only
         CoreWingMovement."""
-        max_period = self.Ler_only_wing_movement.max_period
+        max_period = self.Ler_only_wing_movement._max_period
         self.assertEqual(max_period, 1.5)
 
     def test_max_period_angles_only_movement(self) -> None:
         """Test that max_period correctly identifies the maximum period for angles-only
         CoreWingMovement."""
-        max_period = self.angles_only_wing_movement.max_period
+        max_period = self.angles_only_wing_movement._max_period
         self.assertEqual(max_period, 1.5)
 
     def test_max_period_multiple_periods_movement(self) -> None:
         """Test that max_period correctly identifies the maximum period when different
         dimensions have different periods."""
-        max_period = self.multiple_periods_wing_movement.max_period
+        max_period = self.multiple_periods_wing_movement._max_period
 
         # The maximum should be from either the CoreWingMovement's own motion or from
         # WingCrossSectionMovements.
@@ -835,7 +835,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_all_periods_static_movement(self) -> None:
         """Test that all_periods returns empty tuple for static CoreWingMovement."""
         wing_movement = self.static_wing_movement
-        self.assertEqual(wing_movement.all_periods, ())
+        self.assertEqual(wing_movement._all_periods, ())
 
     def test_all_periods_Ler_only(self) -> None:
         """Test that all_periods returns correct periods for Ler only movement."""
@@ -843,7 +843,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # periodLer_Gs_Cgs is (1.5, 1.5, 1.5), all non zero. periodAngles_Gs_to_Wn_ixyz
         # is (0.0, 0.0, 0.0). WingCrossSectionMovements are static (all zeros). The
         # property should return a tuple with three 1.5 values.
-        self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
+        self.assertEqual(wing_movement._all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_angles_only(self) -> None:
         """Test that all_periods returns correct periods for angles only movement."""
@@ -851,7 +851,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # periodLer_Gs_Cgs is (0.0, 0.0, 0.0). periodAngles_Gs_to_Wn_ixyz is (1.5, 1.5,
         # 1.5), all non zero. WingCrossSectionMovements are static (all zeros). The
         # property should return a tuple with three 1.5 values.
-        self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
+        self.assertEqual(wing_movement._all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_mixed(self) -> None:
         """Test that all_periods returns all non zero periods for mixed movement."""
@@ -860,7 +860,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # 2.5). WingCrossSectionMovements include one with multiple periods. The
         # property should return a tuple with all non zero values from
         # WingCrossSectionMovements first, then CoreWingMovement's own periods.
-        all_periods = wing_movement.all_periods
+        all_periods = wing_movement._all_periods
 
         # Verify CoreWingMovement's own periods are included.
         self.assertIn(1.0, all_periods)
@@ -874,7 +874,7 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that all_periods contains duplicate periods if they appear multiple
         times."""
         wing_movement = self.basic_wing_movement
-        all_periods = wing_movement.all_periods
+        all_periods = wing_movement._all_periods
 
         # Both periodLer_Gs_Cgs and periodAngles_Gs_to_Wn_ixyz are (2.0, 2.0, 2.0). This
         # contributes six 2.0 values, plus WingCrossSectionMovement periods. Count how
@@ -888,7 +888,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # periodLer_Gs_Cgs is (1.0, 0.0, 0.0), only first element is non zero.
         # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0). WingCrossSectionMovements are
         # static. The property should return a tuple with one 1.0 value.
-        self.assertEqual(wing_movement.all_periods, (1.0,))
+        self.assertEqual(wing_movement._all_periods, (1.0,))
 
 
 class TestCoreWingMovementImmutability(unittest.TestCase):
@@ -1036,14 +1036,14 @@ class TestCoreWingMovementCaching(unittest.TestCase):
 
     def test_all_periods_caching_returns_same_object(self) -> None:
         """Test that repeated access to all_periods returns the same cached object."""
-        all_periods_1 = self.core_wing_movement.all_periods
-        all_periods_2 = self.core_wing_movement.all_periods
+        all_periods_1 = self.core_wing_movement._all_periods
+        all_periods_2 = self.core_wing_movement._all_periods
         self.assertIs(all_periods_1, all_periods_2)
 
     def test_max_period_caching_returns_same_value(self) -> None:
         """Test that repeated access to max_period returns the same cached value."""
-        max_period_1 = self.core_wing_movement.max_period
-        max_period_2 = self.core_wing_movement.max_period
+        max_period_1 = self.core_wing_movement._max_period
+        max_period_2 = self.core_wing_movement._max_period
         # Since floats are immutable, we check equality rather than identity.
         self.assertEqual(max_period_1, max_period_2)
 
@@ -1198,19 +1198,19 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         original = self.core_wing_movement
 
         # Access cached properties to populate caches.
-        _ = original.all_periods
-        _ = original.max_period
+        _ = original._all_periods
+        _ = original._max_period
 
         # Verify original caches are populated.
-        self.assertIsNotNone(original._all_periods)
-        self.assertIsNotNone(original._max_period)
+        self.assertIsNotNone(original._all_periods_cache)
+        self.assertIsNotNone(original._max_period_cache)
 
         # Deepcopy the object.
         copied = copy.deepcopy(original)
 
         # Verify copied caches are reset to None.
-        self.assertIsNone(copied._all_periods)
-        self.assertIsNone(copied._max_period)
+        self.assertIsNone(copied._all_periods_cache)
+        self.assertIsNone(copied._max_period_cache)
 
     def test_deepcopy_cached_properties_can_be_recomputed(self) -> None:
         """Test that cached properties work correctly after deepcopy."""
@@ -1219,15 +1219,15 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         original = self.core_wing_movement
 
         # Get original cached values.
-        original_all_periods = original.all_periods
-        original_max_period = original.max_period
+        original_all_periods = original._all_periods
+        original_max_period = original._max_period
 
         # Deepcopy the object.
         copied = copy.deepcopy(original)
 
         # Verify cached properties can be computed and match original.
-        self.assertEqual(copied.all_periods, original_all_periods)
-        self.assertEqual(copied.max_period, original_max_period)
+        self.assertEqual(copied._all_periods, original_all_periods)
+        self.assertEqual(copied._max_period, original_max_period)
 
     def test_deepcopy_generate_wings_produces_same_results(self) -> None:
         """Test that _generate_wings produces same results after deepcopy."""

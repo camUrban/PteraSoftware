@@ -62,7 +62,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
     def test_lcm_period_from_movement(self) -> None:
         """Test that lcm_period is taken from the movement by asserting the derived
         first_averaging_step matches the static-movement formula (num_steps - 1)."""
-        self.assertEqual(self.movement.lcm_period, 0.0)
+        self.assertEqual(self.movement._lcm_period, 0.0)
         self.assertEqual(self.problem.first_averaging_step, self.movement.num_steps - 1)
 
     def test_movement_property_returns_core_movement(self) -> None:

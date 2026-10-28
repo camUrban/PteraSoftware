@@ -855,7 +855,7 @@ class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
 
         weights = problem._build_relaxation_weights()
 
-        L_ref = problem.movement.airplanes[0][0].c_ref
+        L_ref = problem.movement._airplanes[0][0].c_ref
         mean_inertia = (2.0 + 3.0 + 4.0) / 3.0
         theta_ref = mass * L_ref**2 / mean_inertia
         delta_time = problem.delta_time

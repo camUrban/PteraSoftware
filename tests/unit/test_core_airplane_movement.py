@@ -382,13 +382,13 @@ class TestCoreAirplaneMovement(unittest.TestCase):
     def test_max_period_static_movement(self) -> None:
         """Test that max_period returns 0.0 for static movement."""
         airplane_movement = self.static_airplane_movement
-        self.assertEqual(airplane_movement.max_period, 0.0)
+        self.assertEqual(airplane_movement._max_period, 0.0)
 
     def test_max_period_Cg(self) -> None:
         """Test that max_period returns correct period."""
         airplane_movement = self.Cg_airplane_movement
         # periodCg_GP1_CgP1 is (1.5, 1.5, 1.5), so max should be 1.5.
-        self.assertEqual(airplane_movement.max_period, 1.5)
+        self.assertEqual(airplane_movement._max_period, 1.5)
 
     def test_generate_airplanes_parameter_validation(self) -> None:
         """Test that _generate_airplanes validates num_steps and delta_time."""
@@ -492,7 +492,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             spacingCg_GP1_CgP1=("sine", "sine", "sine"),
             phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
-        self.assertGreater(airplane_movement.max_period, 0.0)
+        self.assertGreater(airplane_movement._max_period, 0.0)
 
         airplanes = airplane_movement._generate_airplanes(num_steps=10, delta_time=0.01)
         airplanes.append(
@@ -895,8 +895,8 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         wings_array_3 = np.array(wings_3)
 
         # Verify Wings have panels.
-        panels_2 = wings_2[0].panels
-        panels_3 = wings_3[0].panels
+        panels_2 = wings_2[0]._panels
+        panels_3 = wings_3[0]._panels
         self.assertIsNotNone(panels_2)
         self.assertIsNotNone(panels_3)
         assert panels_2 is not None
@@ -1153,20 +1153,20 @@ class TestCoreAirplaneMovementCaching(unittest.TestCase):
 
     def test_all_periods_caching_returns_same_object(self) -> None:
         """Test that repeated access to all_periods returns the same cached object."""
-        all_periods_1 = self.core_airplane_movement.all_periods
-        all_periods_2 = self.core_airplane_movement.all_periods
+        all_periods_1 = self.core_airplane_movement._all_periods
+        all_periods_2 = self.core_airplane_movement._all_periods
         self.assertIs(all_periods_1, all_periods_2)
 
     def test_max_period_caching_returns_same_value(self) -> None:
         """Test that repeated access to max_period returns the same cached value."""
-        max_period_1 = self.core_airplane_movement.max_period
-        max_period_2 = self.core_airplane_movement.max_period
+        max_period_1 = self.core_airplane_movement._max_period
+        max_period_2 = self.core_airplane_movement._max_period
         # Since floats are immutable, we check equality rather than identity.
         self.assertEqual(max_period_1, max_period_2)
 
 
 class TestCoreAirplaneMovementAllPeriods(unittest.TestCase):
-    """Tests for CoreAirplaneMovement.all_periods property."""
+    """Tests for CoreAirplaneMovement._all_periods property."""
 
     static_airplane_movement: _core.CoreAirplaneMovement
     Cg_airplane_movement: _core.CoreAirplaneMovement
@@ -1188,24 +1188,24 @@ class TestCoreAirplaneMovementAllPeriods(unittest.TestCase):
     def test_all_periods_static_movement(self) -> None:
         """Test that all_periods returns empty tuple for static movement."""
         airplane_movement = self.static_airplane_movement
-        self.assertEqual(airplane_movement.all_periods, ())
+        self.assertEqual(airplane_movement._all_periods, ())
 
     def test_all_periods_Cg_only_movement(self) -> None:
         """Test that all_periods includes Cg periods."""
         airplane_movement = self.Cg_airplane_movement
         # periodCg_GP1_CgP1 is (1.5, 1.5, 1.5), all non zero. WingMovement is static, so
         # no geometry periods. Should return tuple with three 1.5 values.
-        self.assertEqual(airplane_movement.all_periods, (1.5, 1.5, 1.5))
+        self.assertEqual(airplane_movement._all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_returns_tuple(self) -> None:
         """Test that all_periods returns a tuple."""
         airplane_movement = self.multiple_periods_airplane_movement
-        self.assertIsInstance(airplane_movement.all_periods, tuple)
+        self.assertIsInstance(airplane_movement._all_periods, tuple)
 
     def test_all_periods_includes_wing_movement_periods(self) -> None:
         """Test that all_periods includes periods from WingMovements."""
         airplane_movement = self.multiple_periods_airplane_movement
-        all_periods = airplane_movement.all_periods
+        all_periods = airplane_movement._all_periods
 
         # Should include periods from both Cg and WingMovements. Cg periods: (1.0, 2.0,
         # 3.0). WingMovements contribute additional periods.
@@ -1245,7 +1245,7 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.spacingCg_GP1_CgP1, original.spacingCg_GP1_CgP1)
 
         # Check scalar derived properties.
-        self.assertEqual(copied.max_period, original.max_period)
+        self.assertEqual(copied._max_period, original._max_period)
 
     def test_deepcopy_numpy_arrays_are_independent(self) -> None:
         """Test that deepcopied numpy arrays are independent objects."""
@@ -1307,34 +1307,34 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         original = self.core_airplane_movement
 
         # Access cached properties to populate caches.
-        _ = original.all_periods
-        _ = original.max_period
+        _ = original._all_periods
+        _ = original._max_period
 
         # Verify original caches are populated.
-        self.assertIsNotNone(original._all_periods)
-        self.assertIsNotNone(original._max_period)
+        self.assertIsNotNone(original._all_periods_cache)
+        self.assertIsNotNone(original._max_period_cache)
 
         # Deepcopy the object.
         copied = copy.deepcopy(original)
 
         # Verify copied caches are reset to None.
-        self.assertIsNone(copied._all_periods)
-        self.assertIsNone(copied._max_period)
+        self.assertIsNone(copied._all_periods_cache)
+        self.assertIsNone(copied._max_period_cache)
 
     def test_deepcopy_cached_properties_can_be_recomputed(self) -> None:
         """Test that cached properties work correctly after deepcopy."""
         original = self.core_airplane_movement
 
         # Get original cached values.
-        original_all_periods = original.all_periods
-        original_max_period = original.max_period
+        original_all_periods = original._all_periods
+        original_max_period = original._max_period
 
         # Deepcopy the object.
         copied = copy.deepcopy(original)
 
         # Verify cached properties can be computed and match original.
-        self.assertEqual(copied.all_periods, original_all_periods)
-        self.assertEqual(copied.max_period, original_max_period)
+        self.assertEqual(copied._all_periods, original_all_periods)
+        self.assertEqual(copied._max_period, original_max_period)
 
     def test_deepcopy_generate_airplanes_produces_same_results(self) -> None:
         """Test that _generate_airplanes produces same results after deepcopy."""

@@ -29,7 +29,7 @@ class FreeFlightMovement(_core.CoreMovement):
     __slots__ = (
         "_prescribed_num_steps",
         "_free_num_steps",
-        "_airplanes",
+        "_pregenerated_airplanes",
     )
 
     @_deprecation.keyword_only()
@@ -156,9 +156,9 @@ class FreeFlightMovement(_core.CoreMovement):
                         )
 
         # Store as tuple of tuples to prevent external mutation.
-        self._airplanes: tuple[tuple[_geometry.airplane.Airplane, ...], ...] = tuple(
-            tuple(airplane_list) for airplane_list in airplanes_temp
-        )
+        self._pregenerated_airplanes: tuple[
+            tuple[_geometry.airplane.Airplane, ...], ...
+        ] = tuple(tuple(airplane_list) for airplane_list in airplanes_temp)
 
     # --- Immutable: read only properties ---
     @property
@@ -189,5 +189,5 @@ class FreeFlightMovement(_core.CoreMovement):
         return self._free_num_steps
 
     @property
-    def airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
-        return self._airplanes
+    def _airplanes(self) -> tuple[tuple[_geometry.airplane.Airplane, ...], ...]:
+        return self._pregenerated_airplanes

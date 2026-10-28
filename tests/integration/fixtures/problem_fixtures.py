@@ -39,7 +39,7 @@ def make_steady_formation_validation_problem() -> ps.SteadyProblem:
 
     # Offset the second Airplane far enough from the first that their aerodynamic
     # interaction is negligible.
-    second_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(
+    second_airplane = first_airplane._deep_copy_with_Cg_GP1_CgP1(
         np.array([10.0, 500.0, -20.0])
     )
 

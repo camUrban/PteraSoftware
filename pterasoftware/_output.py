@@ -7,7 +7,7 @@ import os.path
 import time
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -32,6 +32,16 @@ from . import (
     _unsteady_ring_vortex_lattice_method,
 )
 from ._movements import free_flight_movement as free_flight_movement_mod
+
+
+class CameraState(TypedDict):
+    """Describes the final state of a rendered camera."""
+
+    camera_position: tuple[float, float, float]
+    camera_focal_point: tuple[float, float, float]
+    camera_up: tuple[float, float, float]
+    camera_parallel_scale: float
+
 
 logger = _logging.get_logger("output")
 
@@ -400,13 +410,12 @@ def apply_camera_parameters(
 ) -> None:
     """Applies camera values and fits an unspecified parallel scale.
 
-    The camera position and focal-point position are positions expressed in
-    the same coordinate system: geometry axes relative to the first Airplane's
-    center of gravity for body-fixed views, or Earth axes relative to the Earth
-    origin for free-flight views. The camera up vector is a direction expressed
-    in the corresponding axes, without a reference-point suffix. Existing
-    mode-specific camera setup provides defaults for any camera vectors left
-    as None.
+    The camera position and focal-point position are positions expressed in the same
+    coordinate system: geometry axes relative to the first Airplane's center of gravity
+    for body-fixed views, or Earth axes relative to the Earth origin for free-flight
+    views. The camera up vector is a direction expressed in the corresponding axes,
+    without a reference-point suffix. Existing mode-specific camera setup provides
+    defaults for any camera vectors left as None.
     """
     camera_position_vector = np.asarray(
         plotter.camera.position if camera_position is None else camera_position,
@@ -445,7 +454,8 @@ def apply_camera_parameters(
 
     camera_look_direction = camera_look_vector / camera_look_length
     orthogonal_camera_up = (
-        camera_up_vector - np.dot(camera_up_vector, camera_look_direction) * camera_look_direction
+        camera_up_vector
+        - np.dot(camera_up_vector, camera_look_direction) * camera_look_direction
     )
     orthogonal_camera_up_length = float(np.linalg.norm(orthogonal_camera_up))
     if not np.isfinite(orthogonal_camera_up_length) or orthogonal_camera_up_length <= (
@@ -466,12 +476,14 @@ def apply_camera_parameters(
         if fit_meshes is not None:
             # The helper projects each mesh's own bounding-box corners, avoiding the
             # extra empty space an aggregate axis-aligned bounding box can introduce.
-            fitted_parallel_scale = _output_rendering.get_free_flight_fit_parallel_scale(
-                fit_meshes,
-                camera_focal_point_vector,
-                camera_position_vector - camera_focal_point_vector,
-                camera_up_vector,
-                aspect_ratio=aspect_ratio,
+            fitted_parallel_scale = (
+                _output_rendering.get_free_flight_fit_parallel_scale(
+                    fit_meshes,
+                    camera_focal_point_vector,
+                    camera_position_vector - camera_focal_point_vector,
+                    camera_up_vector,
+                    aspect_ratio=aspect_ratio,
+                )
             )
         else:
             scene_bounds_array = np.asarray(bounds, dtype=float)
@@ -488,7 +500,9 @@ def apply_camera_parameters(
             half_extent_right = float(
                 np.abs(scene_bounds_corners @ camera_right_direction).max()
             )
-            half_extent_up = float(np.abs(scene_bounds_corners @ camera_up_direction).max())
+            half_extent_up = float(
+                np.abs(scene_bounds_corners @ camera_up_direction).max()
+            )
             fitted_parallel_scale = 1.15 * max(
                 half_extent_right / aspect_ratio, half_extent_up
             )
@@ -510,7 +524,7 @@ def apply_camera_parameters(
 
 def get_camera_state(
     plotter: pv.Plotter,
-) -> dict[str, tuple[float, float, float] | float]:
+) -> CameraState:
     """Returns the camera's current position, focal point, up vector, and scale."""
     return {
         "camera_position": cast(
@@ -544,12 +558,11 @@ def validate_camera_inputs(
 ]:
     """Validates camera inputs shared by draw() and animate().
 
-    The camera position and focal-point position are positions expressed in
-    the same coordinate system: geometry axes relative to the first Airplane's
-    center of gravity for body-fixed views, or Earth axes relative to the Earth
-    origin for free-flight views. The camera up vector is a direction expressed
-    in the corresponding axes. Provided vectors are converted to floating-point
-    NumPy arrays.
+    The camera position and focal-point position are positions expressed in the same
+    coordinate system: geometry axes relative to the first Airplane's center of gravity
+    for body-fixed views, or Earth axes relative to the Earth origin for free-flight
+    views. The camera up vector is a direction expressed in the corresponding axes.
+    Provided vectors are converted to floating-point NumPy arrays.
     """
     if camera_position is not None:
         camera_position = _parameter_validation.threeD_number_vectorLike_return_float(
@@ -602,7 +615,7 @@ def draw(
     camera_up: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
-) -> dict[str, tuple[float, float, float] | float] | None:
+) -> CameraState | None:
     """Draws a solver's Airplane(s).
 
     For a FreeFlightUnsteadyRingVortexLatticeMethodSolver, the final time step's
@@ -1070,7 +1083,9 @@ def draw(
             plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
             plotter.camera.position = tuple(
                 cameraFocalPoint_GP1_CgP1
-                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_GP1
+                + 3.0
+                * max(boundsDiagonalLength, 1.0)
+                * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 
@@ -1205,7 +1220,7 @@ def animate(
     camera_up: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
-) -> dict[str, tuple[float, float, float] | float] | None:
+) -> CameraState | None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
     its subclasses (the aeroelastic or free flight solver).
 
@@ -1755,7 +1770,9 @@ def animate(
         # free-flight branches already have their mode-specific camera initialized.
         if not is_free_flight and image_surface_mesh is None:
             sceneBoundsArray = np.asarray(plotter.bounds, dtype=float)
-            cameraFocalPoint_GP1_CgP1 = 0.5 * (sceneBoundsArray[0::2] + sceneBoundsArray[1::2])
+            cameraFocalPoint_GP1_CgP1 = 0.5 * (
+                sceneBoundsArray[0::2] + sceneBoundsArray[1::2]
+            )
             boundsDiagonalLength = float(
                 np.linalg.norm(sceneBoundsArray[1::2] - sceneBoundsArray[0::2])
             )
@@ -1765,7 +1782,9 @@ def animate(
             plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
             plotter.camera.position = tuple(
                 cameraFocalPoint_GP1_CgP1
-                + 3.0 * max(boundsDiagonalLength, 1.0) * defaultCameraOffsetDirection_GP1
+                + 3.0
+                * max(boundsDiagonalLength, 1.0)
+                * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
 
@@ -2152,7 +2171,7 @@ def plot_results_versus_time(
         _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
-            "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
+            "unsteady_solver must be an UnsteadyRingVortexLatticeMethodSolver."
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
 

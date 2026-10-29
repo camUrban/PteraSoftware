@@ -2,6 +2,7 @@
 
 import unittest
 from types import SimpleNamespace
+from typing import Any, cast
 
 import numpy as np
 import numpy.testing as npt
@@ -59,7 +60,7 @@ class TestApplyCameraParameters(unittest.TestCase):
         scale: float | None = None,
     ) -> None:
         _output.apply_camera_parameters(
-            self.plotter,
+            cast(Any, self.plotter),
             position,
             focal_point,
             up,

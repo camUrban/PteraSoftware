@@ -248,7 +248,7 @@ def create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
 
 def render_within_size_ceiling(
     webp_path: Path,
-    render_func: Callable[..., None],
+    render_func: Callable[..., Any],
     render_kwargs: dict[str, Any],
 ) -> None:
     """Renders a WebP file, then re-renders it at progressively lower quality while it

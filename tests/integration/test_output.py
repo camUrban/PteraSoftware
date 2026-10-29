@@ -11,7 +11,7 @@ import math
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 
 import numpy as np
@@ -191,6 +191,224 @@ class TestOutput(unittest.TestCase):
             testing=True,
         )
 
+    def test_draw_and_animate_preserve_original_default_camera_framing(self) -> None:
+        """Both rendering methods preserve the original default camera framing."""
+        expected_camera_state = {
+            "camera_position": (
+                -10.37451463829966,
+                -11.37451463829966,
+                11.393649372941187,
+            ),
+            "camera_focal_point": (1.0, 0.0, 0.019134734641526818),
+            "camera_up": (0.0, 0.0, 1.0),
+            "camera_parallel_scale": 5.0990554162579755,
+        }
+
+        draw_state = ps.draw(
+            self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=False,
+            testing=True,
+            return_camera_state=True,
+        )
+        animate_state = ps.animate(
+            self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            save=False,
+            testing=True,
+            return_camera_state=True,
+        )
+
+        self.assertIsNotNone(draw_state)
+        self.assertIsNotNone(animate_state)
+
+        for method_name, camera_state in (
+            ("draw", draw_state),
+            ("animate", animate_state),
+        ):
+            assert camera_state is not None
+
+            for camera_key, expected_value in expected_camera_state.items():
+                with self.subTest(method=method_name, camera_property=camera_key):
+                    actual_value = cast(Any, camera_state)[camera_key]
+
+                    if isinstance(expected_value, tuple):
+                        self.assertEqual(len(actual_value), len(expected_value))
+                        for actual_component, expected_component in zip(
+                            actual_value, expected_value
+                        ):
+                            self.assertAlmostEqual(
+                                actual_component, expected_component, places=6
+                            )
+                    else:
+                        self.assertAlmostEqual(actual_value, expected_value, places=6)
+
+    def test_draw_and_animate_support_partial_camera_overrides(self) -> None:
+        """Partial camera overrides preserve supplied values and fit the view."""
+        cases = (
+            ("camera_position", (4.0, -5.0, 6.0)),
+            ("camera_focal_point", (1.0, 2.0, 3.0)),
+            ("camera_up", (0.0, 1.0, 0.0)),
+        )
+
+        for render_function in (ps.draw, ps.animate):
+            for parameter, value in cases:
+                with self.subTest(
+                    function=render_function.__name__, parameter=parameter
+                ):
+                    camera_state = render_function(
+                        self.unsteady_solver,
+                        **cast(Any, {parameter: value}),
+                        return_camera_state=True,
+                        testing=True,
+                    )
+
+                    self.assertIsNotNone(camera_state)
+                    assert camera_state is not None
+
+                    npt.assert_allclose(cast(Any, camera_state)[parameter], value)
+                    self.assertGreater(camera_state["camera_parallel_scale"], 0.0)
+
+                    for key in (
+                        "camera_position",
+                        "camera_focal_point",
+                        "camera_up",
+                    ):
+                        self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
+
+                    self.assertTrue(np.isfinite(camera_state["camera_parallel_scale"]))
+
+    def test_draw_and_animate_preserve_scale_only_override(self) -> None:
+        """A scale-only override preserves the explicit parallel scale."""
+        for render_function in (ps.draw, ps.animate):
+            with self.subTest(function=render_function.__name__):
+                camera_state = render_function(
+                    self.unsteady_solver,
+                    camera_parallel_scale=7.25,
+                    return_camera_state=True,
+                    testing=True,
+                )
+
+                self.assertIsNotNone(camera_state)
+                assert camera_state is not None
+
+                self.assertEqual(camera_state["camera_parallel_scale"], 7.25)
+
+                for key in (
+                    "camera_position",
+                    "camera_focal_point",
+                    "camera_up",
+                ):
+                    self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
+
+    def test_draw_returns_and_reuses_camera_state(self) -> None:
+        """The returned camera state can be supplied to a later draw call."""
+        camera_state = ps.draw(
+            self.unsteady_solver,
+            camera_position=(3.0, -3.0, 3.0),
+            camera_focal_point=(0.0, 0.0, 0.0),
+            camera_up=(0.0, 0.0, 1.0),
+            camera_parallel_scale=4.0,
+            return_camera_state=True,
+            testing=True,
+        )
+        self.assertIsNotNone(camera_state)
+        assert camera_state is not None
+        self.assertEqual(camera_state["camera_parallel_scale"], 4.0)
+        npt.assert_allclose(camera_state["camera_position"], (3.0, -3.0, 3.0))
+        npt.assert_allclose(camera_state["camera_focal_point"], (0.0, 0.0, 0.0))
+        npt.assert_allclose(camera_state["camera_up"], (0.0, 0.0, 1.0))
+
+        reused_state = ps.draw(
+            self.unsteady_solver,
+            **camera_state,
+            return_camera_state=True,
+            testing=True,
+        )
+        self.assertIsNotNone(reused_state)
+        assert reused_state is not None
+        for key in camera_state:
+            npt.assert_allclose(
+                cast(Any, reused_state)[key],
+                cast(Any, camera_state)[key],
+            )
+
+    def test_animate_returns_and_reuses_camera_state(self) -> None:
+        """The returned camera state can be supplied to a later animate call."""
+        camera_state = ps.animate(
+            self.unsteady_solver,
+            camera_position=(3.0, -3.0, 3.0),
+            camera_focal_point=(0.0, 0.0, 0.0),
+            camera_up=(0.0, 0.0, 1.0),
+            camera_parallel_scale=4.0,
+            return_camera_state=True,
+            testing=True,
+        )
+        self.assertIsNotNone(camera_state)
+        assert camera_state is not None
+        self.assertEqual(camera_state["camera_parallel_scale"], 4.0)
+        npt.assert_allclose(camera_state["camera_position"], (3.0, -3.0, 3.0))
+        npt.assert_allclose(camera_state["camera_focal_point"], (0.0, 0.0, 0.0))
+        npt.assert_allclose(camera_state["camera_up"], (0.0, 0.0, 1.0))
+
+        reused_state = ps.animate(
+            self.unsteady_solver,
+            **camera_state,
+            return_camera_state=True,
+            testing=True,
+        )
+        self.assertIsNotNone(reused_state)
+        assert reused_state is not None
+        for key in camera_state:
+            npt.assert_allclose(
+                cast(Any, reused_state)[key],
+                cast(Any, camera_state)[key],
+            )
+
+    def test_partial_camera_override_returns_reusable_state(self) -> None:
+        """A partial camera override returns a complete, reusable camera state."""
+        for render_function in (ps.draw, ps.animate):
+            with self.subTest(function=render_function.__name__):
+                camera_state = render_function(
+                    self.unsteady_solver,
+                    camera_position=(4.0, -5.0, 6.0),
+                    return_camera_state=True,
+                    testing=True,
+                )
+                self.assertIsNotNone(camera_state)
+                assert camera_state is not None
+
+                expected_keys = {
+                    "camera_position",
+                    "camera_focal_point",
+                    "camera_up",
+                    "camera_parallel_scale",
+                }
+                self.assertEqual(set(camera_state), expected_keys)
+
+                npt.assert_allclose(camera_state["camera_position"], (4.0, -5.0, 6.0))
+                self.assertTrue(np.isfinite(camera_state["camera_focal_point"]).all())
+                self.assertTrue(np.isfinite(camera_state["camera_up"]).all())
+                self.assertTrue(np.isfinite(camera_state["camera_parallel_scale"]))
+                self.assertGreater(camera_state["camera_parallel_scale"], 0.0)
+
+                reused_state = render_function(
+                    self.unsteady_solver,
+                    **camera_state,
+                    return_camera_state=True,
+                    testing=True,
+                )
+                self.assertIsNotNone(reused_state)
+                assert reused_state is not None
+
+                for key in expected_keys:
+                    npt.assert_allclose(
+                        cast(Any, reused_state)[key],
+                        cast(Any, camera_state)[key],
+                    )
+
 
 class TestLogResults(unittest.TestCase):
     """Tests the log_results() function."""
@@ -321,6 +539,25 @@ class TestOutputSurfaceEffect(unittest.TestCase):
             testing=True,
         )
 
+    def test_custom_camera_works_with_surface_effect(self) -> None:
+        """Caller-specified cameras work when an image surface is present."""
+        camera_options: dict[str, Any] = {
+            "camera_position": (3.0, -3.0, 3.0),
+            "camera_focal_point": (0.0, 0.0, 0.0),
+            "camera_up": (0.0, 0.0, 1.0),
+            "camera_parallel_scale": 4.0,
+            "return_camera_state": True,
+            "testing": True,
+        }
+        draw_state = ps.draw(self.unsteady_solver, **camera_options)
+        animate_state = ps.animate(self.unsteady_solver, **camera_options)
+        self.assertIsNotNone(draw_state)
+        self.assertIsNotNone(animate_state)
+        assert draw_state is not None
+        assert animate_state is not None
+        self.assertEqual(draw_state["camera_parallel_scale"], 4.0)
+        self.assertEqual(animate_state["camera_parallel_scale"], 4.0)
+
     def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors when an
         image surface is defined and wake vortices are shown.
@@ -388,6 +625,25 @@ class TestFreeFlightOutput(unittest.TestCase):
             show_streamlines=False,
             testing=True,
         )
+
+    def test_custom_camera_works_for_free_flight_draw_and_animate(self) -> None:
+        """Caller-specified cameras work in Earth axes for free-flight output."""
+        camera_options: dict[str, Any] = {
+            "camera_position": (10.0, -10.0, -10.0),
+            "camera_focal_point": (0.0, 0.0, 0.0),
+            "camera_up": (0.0, 0.0, -1.0),
+            "camera_parallel_scale": 20.0,
+            "return_camera_state": True,
+            "testing": True,
+        }
+        draw_state = ps.draw(self.free_flight_solver, **camera_options)
+        animate_state = ps.animate(self.free_flight_solver, **camera_options)
+        self.assertIsNotNone(draw_state)
+        self.assertIsNotNone(animate_state)
+        assert draw_state is not None
+        assert animate_state is not None
+        self.assertEqual(draw_state["camera_parallel_scale"], 20.0)
+        self.assertEqual(animate_state["camera_parallel_scale"], 20.0)
 
     def test_draw_with_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors for a free

@@ -28,7 +28,7 @@ class TestAll(unittest.TestCase):
 
         :return: None
         """
-        self.assertEqual(set(ps.__all__), set(ps._LAZY_CALLABLES))
+        self.assertEqual(set(ps.__all__), set(ps._LAZY_CALLABLES) | set(ps._LAZY_TYPES))
 
 
 class TestLazyCallableImports(unittest.TestCase):
@@ -42,7 +42,10 @@ class TestLazyCallableImports(unittest.TestCase):
         """
         for name in ps.__all__:
             with self.subTest(name=name):
-                module_path, attr_name = ps._LAZY_CALLABLES[name]
+                exports = (
+                    ps._LAZY_TYPES if name in ps._LAZY_TYPES else ps._LAZY_CALLABLES
+                )
+                module_path, attr_name = exports[name]
                 module = importlib.import_module(module_path)
                 self.assertIs(getattr(ps, name), getattr(module, attr_name))
 
@@ -209,11 +212,11 @@ class TestTypeCheckingImportSync(unittest.TestCase):
         from the same module that __getattr__ loads it from."""
         self.assertEqual(
             self.type_checking_callables,
-            dict(ps._LAZY_CALLABLES),
+            {**ps._LAZY_CALLABLES, **ps._LAZY_TYPES},
             msg=(
                 "The package __init__.py's TYPE_CHECKING block and its "
-                "_LAZY_CALLABLES table no longer import the same callables from "
-                "the same modules. Add any new lazy callable to both, so that "
+                "lazy export tables no longer match the TYPE_CHECKING imports "
+                "and their modules. Add each public name to the appropriate "
                 "type checkers can resolve it."
             ),
         )

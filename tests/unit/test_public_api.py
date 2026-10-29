@@ -17,7 +17,7 @@ import types
 import unittest
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, is_typeddict
 
 import pterasoftware as ps
 from pterasoftware import _deprecation
@@ -37,6 +37,7 @@ PUBLIC_NAMES: tuple[str, ...] = (
     "Airfoil",
     "Airplane",
     "AirplaneMovement",
+    "CameraState",
     "FreeFlightMovement",
     "FreeFlightOperatingPointMovement",
     "FreeFlightUnsteadyProblem",
@@ -1182,6 +1183,11 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "quality",
         "speed",
         "testing",
+        "camera_position",
+        "camera_focal_point",
+        "camera_up",
+        "camera_parallel_scale",
+        "return_camera_state",
     ),
     "draw": (
         "solver",
@@ -1196,6 +1202,11 @@ PUBLIC_PARAMETERS: dict[str, tuple[str, ...]] = {
         "path",
         "quality",
         "testing",
+        "camera_position",
+        "camera_focal_point",
+        "camera_up",
+        "camera_parallel_scale",
+        "return_camera_state",
     ),
     "load": ("path", "/", "*", "max_size", "callables"),
     "log_results": ("solver", "/"),
@@ -1239,7 +1250,7 @@ def get_public_classes() -> dict[str, type]:
     return {
         name: getattr(ps, name)
         for name in ps.__all__
-        if inspect.isclass(getattr(ps, name))
+        if inspect.isclass(getattr(ps, name)) and not is_typeddict(getattr(ps, name))
     }
 
 

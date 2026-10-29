@@ -78,6 +78,7 @@ analyze_unsteady_trim() <api/analyze_unsteady_trim>
 ```{toctree}
 :maxdepth: 1
 
+CameraState <api/CameraState>
 draw() <api/draw>
 animate() <api/animate>
 plot_results_versus_time() <api/plot_results_versus_time>

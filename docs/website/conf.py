@@ -251,11 +251,12 @@ for tutorial_file in sorted(TUTORIALS_SOURCE.iterdir()):
 
 
 def read_package_tables() -> tuple[list[str], dict[str, tuple[str, str]]]:
-    """Read __all__ and the lazy callable table from the package's __init__.py.
+    """Read __all__ and the lazy callable and type tables from __init__.py.
 
     The tables are read from the source rather than by importing the package, so this
-    does not depend on the package's runtime dependencies. The lazy callable table maps
-    each public name to the internal module that defines it and its name there.
+    does not depend on the package's runtime dependencies. The lazy callable and type
+    tables map each public name to the internal module that defines it and its name
+    there.
     """
     tree = ast.parse((PACKAGE_DIR / "__init__.py").read_text())
     tables: dict[str, Any] = {}
@@ -266,9 +267,12 @@ def read_package_tables() -> tuple[list[str], dict[str, tuple[str, str]]]:
             if isinstance(target, ast.Name) and target.id in {
                 "__all__",
                 "_LAZY_CALLABLES",
+                "_LAZY_TYPES",
             }:
                 tables[target.id] = ast.literal_eval(node.value)
-    return tables["__all__"], tables["_LAZY_CALLABLES"]
+
+    definitions = tables["_LAZY_CALLABLES"] | tables["_LAZY_TYPES"]
+    return tables["__all__"], definitions
 
 
 def is_class(module: str, name: str) -> bool:

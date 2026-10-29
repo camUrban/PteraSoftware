@@ -700,7 +700,7 @@ def draw(
         geometry for the effective camera direction.
     :param return_camera_state: If True, return the final camera position, focal point,
         up direction, and parallel scale after the preview interaction. The returned
-        dictionary can be passed to a later call using **camera_state. The default is
+        dictionary can be passed to a later call using ``**camera_state``. The default is
         False.
     :return: The final camera state if return_camera_state is True, otherwise None.
     """
@@ -1305,7 +1305,7 @@ def animate(
         geometry for the effective camera direction.
     :param return_camera_state: If True, return the final camera position, focal point,
         up direction, and parallel scale after the preview interaction. The returned
-        dictionary can be passed to a later call using **camera_state. The default is
+        dictionary can be passed to a later call using ``**camera_state``. The default is
         False.
     :return: The final camera state if return_camera_state is True, otherwise None.
     """

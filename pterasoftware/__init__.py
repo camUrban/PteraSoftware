@@ -15,6 +15,7 @@ __all__ = [
     "Airfoil",
     "Airplane",
     "AirplaneMovement",
+    "CameraState",
     "FreeFlightMovement",
     "FreeFlightOperatingPointMovement",
     "FreeFlightUnsteadyProblem",
@@ -88,6 +89,7 @@ if TYPE_CHECKING:
     from pterasoftware._movements.wing_movement import WingMovement
     from pterasoftware._operating_point import OperatingPoint
     from pterasoftware._output import (
+        CameraState,
         animate,
         draw,
         log_results,
@@ -230,10 +232,15 @@ _LAZY_CALLABLES = {
     "set_up_logging": ("pterasoftware._logging", "set_up_logging"),
 }
 
+_LAZY_TYPES = {
+    "CameraState": ("pterasoftware._output", "CameraState"),
+}
+
 
 def __getattr__(name: str) -> Any:
-    if name in _LAZY_CALLABLES:
-        module_path, attr_name = _LAZY_CALLABLES[name]
+    if name in _LAZY_CALLABLES or name in _LAZY_TYPES:
+        exports = _LAZY_TYPES if name in _LAZY_TYPES else _LAZY_CALLABLES
+        module_path, attr_name = exports[name]
         module = importlib.import_module(module_path)
         attr = getattr(module, attr_name)
         globals()[name] = attr

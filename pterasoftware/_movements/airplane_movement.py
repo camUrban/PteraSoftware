@@ -84,7 +84,7 @@ class AirplaneMovement(_core.CoreAirplaneMovement):
         for wing_movement in wing_movements:
             if not isinstance(wing_movement, wing_movement_mod.WingMovement):
                 raise TypeError(
-                    "Every element in wing_movements must be a " "WingMovement."
+                    "Every element in wing_movements must be a WingMovement."
                 )
 
         super().__init__(

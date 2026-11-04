@@ -487,8 +487,10 @@ def apply_camera_parameters(
 
     if camera_parallel_scale is None:
         if fit_meshes is not None:
-            # The helper projects each mesh's own bounding-box corners, avoiding the
-            # extra empty space an aggregate axis-aligned bounding box can introduce.
+            # Only free flight scenes pass fit_meshes, so the diagram axes and origin
+            # are Earth axes and the Earth origin, matching the helper's parameters. The
+            # helper projects each mesh's own bounding-box corners, avoiding the extra
+            # empty space an aggregate axis-aligned bounding box can introduce.
             fitted_parallel_scale = (
                 _output_rendering.get_free_flight_fit_parallel_scale(
                     fit_meshes,

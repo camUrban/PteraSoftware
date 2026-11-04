@@ -164,6 +164,7 @@ _LAZY_CALLABLES = {
         "pterasoftware._movements.airplane_movement",
         "AirplaneMovement",
     ),
+    "CameraState": ("pterasoftware._output", "CameraState"),
     "FreeFlightMovement": (
         "pterasoftware._movements.free_flight_movement",
         "FreeFlightMovement",
@@ -232,15 +233,10 @@ _LAZY_CALLABLES = {
     "set_up_logging": ("pterasoftware._logging", "set_up_logging"),
 }
 
-_LAZY_TYPES = {
-    "CameraState": ("pterasoftware._output", "CameraState"),
-}
-
 
 def __getattr__(name: str) -> Any:
-    if name in _LAZY_CALLABLES or name in _LAZY_TYPES:
-        exports = _LAZY_TYPES if name in _LAZY_TYPES else _LAZY_CALLABLES
-        module_path, attr_name = exports[name]
+    if name in _LAZY_CALLABLES:
+        module_path, attr_name = _LAZY_CALLABLES[name]
         module = importlib.import_module(module_path)
         attr = getattr(module, attr_name)
         globals()[name] = attr

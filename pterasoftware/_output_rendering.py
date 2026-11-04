@@ -2998,6 +2998,7 @@ def get_free_flight_fit_parallel_scale(
     cameraOffsetDirection_E: np.ndarray,
     viewUp_E: np.ndarray,
     margin: float = 1.15,
+    aspect_ratio: float | None = None,
 ) -> float:
     """Returns a parallel-projection scale that frames a set of meshes about a focal
     point.
@@ -3019,6 +3020,9 @@ def get_free_flight_fit_parallel_scale(
         axes).
     :param margin: A factor (at least 1.0) by which to pad the fitted scale. The default
         is 1.15.
+    :param aspect_ratio: The viewport width divided by its height. When provided, the
+        horizontal extent is scaled by the inverse aspect ratio before choosing the
+        required scale. None preserves the legacy calculation.
     :return: The parallel-projection scale.
     """
     # Build the camera's screen right and up axes in Earth axes. The camera looks from
@@ -3050,6 +3054,10 @@ def get_free_flight_fit_parallel_scale(
     # magnitude along either axis so neither screen dimension is clipped.
     half_extent_right = float(np.abs(corners_E @ rightDirection_E).max())
     half_extent_up = float(np.abs(corners_E @ upDirection_E).max())
+    if aspect_ratio is not None:
+        if not math.isfinite(aspect_ratio) or aspect_ratio <= 0.0:
+            raise ValueError("aspect_ratio must be finite and positive.")
+        half_extent_right /= aspect_ratio
     return margin * max(half_extent_right, half_extent_up)
 
 

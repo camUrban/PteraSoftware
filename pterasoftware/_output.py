@@ -7,7 +7,7 @@ import os.path
 import time
 from collections.abc import Sequence
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -388,6 +388,205 @@ def get_draw_geometry_meshes(
     ]
 
 
+def apply_camera_parameters(
+    plotter: pv.Plotter,
+    cameraPosition_D_Do: Sequence[float] | np.ndarray | None,
+    cameraFocalPoint_D_Do: Sequence[float] | np.ndarray | None,
+    cameraViewUp_D: Sequence[float] | np.ndarray | None,
+    camera_parallel_scale: float | None,
+    bounds: Sequence[float],
+    aspect_ratio: float,
+    fit_meshes: list[pv.PolyData] | None = None,
+) -> None:
+    """Applies camera values and fits an unspecified parallel scale.
+
+    The camera's position and focal point are in diagram axes, relative to the diagram
+    origin, and its view up direction is in diagram axes. The diagram axes and diagram
+    origin are the first Airplane's geometry axes and CG, or Earth axes and the Earth
+    origin for a free flight solver. Existing mode-specific camera setup provides
+    defaults for any camera vectors left as None.
+    """
+    effectiveCameraPosition_D_Do = np.asarray(
+        (
+            plotter.camera.position
+            if cameraPosition_D_Do is None
+            else cameraPosition_D_Do
+        ),
+        dtype=float,
+    )
+    effectiveCameraFocalPoint_D_Do = np.asarray(
+        (
+            plotter.camera.focal_point
+            if cameraFocalPoint_D_Do is None
+            else cameraFocalPoint_D_Do
+        ),
+        dtype=float,
+    )
+    effectiveCameraViewUp_D = np.asarray(
+        plotter.camera.up if cameraViewUp_D is None else cameraViewUp_D,
+        dtype=float,
+    )
+
+    viewVector_D = effectiveCameraFocalPoint_D_Do - effectiveCameraPosition_D_Do
+    if not np.isfinite(viewVector_D).all():
+        raise ValueError(
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must define a finite "
+            "view direction."
+        )
+    view_length = float(np.linalg.norm(viewVector_D))
+    view_up_length = float(np.linalg.norm(effectiveCameraViewUp_D))
+    if not np.isfinite(view_length):
+        raise ValueError(
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must define a finite "
+            "view direction."
+        )
+    if view_length == 0.0:
+        raise ValueError(
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must not be equal."
+        )
+    if not np.isfinite(view_up_length) or view_up_length == 0.0:
+        raise ValueError("cameraViewUp_D must have a finite, non-zero length.")
+
+    viewDirection_D = viewVector_D / view_length
+    orthogonalViewUp_D = (
+        effectiveCameraViewUp_D
+        - np.dot(effectiveCameraViewUp_D, viewDirection_D) * viewDirection_D
+    )
+    orthogonal_view_up_length = float(np.linalg.norm(orthogonalViewUp_D))
+    if not np.isfinite(orthogonal_view_up_length) or orthogonal_view_up_length <= (
+        1e-8 * view_up_length
+    ):
+        raise ValueError(
+            "cameraViewUp_D must not be parallel or antiparallel to the view "
+            "direction."
+        )
+    upDirection_D = orthogonalViewUp_D / orthogonal_view_up_length
+    rightDirection_D = np.cross(viewDirection_D, upDirection_D)
+    rightDirection_D /= np.linalg.norm(rightDirection_D)
+
+    plotter.camera.position = tuple(effectiveCameraPosition_D_Do)
+    plotter.camera.focal_point = tuple(effectiveCameraFocalPoint_D_Do)
+    plotter.camera.up = tuple(effectiveCameraViewUp_D)
+
+    if camera_parallel_scale is None:
+        if fit_meshes is not None:
+            # Only free flight scenes pass fit_meshes, so the diagram axes and origin
+            # are Earth axes and the Earth origin, matching the helper's parameters. The
+            # helper projects each mesh's own bounding-box corners, avoiding the extra
+            # empty space an aggregate axis-aligned bounding box can introduce.
+            fitted_parallel_scale = (
+                _output_rendering.get_free_flight_fit_parallel_scale(
+                    fit_meshes,
+                    effectiveCameraFocalPoint_D_Do,
+                    effectiveCameraPosition_D_Do - effectiveCameraFocalPoint_D_Do,
+                    effectiveCameraViewUp_D,
+                    aspect_ratio=aspect_ratio,
+                )
+            )
+        else:
+            scene_bounds_array = np.asarray(bounds, dtype=float)
+            stackSceneBoundsCorners_D_Do = np.array(
+                [
+                    (x, y, z)
+                    for x in scene_bounds_array[0:2]
+                    for y in scene_bounds_array[2:4]
+                    for z in scene_bounds_array[4:6]
+                ],
+                dtype=float,
+            )
+            # Measure each corner from the focal point, which the window is centered on.
+            stackCornerOffsets_D = (
+                stackSceneBoundsCorners_D_Do - effectiveCameraFocalPoint_D_Do
+            )
+            half_extent_right = float(
+                np.abs(stackCornerOffsets_D @ rightDirection_D).max()
+            )
+            half_extent_up = float(np.abs(stackCornerOffsets_D @ upDirection_D).max())
+            fitted_parallel_scale = 1.15 * max(
+                half_extent_right / aspect_ratio, half_extent_up
+            )
+        if not np.isfinite(fitted_parallel_scale):
+            raise ValueError(
+                "The camera parameters and scene bounds produce a non-finite "
+                "parallel scale."
+            )
+        # A degenerate point-like scene still needs a positive parallel scale.
+        plotter.camera.parallel_scale = max(fitted_parallel_scale, np.finfo(float).eps)
+    else:
+        plotter.camera.parallel_scale = camera_parallel_scale
+
+    # Prevent show(cpos=None) from replacing the explicitly initialized camera, and
+    # update clipping for a caller-supplied camera position.
+    plotter.renderer.camera_set = True
+    plotter.reset_camera_clipping_range()
+
+
+def get_camera_state(
+    plotter: pv.Plotter,
+) -> dict[str, Any]:
+    """Returns the camera's current position and focal point (in diagram axes, relative
+    to the diagram origin), view up direction (in diagram axes), and parallel scale."""
+    return {
+        "cameraPosition_D_Do": tuple(float(value) for value in plotter.camera.position),
+        "cameraFocalPoint_D_Do": tuple(
+            float(value) for value in plotter.camera.focal_point
+        ),
+        "cameraViewUp_D": tuple(float(value) for value in plotter.camera.up),
+        "camera_parallel_scale": float(plotter.camera.parallel_scale),
+    }
+
+
+def validate_camera_inputs(
+    cameraPosition_D_Do: Any,
+    cameraFocalPoint_D_Do: Any,
+    cameraViewUp_D: Any,
+    camera_parallel_scale: Any,
+    return_camera_state: Any,
+) -> tuple[
+    np.ndarray | None,
+    np.ndarray | None,
+    np.ndarray | None,
+    float | None,
+    bool,
+]:
+    """Validates camera inputs shared by draw() and animate().
+
+    The camera's position and focal point are in diagram axes, relative to the diagram
+    origin, and its view up direction is in diagram axes. Provided vectors are converted
+    to floating-point NumPy arrays.
+    """
+    if cameraPosition_D_Do is not None:
+        cameraPosition_D_Do = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                cameraPosition_D_Do, "cameraPosition_D_Do"
+            )
+        )
+    if cameraFocalPoint_D_Do is not None:
+        cameraFocalPoint_D_Do = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                cameraFocalPoint_D_Do, "cameraFocalPoint_D_Do"
+            )
+        )
+    if cameraViewUp_D is not None:
+        cameraViewUp_D = _parameter_validation.threeD_number_vectorLike_return_float(
+            cameraViewUp_D, "cameraViewUp_D"
+        )
+    if camera_parallel_scale is not None:
+        camera_parallel_scale = _parameter_validation.number_in_range_return_float(
+            camera_parallel_scale, "camera_parallel_scale", 0.0, False
+        )
+    return_camera_state = _parameter_validation.boolLike_return_bool(
+        return_camera_state, "return_camera_state"
+    )
+    return (
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
+        camera_parallel_scale,
+        return_camera_state,
+    )
+
+
 @_deprecation.keyword_only(positional_only=("solver",))
 def draw(
     solver: (
@@ -404,7 +603,12 @@ def draw(
     path: str | Path = "draw.webp",
     quality: int | float = 75.0,
     testing: bool | np.bool = False,
-) -> None:
+    cameraPosition_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraFocalPoint_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
+    camera_parallel_scale: int | float | None = None,
+    return_camera_state: bool | np.bool = False,
+) -> dict[str, Any] | None:
     """Draws a solver's Airplane(s).
 
     For a FreeFlightUnsteadyRingVortexLatticeMethodSolver, the final time step's
@@ -468,7 +672,35 @@ def draw(
     :param testing: Set this to True to close the image after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :return: None
+    :param cameraPosition_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's position (in diagram axes, relative to the
+        diagram origin). The diagram axes and diagram origin are the first Airplane's
+        geometry axes and CG, or Earth axes and the Earth origin for a free flight
+        solver. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default camera
+        position is used.
+    :param cameraFocalPoint_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's focal point (in diagram axes, relative to the
+        diagram origin). See cameraPosition_D_Do for the diagram axes and diagram
+        origin. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default focal
+        point is used.
+    :param cameraViewUp_D: None, or an array-like object of 3 numbers (int or float)
+        representing the camera's view up direction (in diagram axes). See
+        cameraPosition_D_Do for the diagram axes. It must not be parallel or
+        antiparallel to the view direction. Can be a tuple, list, or ndarray. Values are
+        converted to floats internally. When omitted, the mode's default view up
+        direction is used.
+    :param camera_parallel_scale: Optional positive parallel-projection scale. When
+        omitted alongside any camera override, the scale is fitted to the relevant
+        geometry for the effective camera direction.
+    :param return_camera_state: If True, return the final camera position, focal point,
+        view up direction, and parallel scale after the preview interaction. The
+        returned dictionary can be unpacked as keyword arguments into a later call to
+        reuse the view. The default is False.
+    :return: If return_camera_state is True, a dictionary of the final camera state,
+        whose keys are cameraPosition_D_Do, cameraFocalPoint_D_Do, and cameraViewUp_D
+        (each a tuple of 3 floats) and camera_parallel_scale (a float). Otherwise None.
     """
     if not isinstance(
         solver,
@@ -555,6 +787,28 @@ def draw(
         quality, "quality", 0.0, True, 100.0, True
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
+    (
+        validatedCameraPosition_D_Do,
+        validatedCameraFocalPoint_D_Do,
+        validatedCameraViewUp_D,
+        camera_parallel_scale,
+        return_camera_state,
+    ) = validate_camera_inputs(
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
+        camera_parallel_scale,
+        return_camera_state,
+    )
+    has_camera_overrides = any(
+        value is not None
+        for value in (
+            cameraPosition_D_Do,
+            cameraFocalPoint_D_Do,
+            cameraViewUp_D,
+            camera_parallel_scale,
+        )
+    )
 
     # Create the Plotter whose window shows the drawing, along with the scale of its
     # text and line widths. Those differ from the saved WebP's when the requested window
@@ -754,13 +1008,14 @@ def draw(
         # that show() preserves the fit, since passing a full position to cpos would not
         # set the parallel projection's scale.
         airplane_bounds = np.array(panel_surfaces.bounds, dtype=float)
-        center_E_Eo = 0.5 * (airplane_bounds[1::2] + airplane_bounds[::2])
+        cameraFocalPoint_E_Eo = 0.5 * (airplane_bounds[1::2] + airplane_bounds[::2])
         airplane_diagonal = float(
             np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
         )
-        plotter.camera.focal_point = tuple(center_E_Eo)
+        plotter.camera.focal_point = tuple(cameraFocalPoint_E_Eo)
         plotter.camera.position = tuple(
-            center_E_Eo + 3.0 * airplane_diagonal * freeFlightCameraOffsetDirection_E
+            cameraFocalPoint_E_Eo
+            + 3.0 * airplane_diagonal * freeFlightCameraOffsetDirection_E
         )
         plotter.camera.up = freeFlightViewUp_E
 
@@ -808,6 +1063,68 @@ def draw(
     else:
         draw_cpos = None
 
+    if has_camera_overrides:
+        # The legacy cpos argument initializes the body-fixed camera only inside show().
+        # For a caller-specified camera, initialize the equivalent view here instead,
+        # then keep cpos=None so show() cannot overwrite the requested values.
+        if not is_free_flight and image_surface_mesh is None:
+            geometry_bounds_array = np.asarray(geometry_bounds, dtype=float)
+            cameraFocalPoint_GP1_CgP1 = 0.5 * (
+                geometry_bounds_array[0::2] + geometry_bounds_array[1::2]
+            )
+            bounds_diagonal_length = float(
+                np.linalg.norm(
+                    geometry_bounds_array[1::2] - geometry_bounds_array[0::2]
+                )
+            )
+            defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+                3.0
+            )
+            plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
+            plotter.camera.position = tuple(
+                cameraFocalPoint_GP1_CgP1
+                + 3.0
+                * max(bounds_diagonal_length, 1.0)
+                * defaultCameraOffsetDirection_GP1
+            )
+            plotter.camera.up = (0.0, 0.0, 1.0)
+
+        camera_fit_meshes = None
+        if is_free_flight and T_pas_BP1_CgP1_to_E_Eo is not None:
+            camera_fit_bounds = geometry_bounds
+            # Fit caller-specified views to rendered geometry, not the image surface
+            # plane. The plane can be much larger than the geometry and should not
+            # dominate automatic parallel-scale fitting.
+            camera_fit_meshes = list(geometry_meshes)
+            posed_body_meshes = [
+                _output_rendering.transform_mesh(
+                    render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
+                )
+                for render_geom in body_geoms
+            ]
+            camera_fit_meshes += posed_body_meshes
+            if reflect_T_act is not None:
+                camera_fit_meshes += [
+                    _output_rendering.transform_mesh(mesh, reflect_T_act)
+                    for mesh in posed_body_meshes
+                ]
+        elif is_free_flight:
+            camera_fit_bounds = geometry_bounds
+            camera_fit_meshes = list(geometry_meshes)
+        else:
+            camera_fit_bounds = geometry_bounds
+        apply_camera_parameters(
+            plotter,
+            validatedCameraPosition_D_Do,
+            validatedCameraFocalPoint_D_Do,
+            validatedCameraViewUp_D,
+            camera_parallel_scale,
+            camera_fit_bounds,
+            window_width / window_height,
+            camera_fit_meshes,
+        )
+        draw_cpos = None
+
     # The scene is translucent when it holds the image surface plane or a geom whose
     # rgba has an alpha below one. Settle the scalar bar layout before such a drawing is
     # displayed. This is the first of the two passes it takes, and show below is the
@@ -839,6 +1156,8 @@ def draw(
             auto_close=False,
         )
         time.sleep(1)
+
+    camera_state = get_camera_state(plotter) if return_camera_state else None
 
     # If saving, render the scene again in a separate off-screen Plotter, from the
     # camera the window ended with, and save that as a WebP. The user can resize the
@@ -881,6 +1200,7 @@ def draw(
 
     # Close the Plotter.
     plotter.close()
+    return camera_state
 
 
 @_deprecation.keyword_only(positional_only=("unsteady_solver",))
@@ -895,7 +1215,12 @@ def animate(
     quality: int | float = 75.0,
     speed: int | float | None = None,
     testing: bool | np.bool = False,
-) -> None:
+    cameraPosition_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraFocalPoint_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
+    camera_parallel_scale: int | float | None = None,
+    return_camera_state: bool | np.bool = False,
+) -> dict[str, Any] | None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
     its subclasses (the aeroelastic or free flight solver).
 
@@ -959,7 +1284,35 @@ def animate(
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :return: None
+    :param cameraPosition_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's position (in diagram axes, relative to the
+        diagram origin). The diagram axes and diagram origin are the first Airplane's
+        geometry axes and CG, or Earth axes and the Earth origin for a free flight
+        solver. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default camera
+        position is used.
+    :param cameraFocalPoint_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's focal point (in diagram axes, relative to the
+        diagram origin). See cameraPosition_D_Do for the diagram axes and diagram
+        origin. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default focal
+        point is used.
+    :param cameraViewUp_D: None, or an array-like object of 3 numbers (int or float)
+        representing the camera's view up direction (in diagram axes). See
+        cameraPosition_D_Do for the diagram axes. It must not be parallel or
+        antiparallel to the view direction. Can be a tuple, list, or ndarray. Values are
+        converted to floats internally. When omitted, the mode's default view up
+        direction is used.
+    :param camera_parallel_scale: Optional positive parallel-projection scale. When
+        omitted alongside any camera override, the scale is fitted to the relevant
+        geometry for the effective camera direction.
+    :param return_camera_state: If True, return the final camera position, focal point,
+        view up direction, and parallel scale after the preview interaction. The
+        returned dictionary can be unpacked as keyword arguments into a later call to
+        reuse the view. The default is False.
+    :return: If return_camera_state is True, a dictionary of the final camera state,
+        whose keys are cameraPosition_D_Do, cameraFocalPoint_D_Do, and cameraViewUp_D
+        (each a tuple of 3 floats) and camera_parallel_scale (a float). Otherwise None.
     """
     if not isinstance(
         unsteady_solver,
@@ -1025,6 +1378,28 @@ def animate(
             speed, "speed", 0.0, False
         )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
+    (
+        validatedCameraPosition_D_Do,
+        validatedCameraFocalPoint_D_Do,
+        validatedCameraViewUp_D,
+        camera_parallel_scale,
+        return_camera_state,
+    ) = validate_camera_inputs(
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
+        camera_parallel_scale,
+        return_camera_state,
+    )
+    has_camera_overrides = any(
+        value is not None
+        for value in (
+            cameraPosition_D_Do,
+            cameraFocalPoint_D_Do,
+            cameraViewUp_D,
+            camera_parallel_scale,
+        )
+    )
 
     first_results_step = unsteady_solver.first_results_step
 
@@ -1395,6 +1770,54 @@ def animate(
     else:
         animate_cpos = None
 
+    if has_camera_overrides:
+        # As in draw(), initialize the legacy body-fixed direction explicitly when
+        # show() would otherwise establish it from cpos. The image-surface and
+        # free-flight branches already have their mode-specific camera initialized.
+        if not is_free_flight and image_surface_mesh is None:
+            scene_bounds_array = np.asarray(plotter.bounds, dtype=float)
+            cameraFocalPoint_GP1_CgP1 = 0.5 * (
+                scene_bounds_array[0::2] + scene_bounds_array[1::2]
+            )
+            bounds_diagonal_length = float(
+                np.linalg.norm(scene_bounds_array[1::2] - scene_bounds_array[0::2])
+            )
+            defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
+                3.0
+            )
+            plotter.camera.focal_point = tuple(cameraFocalPoint_GP1_CgP1)
+            plotter.camera.position = tuple(
+                cameraFocalPoint_GP1_CgP1
+                + 3.0
+                * max(bounds_diagonal_length, 1.0)
+                * defaultCameraOffsetDirection_GP1
+            )
+            plotter.camera.up = (0.0, 0.0, 1.0)
+
+        camera_fit_meshes = None
+        camera_fit_bounds: Sequence[float]
+        if is_free_flight:
+            # Match the trajectory fit: the image plane must not dominate the fit.
+            camera_fit_bounds = pv.MultiBlock(framing_meshes).bounds
+            camera_fit_meshes = framing_meshes
+        elif image_surface_mesh is not None:
+            assert image_surface_geometry_bounds is not None
+            camera_fit_bounds = image_surface_geometry_bounds
+        else:
+            camera_fit_bounds = plotter.bounds
+
+        apply_camera_parameters(
+            plotter,
+            validatedCameraPosition_D_Do,
+            validatedCameraFocalPoint_D_Do,
+            validatedCameraViewUp_D,
+            camera_parallel_scale,
+            camera_fit_bounds,
+            window_width / window_height,
+            camera_fit_meshes,
+        )
+        animate_cpos = None
+
     # The frames are translucent when the scene holds the image surface plane or a geom
     # whose rgba has an alpha below one, and the held first frame is translucent
     # whenever it has ghosts as well. Give a translucent held frame the scalar bar
@@ -1432,6 +1855,8 @@ def animate(
             auto_close=False,
         )
         time.sleep(1)
+
+    camera_state = get_camera_state(plotter) if return_camera_state else None
 
     # If saving, render the frames in a separate off-screen Plotter, from the camera the
     # window ended with, and close the window. The user can resize the window in ways
@@ -1647,6 +2072,7 @@ def animate(
     # Close the Plotter the frames were rendered in. When saving, the window's Plotter
     # was already closed before the frames were rendered.
     frame_plotter.close()
+    return camera_state
 
 
 @_deprecation.keyword_only(positional_only=("unsteady_solver",))
@@ -1751,7 +2177,7 @@ def plot_results_versus_time(
         _unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
-            "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
+            "unsteady_solver must be an UnsteadyRingVortexLatticeMethodSolver."
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
 

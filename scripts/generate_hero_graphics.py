@@ -8,16 +8,12 @@ with git restore if they are not an improvement.
 The simulation is solved once per run, and every render and re-render uses that same
 solver.
 
-There is not yet a way to set the camera position programmatically, so draw and animate
-each open a window in which to orient the view, and pressing any key starts the render.
+Both graphics use the same fixed camera view and render entirely off screen, so no
+window opens and the script can run without a display.
 
 Any WebP file larger than the size ceiling is re-rendered at progressively lower quality
 until it fits, though never below the quality floor where the visualizations' text stops
-being readable. Each re-render opens its window again.
-
-Because the view has to be oriented by hand, the script stops before solving if it has
-no display to open windows on, such as when run over SSH. Nothing is overwritten in that
-case.
+being readable.
 """
 
 import sys
@@ -42,18 +38,26 @@ QUALITY_STEP = 25.0
 MIN_QUALITY = 25.0
 MAX_RERENDER_ATTEMPTS = 2
 
+# The camera view shared by both graphics. It is the average of four views oriented by
+# hand, with the view up direction then rotated slightly to make it exactly
+# perpendicular to the view direction.
+CAMERA_KWARGS: dict[str, Any] = {
+    "cameraPosition_D_Do": (50.744, -66.056, 66.254),
+    "cameraFocalPoint_D_Do": (17.985, -0.67, 3.545),
+    "cameraViewUp_D": (-0.6741418100349181, 0.30666738841650343, 0.6719285176599112),
+    "camera_parallel_scale": 14.125,
+}
+
 DRAW_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
+    **CAMERA_KWARGS,
 }
 ANIMATE_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
+    **CAMERA_KWARGS,
 }
-
-# The render window classes VTK falls back to when it cannot open an on-screen window,
-# after printing a warning that it cannot connect to an X server.
-OFF_SCREEN_WINDOW_CLASSES = ("vtkEGLRenderWindow", "vtkOSOpenGLRenderWindow")
 
 
 def create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
@@ -248,7 +252,8 @@ def create_and_solve_hero() -> ps.UnsteadyRingVortexLatticeMethodSolver:
 
 def render_within_size_ceiling(
     webp_path: Path,
-    render_func: Callable[..., None],
+    render_func: Callable[..., Any],
+    solver: ps.UnsteadyRingVortexLatticeMethodSolver,
     render_kwargs: dict[str, Any],
 ) -> None:
     """Renders a WebP file, then re-renders it at progressively lower quality while it
@@ -257,11 +262,13 @@ def render_within_size_ceiling(
     :param webp_path: The path to write the WebP file to.
     :param render_func: The output function that renders the file, either ps.draw or
         ps.animate.
+    :param solver: The solved solver to render, which is passed to render_func
+        positionally.
     :param render_kwargs: The keyword arguments to pass to render_func, other than save,
         path, and quality.
     :return: None
     """
-    render_func(**render_kwargs, save=True, path=webp_path)
+    render_func(solver, **render_kwargs, save=True, path=webp_path)
 
     original_bytes = webp_path.stat().st_size
     if original_bytes <= MAX_WEBP_BYTES:
@@ -275,7 +282,7 @@ def render_within_size_ceiling(
             f"  {name} is {original_bytes / 1024:.0f} KB, "
             f"re-rendering at quality={quality:.0f}..."
         )
-        render_func(**render_kwargs, save=True, path=webp_path, quality=quality)
+        render_func(solver, **render_kwargs, save=True, path=webp_path, quality=quality)
 
         new_bytes = webp_path.stat().st_size
         if new_bytes <= MAX_WEBP_BYTES or quality == MIN_QUALITY:
@@ -302,32 +309,15 @@ def main() -> int:
 
     :return: An int representing the exit code, which is always 0.
     """
-    # Creating a Plotter picks its render window class without opening a window, so this
-    # detects a missing display before any time is spent solving.
-    probe = pv.Plotter()
-    render_window = probe.ren_win
-    assert render_window is not None
-    window_class = render_window.GetClassName()
-    probe.close()
-    if window_class in OFF_SCREEN_WINDOW_CLASSES:
-        raise RuntimeError(
-            f"VTK could not open an on-screen window and fell back to {window_class}, "
-            f"so there is no way to orient the hero graphics' view. Run this script "
-            f"from a session with a display, not over SSH."
-        )
+    # Render off screen, since the camera view is fixed and there is nothing to orient.
+    pv.OFF_SCREEN = True
 
     ps.set_up_logging()
 
     hero_solver = create_and_solve_hero()
 
-    render_within_size_ceiling(
-        STATIC_PATH, ps.draw, {"solver": hero_solver, **DRAW_KWARGS}
-    )
-    render_within_size_ceiling(
-        ANIMATED_PATH,
-        ps.animate,
-        {"unsteady_solver": hero_solver, **ANIMATE_KWARGS},
-    )
+    render_within_size_ceiling(STATIC_PATH, ps.draw, hero_solver, DRAW_KWARGS)
+    render_within_size_ceiling(ANIMATED_PATH, ps.animate, hero_solver, ANIMATE_KWARGS)
     return 0
 
 

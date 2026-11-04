@@ -420,7 +420,7 @@ class CoreWingCrossSectionMovement:
         )
         if not np.all(periodAngles_Wcsp_to_Wcs_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be " "non negative."
+                "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be non negative."
             )
         for period_index, period in enumerate(periodAngles_Wcsp_to_Wcs_ixyz):
             amp = self._ampAngles_Wcsp_to_Wcs_ixyz[period_index]
@@ -967,7 +967,7 @@ class CoreWingMovement:
         )
         if not np.all(periodAngles_Gs_to_Wn_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_Gs_to_Wn_ixyz must be " "non negative."
+                "All elements in periodAngles_Gs_to_Wn_ixyz must be non negative."
             )
         for period_index, period in enumerate(periodAngles_Gs_to_Wn_ixyz):
             amp = self._ampAngles_Gs_to_Wn_ixyz[period_index]
@@ -1424,12 +1424,12 @@ class CoreAirplaneMovement:
             raise TypeError("wing_movements must be a list.")
         if len(wing_movements) != len(self._base_airplane.wings):
             raise ValueError(
-                "wing_movements must have the same length as " "base_airplane.wings."
+                "wing_movements must have the same length as base_airplane.wings."
             )
         for wing_movement in wing_movements:
             if not isinstance(wing_movement, CoreWingMovement):
                 raise TypeError(
-                    "Every element in wing_movements must be a " "CoreWingMovement."
+                    "Every element in wing_movements must be a CoreWingMovement."
                 )
         # The base Wings are reachable through both the base Airplane and the
         # CoreWingMovements, so require that both paths lead to the same objects. The
@@ -2083,7 +2083,7 @@ class CoreMovement:
             CoreOperatingPointMovement,
         ):
             raise TypeError(
-                "operating_point_movement must be a " "CoreOperatingPointMovement."
+                "operating_point_movement must be a CoreOperatingPointMovement."
             )
         self._operating_point_movement = operating_point_movement
 

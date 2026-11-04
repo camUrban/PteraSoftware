@@ -294,8 +294,8 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ### 10. Diagram axes
 
-* Only relevant in the rendering code that draws diagrams
-* Basis directions: Identical to the axes a diagram is drawn in. For example, a `Wing`'s diagram is drawn in geometry axes, and a `SteadyProblem`'s diagram is drawn in the first `Airplane`'s geometry axes.
+* Only relevant in the rendering code that draws diagrams and the scenes that `draw()` and `animate()` render
+* Basis directions: Identical to the axes a diagram is drawn in. For example, a `Wing`'s diagram is drawn in geometry axes, and a `SteadyProblem`'s diagram is drawn in the first `Airplane`'s geometry axes. The scenes that `draw()` and `animate()` render are drawn in the first `Airplane`'s geometry axes, or in Earth axes for a free flight solver.
 * Right-handed or left-handed, matching the axes the diagram is drawn in
 * Ownership: None
 * References
@@ -513,8 +513,8 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ### 14. Diagram origin
 
-* Only relevant in the rendering code that draws diagrams
-* The point a diagram is drawn relative to. For example, a `Wing`'s diagram is drawn relative to the CG, and a `SteadyProblem`'s diagram is drawn relative to the first `Airplane`'s CG.
+* Only relevant in the rendering code that draws diagrams and the scenes that `draw()` and `animate()` render
+* The point a diagram is drawn relative to. For example, a `Wing`'s diagram is drawn relative to the CG, and a `SteadyProblem`'s diagram is drawn relative to the first `Airplane`'s CG. The scenes that `draw()` and `animate()` render are drawn relative to the first `Airplane`'s CG, or relative to the Earth origin for a free flight solver.
 * Ownership: None
 * References
     * Text: ...relative to the diagram origin...

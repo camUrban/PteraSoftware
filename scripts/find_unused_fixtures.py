@@ -655,7 +655,7 @@ def main() -> int:
         print("Cannot verify candidates against a failing baseline.")
         return 1
     cov_str = f", {baseline_cov:.2f}% coverage" if baseline_cov is not None else ""
-    print(f"  Baseline: {len(baseline_ids)} test IDs, " f"{baseline_summary}{cov_str}.")
+    print(f"  Baseline: {len(baseline_ids)} test IDs, {baseline_summary}{cov_str}.")
 
     # Phase 1: batch-delete ALL candidates, then verify all three dimensions.
     print()
@@ -712,7 +712,7 @@ def main() -> int:
         print()
         false_positives = find_false_positives_from_traceback(stderr, all_deletions)
         if not false_positives:
-            print("Could not identify specific false positives from the " "traceback.")
+            print("Could not identify specific false positives from the traceback.")
             print("Full stderr from the test run:")
             print()
             print(stderr)
@@ -778,7 +778,7 @@ def main() -> int:
             )
         else:
             print(f"  [FAIL] Confirmed-only batch also failed ({summary})")
-            print("There may be interaction effects. Manual investigation " "required.")
+            print("There may be interaction effects. Manual investigation required.")
             return 1
 
     # Phase 3: with confirmed deletions applied, re-run static analysis to find newly

@@ -205,7 +205,7 @@ def rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     # by name, since an example can name its own. A call whose destination is not a
     # literal has none to match against, so its file is reported rather than re-rendered
     # under a name it never used.
-    renderers: dict[Path, tuple[Callable[..., None], dict[str, Any]]] = {}
+    renderers: dict[Path, tuple[Callable[..., Any], dict[str, Any]]] = {}
     if draw_kwargs is not None:
         draw_destination = output_destination(
             output_subdir, draw_kwargs, DEFAULT_DRAW_PATH

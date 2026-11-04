@@ -65,7 +65,7 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
             aeroelastic_unsteady_problem, _problems.AeroelasticUnsteadyProblem
         ):
             raise TypeError(
-                "aeroelastic_unsteady_problem must be an " "AeroelasticUnsteadyProblem."
+                "aeroelastic_unsteady_problem must be an AeroelasticUnsteadyProblem."
             )
 
         super().__init__(unsteady_problem=aeroelastic_unsteady_problem)

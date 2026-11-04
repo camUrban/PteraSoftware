@@ -55,6 +55,58 @@ def make_static_validation_movement() -> ps.Movement:
     return unsteady_validation_movement
 
 
+def make_xflr5_static_validation_movement() -> ps.Movement:
+    """This function creates a Movement with static geometry and the XFLR5 cases' flow
+    conditions to be used as a fixture.
+
+    :return xflr5_static_validation_movement: Movement This is a Movement with static
+        geometry and the XFLR5 cases' flow conditions to be used as a fixture.
+    """
+    xflr5_validation_airplane = (
+        airplane_fixtures.make_symmetric_unsteady_validation_airplane()
+    )
+    xflr5_validation_operating_point = (
+        operating_point_fixtures.make_xflr5_validation_operating_point()
+    )
+
+    xflr5_validation_root_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=xflr5_validation_airplane.wings[0].wing_cross_sections[
+            0
+        ]
+    )
+
+    xflr5_validation_tip_wing_cross_section_movement = ps.WingCrossSectionMovement(
+        base_wing_cross_section=xflr5_validation_airplane.wings[0].wing_cross_sections[
+            1
+        ]
+    )
+
+    xflr5_validation_wing_movement = ps.WingMovement(
+        base_wing=xflr5_validation_airplane.wings[0],
+        wing_cross_section_movements=[
+            xflr5_validation_root_wing_cross_section_movement,
+            xflr5_validation_tip_wing_cross_section_movement,
+        ],
+    )
+
+    xflr5_validation_airplane_movement = ps.AirplaneMovement(
+        base_airplane=xflr5_validation_airplane,
+        wing_movements=[xflr5_validation_wing_movement],
+    )
+
+    xflr5_validation_operating_point_movement = ps.OperatingPointMovement(
+        base_operating_point=xflr5_validation_operating_point
+    )
+
+    xflr5_static_validation_movement = ps.Movement(
+        airplane_movements=[xflr5_validation_airplane_movement],
+        operating_point_movement=xflr5_validation_operating_point_movement,
+        num_chords=6,
+    )
+
+    return xflr5_static_validation_movement
+
+
 def make_edge_defined_static_validation_movement() -> ps.Movement:
     """This function creates a static Movement over an edge-defined Airplane, to be used
     as a fixture for testing the convergence functions' edge-defined refinement.

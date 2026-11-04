@@ -28,6 +28,28 @@ def make_steady_validation_problem() -> ps.SteadyProblem:
     return steady_validation_problem
 
 
+def make_xflr5_steady_validation_problem() -> ps.SteadyProblem:
+    """This function creates a SteadyProblem with the XFLR5 cases' flow conditions to be
+    used as a fixture.
+
+    :return xflr5_steady_validation_problem: SteadyProblem This is the SteadyProblem
+        fixture.
+    """
+    xflr5_steady_validation_airplane = (
+        airplane_fixtures.make_steady_validation_airplane()
+    )
+    xflr5_validation_operating_point = (
+        operating_point_fixtures.make_xflr5_validation_operating_point()
+    )
+
+    xflr5_steady_validation_problem = ps.SteadyProblem(
+        airplanes=[xflr5_steady_validation_airplane],
+        operating_point=xflr5_validation_operating_point,
+    )
+
+    return xflr5_steady_validation_problem
+
+
 def make_steady_formation_validation_problem() -> ps.SteadyProblem:
     """This function creates a SteadyProblem with two identical, widely separated
     Airplanes to be used as a fixture.
@@ -55,25 +77,26 @@ def make_steady_formation_validation_problem() -> ps.SteadyProblem:
     return steady_formation_validation_problem
 
 
-def make_steady_multiple_wing_validation_problem() -> ps.SteadyProblem:
-    """This function creates a SteadyProblem with multi-wing geometry to be used as a
-    fixture.
+def make_xflr5_steady_multiple_wing_validation_problem() -> ps.SteadyProblem:
+    """This function creates a SteadyProblem with multi-wing geometry and the XFLR5
+    cases' flow conditions to be used as a fixture.
 
-    :return steady_validation_problem: SteadyProblem This is the SteadyProblem fixture.
+    :return xflr5_steady_multiple_wing_validation_problem: SteadyProblem This is the
+        SteadyProblem fixture.
     """
-    steady_validation_airplane = (
+    xflr5_steady_multiple_wing_validation_airplane = (
         airplane_fixtures.make_multiple_wing_steady_validation_airplane()
     )
-    steady_validation_operating_point = (
-        operating_point_fixtures.make_validation_operating_point()
+    xflr5_validation_operating_point = (
+        operating_point_fixtures.make_xflr5_validation_operating_point()
     )
 
-    steady_validation_problem = ps.SteadyProblem(
-        airplanes=[steady_validation_airplane],
-        operating_point=steady_validation_operating_point,
+    xflr5_steady_multiple_wing_validation_problem = ps.SteadyProblem(
+        airplanes=[xflr5_steady_multiple_wing_validation_airplane],
+        operating_point=xflr5_validation_operating_point,
     )
 
-    return steady_validation_problem
+    return xflr5_steady_multiple_wing_validation_problem
 
 
 def make_edge_defined_steady_validation_problem() -> ps.SteadyProblem:
@@ -132,6 +155,24 @@ def make_unsteady_validation_problem_with_static_geometry() -> ps.UnsteadyProble
     )
 
     return unsteady_validation_problem
+
+
+def make_xflr5_unsteady_validation_problem_with_static_geometry() -> ps.UnsteadyProblem:
+    """This function creates an UnsteadyProblem with static geometry and the XFLR5
+    cases' flow conditions to be used as a fixture.
+
+    :return xflr5_unsteady_validation_problem: UnsteadyProblem This is the
+        UnsteadyProblem fixture.
+    """
+    xflr5_static_validation_movement = (
+        movement_fixtures.make_xflr5_static_validation_movement()
+    )
+
+    xflr5_unsteady_validation_problem = ps.UnsteadyProblem(
+        movement=xflr5_static_validation_movement
+    )
+
+    return xflr5_unsteady_validation_problem
 
 
 def make_edge_defined_unsteady_validation_problem() -> ps.UnsteadyProblem:

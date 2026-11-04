@@ -8,36 +8,36 @@ INFO    |_serialization                              |Loaded FreeFlightUnsteadyR
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Forces (in Geometry Axes):
 INFO    |output                                      |    fX_G:           -17.2 N
-INFO    |output                                      |    fY_G:        1.03E-07 N
+INFO    |output                                      |    fY_G:        5.43E-09 N
 INFO    |output                                      |    fZ_G:            416. N
 INFO    |output                                      |  Final Moments (in Geometry Axes, Relative to the CG):
-INFO    |output                                      |    mX_G_Cg:    -5.22E-10 Nm
+INFO    |output                                      |    mX_G_Cg:    -4.83E-09 Nm
 INFO    |output                                      |    mY_G_Cg:         3.82 Nm
-INFO    |output                                      |    mZ_G_Cg:     8.36E-08 Nm
+INFO    |output                                      |    mZ_G_Cg:     2.79E-08 Nm
 INFO    |output                                      |  Final Force Coefficients (in Geometry Axes):
 INFO    |output                                      |    cFX_G:        -0.0157
-INFO    |output                                      |    cFY_G:       9.41E-11
+INFO    |output                                      |    cFY_G:       4.94E-12
 INFO    |output                                      |    cFZ_G:          0.379
 INFO    |output                                      |  Final Moment Coefficients (in Geometry Axes, Relative to the CG):
-INFO    |output                                      |    cMX_G_Cg:   -4.75E-14
+INFO    |output                                      |    cMX_G_Cg:   -4.40E-13
 INFO    |output                                      |    cMY_G_Cg:     0.00348
-INFO    |output                                      |    cMZ_G_Cg:    7.62E-12
+INFO    |output                                      |    cMZ_G_Cg:    2.54E-12
 INFO    |output                                      |  Final Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:           -5.93 N     Induced Drag:                       5.93 N
-INFO    |output                                      |    fY_W:        1.03E-07 N     Crosswind Force:               -1.03E-07 N
+INFO    |output                                      |    fY_W:        5.36E-09 N     Crosswind Force:               -5.36E-09 N
 INFO    |output                                      |    fZ_W:           -417. N     Lift:                               417. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    mX_W_Cg:    -4.10E-09 Nm    Rolling Moment:                -4.10E-09 Nm
+INFO    |output                                      |    mX_W_Cg:     3.23E-09 Nm    Rolling Moment:                 3.23E-09 Nm
 INFO    |output                                      |    mY_W_Cg:         3.82 Nm    Pitching Moment:                    3.82 Nm
-INFO    |output                                      |    mZ_W_Cg:    -8.35E-08 Nm    Yawing Moment:                 -8.35E-08 Nm
+INFO    |output                                      |    mZ_W_Cg:    -2.81E-08 Nm    Yawing Moment:                 -2.81E-08 Nm
 INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:       -0.00540       Induced Drag Coefficient:        0.00540
-INFO    |output                                      |    cFY_W:       9.41E-11       Crosswind Force Coefficient:   -9.41E-11
+INFO    |output                                      |    cFY_W:       4.89E-12       Crosswind Force Coefficient:   -4.89E-12
 INFO    |output                                      |    cFZ_W:         -0.379       Lift Coefficient:                  0.379
 INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    cMX_W_Cg:   -3.74E-13       Rolling Moment Coefficient:    -3.74E-13
+INFO    |output                                      |    cMX_W_Cg:    2.94E-13       Rolling Moment Coefficient:     2.94E-13
 INFO    |output                                      |    cMY_W_Cg:     0.00348       Pitching Moment Coefficient:     0.00348
-INFO    |output                                      |    cMZ_W_Cg:   -7.61E-12       Yawing Moment Coefficient:     -7.61E-12
+INFO    |output                                      |    cMZ_W_Cg:   -2.56E-12       Yawing Moment Coefficient:     -2.56E-12
 INFO    |output                                      |The First Airplane's Free Flight State History:
 INFO    |output                                      |  Initial State (at t = 0.00 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
@@ -61,19 +61,19 @@ INFO    |output                                      |    Sideslip Angle (beta):
 INFO    |output                                      |  Final State (at t = 2.57 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
 INFO    |output                                      |      cgP1X_E_Eo:                    33.5 m
-INFO    |output                                      |      cgP1Y_E_Eo:               -9.27E-11 m
+INFO    |output                                      |      cgP1Y_E_Eo:                7.91E-11 m
 INFO    |output                                      |      cgP1Z_E_Eo:                    1.17 m
 INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic zy'x" Sequence):
-INFO    |output                                      |      angleX_E_to_BP1_izyx:      2.83E-11 deg
+INFO    |output                                      |      angleX_E_to_BP1_izyx:     -5.51E-12 deg
 INFO    |output                                      |      angleY_E_to_BP1_izyx:         0.199 deg
-INFO    |output                                      |      angleZ_E_to_BP1_izyx:     -3.44E-10 deg
+INFO    |output                                      |      angleZ_E_to_BP1_izyx:      3.83E-10 deg
 INFO    |output                                      |    Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
 INFO    |output                                      |      vCgP1X_E__E:                   13.4 m/s
-INFO    |output                                      |      vCgP1Y_E__E:              -3.19E-11 m/s
+INFO    |output                                      |      vCgP1Y_E__E:              -5.04E-11 m/s
 INFO    |output                                      |      vCgP1Z_E__E:                  0.696 m/s
 INFO    |output                                      |    Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
-INFO    |output                                      |      omegaX_BP1__E:            -1.53E-10 deg/s
+INFO    |output                                      |      omegaX_BP1__E:             2.47E-10 deg/s
 INFO    |output                                      |      omegaY_BP1__E:               -0.504 deg/s
-INFO    |output                                      |      omegaZ_BP1__E:            -4.10E-10 deg/s
+INFO    |output                                      |      omegaZ_BP1__E:             2.81E-10 deg/s
 INFO    |output                                      |    Angle of Attack (alpha):        3.18 deg
-INFO    |output                                      |    Sideslip Angle (beta):      2.08E-10 deg
+INFO    |output                                      |    Sideslip Angle (beta):     -5.98E-10 deg

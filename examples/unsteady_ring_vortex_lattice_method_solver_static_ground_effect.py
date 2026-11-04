@@ -240,7 +240,7 @@ example_operating_point = ps.OperatingPoint(
     surfaceNormal_E=(0.0, 0.0, 1.0),
     surfacePoint_E_Eo=(0.0, 0.0, 0.0),
     externalFX_W=0.0,
-    nu=15.06e-6,
+    nu=14.61e-6,
 )
 
 # Define the OperatingPoint's OperatingPointMovement.

@@ -126,7 +126,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertIsNone(self.basic_op.surfaceNormal_E)
         self.assertIsNone(self.basic_op.surfacePoint_E_Eo)
         self.assertEqual(self.basic_op.externalFX_W, 0.0)
-        self.assertEqual(self.basic_op.nu, 15.06e-6)
+        self.assertEqual(self.basic_op.nu, 14.61e-6)
 
     def test_property_access_cached(self) -> None:
         """Test that cached computed properties are accessible."""

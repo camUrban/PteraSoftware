@@ -9,7 +9,23 @@ def make_validation_operating_point() -> ps.OperatingPoint:
     :return operating_point_fixture: OperatingPoint This is an OperatingPoint fixture.
     """
     operating_point_fixture = ps.OperatingPoint(
-        rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+        rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=14.61e-6
+    )
+    return operating_point_fixture
+
+
+def make_xflr5_validation_operating_point() -> ps.OperatingPoint:
+    """This method makes an OperatingPoint matching the flow conditions of the XFLR5
+    cases that the solvers' outputs are compared against.
+
+    The XFLR5 cases used XFLR5's default fluid properties (rho=1.225 kg/m^3 and
+    nu=1.506e-5 m^2/s), so this OperatingPoint uses the same values rather than Ptera
+    Software's defaults.
+
+    :return operating_point_fixture: OperatingPoint This is an OperatingPoint fixture.
+    """
+    operating_point_fixture = ps.OperatingPoint(
+        rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=1.506e-5
     )
     return operating_point_fixture
 

@@ -18,7 +18,7 @@ def make_basic_operating_point_fixture() -> ps.OperatingPoint:
         beta=0.0,
         angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return basic_operating_point_fixture
@@ -38,7 +38,7 @@ def make_zero_alpha_beta_operating_point_fixture() -> ps.OperatingPoint:
         alpha=0.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return zero_alpha_beta_operating_point_fixture
@@ -58,7 +58,7 @@ def make_high_alpha_operating_point_fixture() -> ps.OperatingPoint:
         alpha=45.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return high_alpha_operating_point_fixture
@@ -77,7 +77,7 @@ def make_negative_alpha_operating_point_fixture() -> ps.OperatingPoint:
         alpha=-15.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return negative_alpha_operating_point_fixture
@@ -96,7 +96,7 @@ def make_nonzero_beta_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=10.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return nonzero_beta_operating_point_fixture
@@ -115,7 +115,7 @@ def make_high_speed_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return high_speed_operating_point_fixture
@@ -135,7 +135,7 @@ def make_low_density_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return low_density_operating_point_fixture
@@ -154,7 +154,7 @@ def make_with_external_force_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         externalFX_W=50.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return with_external_force_operating_point_fixture
@@ -194,7 +194,7 @@ def make_boundary_alpha_operating_point_fixture() -> ps.OperatingPoint:
         alpha=180.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return boundary_alpha_operating_point_fixture
@@ -214,7 +214,7 @@ def make_negative_beta_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=-15.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return negative_beta_operating_point_fixture
@@ -234,7 +234,7 @@ def make_boundary_beta_operating_point_fixture() -> ps.OperatingPoint:
         alpha=0.0,
         beta=90.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return boundary_beta_operating_point_fixture
@@ -256,7 +256,7 @@ def make_combined_boundary_angles_operating_point_fixture() -> ps.OperatingPoint
         alpha=180.0,
         beta=89.999,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return combined_boundary_angles_operating_point_fixture
@@ -276,7 +276,7 @@ def make_very_low_speed_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return very_low_speed_operating_point_fixture
@@ -315,7 +315,7 @@ def make_negative_external_force_operating_point_fixture() -> ps.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         externalFX_W=-25.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return negative_external_force_operating_point_fixture
@@ -335,7 +335,7 @@ def make_near_boundary_alpha_operating_point_fixture() -> ps.OperatingPoint:
         alpha=-179.999,
         beta=0.0,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return near_boundary_alpha_operating_point_fixture
@@ -355,7 +355,7 @@ def make_near_boundary_beta_operating_point_fixture() -> ps.OperatingPoint:
         alpha=0.0,
         beta=-89.999,
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return near_boundary_beta_operating_point_fixture
@@ -376,7 +376,7 @@ def make_with_attitude_angles_operating_point_fixture() -> ps.OperatingPoint:
         beta=0.0,
         angles_E_to_BP1_izyx=(15.0, 10.0, 5.0),
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return with_attitude_angles_operating_point_fixture
@@ -397,7 +397,7 @@ def make_with_cg_position_operating_point_fixture() -> ps.OperatingPoint:
         beta=0.0,
         CgP1_E_Eo=(100.0, 0.0, -50.0),
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return with_cg_position_operating_point_fixture
@@ -422,7 +422,7 @@ def make_with_ground_surface_operating_point_fixture() -> ps.OperatingPoint:
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return with_ground_surface_operating_point_fixture
@@ -448,7 +448,7 @@ def make_with_tilted_surface_operating_point_fixture() -> ps.OperatingPoint:
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         externalFX_W=0.0,
-        nu=15.06e-6,
+        nu=14.61e-6,
     )
 
     return with_tilted_surface_operating_point_fixture

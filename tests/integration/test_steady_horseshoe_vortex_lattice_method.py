@@ -8,6 +8,9 @@ is:     CL:     0.513     CDi:    0.008     Cm:     -0.336
 
 The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a
 horseshoe vortex lattice method solver.
+
+The XFLR5 cases used XFLR5's default fluid properties (rho=1.225 kg/m^3 and nu=1.506e-5
+m^2/s), so this test's operating point uses the same values.
 """
 
 import unittest
@@ -40,11 +43,11 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
         cls.steady_horseshoe_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_steady_horseshoe_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_xflr5_steady_horseshoe_vortex_lattice_method_validation_solver()
         )
         cls.steady_horseshoe_vortex_lattice_method_validation_solver.run()
         cls.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_xflr5_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver()
         )
 
     def test_method(self) -> None:
@@ -186,7 +189,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
         unrun_solver = (
-            solver_fixtures.make_steady_horseshoe_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_xflr5_steady_horseshoe_vortex_lattice_method_validation_solver()
         )
         with patch.object(pv.Plotter, "show") as mock_show:
             with self.assertRaises(RuntimeError):

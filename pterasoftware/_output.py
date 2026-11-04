@@ -35,11 +35,18 @@ from ._movements import free_flight_movement as free_flight_movement_mod
 
 
 class CameraState(TypedDict):
-    """Describes the final state of a rendered camera."""
+    """Describes the final state of a rendered camera.
 
-    camera_position: tuple[float, float, float]
-    camera_focal_point: tuple[float, float, float]
-    camera_up: tuple[float, float, float]
+    The cameraPosition_D_Do and cameraFocalPoint_D_Do entries hold the camera's position
+    and focal point (in diagram axes, relative to the diagram origin), and the
+    cameraViewUp_D entry holds its view up direction (in diagram axes). The diagram axes
+    and diagram origin are the first Airplane's geometry axes and CG, or Earth axes and
+    the Earth origin for a free flight solver. The units are in meters.
+    """
+
+    cameraPosition_D_Do: tuple[float, float, float]
+    cameraFocalPoint_D_Do: tuple[float, float, float]
+    cameraViewUp_D: tuple[float, float, float]
     camera_parallel_scale: float
 
 
@@ -400,9 +407,9 @@ def get_draw_geometry_meshes(
 
 def apply_camera_parameters(
     plotter: pv.Plotter,
-    camera_position: Sequence[float] | np.ndarray | None,
-    camera_focal_point: Sequence[float] | np.ndarray | None,
-    camera_up: Sequence[float] | np.ndarray | None,
+    cameraPosition_D_Do: Sequence[float] | np.ndarray | None,
+    cameraFocalPoint_D_Do: Sequence[float] | np.ndarray | None,
+    cameraViewUp_D: Sequence[float] | np.ndarray | None,
     camera_parallel_scale: float | None,
     bounds: Sequence[float],
     aspect_ratio: float,
@@ -410,67 +417,73 @@ def apply_camera_parameters(
 ) -> None:
     """Applies camera values and fits an unspecified parallel scale.
 
-    The camera position and focal-point position are positions expressed in the same
-    coordinate system: geometry axes relative to the first Airplane's center of gravity
-    for body-fixed views, or Earth axes relative to the Earth origin for free-flight
-    views. The camera up vector is a direction expressed in the corresponding axes,
-    without a reference-point suffix. Existing mode-specific camera setup provides
+    The camera's position and focal point are in diagram axes, relative to the diagram
+    origin, and its view up direction is in diagram axes. The diagram axes and diagram
+    origin are the first Airplane's geometry axes and CG, or Earth axes and the Earth
+    origin for a free flight solver. Existing mode-specific camera setup provides
     defaults for any camera vectors left as None.
     """
-    camera_position_vector = np.asarray(
-        plotter.camera.position if camera_position is None else camera_position,
-        dtype=float,
-    )
-    camera_focal_point_vector = np.asarray(
+    effectiveCameraPosition_D_Do = np.asarray(
         (
-            plotter.camera.focal_point
-            if camera_focal_point is None
-            else camera_focal_point
+            plotter.camera.position
+            if cameraPosition_D_Do is None
+            else cameraPosition_D_Do
         ),
         dtype=float,
     )
-    camera_up_vector = np.asarray(
-        plotter.camera.up if camera_up is None else camera_up,
+    effectiveCameraFocalPoint_D_Do = np.asarray(
+        (
+            plotter.camera.focal_point
+            if cameraFocalPoint_D_Do is None
+            else cameraFocalPoint_D_Do
+        ),
+        dtype=float,
+    )
+    effectiveCameraViewUp_D = np.asarray(
+        plotter.camera.up if cameraViewUp_D is None else cameraViewUp_D,
         dtype=float,
     )
 
-    camera_look_vector = camera_focal_point_vector - camera_position_vector
-    if not np.isfinite(camera_look_vector).all():
+    viewVector_D = effectiveCameraFocalPoint_D_Do - effectiveCameraPosition_D_Do
+    if not np.isfinite(viewVector_D).all():
         raise ValueError(
-            "camera_position and camera_focal_point must define a finite "
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must define a finite "
             "view direction."
         )
-    camera_look_length = float(np.linalg.norm(camera_look_vector))
-    camera_up_length = float(np.linalg.norm(camera_up_vector))
-    if not np.isfinite(camera_look_length):
+    view_length = float(np.linalg.norm(viewVector_D))
+    view_up_length = float(np.linalg.norm(effectiveCameraViewUp_D))
+    if not np.isfinite(view_length):
         raise ValueError(
-            "camera_position and camera_focal_point must define a finite "
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must define a finite "
             "view direction."
         )
-    if camera_look_length == 0.0:
-        raise ValueError("camera_position and camera_focal_point must not be equal.")
-    if not np.isfinite(camera_up_length) or camera_up_length == 0.0:
-        raise ValueError("camera_up must have a finite, non-zero length.")
+    if view_length == 0.0:
+        raise ValueError(
+            "cameraPosition_D_Do and cameraFocalPoint_D_Do must not be equal."
+        )
+    if not np.isfinite(view_up_length) or view_up_length == 0.0:
+        raise ValueError("cameraViewUp_D must have a finite, non-zero length.")
 
-    camera_look_direction = camera_look_vector / camera_look_length
-    orthogonal_camera_up = (
-        camera_up_vector
-        - np.dot(camera_up_vector, camera_look_direction) * camera_look_direction
+    viewDirection_D = viewVector_D / view_length
+    orthogonalViewUp_D = (
+        effectiveCameraViewUp_D
+        - np.dot(effectiveCameraViewUp_D, viewDirection_D) * viewDirection_D
     )
-    orthogonal_camera_up_length = float(np.linalg.norm(orthogonal_camera_up))
-    if not np.isfinite(orthogonal_camera_up_length) or orthogonal_camera_up_length <= (
-        1e-8 * camera_up_length
+    orthogonal_view_up_length = float(np.linalg.norm(orthogonalViewUp_D))
+    if not np.isfinite(orthogonal_view_up_length) or orthogonal_view_up_length <= (
+        1e-8 * view_up_length
     ):
         raise ValueError(
-            "camera_up must not be parallel or antiparallel to the view direction."
+            "cameraViewUp_D must not be parallel or antiparallel to the view "
+            "direction."
         )
-    camera_up_direction = orthogonal_camera_up / orthogonal_camera_up_length
-    camera_right_direction = np.cross(camera_look_direction, camera_up_direction)
-    camera_right_direction /= np.linalg.norm(camera_right_direction)
+    upDirection_D = orthogonalViewUp_D / orthogonal_view_up_length
+    rightDirection_D = np.cross(viewDirection_D, upDirection_D)
+    rightDirection_D /= np.linalg.norm(rightDirection_D)
 
-    plotter.camera.position = tuple(camera_position_vector)
-    plotter.camera.focal_point = tuple(camera_focal_point_vector)
-    plotter.camera.up = tuple(camera_up_vector)
+    plotter.camera.position = tuple(effectiveCameraPosition_D_Do)
+    plotter.camera.focal_point = tuple(effectiveCameraFocalPoint_D_Do)
+    plotter.camera.up = tuple(effectiveCameraViewUp_D)
 
     if camera_parallel_scale is None:
         if fit_meshes is not None:
@@ -479,15 +492,15 @@ def apply_camera_parameters(
             fitted_parallel_scale = (
                 _output_rendering.get_free_flight_fit_parallel_scale(
                     fit_meshes,
-                    camera_focal_point_vector,
-                    camera_position_vector - camera_focal_point_vector,
-                    camera_up_vector,
+                    effectiveCameraFocalPoint_D_Do,
+                    effectiveCameraPosition_D_Do - effectiveCameraFocalPoint_D_Do,
+                    effectiveCameraViewUp_D,
                     aspect_ratio=aspect_ratio,
                 )
             )
         else:
             scene_bounds_array = np.asarray(bounds, dtype=float)
-            scene_bounds_corners = np.array(
+            stackSceneBoundsCorners_D_Do = np.array(
                 [
                     (x, y, z)
                     for x in scene_bounds_array[0:2]
@@ -496,13 +509,14 @@ def apply_camera_parameters(
                 ],
                 dtype=float,
             )
-            scene_bounds_corners -= camera_focal_point_vector
+            # Measure each corner from the focal point, which the window is centered on.
+            stackCornerOffsets_D = (
+                stackSceneBoundsCorners_D_Do - effectiveCameraFocalPoint_D_Do
+            )
             half_extent_right = float(
-                np.abs(scene_bounds_corners @ camera_right_direction).max()
+                np.abs(stackCornerOffsets_D @ rightDirection_D).max()
             )
-            half_extent_up = float(
-                np.abs(scene_bounds_corners @ camera_up_direction).max()
-            )
+            half_extent_up = float(np.abs(stackCornerOffsets_D @ upDirection_D).max())
             fitted_parallel_scale = 1.15 * max(
                 half_extent_right / aspect_ratio, half_extent_up
             )
@@ -525,17 +539,18 @@ def apply_camera_parameters(
 def get_camera_state(
     plotter: pv.Plotter,
 ) -> CameraState:
-    """Returns the camera's current position, focal point, up vector, and scale."""
+    """Returns the camera's current position and focal point (in diagram axes, relative
+    to the diagram origin), view up direction (in diagram axes), and parallel scale."""
     return {
-        "camera_position": cast(
+        "cameraPosition_D_Do": cast(
             tuple[float, float, float],
             tuple(float(value) for value in plotter.camera.position),
         ),
-        "camera_focal_point": cast(
+        "cameraFocalPoint_D_Do": cast(
             tuple[float, float, float],
             tuple(float(value) for value in plotter.camera.focal_point),
         ),
-        "camera_up": cast(
+        "cameraViewUp_D": cast(
             tuple[float, float, float],
             tuple(float(value) for value in plotter.camera.up),
         ),
@@ -544,9 +559,9 @@ def get_camera_state(
 
 
 def validate_camera_inputs(
-    camera_position: Any,
-    camera_focal_point: Any,
-    camera_up: Any,
+    cameraPosition_D_Do: Any,
+    cameraFocalPoint_D_Do: Any,
+    cameraViewUp_D: Any,
     camera_parallel_scale: Any,
     return_camera_state: Any,
 ) -> tuple[
@@ -558,25 +573,25 @@ def validate_camera_inputs(
 ]:
     """Validates camera inputs shared by draw() and animate().
 
-    The camera position and focal-point position are positions expressed in the same
-    coordinate system: geometry axes relative to the first Airplane's center of gravity
-    for body-fixed views, or Earth axes relative to the Earth origin for free-flight
-    views. The camera up vector is a direction expressed in the corresponding axes.
-    Provided vectors are converted to floating-point NumPy arrays.
+    The camera's position and focal point are in diagram axes, relative to the diagram
+    origin, and its view up direction is in diagram axes. Provided vectors are converted
+    to floating-point NumPy arrays.
     """
-    if camera_position is not None:
-        camera_position = _parameter_validation.threeD_number_vectorLike_return_float(
-            camera_position, "camera_position"
-        )
-    if camera_focal_point is not None:
-        camera_focal_point = (
+    if cameraPosition_D_Do is not None:
+        cameraPosition_D_Do = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                camera_focal_point, "camera_focal_point"
+                cameraPosition_D_Do, "cameraPosition_D_Do"
             )
         )
-    if camera_up is not None:
-        camera_up = _parameter_validation.threeD_number_vectorLike_return_float(
-            camera_up, "camera_up"
+    if cameraFocalPoint_D_Do is not None:
+        cameraFocalPoint_D_Do = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                cameraFocalPoint_D_Do, "cameraFocalPoint_D_Do"
+            )
+        )
+    if cameraViewUp_D is not None:
+        cameraViewUp_D = _parameter_validation.threeD_number_vectorLike_return_float(
+            cameraViewUp_D, "cameraViewUp_D"
         )
     if camera_parallel_scale is not None:
         camera_parallel_scale = _parameter_validation.number_in_range_return_float(
@@ -586,9 +601,9 @@ def validate_camera_inputs(
         return_camera_state, "return_camera_state"
     )
     return (
-        camera_position,
-        camera_focal_point,
-        camera_up,
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
         camera_parallel_scale,
         return_camera_state,
     )
@@ -610,9 +625,9 @@ def draw(
     path: str | Path = "draw.webp",
     quality: int | float = 75.0,
     testing: bool | np.bool = False,
-    camera_position: np.ndarray | Sequence[float | int] | None = None,
-    camera_focal_point: np.ndarray | Sequence[float | int] | None = None,
-    camera_up: np.ndarray | Sequence[float | int] | None = None,
+    cameraPosition_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraFocalPoint_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
 ) -> CameraState | None:
@@ -679,29 +694,32 @@ def draw(
     :param testing: Set this to True to close the image after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :param camera_position: None, or an array-like object of 3 numbers (int or float)
-        representing the camera position. For body-fixed views, coordinates are in the
-        first Airplane's geometry axes, relative to its CG. For free-flight views,
-        coordinates are in Earth axes, relative to the Earth origin. Tuples, lists, and
-        ndarrays are accepted, and values are converted to floats internally. When
-        omitted, the mode's default camera position is used.
-    :param camera_focal_point: None, or an array-like object of 3 numbers (int or float)
-        representing the camera focal point. It uses the same coordinate system as
-        camera_position. Tuples, lists, and ndarrays are accepted, and values are
-        converted to floats internally. When omitted, the mode's default focal point is
-        used.
-    :param camera_up: None, or an array-like object of 3 numbers (int or float)
-        representing the camera up direction. It uses the same coordinate system as
-        camera_position. Tuples, lists, and ndarrays are accepted, and values are
-        converted to floats internally. When omitted, the mode's default up direction is
-        used.
+    :param cameraPosition_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's position (in diagram axes, relative to the
+        diagram origin). The diagram axes and diagram origin are the first Airplane's
+        geometry axes and CG, or Earth axes and the Earth origin for a free flight
+        solver. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default camera
+        position is used.
+    :param cameraFocalPoint_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's focal point (in diagram axes, relative to the
+        diagram origin). See cameraPosition_D_Do for the diagram axes and diagram
+        origin. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default focal
+        point is used.
+    :param cameraViewUp_D: None, or an array-like object of 3 numbers (int or float)
+        representing the camera's view up direction (in diagram axes). See
+        cameraPosition_D_Do for the diagram axes. It must not be parallel or
+        antiparallel to the view direction. Can be a tuple, list, or ndarray. Values are
+        converted to floats internally. When omitted, the mode's default view up
+        direction is used.
     :param camera_parallel_scale: Optional positive parallel-projection scale. When
         omitted alongside any camera override, the scale is fitted to the relevant
         geometry for the effective camera direction.
     :param return_camera_state: If True, return the final camera position, focal point,
-        up direction, and parallel scale after the preview interaction. The returned
-        dictionary can be passed to a later call using ``**camera_state``. The default
-        is False.
+        view up direction, and parallel scale after the preview interaction. The
+        returned dictionary can be passed to a later call using ``**camera_state``. The
+        default is False.
     :return: The final camera state if return_camera_state is True, otherwise None.
     """
     if not isinstance(
@@ -790,24 +808,24 @@ def draw(
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
     (
-        validated_camera_position,
-        validated_camera_focal_point,
-        validated_camera_up,
+        validatedCameraPosition_D_Do,
+        validatedCameraFocalPoint_D_Do,
+        validatedCameraViewUp_D,
         camera_parallel_scale,
         return_camera_state,
     ) = validate_camera_inputs(
-        camera_position,
-        camera_focal_point,
-        camera_up,
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
         camera_parallel_scale,
         return_camera_state,
     )
     has_camera_overrides = any(
         value is not None
         for value in (
-            camera_position,
-            camera_focal_point,
-            camera_up,
+            cameraPosition_D_Do,
+            cameraFocalPoint_D_Do,
+            cameraViewUp_D,
             camera_parallel_scale,
         )
     )
@@ -1115,9 +1133,9 @@ def draw(
             camera_fit_bounds = geometry_bounds
         apply_camera_parameters(
             plotter,
-            validated_camera_position,
-            validated_camera_focal_point,
-            validated_camera_up,
+            validatedCameraPosition_D_Do,
+            validatedCameraFocalPoint_D_Do,
+            validatedCameraViewUp_D,
             camera_parallel_scale,
             camera_fit_bounds,
             window_width / window_height,
@@ -1215,9 +1233,9 @@ def animate(
     quality: int | float = 75.0,
     speed: int | float | None = None,
     testing: bool | np.bool = False,
-    camera_position: np.ndarray | Sequence[float | int] | None = None,
-    camera_focal_point: np.ndarray | Sequence[float | int] | None = None,
-    camera_up: np.ndarray | Sequence[float | int] | None = None,
+    cameraPosition_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraFocalPoint_D_Do: np.ndarray | Sequence[float | int] | None = None,
+    cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
 ) -> CameraState | None:
@@ -1284,29 +1302,32 @@ def animate(
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
-    :param camera_position: None, or an array-like object of 3 numbers (int or float)
-        representing the camera position. For body-fixed views, coordinates are in the
-        first Airplane's geometry axes, relative to its CG. For free-flight views,
-        coordinates are in Earth axes, relative to the Earth origin. Tuples, lists, and
-        ndarrays are accepted, and values are converted to floats internally. When
-        omitted, the mode's default camera position is used.
-    :param camera_focal_point: None, or an array-like object of 3 numbers (int or float)
-        representing the camera focal point. It uses the same coordinate system as
-        camera_position. Tuples, lists, and ndarrays are accepted, and values are
-        converted to floats internally. When omitted, the mode's default focal point is
-        used.
-    :param camera_up: None, or an array-like object of 3 numbers (int or float)
-        representing the camera up direction. It uses the same coordinate system as
-        camera_position. Tuples, lists, and ndarrays are accepted, and values are
-        converted to floats internally. When omitted, the mode's default up direction is
-        used.
+    :param cameraPosition_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's position (in diagram axes, relative to the
+        diagram origin). The diagram axes and diagram origin are the first Airplane's
+        geometry axes and CG, or Earth axes and the Earth origin for a free flight
+        solver. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default camera
+        position is used.
+    :param cameraFocalPoint_D_Do: None, or an array-like object of 3 numbers (int or
+        float) representing the camera's focal point (in diagram axes, relative to the
+        diagram origin). See cameraPosition_D_Do for the diagram axes and diagram
+        origin. Can be a tuple, list, or ndarray. Values are converted to floats
+        internally. The units are in meters. When omitted, the mode's default focal
+        point is used.
+    :param cameraViewUp_D: None, or an array-like object of 3 numbers (int or float)
+        representing the camera's view up direction (in diagram axes). See
+        cameraPosition_D_Do for the diagram axes. It must not be parallel or
+        antiparallel to the view direction. Can be a tuple, list, or ndarray. Values are
+        converted to floats internally. When omitted, the mode's default view up
+        direction is used.
     :param camera_parallel_scale: Optional positive parallel-projection scale. When
         omitted alongside any camera override, the scale is fitted to the relevant
         geometry for the effective camera direction.
     :param return_camera_state: If True, return the final camera position, focal point,
-        up direction, and parallel scale after the preview interaction. The returned
-        dictionary can be passed to a later call using ``**camera_state``. The default
-        is False.
+        view up direction, and parallel scale after the preview interaction. The
+        returned dictionary can be passed to a later call using ``**camera_state``. The
+        default is False.
     :return: The final camera state if return_camera_state is True, otherwise None.
     """
     if not isinstance(
@@ -1374,24 +1395,24 @@ def animate(
         )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
     (
-        validated_camera_position,
-        validated_camera_focal_point,
-        validated_camera_up,
+        validatedCameraPosition_D_Do,
+        validatedCameraFocalPoint_D_Do,
+        validatedCameraViewUp_D,
         camera_parallel_scale,
         return_camera_state,
     ) = validate_camera_inputs(
-        camera_position,
-        camera_focal_point,
-        camera_up,
+        cameraPosition_D_Do,
+        cameraFocalPoint_D_Do,
+        cameraViewUp_D,
         camera_parallel_scale,
         return_camera_state,
     )
     has_camera_overrides = any(
         value is not None
         for value in (
-            camera_position,
-            camera_focal_point,
-            camera_up,
+            cameraPosition_D_Do,
+            cameraFocalPoint_D_Do,
+            cameraViewUp_D,
             camera_parallel_scale,
         )
     )
@@ -1802,9 +1823,9 @@ def animate(
 
         apply_camera_parameters(
             plotter,
-            validated_camera_position,
-            validated_camera_focal_point,
-            validated_camera_up,
+            validatedCameraPosition_D_Do,
+            validatedCameraFocalPoint_D_Do,
+            validatedCameraViewUp_D,
             camera_parallel_scale,
             camera_fit_bounds,
             window_width / window_height,

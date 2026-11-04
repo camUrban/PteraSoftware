@@ -24,7 +24,7 @@ class TestValidateCameraInputs(unittest.TestCase):
         self.assertIs(return_state, True)
 
     def test_invalid_vector_shape_is_rejected(self) -> None:
-        with self.assertRaisesRegex(ValueError, "camera_position"):
+        with self.assertRaisesRegex(ValueError, "cameraPosition_D_Do"):
             _output.validate_camera_inputs([1, 2], None, None, None, False)
 
     def test_non_positive_parallel_scale_is_rejected(self) -> None:

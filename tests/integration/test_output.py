@@ -194,13 +194,13 @@ class TestOutput(unittest.TestCase):
     def test_draw_and_animate_preserve_original_default_camera_framing(self) -> None:
         """Both rendering methods preserve the original default camera framing."""
         expected_camera_state = {
-            "camera_position": (
+            "cameraPosition_D_Do": (
                 -10.37451463829966,
                 -11.37451463829966,
                 11.393649372941187,
             ),
-            "camera_focal_point": (1.0, 0.0, 0.019134734641526818),
-            "camera_up": (0.0, 0.0, 1.0),
+            "cameraFocalPoint_D_Do": (1.0, 0.0, 0.019134734641526818),
+            "cameraViewUp_D": (0.0, 0.0, 1.0),
             "camera_parallel_scale": 5.0990554162579755,
         }
 
@@ -248,9 +248,9 @@ class TestOutput(unittest.TestCase):
     def test_draw_and_animate_support_partial_camera_overrides(self) -> None:
         """Partial camera overrides preserve supplied values and fit the view."""
         cases = (
-            ("camera_position", (4.0, -5.0, 6.0)),
-            ("camera_focal_point", (1.0, 2.0, 3.0)),
-            ("camera_up", (0.0, 1.0, 0.0)),
+            ("cameraPosition_D_Do", (4.0, -5.0, 6.0)),
+            ("cameraFocalPoint_D_Do", (1.0, 2.0, 3.0)),
+            ("cameraViewUp_D", (0.0, 1.0, 0.0)),
         )
 
         for render_function in (ps.draw, ps.animate):
@@ -272,9 +272,9 @@ class TestOutput(unittest.TestCase):
                     self.assertGreater(camera_state["camera_parallel_scale"], 0.0)
 
                     for key in (
-                        "camera_position",
-                        "camera_focal_point",
-                        "camera_up",
+                        "cameraPosition_D_Do",
+                        "cameraFocalPoint_D_Do",
+                        "cameraViewUp_D",
                     ):
                         self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
 
@@ -297,9 +297,9 @@ class TestOutput(unittest.TestCase):
                 self.assertEqual(camera_state["camera_parallel_scale"], 7.25)
 
                 for key in (
-                    "camera_position",
-                    "camera_focal_point",
-                    "camera_up",
+                    "cameraPosition_D_Do",
+                    "cameraFocalPoint_D_Do",
+                    "cameraViewUp_D",
                 ):
                     self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
 
@@ -307,9 +307,9 @@ class TestOutput(unittest.TestCase):
         """The returned camera state can be supplied to a later draw call."""
         camera_state = ps.draw(
             self.unsteady_solver,
-            camera_position=(3.0, -3.0, 3.0),
-            camera_focal_point=(0.0, 0.0, 0.0),
-            camera_up=(0.0, 0.0, 1.0),
+            cameraPosition_D_Do=(3.0, -3.0, 3.0),
+            cameraFocalPoint_D_Do=(0.0, 0.0, 0.0),
+            cameraViewUp_D=(0.0, 0.0, 1.0),
             camera_parallel_scale=4.0,
             return_camera_state=True,
             testing=True,
@@ -317,9 +317,9 @@ class TestOutput(unittest.TestCase):
         self.assertIsNotNone(camera_state)
         assert camera_state is not None
         self.assertEqual(camera_state["camera_parallel_scale"], 4.0)
-        npt.assert_allclose(camera_state["camera_position"], (3.0, -3.0, 3.0))
-        npt.assert_allclose(camera_state["camera_focal_point"], (0.0, 0.0, 0.0))
-        npt.assert_allclose(camera_state["camera_up"], (0.0, 0.0, 1.0))
+        npt.assert_allclose(camera_state["cameraPosition_D_Do"], (3.0, -3.0, 3.0))
+        npt.assert_allclose(camera_state["cameraFocalPoint_D_Do"], (0.0, 0.0, 0.0))
+        npt.assert_allclose(camera_state["cameraViewUp_D"], (0.0, 0.0, 1.0))
 
         reused_state = ps.draw(
             self.unsteady_solver,
@@ -339,9 +339,9 @@ class TestOutput(unittest.TestCase):
         """The returned camera state can be supplied to a later animate call."""
         camera_state = ps.animate(
             self.unsteady_solver,
-            camera_position=(3.0, -3.0, 3.0),
-            camera_focal_point=(0.0, 0.0, 0.0),
-            camera_up=(0.0, 0.0, 1.0),
+            cameraPosition_D_Do=(3.0, -3.0, 3.0),
+            cameraFocalPoint_D_Do=(0.0, 0.0, 0.0),
+            cameraViewUp_D=(0.0, 0.0, 1.0),
             camera_parallel_scale=4.0,
             return_camera_state=True,
             testing=True,
@@ -349,9 +349,9 @@ class TestOutput(unittest.TestCase):
         self.assertIsNotNone(camera_state)
         assert camera_state is not None
         self.assertEqual(camera_state["camera_parallel_scale"], 4.0)
-        npt.assert_allclose(camera_state["camera_position"], (3.0, -3.0, 3.0))
-        npt.assert_allclose(camera_state["camera_focal_point"], (0.0, 0.0, 0.0))
-        npt.assert_allclose(camera_state["camera_up"], (0.0, 0.0, 1.0))
+        npt.assert_allclose(camera_state["cameraPosition_D_Do"], (3.0, -3.0, 3.0))
+        npt.assert_allclose(camera_state["cameraFocalPoint_D_Do"], (0.0, 0.0, 0.0))
+        npt.assert_allclose(camera_state["cameraViewUp_D"], (0.0, 0.0, 1.0))
 
         reused_state = ps.animate(
             self.unsteady_solver,
@@ -373,7 +373,7 @@ class TestOutput(unittest.TestCase):
             with self.subTest(function=render_function.__name__):
                 camera_state = render_function(
                     self.unsteady_solver,
-                    camera_position=(4.0, -5.0, 6.0),
+                    cameraPosition_D_Do=(4.0, -5.0, 6.0),
                     return_camera_state=True,
                     testing=True,
                 )
@@ -381,16 +381,20 @@ class TestOutput(unittest.TestCase):
                 assert camera_state is not None
 
                 expected_keys = {
-                    "camera_position",
-                    "camera_focal_point",
-                    "camera_up",
+                    "cameraPosition_D_Do",
+                    "cameraFocalPoint_D_Do",
+                    "cameraViewUp_D",
                     "camera_parallel_scale",
                 }
                 self.assertEqual(set(camera_state), expected_keys)
 
-                npt.assert_allclose(camera_state["camera_position"], (4.0, -5.0, 6.0))
-                self.assertTrue(np.isfinite(camera_state["camera_focal_point"]).all())
-                self.assertTrue(np.isfinite(camera_state["camera_up"]).all())
+                npt.assert_allclose(
+                    camera_state["cameraPosition_D_Do"], (4.0, -5.0, 6.0)
+                )
+                self.assertTrue(
+                    np.isfinite(camera_state["cameraFocalPoint_D_Do"]).all()
+                )
+                self.assertTrue(np.isfinite(camera_state["cameraViewUp_D"]).all())
                 self.assertTrue(np.isfinite(camera_state["camera_parallel_scale"]))
                 self.assertGreater(camera_state["camera_parallel_scale"], 0.0)
 
@@ -542,9 +546,9 @@ class TestOutputSurfaceEffect(unittest.TestCase):
     def test_custom_camera_works_with_surface_effect(self) -> None:
         """Caller-specified cameras work when an image surface is present."""
         camera_options: dict[str, Any] = {
-            "camera_position": (3.0, -3.0, 3.0),
-            "camera_focal_point": (0.0, 0.0, 0.0),
-            "camera_up": (0.0, 0.0, 1.0),
+            "cameraPosition_D_Do": (3.0, -3.0, 3.0),
+            "cameraFocalPoint_D_Do": (0.0, 0.0, 0.0),
+            "cameraViewUp_D": (0.0, 0.0, 1.0),
             "camera_parallel_scale": 4.0,
             "return_camera_state": True,
             "testing": True,
@@ -629,9 +633,9 @@ class TestFreeFlightOutput(unittest.TestCase):
     def test_custom_camera_works_for_free_flight_draw_and_animate(self) -> None:
         """Caller-specified cameras work in Earth axes for free-flight output."""
         camera_options: dict[str, Any] = {
-            "camera_position": (10.0, -10.0, -10.0),
-            "camera_focal_point": (0.0, 0.0, 0.0),
-            "camera_up": (0.0, 0.0, -1.0),
+            "cameraPosition_D_Do": (10.0, -10.0, -10.0),
+            "cameraFocalPoint_D_Do": (0.0, 0.0, 0.0),
+            "cameraViewUp_D": (0.0, 0.0, -1.0),
             "camera_parallel_scale": 20.0,
             "return_camera_state": True,
             "testing": True,

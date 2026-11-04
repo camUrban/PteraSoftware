@@ -15,7 +15,6 @@ __all__ = [
     "Airfoil",
     "Airplane",
     "AirplaneMovement",
-    "CameraState",
     "FreeFlightMovement",
     "FreeFlightOperatingPointMovement",
     "FreeFlightUnsteadyProblem",
@@ -89,7 +88,6 @@ if TYPE_CHECKING:
     from pterasoftware._movements.wing_movement import WingMovement
     from pterasoftware._operating_point import OperatingPoint
     from pterasoftware._output import (
-        CameraState,
         animate,
         draw,
         log_results,
@@ -164,7 +162,6 @@ _LAZY_CALLABLES = {
         "pterasoftware._movements.airplane_movement",
         "AirplaneMovement",
     ),
-    "CameraState": ("pterasoftware._output", "CameraState"),
     "FreeFlightMovement": (
         "pterasoftware._movements.free_flight_movement",
         "FreeFlightMovement",

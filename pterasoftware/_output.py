@@ -7,7 +7,7 @@ import os.path
 import time
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, TypedDict, cast
+from typing import Any, cast
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -32,23 +32,6 @@ from . import (
     _unsteady_ring_vortex_lattice_method,
 )
 from ._movements import free_flight_movement as free_flight_movement_mod
-
-
-class CameraState(TypedDict):
-    """Describes the final state of a rendered camera.
-
-    The cameraPosition_D_Do and cameraFocalPoint_D_Do entries hold the camera's position
-    and focal point (in diagram axes, relative to the diagram origin), and the
-    cameraViewUp_D entry holds its view up direction (in diagram axes). The diagram axes
-    and diagram origin are the first Airplane's geometry axes and CG, or Earth axes and
-    the Earth origin for a free flight solver. The units are in meters.
-    """
-
-    cameraPosition_D_Do: tuple[float, float, float]
-    cameraFocalPoint_D_Do: tuple[float, float, float]
-    cameraViewUp_D: tuple[float, float, float]
-    camera_parallel_scale: float
-
 
 logger = _logging.get_logger("output")
 
@@ -540,22 +523,15 @@ def apply_camera_parameters(
 
 def get_camera_state(
     plotter: pv.Plotter,
-) -> CameraState:
+) -> dict[str, Any]:
     """Returns the camera's current position and focal point (in diagram axes, relative
     to the diagram origin), view up direction (in diagram axes), and parallel scale."""
     return {
-        "cameraPosition_D_Do": cast(
-            tuple[float, float, float],
-            tuple(float(value) for value in plotter.camera.position),
+        "cameraPosition_D_Do": tuple(float(value) for value in plotter.camera.position),
+        "cameraFocalPoint_D_Do": tuple(
+            float(value) for value in plotter.camera.focal_point
         ),
-        "cameraFocalPoint_D_Do": cast(
-            tuple[float, float, float],
-            tuple(float(value) for value in plotter.camera.focal_point),
-        ),
-        "cameraViewUp_D": cast(
-            tuple[float, float, float],
-            tuple(float(value) for value in plotter.camera.up),
-        ),
+        "cameraViewUp_D": tuple(float(value) for value in plotter.camera.up),
         "camera_parallel_scale": float(plotter.camera.parallel_scale),
     }
 
@@ -632,7 +608,7 @@ def draw(
     cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
-) -> CameraState | None:
+) -> dict[str, Any] | None:
     """Draws a solver's Airplane(s).
 
     For a FreeFlightUnsteadyRingVortexLatticeMethodSolver, the final time step's
@@ -722,7 +698,9 @@ def draw(
         view up direction, and parallel scale after the preview interaction. The
         returned dictionary can be unpacked as keyword arguments into a later call to
         reuse the view. The default is False.
-    :return: The final camera state if return_camera_state is True, otherwise None.
+    :return: If return_camera_state is True, a dictionary of the final camera state,
+        whose keys are cameraPosition_D_Do, cameraFocalPoint_D_Do, and cameraViewUp_D
+        (each a tuple of 3 floats) and camera_parallel_scale (a float). Otherwise None.
     """
     if not isinstance(
         solver,
@@ -1242,7 +1220,7 @@ def animate(
     cameraViewUp_D: np.ndarray | Sequence[float | int] | None = None,
     camera_parallel_scale: int | float | None = None,
     return_camera_state: bool | np.bool = False,
-) -> CameraState | None:
+) -> dict[str, Any] | None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
     its subclasses (the aeroelastic or free flight solver).
 
@@ -1332,7 +1310,9 @@ def animate(
         view up direction, and parallel scale after the preview interaction. The
         returned dictionary can be unpacked as keyword arguments into a later call to
         reuse the view. The default is False.
-    :return: The final camera state if return_camera_state is True, otherwise None.
+    :return: If return_camera_state is True, a dictionary of the final camera state,
+        whose keys are cameraPosition_D_Do, cameraFocalPoint_D_Do, and cameraViewUp_D
+        (each a tuple of 3 floats) and camera_parallel_scale (a float). Otherwise None.
     """
     if not isinstance(
         unsteady_solver,

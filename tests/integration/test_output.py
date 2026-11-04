@@ -232,7 +232,7 @@ class TestOutput(unittest.TestCase):
 
             for camera_key, expected_value in expected_camera_state.items():
                 with self.subTest(method=method_name, camera_property=camera_key):
-                    actual_value = cast(Any, camera_state)[camera_key]
+                    actual_value = camera_state[camera_key]
 
                     if isinstance(expected_value, tuple):
                         self.assertEqual(len(actual_value), len(expected_value))
@@ -268,7 +268,7 @@ class TestOutput(unittest.TestCase):
                     self.assertIsNotNone(camera_state)
                     assert camera_state is not None
 
-                    npt.assert_allclose(cast(Any, camera_state)[parameter], value)
+                    npt.assert_allclose(camera_state[parameter], value)
                     self.assertGreater(camera_state["camera_parallel_scale"], 0.0)
 
                     for key in (
@@ -276,7 +276,7 @@ class TestOutput(unittest.TestCase):
                         "cameraFocalPoint_D_Do",
                         "cameraViewUp_D",
                     ):
-                        self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
+                        self.assertTrue(np.isfinite(camera_state[key]).all())
 
                     self.assertTrue(np.isfinite(camera_state["camera_parallel_scale"]))
 
@@ -301,7 +301,7 @@ class TestOutput(unittest.TestCase):
                     "cameraFocalPoint_D_Do",
                     "cameraViewUp_D",
                 ):
-                    self.assertTrue(np.isfinite(cast(Any, camera_state)[key]).all())
+                    self.assertTrue(np.isfinite(camera_state[key]).all())
 
     def test_draw_returns_and_reuses_camera_state(self) -> None:
         """The returned camera state can be supplied to a later draw call."""
@@ -330,10 +330,7 @@ class TestOutput(unittest.TestCase):
         self.assertIsNotNone(reused_state)
         assert reused_state is not None
         for key in camera_state:
-            npt.assert_allclose(
-                cast(Any, reused_state)[key],
-                cast(Any, camera_state)[key],
-            )
+            npt.assert_allclose(reused_state[key], camera_state[key])
 
     def test_animate_returns_and_reuses_camera_state(self) -> None:
         """The returned camera state can be supplied to a later animate call."""
@@ -362,10 +359,7 @@ class TestOutput(unittest.TestCase):
         self.assertIsNotNone(reused_state)
         assert reused_state is not None
         for key in camera_state:
-            npt.assert_allclose(
-                cast(Any, reused_state)[key],
-                cast(Any, camera_state)[key],
-            )
+            npt.assert_allclose(reused_state[key], camera_state[key])
 
     def test_partial_camera_override_returns_reusable_state(self) -> None:
         """A partial camera override returns a complete, reusable camera state."""
@@ -408,10 +402,7 @@ class TestOutput(unittest.TestCase):
                 assert reused_state is not None
 
                 for key in expected_keys:
-                    npt.assert_allclose(
-                        cast(Any, reused_state)[key],
-                        cast(Any, camera_state)[key],
-                    )
+                    npt.assert_allclose(reused_state[key], camera_state[key])
 
 
 class TestLogResults(unittest.TestCase):

@@ -1031,13 +1031,13 @@ def draw(
         # set the parallel projection's scale.
         airplane_bounds = np.array(panel_surfaces.bounds, dtype=float)
         cameraFocalPoint_E_Eo = 0.5 * (airplane_bounds[1::2] + airplane_bounds[::2])
-        airplaneDiagonal = float(
+        airplane_diagonal = float(
             np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
         )
         plotter.camera.focal_point = tuple(cameraFocalPoint_E_Eo)
         plotter.camera.position = tuple(
             cameraFocalPoint_E_Eo
-            + 3.0 * airplaneDiagonal * freeFlightCameraOffsetDirection_E
+            + 3.0 * airplane_diagonal * freeFlightCameraOffsetDirection_E
         )
         plotter.camera.up = freeFlightViewUp_E
 
@@ -1090,12 +1090,14 @@ def draw(
         # For a caller-specified camera, initialize the equivalent view here instead,
         # then keep cpos=None so show() cannot overwrite the requested values.
         if not is_free_flight and image_surface_mesh is None:
-            geometryBoundsArray = np.asarray(geometry_bounds, dtype=float)
+            geometry_bounds_array = np.asarray(geometry_bounds, dtype=float)
             cameraFocalPoint_GP1_CgP1 = 0.5 * (
-                geometryBoundsArray[0::2] + geometryBoundsArray[1::2]
+                geometry_bounds_array[0::2] + geometry_bounds_array[1::2]
             )
-            boundsDiagonalLength = float(
-                np.linalg.norm(geometryBoundsArray[1::2] - geometryBoundsArray[0::2])
+            bounds_diagonal_length = float(
+                np.linalg.norm(
+                    geometry_bounds_array[1::2] - geometry_bounds_array[0::2]
+                )
             )
             defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
                 3.0
@@ -1104,7 +1106,7 @@ def draw(
             plotter.camera.position = tuple(
                 cameraFocalPoint_GP1_CgP1
                 + 3.0
-                * max(boundsDiagonalLength, 1.0)
+                * max(bounds_diagonal_length, 1.0)
                 * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)
@@ -1551,7 +1553,7 @@ def animate(
         ].operating_point.CgP1_E_Eo
         finalPosition_E_Eo = last_step_operating_point.CgP1_E_Eo
         trajectoryMidpoint_E_Eo = 0.5 * (initialPosition_E_Eo + finalPosition_E_Eo)
-        trajectoryExtent = float(
+        trajectory_extent = float(
             np.linalg.norm(finalPosition_E_Eo - initialPosition_E_Eo)
         )
 
@@ -1565,17 +1567,18 @@ def animate(
             step_transforms[last_step],
         )
         airplane_bounds = np.array(first_step_panel_surfaces.bounds, dtype=float)
-        airplaneDiagonal = float(
+        airplane_diagonal = float(
             np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
         )
 
         # Place the camera along the Earth-axes camera offset direction from the
         # trajectory's midpoint, with physical up, far enough back to clear the geometry
         # at both ends.
-        cameraPadding = max(2.0 * airplaneDiagonal, 0.5 * trajectoryExtent)
-        cameraDistance = trajectoryExtent + cameraPadding
+        padding = max(2.0 * airplane_diagonal, 0.5 * trajectory_extent)
+        camera_distance = trajectory_extent + padding
         cameraPosition_E_Eo = (
-            trajectoryMidpoint_E_Eo + cameraDistance * freeFlightCameraOffsetDirection_E
+            trajectoryMidpoint_E_Eo
+            + camera_distance * freeFlightCameraOffsetDirection_E
         )
         free_flight_cpos = [
             tuple(cameraPosition_E_Eo),
@@ -1792,12 +1795,12 @@ def animate(
         # show() would otherwise establish it from cpos. The image-surface and
         # free-flight branches already have their mode-specific camera initialized.
         if not is_free_flight and image_surface_mesh is None:
-            sceneBoundsArray = np.asarray(plotter.bounds, dtype=float)
+            scene_bounds_array = np.asarray(plotter.bounds, dtype=float)
             cameraFocalPoint_GP1_CgP1 = 0.5 * (
-                sceneBoundsArray[0::2] + sceneBoundsArray[1::2]
+                scene_bounds_array[0::2] + scene_bounds_array[1::2]
             )
-            boundsDiagonalLength = float(
-                np.linalg.norm(sceneBoundsArray[1::2] - sceneBoundsArray[0::2])
+            bounds_diagonal_length = float(
+                np.linalg.norm(scene_bounds_array[1::2] - scene_bounds_array[0::2])
             )
             defaultCameraOffsetDirection_GP1 = np.array([-1.0, -1.0, 1.0]) / math.sqrt(
                 3.0
@@ -1806,7 +1809,7 @@ def animate(
             plotter.camera.position = tuple(
                 cameraFocalPoint_GP1_CgP1
                 + 3.0
-                * max(boundsDiagonalLength, 1.0)
+                * max(bounds_diagonal_length, 1.0)
                 * defaultCameraOffsetDirection_GP1
             )
             plotter.camera.up = (0.0, 0.0, 1.0)

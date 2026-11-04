@@ -67,7 +67,7 @@ class OperatingPoint:
         surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
         surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
         externalFX_W: float | int = 0.0,
-        nu: float | int = 15.06e-6,
+        nu: float | int = 14.61e-6,
         g_E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         omegas_BP1__E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
     ) -> None:
@@ -75,7 +75,12 @@ class OperatingPoint:
 
         :param rho: The fluid's density. It must be a positive number (int or float) and
             will be converted internally to a float. The units are in kilograms per
-            meters cubed. The default is 1.225.
+            meters cubed. The default is 1.225, which is the mean sea level air density
+            adopted by the ISO 2533:1975 Standard Atmosphere, where the standard
+            pressure is 101325 Pa and the standard temperature is 15 degrees Celsius.
+            This is colder than typical laboratory conditions. For air at 20 degrees
+            Celsius and the same pressure, the standard's formulas give 1.204 (rounded
+            to four significant digits).
         :param vCg__E: The speed of the Airplane's or Airplanes' CG(s) (observed from
             the Earth frame). In formation flight with multiple Airplanes, all Airplanes
             share the same velocity magnitude. Given that (1) this is the magnitude of a
@@ -147,9 +152,13 @@ class OperatingPoint:
         :param nu: The fluid's kinematic viscosity. The units are in meters squared per
             second. This parameter is only used in the unsteady ring vortex lattice
             method's vortex core growth model. It must be a positive number and will be
-            converted internally to a float. Its units are in meters squared per second.
-            The default is 15.06e-6, which corresponds to air's kinematic viscosity at
-            20 degrees Celsius [source: https://www.engineeringtoolbox.com].
+            converted internally to a float. The default is 14.61e-6, which is the mean
+            sea level kinematic viscosity computed with the ISO 2533:1975 Standard
+            Atmosphere's formulas and rounded to four significant digits, where the
+            standard pressure is 101325 Pa and the standard temperature is 15 degrees
+            Celsius. This is colder than typical laboratory conditions. For air at 20
+            degrees Celsius and the same pressure, the standard's formulas give 15.06e-6
+            (rounded to four significant digits).
         :param g_E: An array-like of 3 numbers (int or float) representing the
             gravitational acceleration vector (in Earth axes). Can be a tuple, list, or
             ndarray. Values are converted to floats internally. The units are in meters

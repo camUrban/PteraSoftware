@@ -106,7 +106,7 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertEqual(op_default.alpha, 5.0)
         self.assertEqual(op_default.beta, 0.0)
         self.assertEqual(op_default.externalFX_W, 0.0)
-        self.assertEqual(op_default.nu, 15.06e-6)
+        self.assertEqual(op_default.nu, 14.61e-6)
 
     def test_rho_parameter_validation(self) -> None:
         """Test rho parameter validation."""

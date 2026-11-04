@@ -7,6 +7,9 @@ Based on an equivalent XFLR5 testing case, the expected output for this case is:
 The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a
 ring vortex lattice method solver. The geometry in this case is static. Therefore, the
 results of this unsteady solver should converge to be close to XFLR5's static result.
+
+The XFLR5 cases used XFLR5's default fluid properties (rho=1.225 kg/m^3 and nu=1.506e-5
+m^2/s), so this test's operating point uses the same values.
 """
 
 import unittest
@@ -37,7 +40,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         :return: None
         """
         cls.unsteady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
+            solver_fixtures.make_xflr5_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
         cls.unsteady_ring_vortex_lattice_method_validation_solver.run(
             prescribed_wake=True,
@@ -175,7 +178,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         :return: None
         """
         unrun_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
+            solver_fixtures.make_xflr5_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
         with patch.object(pv.Plotter, "show") as mock_show:
             with self.assertRaises(RuntimeError):

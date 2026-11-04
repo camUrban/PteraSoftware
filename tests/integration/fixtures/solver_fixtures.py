@@ -4,48 +4,48 @@ import pterasoftware as ps
 from tests.integration.fixtures import problem_fixtures
 
 
-def make_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
+def make_xflr5_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
     ps.SteadyHorseshoeVortexLatticeMethodSolver
 ):
-    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver to be used as a
-    fixture.
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with the XFLR5
+    cases' flow conditions to be used as a fixture.
 
-    :return steady_horseshoe_vortex_lattice_method_validation_solver:
+    :return xflr5_steady_horseshoe_vortex_lattice_method_validation_solver:
         SteadyHorseshoeVortexLatticeMethodSolver This is the
         SteadyHorseshoeVortexLatticeMethodSolver fixture.
     """
-    steady_validation_problem = problem_fixtures.make_steady_validation_problem()
+    xflr5_steady_validation_problem = (
+        problem_fixtures.make_xflr5_steady_validation_problem()
+    )
 
-    steady_horseshoe_vortex_lattice_method_validation_solver = (
+    xflr5_steady_horseshoe_vortex_lattice_method_validation_solver = (
         ps.SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem=steady_validation_problem
+            steady_problem=xflr5_steady_validation_problem
         )
     )
 
-    return steady_horseshoe_vortex_lattice_method_validation_solver
+    return xflr5_steady_horseshoe_vortex_lattice_method_validation_solver
 
 
-def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver() -> (
+def make_xflr5_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver() -> (
     ps.SteadyHorseshoeVortexLatticeMethodSolver
 ):
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with multi-wing
-    geometry to be used as a fixture.
+    geometry and the XFLR5 cases' flow conditions to be used as a fixture.
 
-    :return steady_horseshoe_vortex_lattice_method_validation_solver:
+    :return xflr5_multiple_wing_validation_solver:
         SteadyHorseshoeVortexLatticeMethodSolver This is the
         SteadyHorseshoeVortexLatticeMethodSolver fixture.
     """
-    steady_validation_problem = (
-        problem_fixtures.make_steady_multiple_wing_validation_problem()
+    xflr5_steady_multiple_wing_validation_problem = (
+        problem_fixtures.make_xflr5_steady_multiple_wing_validation_problem()
     )
 
-    steady_horseshoe_vortex_lattice_method_validation_solver = (
-        ps.SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem=steady_validation_problem
-        )
+    xflr5_multiple_wing_validation_solver = ps.SteadyHorseshoeVortexLatticeMethodSolver(
+        steady_problem=xflr5_steady_multiple_wing_validation_problem
     )
 
-    return steady_horseshoe_vortex_lattice_method_validation_solver
+    return xflr5_multiple_wing_validation_solver
 
 
 def make_steady_ring_vortex_lattice_method_validation_solver() -> (
@@ -65,6 +65,29 @@ def make_steady_ring_vortex_lattice_method_validation_solver() -> (
     )
 
     return steady_ring_vortex_lattice_method_validation_solver
+
+
+def make_xflr5_steady_ring_vortex_lattice_method_validation_solver() -> (
+    ps.SteadyRingVortexLatticeMethodSolver
+):
+    """This function creates a SteadyRingVortexLatticeMethodSolver with the XFLR5 cases'
+    flow conditions to be used as a fixture.
+
+    :return xflr5_steady_ring_vortex_lattice_method_validation_solver:
+        SteadyRingVortexLatticeMethodSolver This is the
+        SteadyRingVortexLatticeMethodSolver fixture.
+    """
+    xflr5_steady_validation_problem = (
+        problem_fixtures.make_xflr5_steady_validation_problem()
+    )
+
+    xflr5_steady_ring_vortex_lattice_method_validation_solver = (
+        ps.SteadyRingVortexLatticeMethodSolver(
+            steady_problem=xflr5_steady_validation_problem
+        )
+    )
+
+    return xflr5_steady_ring_vortex_lattice_method_validation_solver
 
 
 def make_steady_ring_vortex_lattice_method_formation_solver() -> (
@@ -111,6 +134,29 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
+
+
+def make_xflr5_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry() -> (
+    ps.UnsteadyRingVortexLatticeMethodSolver
+):
+    """This function creates a UnsteadyRingVortexLatticeMethodSolver with static
+    geometry and the XFLR5 cases' flow conditions to be used as a fixture.
+
+    :return xflr5_unsteady_ring_vortex_lattice_method_validation_solver:
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
+    """
+    xflr5_unsteady_validation_problem = (
+        problem_fixtures.make_xflr5_unsteady_validation_problem_with_static_geometry()
+    )
+
+    xflr5_unsteady_ring_vortex_lattice_method_validation_solver = (
+        ps.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_problem=xflr5_unsteady_validation_problem
+        )
+    )
+
+    return xflr5_unsteady_ring_vortex_lattice_method_validation_solver
 
 
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry() -> (

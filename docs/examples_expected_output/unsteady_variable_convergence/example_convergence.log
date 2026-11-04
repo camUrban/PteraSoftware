@@ -664,9 +664,9 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 64.38%
+INFO    |convergence                                 |            cFZ_W: 64.39%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 83.58%
+INFO    |convergence                                 |            cMY_W_Cg: 83.59%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 3
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -841,7 +841,7 @@ INFO    |convergence                                 |            cFX_W: 62.30%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 47.74%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 65.66%
+INFO    |convergence                                 |            cMY_W_Cg: 65.65%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -1068,7 +1068,7 @@ INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 62.07%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 94.16%
+INFO    |convergence                                 |            cMY_W_Cg: 94.17%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 6/96
@@ -2010,7 +2010,7 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 90.95%
+INFO    |convergence                                 |            cFZ_W: 90.96%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2723,7 +2723,7 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 80.86%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 55.55%
+INFO    |convergence                                 |            cFZ_W: 55.56%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2737,7 +2737,7 @@ INFO    |convergence                                 |          Wake type conver
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 74.32%
+INFO    |convergence                                 |            cFZ_W: 74.33%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 62.76%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2745,7 +2745,7 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 82.02%
+INFO    |convergence                                 |            cFZ_W: 82.03%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3044,7 +3044,7 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 81.87%
+INFO    |convergence                                 |            cFZ_W: 81.88%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3343,7 +3343,7 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 81.83%
+INFO    |convergence                                 |            cFZ_W: 81.84%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3389,12 +3389,12 @@ INFO    |convergence                                 |            cFX_W: 85.49%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 74.54%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 96.77%
+INFO    |convergence                                 |            cMY_W_Cg: 96.76%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 93.14%
+INFO    |convergence                                 |            cFZ_W: 93.15%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3643,7 +3643,7 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.91%
+INFO    |convergence                                 |            cFZ_W: 63.92%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 83.43%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3722,7 +3722,7 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 87.71%
+INFO    |convergence                                 |            cFZ_W: 87.72%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3801,7 +3801,7 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 90.86%
+INFO    |convergence                                 |            cFZ_W: 90.87%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4023,7 +4023,7 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.21%
+INFO    |convergence                                 |            cFZ_W: 91.22%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4394,7 +4394,7 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.09%
+INFO    |convergence                                 |            cFZ_W: 91.10%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%

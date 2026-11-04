@@ -2,6 +2,9 @@
 
 Based on an identical XFLR5 VLM2 testing case, the expected output for this case is: CL:
 0.784     CDi:    0.019     Cm:     -0.678
+
+The XFLR5 cases used XFLR5's default fluid properties (rho=1.225 kg/m^3 and nu=1.506e-5
+m^2/s), so this test's operating point uses the same values.
 """
 
 import unittest
@@ -30,7 +33,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
         cls.steady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_xflr5_steady_ring_vortex_lattice_method_validation_solver()
         )
         cls.steady_ring_vortex_lattice_method_validation_solver.run()
 
@@ -129,7 +132,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
         unrun_solver = (
-            solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_xflr5_steady_ring_vortex_lattice_method_validation_solver()
         )
         with patch.object(pv.Plotter, "show") as mock_show:
             with self.assertRaises(RuntimeError):

@@ -303,7 +303,7 @@ example_operating_point = ps.OperatingPoint(
     beta=0.0,
     angles_E_to_BP1_izyx=(0.0, 3.3, 0.0),
     externalFX_W=0.0,
-    nu=15.06e-6,
+    nu=14.61e-6,
     g_E=(0.0, 0.0, 9.80665),
 )
 

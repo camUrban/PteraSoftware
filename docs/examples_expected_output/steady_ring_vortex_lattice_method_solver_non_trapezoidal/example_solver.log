@@ -6,7 +6,7 @@ WARNING |_serialization                              |The file was saved with un
 WARNING |_serialization                              |The current working tree has uncommitted changes
 INFO    |_serialization                              |Loaded SteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
-INFO    |output                                      |  Reynolds Number: 8.46E+05
+INFO    |output                                      |  Reynolds Number: 8.72E+05
 INFO    |output                                      |  Forces (in Geometry Axes):
 INFO    |output                                      |    fX_G:           -34.3 N
 INFO    |output                                      |    fY_G:       -7.20E-12 N

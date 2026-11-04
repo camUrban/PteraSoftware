@@ -165,7 +165,7 @@ INFO    |unsteady_ring_vortex_lattice_method         |Solver completed in <time>
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 15.0 m/s
 INFO    |trim                                        |    alpha: 0.704 deg
-INFO    |trim                                        |    beta: -9.62E-06 deg
+INFO    |trim                                        |    beta: -9.60E-06 deg
 INFO    |trim                                        |    externalFX_W: 7.51 N
 INFO    |trim                                        |  Objective: 0.225
 INFO    |movements.movement                          |Starting analytical delta_time optimization
@@ -175,7 +175,7 @@ INFO    |unsteady_ring_vortex_lattice_method         |Solver completed in <time>
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 15.0 m/s
 INFO    |trim                                        |    alpha: 0.704 deg
-INFO    |trim                                        |    beta: -9.62E-06 deg
+INFO    |trim                                        |    beta: -9.60E-06 deg
 INFO    |trim                                        |    externalFX_W: 7.51 N
 INFO    |trim                                        |  Objective: 0.225
 INFO    |movements.movement                          |Starting analytical delta_time optimization
@@ -185,7 +185,7 @@ INFO    |unsteady_ring_vortex_lattice_method         |Solver completed in <time>
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 15.0 m/s
 INFO    |trim                                        |    alpha: 0.714 deg
-INFO    |trim                                        |    beta: -9.62E-06 deg
+INFO    |trim                                        |    beta: -9.60E-06 deg
 INFO    |trim                                        |    externalFX_W: 7.51 N
 INFO    |trim                                        |  Objective: 0.223
 INFO    |movements.movement                          |Starting analytical delta_time optimization
@@ -205,7 +205,7 @@ INFO    |unsteady_ring_vortex_lattice_method         |Solver completed in <time>
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 15.0 m/s
 INFO    |trim                                        |    alpha: 0.704 deg
-INFO    |trim                                        |    beta: -9.62E-06 deg
+INFO    |trim                                        |    beta: -9.60E-06 deg
 INFO    |trim                                        |    externalFX_W: 7.52 N
 INFO    |trim                                        |  Objective: 0.225
 INFO    |movements.movement                          |Starting analytical delta_time optimization

@@ -328,9 +328,13 @@ del main_wing_movement
 del reflected_main_wing_movement
 
 # Define an OperatingPoint and OperatingPointMovement corresponding to the conditions of
-# the validation study.
+# the validation study. The experiment was run in a laboratory, so rather than using the
+# default fluid properties (air at 15 degrees Celsius), use the density and kinematic
+# viscosity of air at 20 degrees Celsius and standard sea level pressure, computed with
+# the ISO 2533:1975 Standard Atmosphere's formulas and rounded to four significant
+# digits.
 validation_operating_point = ps.OperatingPoint(
-    vCg__E=VALIDATION_VELOCITY, alpha=VALIDATION_ALPHA
+    rho=1.204, vCg__E=VALIDATION_VELOCITY, alpha=VALIDATION_ALPHA, nu=15.06e-6
 )
 validation_operating_point_movement = ps.OperatingPointMovement(
     base_operating_point=validation_operating_point

@@ -1,0 +1,32 @@
+name: dependabot-title
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  dependabot-title:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Shorten the pull request title
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          non_ci_files=$(gh pr view "$PR_URL" --json files --jq '[.files[].path | select(startswith(".github/") or . == ".pre-commit-config.yaml" | not)] | length')
+          if [ "$non_ci_files" -eq 0 ]; then
+            title="Bump CI tooling"
+          else
+            dependency_count=$(gh pr view "$PR_URL" --json commits --jq '[.commits[] | select(any(.authors[]; .login == "dependabot[bot]")) | .messageBody | split("\n")[] | select(startswith("- dependency-name: "))] | unique | length')
+            if [ "$dependency_count" -eq 1 ]; then
+              title="Bump runtime dependency"
+            else
+              title="Bump runtime dependencies"
+            fi
+          fi
+          gh pr edit "$PR_URL" --title "$title"

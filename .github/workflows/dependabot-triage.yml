@@ -1,0 +1,47 @@
+name: dependabot-triage
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  dependabot-triage:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Shorten the pull request title
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          non_ci_files=$(gh pr view "$PR_URL" --json files --jq '[.files[].path | select(startswith(".github/") or . == ".pre-commit-config.yaml" | not)] | length')
+          if [ "$non_ci_files" -eq 0 ]; then
+            title="Bump CI tooling"
+          else
+            dependency_count=$(gh pr view "$PR_URL" --json commits --jq '[.commits[] | select(any(.authors[]; .login == "dependabot[bot]")) | .messageBody | split("\n")[] | select(startswith("- dependency-name: "))] | unique | length')
+            if [ "$dependency_count" -eq 1 ]; then
+              title="Bump runtime dependency"
+            else
+              title="Bump runtime dependencies"
+            fi
+          fi
+          gh pr edit "$PR_URL" --title "$title"
+      - name: Set the milestone to the lowest open release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          REPO: ${{ github.repository }}
+        run: |
+          has_milestone=$(gh pr view "$PR_URL" --json milestone --jq '.milestone != null')
+          if [ "$has_milestone" = "true" ]; then
+            exit 0
+          fi
+          milestone=$(gh api "repos/$REPO/milestones?state=open&per_page=100" --jq '[.[].title | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(ltrimstr("v") | split(".") | map(tonumber)) | first // empty')
+          if [ -n "$milestone" ]; then
+            gh pr edit "$PR_URL" --milestone "$milestone"
+          fi

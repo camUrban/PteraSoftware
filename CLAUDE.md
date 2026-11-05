@@ -34,7 +34,7 @@ Requires Python 3.11, but active development is done in 3.14
 
 ### Relevant Directories, Packages, and Files
 
-- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (`ascii-only.yml`, `ci.yml`, `dependabot-title.yml`, `label-sync.yml`, `pre-commit-hooks.yml`, `private-access.yml`, `publish.yml`, and `zizmor.yml`)
+- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (`ascii-only.yml`, `ci.yml`, `dependabot-triage.yml`, `label-sync.yml`, `pre-commit-hooks.yml`, `private-access.yml`, `publish.yml`, and `zizmor.yml`)
 - `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
 - `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)

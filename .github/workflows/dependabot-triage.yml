@@ -1,4 +1,4 @@
-name: dependabot-title
+name: dependabot-triage
 
 on:
   pull_request:
@@ -7,10 +7,11 @@ on:
 permissions: {}
 
 jobs:
-  dependabot-title:
+  dependabot-triage:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
+      issues: write
       pull-requests: write
     steps:
       - name: Shorten the pull request title
@@ -30,3 +31,14 @@ jobs:
             fi
           fi
           gh pr edit "$PR_URL" --title "$title"
+      - name: Set the milestone to the lowest open release
+        if: github.event.pull_request.milestone == null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          REPO: ${{ github.repository }}
+        run: |
+          milestone=$(gh api "repos/$REPO/milestones?state=open&per_page=100" --jq '[.[].title | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(ltrimstr("v") | split(".") | map(tonumber)) | first // empty')
+          if [ -n "$milestone" ]; then
+            gh pr edit "$PR_URL" --milestone "$milestone"
+          fi

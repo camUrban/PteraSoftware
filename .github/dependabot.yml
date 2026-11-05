@@ -3,6 +3,8 @@ multi-ecosystem-groups:
   ci-tooling:
     schedule:
       interval: monthly
+    assignees:
+      - camUrban
 updates:
   - package-ecosystem: github-actions
     directory: /

@@ -27,7 +27,7 @@ Its blocks are the project-tagged quantities:
 | $\mathbf{v}_n$          | `vCgP1_E__E`              | Velocity of the first `Airplane`'s CG, in Earth axes, observed from the Earth frame (m/s)                  |
 | $\boldsymbol{\omega}_n$ | `omegasP1Rad_E__E`        | Angular velocity of the first `Airplane`'s body axes, in Earth axes, observed from the Earth frame (rad/s) |
 
-All four blocks are components in a single iterate-independent axes system (Earth axes), with angular quantities in radians, so the residuals, updates, and inner products of Section 5 are plain vector arithmetic. The state is a conversion of MuJoCo's internal representation (position plus quaternion in `qpos`, velocities in `qvel`, where MuJoCo world axes equal Earth axes), not MuJoCo's variables directly, and the conversion runs one way: every $S$ evaluation ends with an extraction into these tags, while restores go through the saved native MuJoCo snapshot. The `OperatingPoint` seam inside $A$ converts per evaluation: degrees for the angle block, and a rotation into body axes plus degrees per second for `omegas_BP1__E`.
+All four blocks are components in a single iterate-independent axes system (Earth axes), with angular quantities in radians, so the residuals, updates, and dot products of Section 5 are plain vector arithmetic. The state is a conversion of MuJoCo's internal representation (position plus quaternion in `qpos`, velocities in `qvel`, where MuJoCo world axes equal Earth axes), not MuJoCo's variables directly, and the conversion runs one way: every $S$ evaluation ends with an extraction into these tags, while restores go through the saved native MuJoCo snapshot. The `OperatingPoint` seam inside $A$ converts per evaluation: degrees for the angle block, and a rotation into body axes plus degrees per second for `omegas_BP1__E`.
 
 Known before solving for snapshot $n{+}1$:
 
@@ -167,11 +167,11 @@ For $k = 0, 1, 2, \dots, k_{\max}$:
 4. Test for convergence. Accept at $K_{n+1} := k$ and exit once the weighted residual satisfies the bound:
 
    $$\big\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \big\| \,\le\, \varepsilon_{\text{rel}}\, \big\| \mathbf{D}\, \Delta \mathbf{x}^{(k)}_{n+1} \big\| \,+\, \varepsilon_{\text{abs}}$$
-5. Compute the relaxation factor. $\lambda^{(0)}_{n+1} = \lambda_{\text{init}}$. For $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted inner product:
+5. Compute the relaxation factor. $\lambda^{(0)}_{n+1} = \lambda_{\text{init}}$. For $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted dot product:
 
-   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1}\, \frac{\Big\langle \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1},\, \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big\rangle}{\Big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big\|^2}$$
+   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1}\, \frac{\Big( \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \Big) \cdot \Big( \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big)}{\Big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big\|^2}$$
 
-   The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \big\|^2 \le \epsilon_{\text{div}}\, \big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
+   The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \big\|^2 \le \varepsilon_{\text{div}}\, \big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
 6. Update:
 
    $$\mathbf{x}^{(k+1)}_{n+1} = \mathbf{x}^{(k)}_{n+1} + \lambda^{(k)}_{n+1}\, \mathbf{r}^{(k)}_{n+1}$$
@@ -211,7 +211,7 @@ The cap therefore continues the simulation rather than aborting it. The only har
 
 ## 7. Construction of the weighting matrix D
 
-The weighting matrix $\mathbf{D}$ enters the convergence test (Section 5, step 4) and the Aitken inner products (Section 5, step 5). It exists to make those operations meaningful across a 12-vector whose blocks carry different units (m, rad, m/s, rad/s) and, under load perturbations, different powers of $\Delta t$. It is diagonal and block-constant, ordered as the state $(\mathbf{p}, \boldsymbol{\theta}, \mathbf{v}, \boldsymbol{\omega})$:
+The weighting matrix $\mathbf{D}$ enters the convergence test (Section 5, step 4) and the Aitken dot products (Section 5, step 5). It exists to make those operations meaningful across a 12-vector whose blocks carry different units (m, rad, m/s, rad/s) and, under load perturbations, different powers of $\Delta t$. It is diagonal and block-constant, ordered as the state $(\mathbf{p}, \boldsymbol{\theta}, \mathbf{v}, \boldsymbol{\omega})$:
 
 $$\mathbf{D} = \operatorname{diag}\Big( \tfrac{1}{L_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{1}{\theta_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{\Delta t}{L_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{\Delta t}{\theta_{\text{ref}}}\,\mathbf{I}_3 \Big)$$
 
@@ -221,7 +221,7 @@ Two ideas determine it: a $\Delta t$ factor on the derivative blocks (the time-s
 
 ### Time scaling: the delta-t factor on the derivative blocks
 
-The convergence test and the Aitken inner products combine the four blocks directly, so any systematic disparity in their magnitudes biases both the relaxation factor and the stopping criterion toward whichever block is largest. Under a load perturbation the per-step response splits by power of $\Delta t$: each rate block moves as (generalized force / generalized inertia) $\times\,\Delta t$ (the force-over-mass acceleration for the velocity block, the torque-over-inertia angular acceleration for the angular-velocity block), while the corresponding configuration block moves as that same acceleration times $\Delta t^2$ (a second integration). An unweighted norm is therefore velocity-dominated, and increasingly so as the step is refined.
+The convergence test and the Aitken dot products combine the four blocks directly, so any systematic disparity in their magnitudes biases both the relaxation factor and the stopping criterion toward whichever block is largest. Under a load perturbation the per-step response splits by power of $\Delta t$: each rate block moves as (generalized force / generalized inertia) $\times\,\Delta t$ (the force-over-mass acceleration for the velocity block, the torque-over-inertia angular acceleration for the angular-velocity block), while the corresponding configuration block moves as that same acceleration times $\Delta t^2$ (a second integration). An unweighted norm is therefore velocity-dominated, and increasingly so as the step is refined.
 
 Multiplying each derivative block by $\Delta t$ converts a rate into the increment it produces over one step, $\mathbf{v} \mapsto \mathbf{v}\,\Delta t$ and $\boldsymbol{\omega} \mapsto \boldsymbol{\omega}\,\Delta t$, lifting both derivative blocks to $O(\Delta t^2)$ to match the configuration blocks. This leading-order scaling is integrator-independent, so it holds for MuJoCo's RK4 the same as for a single Euler step (Section 10, item 1 notes only that the velocity update itself is not a simple function of the displacement increment). It removes the magnitude disparity, which is a discretization artifact, without touching the gain disparity between blocks, which is genuine physics. The relaxation factor then tracks the stiff velocity subspace because it is stiff, not because of a step-size accident.
 
@@ -280,9 +280,9 @@ The Aitken update (Section 5, step 5) divides by $\big\| \mathbf{D}\big(\mathbf{
 
 The criterion is relative to the residual:
 
-$$\big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \big\|^2 \,\le\, \epsilon_{\text{div}}\, \big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$$
+$$\big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \big\|^2 \,\le\, \varepsilon_{\text{div}}\, \big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$$
 
-A relative test is scale-invariant as the residual shrinks along the iteration, so it reads the same at every sub-iteration: fall back when consecutive residuals agree to within a fraction $\sqrt{\epsilon_{\text{div}}}$ of their size. The recommended value is $\epsilon_{\text{div}} = 10^{-20}$, which triggers when they agree to about one part in $10^{10}$, comfortably above the relative residual-noise floor of order $\kappa(\text{AIC})\,u \sim 10^{-15}$ established above. The denominator is bimodal in practice, either of order $\big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$ under normal progress or collapsed to the noise floor at a stall, with a wide gap between, so any value from $10^{-16}$ to $10^{-24}$ behaves identically and $\epsilon_{\text{div}}$ is a safety net rather than a tuned parameter. It is always well defined when reached, because a failed convergence test guarantees $\big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\| > \varepsilon_{\text{abs}}$, comfortably above noise.
+A relative test is scale-invariant as the residual shrinks along the iteration, so it reads the same at every sub-iteration: fall back when consecutive residuals agree to within a fraction $\sqrt{\varepsilon_{\text{div}}}$ of their size. The recommended value is $\varepsilon_{\text{div}} = 10^{-20}$, which triggers when they agree to about one part in $10^{10}$, comfortably above the relative residual-noise floor of order $\kappa(\text{AIC})\,u \sim 10^{-15}$ established above. The denominator is bimodal in practice, either of order $\big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$ under normal progress or collapsed to the noise floor at a stall, with a wide gap between, so any value from $10^{-16}$ to $10^{-24}$ behaves identically and $\varepsilon_{\text{div}}$ is a safety net rather than a tuned parameter. It is always well defined when reached, because a failed convergence test guarantees $\big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\| > \varepsilon_{\text{abs}}$, comfortably above noise.
 
 ## 9. Initial relaxation factor
 

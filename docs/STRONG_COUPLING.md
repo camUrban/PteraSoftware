@@ -169,7 +169,7 @@ For $k = 0, 1, 2, \dots, k_{\max}$:
    $$\bigl\| \mathbf{D} \mathbf{r}^{(k)}_{n+1} \bigr\| \le \varepsilon_{\text{rel}} \bigl\| \mathbf{D} \Delta \mathbf{x}^{(k)}_{n+1} \bigr\| + \varepsilon_{\text{abs}}$$
 5. Compute the relaxation factor. $\lambda^{(0)}_{n+1} = \lambda_{\text{init}}$. For $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted dot product:
 
-   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1} \frac{\Bigl( \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \Bigr) \cdot \Bigl( \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr)}{\Bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr\|^2}$$
+   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1} \frac{\Bigl[ \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \Bigr] \cdot \Bigl[ \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr]}{\Bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr\|^2}$$
 
    The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2 \le \varepsilon_{\text{div}} \bigl\| \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
 6. Update:

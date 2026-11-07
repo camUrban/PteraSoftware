@@ -16,7 +16,7 @@ This document specifies the implicit (strong) coupling between the free-flight U
 
 The body state is the 12-vector:
 
-$$\mathbf{x}_n = (\mathbf{p}_n,\, \boldsymbol{\theta}_n,\, \mathbf{v}_n,\, \boldsymbol{\omega}_n) \in \mathbb{R}^{12}$$
+$$\mathbf{x}_n = (\mathbf{p}_n, \boldsymbol{\theta}_n, \mathbf{v}_n, \boldsymbol{\omega}_n) \in \mathbb{R}^{12}$$
 
 Its blocks are the project-tagged quantities:
 
@@ -37,7 +37,7 @@ Known before solving for snapshot $n{+}1$:
 | $\mathbf{B}_n$          | Bound ring vortex positions at $t_n$ (GP1 axes, the first `Airplane`'s geometry axes), $\mathbf{B}_n = \operatorname{G}\bigl(\mathbf{x}_n, t_n\bigr)$: the prescribed flapping geometry set by $t_n$, plus the trailing-edge back-leg offset set by the freestream (hence by the velocity and attitude blocks of $\mathbf{x}_n$, Section 3). The initial core radius is a per-wing geometric constant (as for the wake). Bound vortices carry zero age. |
 | $\boldsymbol{\Gamma}_n$ | Bound ring vortex strengths at $t_n$: the column vector produced by the circulation solve $\operatorname{C}$.                                                                                                                                                                                                                                                                                                                                           |
 | $W_n$                   | Wake state object at $t_n$: positions (GP1 axes) and strengths of all rows shed through interval $n$. The viscous core-growth model also consumes each wake vortex's age and initial core radius, but neither is independent state: the age is rederived from the vortex's position in the wake, and the initial core radius is a per-wing geometric constant.                                                                                          |
-| $\boldsymbol{\ell}_n$   | Official snapshot-$n$ load: $\boldsymbol{\ell}_n = \operatorname{L}\bigl(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \boldsymbol{\Gamma}_{n-1},\, W_n\bigr)$ with $\boldsymbol{\Gamma}_n = \operatorname{C}\bigl(\mathbf{x}_n, \mathbf{B}_n, W_n\bigr)$ (functions in Section 3), equivalently $\boldsymbol{\ell}_n = \operatorname{A}\bigl(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_{n-1}, W_n\bigr)$                               |
+| $\boldsymbol{\ell}_n$   | Official snapshot-$n$ load: $\boldsymbol{\ell}_n = \operatorname{L}\bigl(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \boldsymbol{\Gamma}_{n-1}, W_n\bigr)$ with $\boldsymbol{\Gamma}_n = \operatorname{C}\bigl(\mathbf{x}_n, \mathbf{B}_n, W_n\bigr)$ (functions in Section 3), equivalently $\boldsymbol{\ell}_n = \operatorname{A}\bigl(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_{n-1}, W_n\bigr)$                                      |
 
 The wake $W_n$, the bound geometry $\mathbf{B}_n$, and the strengths $\boldsymbol{\Gamma}_n$ are structured aggregates the functions pass and return, distinct from the iterated state vector $\mathbf{x}_n$ and not subject to its dot-product arithmetic (Section 5). The bound geometry is not independent: $\mathbf{B}_n = \operatorname{G}\bigl(\mathbf{x}_n, t_n\bigr)$.
 
@@ -49,19 +49,19 @@ At the first snapshot ($n = 0$): $\boldsymbol{\Gamma}_{-1} := 0$ and $W_0 := \em
 
 ### Bound geometry function
 
-$$\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1},\, t_{n+1}\bigr)$$
+$$\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr)$$
 
 $\operatorname{G}$ returns the bound ring vortex positions in GP1 axes. The time tag sets the prescribed flapping geometry: the quarter-chord front legs and the interior back legs are functions of $t_{n+1}$ alone. The state enters only through the trailing-edge rings, whose back legs are set back from the prescribed trailing edge by a quarter of the trailing edge's per-step travel (a freestream-dependent offset, after Lambert, for drag accuracy). That freestream depends on the velocity and attitude blocks of $\mathbf{x}^{(k)}_{n+1}$. So $\operatorname{G}$ is iterate-dependent only in its trailing-edge rows, and for a rigid wing in a steady freestream it collapses to a pure function of time. The function is shown at its sub-iteration instantiation. The snapshot-$n$ geometry is $\mathbf{B}_n = \operatorname{G}\bigl(\mathbf{x}_n, t_n\bigr)$.
 
 ### Structural propagator function
 
-$$\mathbf{x}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n,\, \hat{\boldsymbol{\ell}}_{n+1}\bigr)$$
+$$\mathbf{x}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1}\bigr)$$
 
 $\operatorname{S}$ integrates the rigid-body dynamics in MuJoCo over $(t_n, t_{n+1}]$ with the applied wrench held constant at the interval load $\hat{\boldsymbol{\ell}}_{n+1} \in \mathbb{R}^6$ (Earth axes, gravity and external loads included). The hat distinguishes the interval load from the official snapshot load $\boldsymbol{\ell}_{n+1}$ of Section 6: distinct objects sharing the same time tag.
 
 ### Wake propagator function
 
-$$W^{(k)}_{n+1} = \operatorname{P}\bigl(\mathbf{x}_n,\, \mathbf{x}^{(k)}_{n+1},\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \mathbf{B}^{(k)}_{n+1},\, W_n\bigr)$$
+$$W^{(k)}_{n+1} = \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}^{(k)}_{n+1}, W_n\bigr)$$
 
 The wake is stored in GP1 axes (the first `Airplane`'s geometry axes, which move with the body), matching the solver. $\operatorname{P}$ has two parts. Convection: displace the pre-existing rings of $W_n$ over the interval by their transport velocity, which splits by what it depends on. An induced part (the bound and wake Biot-Savart induction, plus the image system when a surface is active) is evaluated from the snapshot-$n$ bound geometry and strengths and the wake, $\bigl(\mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n\bigr)$, the standard explicit fluid transport. The snapshot-$n$ state $\mathbf{x}_n$ enters this part only through the image, setting the snapshot-$n$ surface reflection. In free air the induced velocities are computed in GP1 from relative positions alone, and $\mathbf{x}_n$ drops out. A frame part (the freestream re-expressed in GP1 and the apparent velocity $-\boldsymbol{\omega}\times\mathbf{r}$) is evaluated at the trial interval-end state $\mathbf{x}^{(k)}_{n+1}$, because the wake lives in body-attached axes: holding each ring fixed in the Earth frame means removing the body's own motion across the interval, and that motion is the one ending at $\mathbf{x}^{(k)}_{n+1}$, the state the step converges to and against which the loads are evaluated. Shed: append the interval-$(n{+}1)$ trailing-edge row, with strengths $\boldsymbol{\Gamma}_n$ from the snapshot-$n$ trailing-edge bound rings (Kelvin condition) and leading edges at the trailing-edge rows of $\mathbf{B}^{(k)}_{n+1}$, which themselves carry the trial freestream offset (the geometry function $\operatorname{G}$).
 
@@ -71,13 +71,13 @@ Frame handling: expressing the wake in GP1 at the trial interval-end state keeps
 
 ### Circulation solve
 
-$$\boldsymbol{\Gamma}^{(k)}_{n+1} = \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\bigr)$$
+$$\boldsymbol{\Gamma}^{(k)}_{n+1} = \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, W^{(k)}_{n+1}\bigr)$$
 
 Build the snapshot-$(n{+}1)$ operating point from $\mathbf{x}^{(k)}_{n+1}$. Assemble the aerodynamic influence coefficient (AIC) system from the bound geometry $\mathbf{B}^{(k)}_{n+1}$, with the right-hand side set by the kinematic normal wash and the induction of the wake $W^{(k)}_{n+1}$. Solve for the bound strengths $\boldsymbol{\Gamma}^{(k)}_{n+1}$. The function is shown at its sub-iteration instantiation. The official snapshot solve (Section 6) calls the same function at the accepted state.
 
 ### Load evaluation
 
-$$\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{L}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\bigr)$$
+$$\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{L}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, \boldsymbol{\Gamma}^{(k)}_{n+1}, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\bigr)$$
 
 The Kutta-Joukowski term uses the current snapshot's strengths $\boldsymbol{\Gamma}^{(k)}_{n+1}$ directly (local velocities include the kinematic velocity from $\mathbf{x}^{(k)}_{n+1}$ plus bound and wake induction). The unsteady Bernoulli term uses $\dot{\boldsymbol{\Gamma}}^{(k)}_{n+1} \approx \bigl(\boldsymbol{\Gamma}^{(k)}_{n+1} - \boldsymbol{\Gamma}_n\bigr)/\Delta t$. Add any external loads from `external_loads_fn`, returned in wind axes and evaluated at the same operating point. Transform to Earth axes. Add gravity. Note the asymmetry: $\boldsymbol{\Gamma}^{(k)}_{n+1}$ enters both terms, while $\boldsymbol{\Gamma}_n$ enters only through the finite difference.
 
@@ -86,8 +86,8 @@ The Kutta-Joukowski term uses the current snapshot's strengths $\boldsymbol{\Gam
 For the fixed-point algebra it is convenient to compose the circulation solve and the load evaluation into one function, keeping the bound geometry explicit:
 
 $$\begin{aligned}
-\boldsymbol{\ell}^{(k)}_{n+1} &= \operatorname{A}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\bigr) \\
-&:= \operatorname{L}\Bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\bigr),\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\Bigr)
+\boldsymbol{\ell}^{(k)}_{n+1} &= \operatorname{A}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\bigr) \\
+&:= \operatorname{L}\Bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, W^{(k)}_{n+1}\bigr), \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\Bigr)
 \end{aligned}$$
 
 $\boldsymbol{\Gamma}^{(k)}_{n+1}$ is thus an internal product of $\operatorname{A}$: a deterministic function of $\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, W^{(k)}_{n+1}\bigr)$, not an independent input. The bound geometry and wake are internal products as well, $\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr)$ and $W^{(k)}_{n+1} = \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}^{(k)}_{n+1}, W_n\bigr)$. They are kept as explicit arguments for the algorithm but are not free.
@@ -95,8 +95,8 @@ $\boldsymbol{\Gamma}^{(k)}_{n+1}$ is thus an internal product of $\operatorname{
 To confirm that $\operatorname{A}$ collapses to a function of the trial state alone, expand those internal products. Substitute $\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr)$ in every slot it occupies (the explicit one, inside $\operatorname{C}$, and inside $\operatorname{P}$) and $W^{(k)}_{n+1}$ in both of its occurrences (one shared object), giving the fully expanded load:
 
 $$\begin{aligned}
-\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{L}\Bigl( &\mathbf{x}^{(k)}_{n+1},\; \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr),\; \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1},\, \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr),\, \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \dots \\
-&\operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), W_n\bigr)\bigr),\; \boldsymbol{\Gamma}_n,\; \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), W_n\bigr)\Bigr)
+\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{L}\Bigl( &\mathbf{x}^{(k)}_{n+1}, \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1}, \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \dots \\
+&\operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), W_n\bigr)\bigr), \boldsymbol{\Gamma}_n, \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr), W_n\bigr)\Bigr)
 \end{aligned}$$
 
 Every leaf is now either the trial state $\mathbf{x}^{(k)}_{n+1}$ or one of the frozen step quantities $\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n, t_{n+1}$, which are constant across the sub-iteration (Section 4). Dropping those constants leaves the trial state as the only varying argument:
@@ -116,17 +116,17 @@ Each trial evaluates $\operatorname{A}$ against its own bound geometry $\mathbf{
 The discrete coupled equations for the step from $t_n$ to $t_{n+1}$ are:
 
 $$\begin{aligned}
-\mathbf{B}_{n+1} &= \operatorname{G}\bigl(\mathbf{x}_{n+1},\, t_{n+1}\bigr) \\
-W_{n+1} &= \operatorname{P}\bigl(\mathbf{x}_n,\, \mathbf{x}_{n+1},\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \mathbf{B}_{n+1},\, W_n\bigr) \\
-\mathbf{x}_{n+1} &= \operatorname{S}\bigl(\mathbf{x}_n,\, \hat{\boldsymbol{\ell}}_{n+1}\bigr) \\
-\hat{\boldsymbol{\ell}}_{n+1} &= \operatorname{A}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)
+\mathbf{B}_{n+1} &= \operatorname{G}\bigl(\mathbf{x}_{n+1}, t_{n+1}\bigr) \\
+W_{n+1} &= \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\bigr) \\
+\mathbf{x}_{n+1} &= \operatorname{S}\bigl(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1}\bigr) \\
+\hat{\boldsymbol{\ell}}_{n+1} &= \operatorname{A}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)
 \end{aligned}$$
 
 The first two equations are no longer free of unknowns: the bound geometry and the wake both depend on $\mathbf{x}_{n+1}$. Only the snapshot-$n$ data $(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n)$ is frozen for the step. Substituting through yields one implicit equation in the state:
 
 $$\begin{aligned}
 \mathbf{x}_{n+1} &= \operatorname{H}_n(\mathbf{x}_{n+1}) \\
-\operatorname{H}_n\bigl(\mathbf{x}_{n+1}\bigr) &:= \operatorname{S}\Bigl(\mathbf{x}_n,\, \operatorname{A}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\bigr)\Bigr)
+\operatorname{H}_n\bigl(\mathbf{x}_{n+1}\bigr) &:= \operatorname{S}\Bigl(\mathbf{x}_n, \operatorname{A}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)\Bigr)
 \end{aligned}$$
 
 Here $\mathbf{B}_{n+1} = \operatorname{G}\bigl(\mathbf{x}_{n+1}, t_{n+1}\bigr)$ and $W_{n+1} = \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\bigr)$ are themselves functions of $\mathbf{x}_{n+1}$. $\operatorname{H}_n: \mathbb{R}^{12} \to \mathbb{R}^{12}$ is a self-map, and the snapshot-$(n{+}1)$ state is its fixed point. The subscript on $\operatorname{H}_n$ records that this step's frozen data $(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n)$ is baked into the self-map. The unknown is $\mathbf{x}_{n+1}$. The trial bound geometry, strengths, wake, and loads are produced as byproducts, with the official $\boldsymbol{\Gamma}_{n+1}$ and $\boldsymbol{\ell}_{n+1}$ finalized at the accepted state in Section 6.
@@ -145,7 +145,7 @@ Save the MuJoCo state at $\mathbf{x}_n$. The step's frozen data is the snapshot-
 
 ### Seed (k = 0)
 
-$$\mathbf{x}^{(0)}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n,\, \boldsymbol{\ell}_n\bigr)$$
+$$\mathbf{x}^{(0)}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n, \boldsymbol{\ell}_n\bigr)$$
 
 The snapshot-$n$ load is recycled as the zeroth trial for the interval load: precisely the loose scheme's mis-tagging, used once as a warm start. The seed affects only the path of the iteration, not its fixed point.
 
@@ -155,44 +155,44 @@ For $k = 0, 1, 2, \dots, k_{\max}$:
 
 1. At the trial state, build the trial bound geometry and wake, $\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr)$ and $W^{(k)}_{n+1} = \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}^{(k)}_{n+1}, W_n\bigr)$, then evaluate the load:
 
-   $$\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{A}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\bigr)$$
+   $$\boldsymbol{\ell}^{(k)}_{n+1} = \operatorname{A}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\bigr)$$
 
-   This yields the trial strengths $\boldsymbol{\Gamma}^{(k)}_{n+1} = \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\bigr)$ internally.
+   This yields the trial strengths $\boldsymbol{\Gamma}^{(k)}_{n+1} = \operatorname{C}\bigl(\mathbf{x}^{(k)}_{n+1}, \mathbf{B}^{(k)}_{n+1}, W^{(k)}_{n+1}\bigr)$ internally.
 2. Dynamics under the trial load (MuJoCo restored to $\mathbf{x}_n$ first):
 
-   $$\tilde{\mathbf{x}}^{(k)}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n,\, \boldsymbol{\ell}^{(k)}_{n+1}\bigr)$$
+   $$\tilde{\mathbf{x}}^{(k)}_{n+1} = \operatorname{S}\bigl(\mathbf{x}_n, \boldsymbol{\ell}^{(k)}_{n+1}\bigr)$$
 3. Residual (two candidates for the same snapshot):
 
    $$\mathbf{r}^{(k)}_{n+1} = \tilde{\mathbf{x}}^{(k)}_{n+1} - \mathbf{x}^{(k)}_{n+1}$$
 4. Test for convergence. Accept at $K_{n+1} := k$ and exit once the weighted residual satisfies the bound:
 
-   $$\bigl\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \bigr\| \,\le\, \varepsilon_{\text{rel}}\, \bigl\| \mathbf{D}\, \Delta \mathbf{x}^{(k)}_{n+1} \bigr\| \,+\, \varepsilon_{\text{abs}}$$
+   $$\bigl\| \mathbf{D} \mathbf{r}^{(k)}_{n+1} \bigr\| \le \varepsilon_{\text{rel}} \bigl\| \mathbf{D} \Delta \mathbf{x}^{(k)}_{n+1} \bigr\| + \varepsilon_{\text{abs}}$$
 5. Compute the relaxation factor. $\lambda^{(0)}_{n+1} = \lambda_{\text{init}}$. For $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted dot product:
 
-   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1}\, \frac{\Bigl( \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \Bigr) \cdot \Bigl( \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr)}{\Bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr\|^2}$$
+   $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1} \frac{\Bigl( \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \Bigr) \cdot \Bigl( \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr)}{\Bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \Bigr\|^2}$$
 
-   The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2 \le \varepsilon_{\text{div}}\, \bigl\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
+   The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2 \le \varepsilon_{\text{div}} \bigl\| \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
 6. Update:
 
-   $$\mathbf{x}^{(k+1)}_{n+1} = \mathbf{x}^{(k)}_{n+1} + \lambda^{(k)}_{n+1}\, \mathbf{r}^{(k)}_{n+1}$$
+   $$\mathbf{x}^{(k+1)}_{n+1} = \mathbf{x}^{(k)}_{n+1} + \lambda^{(k)}_{n+1} \mathbf{r}^{(k)}_{n+1}$$
 
-Log $\bigl\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \bigr\|$ and $\lambda^{(k)}_{n+1}$ at every iteration for diagnostics.
+Log $\bigl\| \mathbf{D} \mathbf{r}^{(k)}_{n+1} \bigr\|$ and $\lambda^{(k)}_{n+1}$ at every iteration for diagnostics.
 
 ## 6. Acceptance and handoff to the outer loop
 
 At $k = K_{n+1}$:
 
 - Interval load: $\hat{\boldsymbol{\ell}}_{n+1} := \boldsymbol{\ell}^{(K_{n+1})}_{n+1}$.
-- State: $\mathbf{x}_{n+1} := \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$, so that $\mathbf{x}_{n+1} = \operatorname{S}(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1})$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\boldsymbol{\ell}}_{n+1} = \operatorname{A}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)$ holds to tolerance.
+- State: $\mathbf{x}_{n+1} := \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$, so that $\mathbf{x}_{n+1} = \operatorname{S}(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1})$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\boldsymbol{\ell}}_{n+1} = \operatorname{A}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)$ holds to tolerance.
 
 The outer chain then proceeds with the official snapshot solve, rebuilding the bound geometry and wake at the accepted state:
 
 $$\begin{aligned}
 \mathbf{B}_{n+1} &= \operatorname{G}\bigl(\mathbf{x}_{n+1}, t_{n+1}\bigr) \\
 W_{n+1} &= \operatorname{P}\bigl(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\bigr) \\
-\boldsymbol{\Gamma}_{n+1} &= \operatorname{C}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, W_{n+1}\bigr) \\[6pt]
-\boldsymbol{\ell}_{n+1} &= \operatorname{L}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\bigr) \\
-&= \operatorname{A}\bigl(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\bigr)
+\boldsymbol{\Gamma}_{n+1} &= \operatorname{C}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, W_{n+1}\bigr) \\[6pt]
+\boldsymbol{\ell}_{n+1} &= \operatorname{L}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr) \\
+&= \operatorname{A}\bigl(\mathbf{x}_{n+1}, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\bigr)
 \end{aligned}$$
 
 This $\boldsymbol{\ell}_{n+1}$ is recorded in the load history and seeds the next sub-iteration, $\mathbf{x}^{(0)}_{n+2} = \operatorname{S}(\mathbf{x}_{n+1}, \boldsymbol{\ell}_{n+1})$. The solve is necessary, not a redundant re-derivation: alongside $\boldsymbol{\ell}_{n+1}$ it produces the canonical bound geometry $\mathbf{B}_{n+1}$ and strengths $\boldsymbol{\Gamma}_{n+1}$ at the accepted state $\mathbf{x}_{n+1}$, which the next step's wake advance and finite difference consume as $\mathbf{B}_n$ and $\boldsymbol{\Gamma}_n$. It would reproduce the final trial evaluation only at the exact fixed point. Because the loop stops within tolerance, the accepted state $\mathbf{x}_{n+1} = \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$ differs (within tolerance) from the trial state $\mathbf{x}^{(K_{n+1})}_{n+1}$ that evaluation ran at. The bound geometry and wake are rebuilt at the accepted state too, since both move with the state, so this is a genuine re-evaluation rather than a reuse of frozen objects. That the baseline run loop already performs this solve each step is a convenience (no new code seam), not the reason it is computed.
@@ -213,7 +213,7 @@ The cap therefore continues the simulation rather than aborting it. The only har
 
 The weighting matrix $\mathbf{D}$ enters the convergence test (Section 5, step 4) and the Aitken dot products (Section 5, step 5). It exists to make those operations meaningful across a 12-vector whose blocks carry different units (m, rad, m/s, rad/s) and, under load perturbations, different powers of $\Delta t$. It is diagonal and block-constant, ordered as the state $(\mathbf{p}, \boldsymbol{\theta}, \mathbf{v}, \boldsymbol{\omega})$:
 
-$$\mathbf{D} = \operatorname{diag}\biggl( \frac{1}{L_{\text{ref}}}\,\mathbf{I}_3,\; \frac{1}{\theta_{\text{ref}}}\,\mathbf{I}_3,\; \frac{\Delta t}{L_{\text{ref}}}\,\mathbf{I}_3,\; \frac{\Delta t}{\theta_{\text{ref}}}\,\mathbf{I}_3 \biggr)$$
+$$\mathbf{D} = \operatorname{diag}\biggl( \frac{1}{L_{\text{ref}}}\mathbf{I}_3, \frac{1}{\theta_{\text{ref}}}\mathbf{I}_3, \frac{\Delta t}{L_{\text{ref}}}\mathbf{I}_3, \frac{\Delta t}{\theta_{\text{ref}}}\mathbf{I}_3 \biggr)$$
 
 Here $\mathbf{I}_3$ is the 3x3 identity matrix, so each block's scalar weight is repeated on the three diagonal entries of that block.
 
@@ -221,9 +221,9 @@ Two ideas determine it: a $\Delta t$ factor on the derivative blocks (the time-s
 
 ### Time scaling: the delta-t factor on the derivative blocks
 
-The convergence test and the Aitken dot products combine the four blocks directly, so any systematic disparity in their magnitudes biases both the relaxation factor and the stopping criterion toward whichever block is largest. Under a load perturbation the per-step response splits by power of $\Delta t$: each rate block moves as (generalized force / generalized inertia) $\times\,\Delta t$ (the force-over-mass acceleration for the velocity block, the torque-over-inertia angular acceleration for the angular-velocity block), while the corresponding configuration block moves as that same acceleration times $\Delta t^2$ (a second integration). An unweighted norm is therefore velocity-dominated, and increasingly so as the step is refined.
+The convergence test and the Aitken dot products combine the four blocks directly, so any systematic disparity in their magnitudes biases both the relaxation factor and the stopping criterion toward whichever block is largest. Under a load perturbation the per-step response splits by power of $\Delta t$: each rate block moves as (generalized force / generalized inertia) $\times\Delta t$ (the force-over-mass acceleration for the velocity block, the torque-over-inertia angular acceleration for the angular-velocity block), while the corresponding configuration block moves as that same acceleration times $\Delta t^2$ (a second integration). An unweighted norm is therefore velocity-dominated, and increasingly so as the step is refined.
 
-Multiplying each derivative block by $\Delta t$ converts a rate into the increment it produces over one step, $\mathbf{v} \mapsto \mathbf{v}\,\Delta t$ and $\boldsymbol{\omega} \mapsto \boldsymbol{\omega}\,\Delta t$, lifting both derivative blocks to $O(\Delta t^2)$ to match the configuration blocks. This leading-order scaling is integrator-independent, so it holds for MuJoCo's RK4 the same as for a single Euler step (Section 10, item 1 notes only that the velocity update itself is not a simple function of the displacement increment). It removes the magnitude disparity, which is a discretization artifact, without touching the gain disparity between blocks, which is genuine physics. The relaxation factor then tracks the stiff velocity subspace because it is stiff, not because of a step-size accident.
+Multiplying each derivative block by $\Delta t$ converts a rate into the increment it produces over one step, $\mathbf{v} \mapsto \mathbf{v}\Delta t$ and $\boldsymbol{\omega} \mapsto \boldsymbol{\omega}\Delta t$, lifting both derivative blocks to $O(\Delta t^2)$ to match the configuration blocks. This leading-order scaling is integrator-independent, so it holds for MuJoCo's RK4 the same as for a single Euler step (Section 10, item 1 notes only that the velocity update itself is not a simple function of the displacement increment). It removes the magnitude disparity, which is a discretization artifact, without touching the gain disparity between blocks, which is genuine physics. The relaxation factor then tracks the stiff velocity subspace because it is stiff, not because of a step-size accident.
 
 ### Reference length
 
@@ -231,10 +231,10 @@ Use the `Airplane`'s reference chord, $L_{\text{ref}} := c_{\text{ref}}$, which 
 
 ### Reference angle
 
-Choose $\theta_{\text{ref}}$ so the attitude block balances the position block. A load perturbation applies a force $\mathbf{f}$ at a characteristic aerodynamic moment arm of order $c_{\text{ref}}$, hence a torque of order $c_{\text{ref}}\,\lVert\mathbf{f}\rVert$. The $\Delta t$-scaled, per-step residual blocks are then of order $(\lVert\mathbf{f}\rVert/m)\,\Delta t^2$ for position and $(c_{\text{ref}}\,\lVert\mathbf{f}\rVert/\bar{I})\,\Delta t^2$ for attitude, where $\bar{I}$ is a scalar inertia. Weighting by $1/L_{\text{ref}}$ and $1/\theta_{\text{ref}}$ and equating the two gives:
+Choose $\theta_{\text{ref}}$ so the attitude block balances the position block. A load perturbation applies a force $\mathbf{f}$ at a characteristic aerodynamic moment arm of order $c_{\text{ref}}$, hence a torque of order $c_{\text{ref}}\lVert\mathbf{f}\rVert$. The $\Delta t$-scaled, per-step residual blocks are then of order $(\lVert\mathbf{f}\rVert/m)\Delta t^2$ for position and $(c_{\text{ref}}\lVert\mathbf{f}\rVert/\bar{I})\Delta t^2$ for attitude, where $\bar{I}$ is a scalar inertia. Weighting by $1/L_{\text{ref}}$ and $1/\theta_{\text{ref}}$ and equating the two gives:
 
 $$\begin{aligned}
-\theta_{\text{ref}} &:= \frac{m\,c_{\text{ref}}^2}{\bar{I}} \\
+\theta_{\text{ref}} &:= \frac{mc_{\text{ref}}^2}{\bar{I}} \\
 \bar{I} &:= \frac{1}{3}\operatorname{tr}\bigl(\mathbf{J}\bigr)
 \end{aligned}$$
 
@@ -252,15 +252,15 @@ The scalar $\bar{I}$ is the mean principal moment of inertia, a rotation invaria
 
 The convergence test (Section 5, step 4):
 
-$$\bigl\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \bigr\| \,\le\, \varepsilon_{\text{rel}}\, \bigl\| \mathbf{D}\, \Delta \mathbf{x}^{(k)}_{n+1} \bigr\| \,+\, \varepsilon_{\text{abs}}$$
+$$\bigl\| \mathbf{D} \mathbf{r}^{(k)}_{n+1} \bigr\| \le \varepsilon_{\text{rel}} \bigl\| \mathbf{D} \Delta \mathbf{x}^{(k)}_{n+1} \bigr\| + \varepsilon_{\text{abs}}$$
 
-It is the standard mixed local-error form of the ODE-integration literature: a relative term scaled by the iterate plus an absolute floor. Its one nonstandard feature is that $\mathbf{D}$ has already nondimensionalized every block (Section 7), so $\mathbf{D}\,\mathbf{r}$ and $\mathbf{D}\,\Delta\mathbf{x}$ are pure numbers, and the two tolerances are therefore universal dimensionless constants rather than quantities to be rescaled per vehicle or per unit system. The same pair serves a full-size flapper and a centimeter-scale device unchanged. The recommended values are $\varepsilon_{\text{rel}} = 10^{-6}$ and $\varepsilon_{\text{abs}} = 10^{-10}$, derived below.
+It is the standard mixed local-error form of the ODE-integration literature: a relative term scaled by the iterate plus an absolute floor. Its one nonstandard feature is that $\mathbf{D}$ has already nondimensionalized every block (Section 7), so $\mathbf{D}\mathbf{r}$ and $\mathbf{D}\Delta\mathbf{x}$ are pure numbers, and the two tolerances are therefore universal dimensionless constants rather than quantities to be rescaled per vehicle or per unit system. The same pair serves a full-size flapper and a centimeter-scale device unchanged. The recommended values are $\varepsilon_{\text{rel}} = 10^{-6}$ and $\varepsilon_{\text{abs}} = 10^{-10}$, derived below.
 
 ### Relative tolerance
 
 $\varepsilon_{\text{rel}}$ is bounded below by floating-point noise and above by the need to suppress the added-mass feedback cleanly.
 
-The lower bound is set by floating-point noise, though it is not the binding constraint. A single evaluation of $\operatorname{H}_n$ is $\operatorname{S}$ composed with $\operatorname{A}$, and the accuracy-limiting step inside $\operatorname{A}$ is the dense bound-circulation solve in $\operatorname{C}$, whose relative error is of order $\kappa(\text{AIC})\,u$, with $u \approx 2.2 \times 10^{-16}$ the unit roundoff and $\kappa(\text{AIC})$ the AIC condition number. The bound-influence matrix is well conditioned: preliminary testing puts $\kappa(\text{AIC})$ at order $10$, with the caveat that finer meshes may carry higher values. MuJoCo's RK4 in double precision contributes only a few multiples of $u$, negligible by comparison. The residual $\mathbf{r} = \tilde{\mathbf{x}}^{(k)}_{n+1} - \mathbf{x}^{(k)}_{n+1}$ is a difference of two such evaluations, so near the fixed point its $\mathbf{D}$-weighted magnitude bottoms out at a small multiple of machine precision, many orders below $\varepsilon_{\text{rel}}$. A representative $\mathbf{D}$-weighted increment $\bigl\| \mathbf{D}\,\Delta\mathbf{x} \bigr\|$ is the per-step travel measured in reference chords, on the order of $V\,\Delta t / c_{\text{ref}}$, which is on the order of $10^{-1}$ since the unsteady solver's time step is conventionally near one panel chord of free-stream travel. The relative stopping level $\varepsilon_{\text{rel}}\,\bigl\|\mathbf{D}\,\Delta\mathbf{x}\bigr\|$ is then on the order of $10^{-7}$, so $\varepsilon_{\text{rel}} = 10^{-6}$ stays many orders above the noise floor and is in no danger of stagnation.
+The lower bound is set by floating-point noise, though it is not the binding constraint. A single evaluation of $\operatorname{H}_n$ is $\operatorname{S}$ composed with $\operatorname{A}$, and the accuracy-limiting step inside $\operatorname{A}$ is the dense bound-circulation solve in $\operatorname{C}$, whose relative error is of order $\kappa(\text{AIC})u$, with $u \approx 2.2 \times 10^{-16}$ the unit roundoff and $\kappa(\text{AIC})$ the AIC condition number. The bound-influence matrix is well conditioned: preliminary testing puts $\kappa(\text{AIC})$ at order $10$, with the caveat that finer meshes may carry higher values. MuJoCo's RK4 in double precision contributes only a few multiples of $u$, negligible by comparison. The residual $\mathbf{r} = \tilde{\mathbf{x}}^{(k)}_{n+1} - \mathbf{x}^{(k)}_{n+1}$ is a difference of two such evaluations, so near the fixed point its $\mathbf{D}$-weighted magnitude bottoms out at a small multiple of machine precision, many orders below $\varepsilon_{\text{rel}}$. A representative $\mathbf{D}$-weighted increment $\bigl\| \mathbf{D}\Delta\mathbf{x} \bigr\|$ is the per-step travel measured in reference chords, on the order of $V\Delta t / c_{\text{ref}}$, which is on the order of $10^{-1}$ since the unsteady solver's time step is conventionally near one panel chord of free-stream travel. The relative stopping level $\varepsilon_{\text{rel}}\bigl\|\mathbf{D}\Delta\mathbf{x}\bigr\|$ is then on the order of $10^{-7}$, so $\varepsilon_{\text{rel}} = 10^{-6}$ stays many orders above the noise floor and is in no danger of stagnation.
 
 The binding considerations sit far above that floor, and there are two. The first is accuracy relative to the discretization: the sub-iteration drives only the splitting (partition) error to zero, while the step still carries the truncation error of MuJoCo's RK4 and the spatial truncation error of the vortex lattice. Once the splitting error is small compared to that truncation error, tightening $\varepsilon_{\text{rel}}$ further buys no physical accuracy, only iterations. The second is stability. The splitting error the sub-iteration removes is the added-mass feedback channel (Section 10, item 1), whose gain is step-size-independent. It is a stability defect, not merely an accuracy term, so the residual must be driven small enough that this feedback is unambiguously suppressed and the fixed point is clean and reproducible from step to step. Both place $\varepsilon_{\text{rel}}$ a few orders below where a pure truncation-error argument alone would permit stopping, and both are unrelated to the floating-point floor.
 
@@ -270,23 +270,23 @@ The chosen $\varepsilon_{\text{rel}} = 10^{-6}$ sits well above the floating-poi
 
 $\varepsilon_{\text{abs}}$ exists for near-trim steps. As the motion over a step approaches trim, $\Delta\mathbf{x} \to 0$ and the relative term vanishes, so without a floor the test would demand an unreachable zero residual and exhaust $k_{\max}$ every step. $\varepsilon_{\text{abs}}$ is the $\mathbf{D}$-weighted residual accepted once the increment is negligible.
 
-The physical threshold fixes its value: take the smallest per-step motion still worth resolving relatively, $\delta_{\min}$, to be on the order of $10^{-4}$, one part in $10^4$ of a reference chord per step. Below it the step is effectively trimmed, and $\varepsilon_{\text{abs}}$ is on the order of $\varepsilon_{\text{rel}}\,\delta_{\min} = 10^{-6} \cdot 10^{-4} = 10^{-10}$. The floating-point floor only has to sit below this, and the well-conditioned solve above places it several orders lower, so the physical threshold governs and $\varepsilon_{\text{abs}} = 10^{-10}$ is comfortably reachable.
+The physical threshold fixes its value: take the smallest per-step motion still worth resolving relatively, $\delta_{\min}$, to be on the order of $10^{-4}$, one part in $10^4$ of a reference chord per step. Below it the step is effectively trimmed, and $\varepsilon_{\text{abs}}$ is on the order of $\varepsilon_{\text{rel}}\delta_{\min} = 10^{-6} \cdot 10^{-4} = 10^{-10}$. The floating-point floor only has to sit below this, and the well-conditioned solve above places it several orders lower, so the physical threshold governs and $\varepsilon_{\text{abs}} = 10^{-10}$ is comfortably reachable.
 
-The floor must not interfere on ordinary steps. There the relative term $\varepsilon_{\text{rel}}\,\bigl\|\mathbf{D}\,\Delta\mathbf{x}\bigr\|$ is on the order of $10^{-6} \cdot 10^{-1} = 10^{-7}$, roughly three orders above $\varepsilon_{\text{abs}}$, so the absolute floor is dormant during normal flight and governs only genuinely near-trim steps, as intended.
+The floor must not interfere on ordinary steps. There the relative term $\varepsilon_{\text{rel}}\bigl\|\mathbf{D}\Delta\mathbf{x}\bigr\|$ is on the order of $10^{-6} \cdot 10^{-1} = 10^{-7}$, roughly three orders above $\varepsilon_{\text{abs}}$, so the absolute floor is dormant during normal flight and governs only genuinely near-trim steps, as intended.
 
 ### Relaxation-factor denominator guard
 
-The Aitken update (Section 5, step 5) divides by $\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2$, the squared norm of the change in residual between consecutive sub-iterations. This is a distinct quantity from the residual magnitude the convergence test bounds, and it can collapse while the residual is still well above tolerance. A mode of $\operatorname{H}_n$ with eigenvalue near unity leaves $\mathbf{r}^{(k)}_{n+1} \approx \mathbf{r}^{(k-1)}_{n+1}$, and an update $\lambda^{(k)}_{n+1}\,\mathbf{r}^{(k)}_{n+1}$ smaller than the state's last representable bit reproduces the previous iterate exactly and drives the denominator to zero. The guard reverts the factor to $\lambda_{\text{init}}$ in these cases, where the extrapolation is untrustworthy.
+The Aitken update (Section 5, step 5) divides by $\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2$, the squared norm of the change in residual between consecutive sub-iterations. This is a distinct quantity from the residual magnitude the convergence test bounds, and it can collapse while the residual is still well above tolerance. A mode of $\operatorname{H}_n$ with eigenvalue near unity leaves $\mathbf{r}^{(k)}_{n+1} \approx \mathbf{r}^{(k-1)}_{n+1}$, and an update $\lambda^{(k)}_{n+1}\mathbf{r}^{(k)}_{n+1}$ smaller than the state's last representable bit reproduces the previous iterate exactly and drives the denominator to zero. The guard reverts the factor to $\lambda_{\text{init}}$ in these cases, where the extrapolation is untrustworthy.
 
 The criterion is relative to the residual:
 
-$$\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2 \,\le\, \varepsilon_{\text{div}}\, \bigl\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$$
+$$\bigl\| \mathbf{D}\bigl(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\bigr) \bigr\|^2 \le \varepsilon_{\text{div}} \bigl\| \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$$
 
-A relative test is scale-invariant as the residual shrinks along the iteration, so it reads the same at every sub-iteration: fall back when consecutive residuals agree to within a fraction $\sqrt{\varepsilon_{\text{div}}}$ of their size. The recommended value is $\varepsilon_{\text{div}} = 10^{-20}$, which triggers when they agree to about one part in $10^{10}$, comfortably above the relative residual-noise floor $\kappa(\text{AIC})\,u$, on the order of $10^{-15}$, established above. The denominator is bimodal in practice, either of order $\bigl\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$ under normal progress or collapsed to the noise floor at a stall, with a wide gap between, so any value from $10^{-16}$ to $10^{-24}$ behaves identically and $\varepsilon_{\text{div}}$ is a safety net rather than a tuned parameter. It is always well defined when reached, because a failed convergence test guarantees $\bigl\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \bigr\| > \varepsilon_{\text{abs}}$, comfortably above noise.
+A relative test is scale-invariant as the residual shrinks along the iteration, so it reads the same at every sub-iteration: fall back when consecutive residuals agree to within a fraction $\sqrt{\varepsilon_{\text{div}}}$ of their size. The recommended value is $\varepsilon_{\text{div}} = 10^{-20}$, which triggers when they agree to about one part in $10^{10}$, comfortably above the relative residual-noise floor $\kappa(\text{AIC})u$, on the order of $10^{-15}$, established above. The denominator is bimodal in practice, either of order $\bigl\| \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \bigr\|^2$ under normal progress or collapsed to the noise floor at a stall, with a wide gap between, so any value from $10^{-16}$ to $10^{-24}$ behaves identically and $\varepsilon_{\text{div}}$ is a safety net rather than a tuned parameter. It is always well defined when reached, because a failed convergence test guarantees $\bigl\| \mathbf{D} \mathbf{r}^{(k-1)}_{n+1} \bigr\| > \varepsilon_{\text{abs}}$, comfortably above noise.
 
 ## 9. Initial relaxation factor
 
-$\lambda_{\text{init}}$ is the relaxation factor applied to the first sub-iteration update only. From $k = 1$ onward the Aitken $\Delta^2$ formula (Section 5, step 5) recomputes the factor dynamically, so $\lambda_{\text{init}}$ sets just the $k = 0$ step, $\mathbf{x}^{(1)}_{n+1} = \mathbf{x}^{(0)}_{n+1} + \lambda_{\text{init}}\,\mathbf{r}^{(0)}_{n+1}$. Like the seed, it affects the path of the iteration, not the fixed point it converges to, and because Aitken adapts immediately afterward, it need not be the optimal factor, only a safe warm start. The choice is correspondingly forgiving.
+$\lambda_{\text{init}}$ is the relaxation factor applied to the first sub-iteration update only. From $k = 1$ onward the Aitken $\Delta^2$ formula (Section 5, step 5) recomputes the factor dynamically, so $\lambda_{\text{init}}$ sets just the $k = 0$ step, $\mathbf{x}^{(1)}_{n+1} = \mathbf{x}^{(0)}_{n+1} + \lambda_{\text{init}}\mathbf{r}^{(0)}_{n+1}$. Like the seed, it affects the path of the iteration, not the fixed point it converges to, and because Aitken adapts immediately afterward, it need not be the optimal factor, only a safe warm start. The choice is correspondingly forgiving.
 
 Under-relaxation is the stabilizing direction. The un-relaxed step $\lambda = 1$ is plain fixed-point iteration on $\operatorname{H}_n$, which diverges once the added-mass feedback gain (of order $m_a/m$) exceeds unity (Section 10, item 1). Taking $\lambda < 1$ damps the update and shrinks the effective amplification. A value of $0.5$ sits firmly in the damped regime. The precise stable upper bound tightens below $1$ as $m_a/m$ grows, so $\lambda < 1$ is not an unconditional guarantee for an arbitrarily light vehicle, but since $\lambda_{\text{init}}$ seeds only the first step and Aitken drives the factor from there, the warm start need only be conservative, not globally stable.
 
@@ -294,7 +294,7 @@ The chosen $\lambda_{\text{init}} = 0.5$ is deliberately more conservative than 
 
 ## 10. Practical notes
 
-1. Velocities stay in the iterate because the added-mass feedback loop runs through the velocity block ($\delta \boldsymbol{\ell} \to \delta \mathbf{v}_{n+1} \to \delta \boldsymbol{\Gamma}^{(k)}_{n+1} \to \delta \boldsymbol{\ell}$, with step-size-independent gain on the order of $m_a/m$), so relaxing displacements while passing velocities through unrelaxed reintroduces the loose-coupling divergence. Slaving velocities to displacement increments via finite differences is exact only for a single semi-implicit Euler step and breaks for MuJoCo's default multi-stage RK4 integrator, whose velocity update is not a simple function of the displacement increment. Rejected. The state-dependent bound geometry and wake open a second feedback path, $\delta \mathbf{x} \to \delta \mathbf{B},\, \delta W \to \delta \boldsymbol{\ell}$, but it is $O(\Delta t)$ geometric and subdominant to the velocity channel, whose gain is on the order of $m_a/m$, so it does not change this picture.
+1. Velocities stay in the iterate because the added-mass feedback loop runs through the velocity block ($\delta \boldsymbol{\ell} \to \delta \mathbf{v}_{n+1} \to \delta \boldsymbol{\Gamma}^{(k)}_{n+1} \to \delta \boldsymbol{\ell}$, with step-size-independent gain on the order of $m_a/m$), so relaxing displacements while passing velocities through unrelaxed reintroduces the loose-coupling divergence. Slaving velocities to displacement increments via finite differences is exact only for a single semi-implicit Euler step and breaks for MuJoCo's default multi-stage RK4 integrator, whose velocity update is not a simple function of the displacement increment. Rejected. The state-dependent bound geometry and wake open a second feedback path, $\delta \mathbf{x} \to \delta \mathbf{B}, \delta W \to \delta \boldsymbol{\ell}$, but it is $O(\Delta t)$ geometric and subdominant to the velocity channel, whose gain is on the order of $m_a/m$, so it does not change this picture.
 2. Velocity-only relaxation was considered and rejected. The converse splitting is sound: every closed feedback cycle through the displacement block of $\operatorname{H}_n$ carries the $O(\Delta t^2)$ configuration response to a load perturbation and is $O(\Delta t)$ overall, so relaxing only $\bigl(\mathbf{v}^{(k)}_{n+1}, \boldsymbol{\omega}^{(k)}_{n+1}\bigr)$ while passing the configuration block through unrelaxed would converge, and would avoid relaxing the singular $\boldsymbol{\theta}$ block and the $\Delta t$-sensitive block structure of $\mathbf{D}$. Rejected in favor of relaxing the full 12-vector: full-state relaxation is the standard presentation in the partitioned-FSI literature, whereas the partial splitting would demand its own stability argument in peer review for a payoff that is only bookkeeping. The underlying observation (the stiff subspace is the velocity block) still informs the construction of $\mathbf{D}$ (Section 7).
 3. The state's $\boldsymbol{\theta}$ block is intrinsic zyx Euler angles, converted to degrees only at the `OperatingPoint` seam, where each angle is validated to lie in $(-180, 180]$. We do not implement wrap-aware arithmetic on the $\boldsymbol{\theta}$ block. Residuals and updates use plain subtraction and addition, which is accurate as long as the orientation stays away from the representation singularities. If the relaxation drives any angle out of $(-180, 180]$, building the next `OperatingPoint` hard-errors, so a divergent orientation aborts the solve rather than corrupting it silently. Two in-range singularities are not caught by that validation and are accepted as out of scope for now: the gimbal-lock pole at pitch $= \pm 90^\circ$ (it passes validation, and the angle extraction resolves it with a non-erroring fallback, so the solve degrades silently rather than aborting), and the $\pm 180^\circ$ wrap seam (two candidates straddling it both pass validation but differ by nearly $360^\circ$ under plain arithmetic). These are acceptable because the intended flight regimes stay well away from both. Extreme or aerobatic orientations are not supported.
 4. AIC reuse across sub-iterations is only partial, because the bound geometry is not fully iterate-independent. The AIC is assembled from $\mathbf{B}^{(k)}_{n+1} = \operatorname{G}\bigl(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\bigr)$, whose trailing-edge back legs carry the freestream-dependent offset (the geometry function $\operatorname{G}$), so they move with the trial state. The rest of $\mathbf{B}^{(k)}_{n+1}$ (front legs, interior back legs) is fixed at $t_{n+1}$. In free air this trailing-edge dependence is the only trial dependence, so most of the matrix could be built once and only its trailing-edge contributions and the right-hand sides refreshed per trial. With a surface active, the image system's geometry in GP1 additionally depends on the trial attitude and position, spreading the dependence across the whole matrix. We do not exploit any of this for now: each sub-iteration rebuilds the AIC matrix in full. The partial reuse (freezing all but the trailing-edge rings in free air) is left as a future optimization, to be considered only after the initial implementation and testing.

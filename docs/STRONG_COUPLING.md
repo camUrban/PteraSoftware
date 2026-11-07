@@ -215,6 +215,8 @@ The weighting matrix $\mathbf{D}$ enters the convergence test (Section 5, step 4
 
 $$\mathbf{D} = \operatorname{diag}\Big( \tfrac{1}{L_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{1}{\theta_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{\Delta t}{L_{\text{ref}}}\,\mathbf{I}_3,\; \tfrac{\Delta t}{\theta_{\text{ref}}}\,\mathbf{I}_3 \Big)$$
 
+Here $\mathbf{I}_3$ is the 3x3 identity matrix, so each block's scalar weight is repeated on the three diagonal entries of that block.
+
 Two ideas determine it: a $\Delta t$ factor on the derivative blocks (the time-scaling fix) and the reference scales $L_{\text{ref}}$ and $\theta_{\text{ref}}$ (the units fix).
 
 ### Time scaling: the delta-t factor on the derivative blocks

@@ -37,13 +37,13 @@ Known before solving for snapshot $n{+}1$:
 | $\mathbf{B}_n$          | Bound ring vortex positions at $t_n$ (GP1 axes, the first `Airplane`'s geometry axes), $\mathbf{B}_n = G\big(\mathbf{x}_n, t_n\big)$: the prescribed flapping geometry set by $t_n$, plus the trailing-edge back-leg offset set by the freestream (hence by the velocity and attitude blocks of $\mathbf{x}_n$, Section 3). The initial core radius is a per-wing geometric constant (as for the wake). Bound vortices carry zero age. |
 | $\boldsymbol{\Gamma}_n$ | Bound ring vortex strengths at $t_n$: the column vector produced by the circulation solve $C$.                                                                                                                                                                                                                                                                                                                                         |
 | $W_n$                   | Wake state object at $t_n$: positions (GP1 axes) and strengths of all rows shed through interval $n$. The viscous core-growth model also consumes each wake vortex's age and initial core radius, but neither is independent state: the age is rederived from the vortex's position in the wake, and the initial core radius is a per-wing geometric constant.                                                                         |
-| $\mathbf{l}_n$          | Official snapshot-$n$ load: $\mathbf{l}_n = L\big(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \boldsymbol{\Gamma}_{n-1},\, W_n\big)$ with $\boldsymbol{\Gamma}_n = C\big(\mathbf{x}_n, \mathbf{B}_n, W_n\big)$ (maps in Section 3), equivalently $\mathbf{l}_n = A\big(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_{n-1}, W_n\big)$                                                                               |
+| $\boldsymbol{\ell}_n$          | Official snapshot-$n$ load: $\boldsymbol{\ell}_n = L\big(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \boldsymbol{\Gamma}_{n-1},\, W_n\big)$ with $\boldsymbol{\Gamma}_n = C\big(\mathbf{x}_n, \mathbf{B}_n, W_n\big)$ (maps in Section 3), equivalently $\boldsymbol{\ell}_n = A\big(\mathbf{x}_n,\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_{n-1}, W_n\big)$                                                                               |
 
 The wake $W_n$, the bound geometry $\mathbf{B}_n$, and the strengths $\boldsymbol{\Gamma}_n$ are structured aggregates the maps pass and return, distinct from the iterated state vector $\mathbf{x}_n$ and not subject to its inner-product arithmetic (Section 5). The bound geometry is not independent: $\mathbf{B}_n = G\big(\mathbf{x}_n, t_n\big)$.
 
 ### Initialization
 
-At the first snapshot ($n = 0$): $\boldsymbol{\Gamma}_{-1} := 0$ and $W_0 := \emptyset$. The first official solve is therefore $\boldsymbol{\Gamma}_0 = C\big(\mathbf{x}_0, \mathbf{B}_0, \emptyset\big)$ and $\mathbf{l}_0 = L\big(\mathbf{x}_0, \mathbf{B}_0, \boldsymbol{\Gamma}_0, 0, \emptyset\big)$ with $\mathbf{B}_0 = G\big(\mathbf{x}_0, t_0\big)$, whose unsteady term $\dot{\boldsymbol{\Gamma}}_0 \approx \boldsymbol{\Gamma}_0 / \Delta t$ is the impulsive-start convention.
+At the first snapshot ($n = 0$): $\boldsymbol{\Gamma}_{-1} := 0$ and $W_0 := \emptyset$. The first official solve is therefore $\boldsymbol{\Gamma}_0 = C\big(\mathbf{x}_0, \mathbf{B}_0, \emptyset\big)$ and $\boldsymbol{\ell}_0 = L\big(\mathbf{x}_0, \mathbf{B}_0, \boldsymbol{\Gamma}_0, 0, \emptyset\big)$ with $\mathbf{B}_0 = G\big(\mathbf{x}_0, t_0\big)$, whose unsteady term $\dot{\boldsymbol{\Gamma}}_0 \approx \boldsymbol{\Gamma}_0 / \Delta t$ is the impulsive-start convention.
 
 ## 3. Maps
 
@@ -55,9 +55,9 @@ $G$ returns the bound ring vortex positions in GP1 axes. The time tag sets the p
 
 ### Structural propagator map
 
-$$\mathbf{x}_{n+1} = S\big(\mathbf{x}_n,\, \hat{\mathbf{l}}_{n+1}\big)$$
+$$\mathbf{x}_{n+1} = S\big(\mathbf{x}_n,\, \hat{\boldsymbol{\ell}}_{n+1}\big)$$
 
-$S$ integrates the rigid-body dynamics in MuJoCo over $(t_n, t_{n+1}]$ with the applied wrench held constant at the interval load $\hat{\mathbf{l}}_{n+1} \in \mathbb{R}^6$ (Earth axes, gravity and external loads included). The hat distinguishes the interval load from the official snapshot load $\mathbf{l}_{n+1}$ of Section 6: distinct objects sharing the same time tag.
+$S$ integrates the rigid-body dynamics in MuJoCo over $(t_n, t_{n+1}]$ with the applied wrench held constant at the interval load $\hat{\boldsymbol{\ell}}_{n+1} \in \mathbb{R}^6$ (Earth axes, gravity and external loads included). The hat distinguishes the interval load from the official snapshot load $\boldsymbol{\ell}_{n+1}$ of Section 6: distinct objects sharing the same time tag.
 
 ### Wake propagator map
 
@@ -77,7 +77,7 @@ Build the snapshot-$(n{+}1)$ operating point from $\mathbf{x}^{(k)}_{n+1}$. Asse
 
 ### Load evaluation
 
-$$\mathbf{l}^{(k)}_{n+1} = L\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\big)$$
+$$\boldsymbol{\ell}^{(k)}_{n+1} = L\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\big)$$
 
 The Kutta-Joukowski term uses the current snapshot's strengths $\boldsymbol{\Gamma}^{(k)}_{n+1}$ directly (local velocities include the kinematic velocity from $\mathbf{x}^{(k)}_{n+1}$ plus bound and wake induction). The unsteady Bernoulli term uses $\dot{\boldsymbol{\Gamma}}^{(k)}_{n+1} \approx \big(\boldsymbol{\Gamma}^{(k)}_{n+1} - \boldsymbol{\Gamma}_n\big)/\Delta t$. Add any external loads from `external_loads_fn`, returned in wind axes and evaluated at the same operating point. Transform to Earth axes. Add gravity. Note the asymmetry: $\boldsymbol{\Gamma}^{(k)}_{n+1}$ enters both terms, while $\boldsymbol{\Gamma}_n$ enters only through the finite difference.
 
@@ -86,7 +86,7 @@ The Kutta-Joukowski term uses the current snapshot's strengths $\boldsymbol{\Gam
 For the fixed-point algebra it is convenient to compose the circulation solve and the load evaluation into one map, keeping the bound geometry explicit:
 
 $$\begin{aligned}
-\mathbf{l}^{(k)}_{n+1} &= A\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\big) \\
+\boldsymbol{\ell}^{(k)}_{n+1} &= A\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\big) \\
 &:= L\Big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, C\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\big),\, \boldsymbol{\Gamma}_n,\, W^{(k)}_{n+1}\Big)
 \end{aligned}$$
 
@@ -95,13 +95,13 @@ $\boldsymbol{\Gamma}^{(k)}_{n+1}$ is thus an internal product of $A$: a determin
 To confirm that $A$ collapses to a function of the trial state alone, expand those internal products. Substitute $\mathbf{B}^{(k)}_{n+1} = G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big)$ in every slot it occupies (the explicit one, inside $C$, and inside $P$) and $W^{(k)}_{n+1}$ in both of its occurrences (one shared object), giving the fully expanded load:
 
 $$\begin{aligned}
-\mathbf{l}^{(k)}_{n+1} = L\Big( &\mathbf{x}^{(k)}_{n+1},\; G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big),\; C\big(\mathbf{x}^{(k)}_{n+1},\, G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big),\, P\big(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \dots \\
+\boldsymbol{\ell}^{(k)}_{n+1} = L\Big( &\mathbf{x}^{(k)}_{n+1},\; G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big),\; C\big(\mathbf{x}^{(k)}_{n+1},\, G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big),\, P\big(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \dots \\
 &G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big), W_n\big)\big),\; \boldsymbol{\Gamma}_n,\; P\big(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big), W_n\big)\Big)
 \end{aligned}$$
 
 Every leaf is now either the trial state $\mathbf{x}^{(k)}_{n+1}$ or one of the frozen step quantities $\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n, t_{n+1}$, which are constant across the sub-iteration (Section 4). Dropping those constants leaves the trial state as the only varying argument:
 
-$$\mathbf{l}^{(k)}_{n+1} = A_n\big(\mathbf{x}^{(k)}_{n+1}\big)$$
+$$\boldsymbol{\ell}^{(k)}_{n+1} = A_n\big(\mathbf{x}^{(k)}_{n+1}\big)$$
 
 This is a single-variable map over the sub-iteration, with the subscript $n$ carrying the frozen step data exactly as $H_n$ does (Section 4). Two frozen leaves are worth calling out: $\mathbf{x}_n$ appears (inside $P$, for the surface image only), but as a fixed parameter rather than a second free variable, so it does not compromise the single-argument reduction. $\boldsymbol{\Gamma}_n$ appears twice, as $L$'s explicit fourth argument and again as $P$'s shed strength.
 
@@ -109,7 +109,7 @@ The official snapshot solve (Section 6) is the same composition evaluated at the
 
 ### Hat convention
 
-Each trial evaluates $A$ against its own bound geometry $\mathbf{B}^{(k)}_{n+1}$ and wake $W^{(k)}_{n+1}$, and the official snapshot solve (Section 6) rebuilds both at the accepted state. The only hatted object is the interval load $\hat{\mathbf{l}}_{n+1}$ (the load the body is advanced under), which matches the official $\mathbf{l}_{n+1}$ of Section 6 to within the convergence tolerance.
+Each trial evaluates $A$ against its own bound geometry $\mathbf{B}^{(k)}_{n+1}$ and wake $W^{(k)}_{n+1}$, and the official snapshot solve (Section 6) rebuilds both at the accepted state. The only hatted object is the interval load $\hat{\boldsymbol{\ell}}_{n+1}$ (the load the body is advanced under), which matches the official $\boldsymbol{\ell}_{n+1}$ of Section 6 to within the convergence tolerance.
 
 ## 4. The coupled system and its fixed point
 
@@ -118,8 +118,8 @@ The discrete coupled equations for the step from $t_n$ to $t_{n+1}$ are:
 $$\begin{aligned}
 \mathbf{B}_{n+1} &= G\big(\mathbf{x}_{n+1},\, t_{n+1}\big) \\
 W_{n+1} &= P\big(\mathbf{x}_n,\, \mathbf{x}_{n+1},\, \mathbf{B}_n,\, \boldsymbol{\Gamma}_n,\, \mathbf{B}_{n+1},\, W_n\big) \\
-\mathbf{x}_{n+1} &= S\big(\mathbf{x}_n,\, \hat{\mathbf{l}}_{n+1}\big) \\
-\hat{\mathbf{l}}_{n+1} &= A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n, W_{n+1}\big)
+\mathbf{x}_{n+1} &= S\big(\mathbf{x}_n,\, \hat{\boldsymbol{\ell}}_{n+1}\big) \\
+\hat{\boldsymbol{\ell}}_{n+1} &= A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n, W_{n+1}\big)
 \end{aligned}$$
 
 The first two equations are no longer free of unknowns: the bound geometry and the wake both depend on $\mathbf{x}_{n+1}$. Only the snapshot-$n$ data $(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n)$ is frozen for the step. Substituting through yields one implicit equation in the state:
@@ -129,7 +129,7 @@ $$\begin{aligned}
 H_n\big(\mathbf{x}_{n+1}\big) &:= S\Big(\mathbf{x}_n,\, A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\big)\Big)
 \end{aligned}$$
 
-Here $\mathbf{B}_{n+1} = G\big(\mathbf{x}_{n+1}, t_{n+1}\big)$ and $W_{n+1} = P\big(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\big)$ are themselves functions of $\mathbf{x}_{n+1}$. $H_n: \mathbb{R}^{12} \to \mathbb{R}^{12}$ is a self-map, and the snapshot-$(n{+}1)$ state is its fixed point. The subscript on $H_n$ records that this step's frozen data $(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n)$ is baked into the self-map. The unknown is $\mathbf{x}_{n+1}$. The trial bound geometry, strengths, wake, and loads are produced as byproducts, with the official $\boldsymbol{\Gamma}_{n+1}$ and $\mathbf{l}_{n+1}$ finalized at the accepted state in Section 6.
+Here $\mathbf{B}_{n+1} = G\big(\mathbf{x}_{n+1}, t_{n+1}\big)$ and $W_{n+1} = P\big(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\big)$ are themselves functions of $\mathbf{x}_{n+1}$. $H_n: \mathbb{R}^{12} \to \mathbb{R}^{12}$ is a self-map, and the snapshot-$(n{+}1)$ state is its fixed point. The subscript on $H_n$ records that this step's frozen data $(\mathbf{x}_n, \mathbf{B}_n, \boldsymbol{\Gamma}_n, W_n)$ is baked into the self-map. The unknown is $\mathbf{x}_{n+1}$. The trial bound geometry, strengths, wake, and loads are produced as byproducts, with the official $\boldsymbol{\Gamma}_{n+1}$ and $\boldsymbol{\ell}_{n+1}$ finalized at the accepted state in Section 6.
 
 The stored and relaxed variable is the increment:
 
@@ -145,7 +145,7 @@ Save the MuJoCo state at $\mathbf{x}_n$. The step's frozen data is the snapshot-
 
 ### Seed (k = 0)
 
-$$\mathbf{x}^{(0)}_{n+1} = S\big(\mathbf{x}_n,\, \mathbf{l}_n\big)$$
+$$\mathbf{x}^{(0)}_{n+1} = S\big(\mathbf{x}_n,\, \boldsymbol{\ell}_n\big)$$
 
 The snapshot-$n$ load is recycled as the zeroth trial for the interval load: precisely the loose scheme's mis-tagging, used once as a warm start. The seed affects only the path of the iteration, not its fixed point.
 
@@ -155,12 +155,12 @@ For $k = 0, 1, 2, \dots, k_{\max}$:
 
 1. At the trial state, build the trial bound geometry and wake, $\mathbf{B}^{(k)}_{n+1} = G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big)$ and $W^{(k)}_{n+1} = P\big(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}^{(k)}_{n+1}, W_n\big)$, then evaluate the load:
 
-   $$\mathbf{l}^{(k)}_{n+1} = A\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\big)$$
+   $$\boldsymbol{\ell}^{(k)}_{n+1} = A\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\big)$$
 
    This yields the trial strengths $\boldsymbol{\Gamma}^{(k)}_{n+1} = C\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\big)$ internally.
 2. Dynamics under the trial load (MuJoCo restored to $\mathbf{x}_n$ first):
 
-   $$\tilde{\mathbf{x}}^{(k)}_{n+1} = S\big(\mathbf{x}_n,\, \mathbf{l}^{(k)}_{n+1}\big)$$
+   $$\tilde{\mathbf{x}}^{(k)}_{n+1} = S\big(\mathbf{x}_n,\, \boldsymbol{\ell}^{(k)}_{n+1}\big)$$
 3. Residual (two candidates for the same snapshot):
 
    $$\mathbf{r}^{(k)}_{n+1} = \tilde{\mathbf{x}}^{(k)}_{n+1} - \mathbf{x}^{(k)}_{n+1}$$
@@ -182,8 +182,8 @@ Log $\big\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \big\|$ and $\lambda^{(k)}_{n+1}
 
 At $k = K_{n+1}$:
 
-- Interval load: $\hat{\mathbf{l}}_{n+1} := \mathbf{l}^{(K_{n+1})}_{n+1}$.
-- State: $\mathbf{x}_{n+1} := \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$, so that $\mathbf{x}_{n+1} = S(\mathbf{x}_n, \hat{\mathbf{l}}_{n+1})$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\mathbf{l}}_{n+1} = A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\big)$ holds to tolerance.
+- Interval load: $\hat{\boldsymbol{\ell}}_{n+1} := \boldsymbol{\ell}^{(K_{n+1})}_{n+1}$.
+- State: $\mathbf{x}_{n+1} := \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$, so that $\mathbf{x}_{n+1} = S(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1})$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\boldsymbol{\ell}}_{n+1} = A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}\big)$ holds to tolerance.
 
 The outer chain then proceeds with the official snapshot solve, rebuilding the bound geometry and wake at the accepted state:
 
@@ -191,21 +191,21 @@ $$\begin{aligned}
 \mathbf{B}_{n+1} &= G\big(\mathbf{x}_{n+1}, t_{n+1}\big) \\
 W_{n+1} &= P\big(\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}_{n+1}, W_n\big) \\
 \boldsymbol{\Gamma}_{n+1} &= C\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, W_{n+1}\big) \\[6pt]
-\mathbf{l}_{n+1} &= L\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\big) \\
+\boldsymbol{\ell}_{n+1} &= L\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\big) \\
 &= A\big(\mathbf{x}_{n+1},\, \mathbf{B}_{n+1},\, \boldsymbol{\Gamma}_n,\, W_{n+1}\big)
 \end{aligned}$$
 
-This $\mathbf{l}_{n+1}$ is recorded in the load history and seeds the next sub-iteration, $\mathbf{x}^{(0)}_{n+2} = S(\mathbf{x}_{n+1}, \mathbf{l}_{n+1})$. The solve is necessary, not a redundant re-derivation: alongside $\mathbf{l}_{n+1}$ it produces the canonical bound geometry $\mathbf{B}_{n+1}$ and strengths $\boldsymbol{\Gamma}_{n+1}$ at the accepted state $\mathbf{x}_{n+1}$, which the next step's wake advance and finite difference consume as $\mathbf{B}_n$ and $\boldsymbol{\Gamma}_n$. It would reproduce the final trial evaluation only at the exact fixed point. Because the loop stops within tolerance, the accepted state $\mathbf{x}_{n+1} = \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$ differs (within tolerance) from the trial state $\mathbf{x}^{(K_{n+1})}_{n+1}$ that evaluation ran at. The bound geometry and wake are rebuilt at the accepted state too, since both move with the state, so this is a genuine re-evaluation rather than a reuse of frozen objects. That the baseline run loop already performs this solve each step is a convenience (no new code seam), not the reason it is computed.
+This $\boldsymbol{\ell}_{n+1}$ is recorded in the load history and seeds the next sub-iteration, $\mathbf{x}^{(0)}_{n+2} = S(\mathbf{x}_{n+1}, \boldsymbol{\ell}_{n+1})$. The solve is necessary, not a redundant re-derivation: alongside $\boldsymbol{\ell}_{n+1}$ it produces the canonical bound geometry $\mathbf{B}_{n+1}$ and strengths $\boldsymbol{\Gamma}_{n+1}$ at the accepted state $\mathbf{x}_{n+1}$, which the next step's wake advance and finite difference consume as $\mathbf{B}_n$ and $\boldsymbol{\Gamma}_n$. It would reproduce the final trial evaluation only at the exact fixed point. Because the loop stops within tolerance, the accepted state $\mathbf{x}_{n+1} = \tilde{\mathbf{x}}^{(K_{n+1})}_{n+1}$ differs (within tolerance) from the trial state $\mathbf{x}^{(K_{n+1})}_{n+1}$ that evaluation ran at. The bound geometry and wake are rebuilt at the accepted state too, since both move with the state, so this is a genuine re-evaluation rather than a reuse of frozen objects. That the baseline run loop already performs this solve each step is a convenience (no new code seam), not the reason it is computed.
 
 Nothing constrains the step increment $\Delta \mathbf{x}_{n+1} = \mathbf{x}_{n+1} - \mathbf{x}_n$ itself: the residual compares two snapshot-$(n{+}1)$ candidates, and the increment converges to whatever the physics dictates.
 
 ### Convergence mismatch
 
-The interval load $\hat{\mathbf{l}}_{n+1}$ is evaluated at the final trial state and the official $\mathbf{l}_{n+1}$ at the accepted state. The two states differ within the convergence tolerance, and that gap propagates through the bound geometry $\mathbf{B}$ and the wake $W$ (both functions of the state) as well as directly, so $\big\| \hat{\mathbf{l}}_{n+1} - \mathbf{l}_{n+1} \big\|$ is bounded by the convergence tolerance times the local sensitivity of $A$. This gap is a consequence of stopping the iteration within tolerance, not a modeling error. It grows only when a step fails to converge, for example when the $k_{\max}$ cap is hit, which the per-step $k_{\max}$ warning (below) already flags.
+The interval load $\hat{\boldsymbol{\ell}}_{n+1}$ is evaluated at the final trial state and the official $\boldsymbol{\ell}_{n+1}$ at the accepted state. The two states differ within the convergence tolerance, and that gap propagates through the bound geometry $\mathbf{B}$ and the wake $W$ (both functions of the state) as well as directly, so $\big\| \hat{\boldsymbol{\ell}}_{n+1} - \boldsymbol{\ell}_{n+1} \big\|$ is bounded by the convergence tolerance times the local sensitivity of $A$. This gap is a consequence of stopping the iteration within tolerance, not a modeling error. It grows only when a step fails to converge, for example when the $k_{\max}$ cap is hit, which the per-step $k_{\max}$ warning (below) already flags.
 
 ### Non-convergence handling
 
-If the loop reaches $k = k_{\max}$ without passing the convergence test, the step is accepted anyway, with $\hat{\mathbf{l}}_{n+1}$ and $\mathbf{x}_{n+1}$ taken from the final iterate as above. Accepting an unconverged step is safe rather than corrupting. The accepted state is still a genuine MuJoCo trajectory output (it satisfies $\mathbf{x}_{n+1} = S(\mathbf{x}_n, \hat{\mathbf{l}}_{n+1})$ exactly), so the rigid-body state is never unphysical. The only quantity left imperfect is the aero-structure consistency, by exactly the residual at the cap. The seed is the loose (explicit) step, and every relaxed iterate moves the estimate closer to the fixed point, so a capped step is at least as accurate as the loose coupling the solver tolerated before strong coupling existed, and usually much closer. Each step also re-solves the fixed point from scratch on the genuine accepted state, with a fresh seed and the next wake, so the solver carries no unconverged residual forward and a brief stiff transient self-heals once it passes.
+If the loop reaches $k = k_{\max}$ without passing the convergence test, the step is accepted anyway, with $\hat{\boldsymbol{\ell}}_{n+1}$ and $\mathbf{x}_{n+1}$ taken from the final iterate as above. Accepting an unconverged step is safe rather than corrupting. The accepted state is still a genuine MuJoCo trajectory output (it satisfies $\mathbf{x}_{n+1} = S(\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1})$ exactly), so the rigid-body state is never unphysical. The only quantity left imperfect is the aero-structure consistency, by exactly the residual at the cap. The seed is the loose (explicit) step, and every relaxed iterate moves the estimate closer to the fixed point, so a capped step is at least as accurate as the loose coupling the solver tolerated before strong coupling existed, and usually much closer. Each step also re-solves the fixed point from scratch on the genuine accepted state, with a fresh seed and the next wake, so the solver carries no unconverged residual forward and a brief stiff transient self-heals once it passes.
 
 The cap therefore continues the simulation rather than aborting it. The only hard stop in the step is the orientation validation that rejects out-of-range Euler angles (Section 10, item 3). Continuing is the right default, but it must not be silent: every step that reaches $k_{\max}$ emits a warning. A single cap during a transient is benign, while sustained caps are dangerous (in an added-mass-dominated regime they are the loose-coupling instability returning, since a capped step is only a partially-relaxed loose step), and the two are indistinguishable from a single step but separable by their frequency over the run, which per-step warnings expose. $k_{\max}$ is a user-tunable parameter (default 20). Raising it trades iterations for a tighter per-step solve when convergence is merely slow, as it can be for very light vehicles (large $m_a/m$, Section 8).
 
@@ -294,7 +294,7 @@ The chosen $\lambda_{\text{init}} = 0.5$ is deliberately more conservative than 
 
 ## 10. Practical notes
 
-1. Velocities stay in the iterate because the added-mass feedback loop runs through the velocity block ($\delta \mathbf{l} \to \delta \mathbf{v}_{n+1} \to \delta \boldsymbol{\Gamma}^{(k)}_{n+1} \to \delta \mathbf{l}$, with step-size-independent gain $\sim m_a/m$), so relaxing displacements while passing velocities through unrelaxed reintroduces the loose-coupling divergence. Slaving velocities to displacement increments via finite differences is exact only for a single semi-implicit Euler step and breaks for MuJoCo's default multi-stage RK4 integrator, whose velocity update is not a simple function of the displacement increment. Rejected. The state-dependent bound geometry and wake open a second feedback path, $\delta \mathbf{x} \to \delta \mathbf{B},\, \delta W \to \delta \mathbf{l}$, but it is $O(\Delta t)$ geometric and subdominant to the $\sim m_a/m$ velocity channel, so it does not change this picture.
+1. Velocities stay in the iterate because the added-mass feedback loop runs through the velocity block ($\delta \boldsymbol{\ell} \to \delta \mathbf{v}_{n+1} \to \delta \boldsymbol{\Gamma}^{(k)}_{n+1} \to \delta \boldsymbol{\ell}$, with step-size-independent gain $\sim m_a/m$), so relaxing displacements while passing velocities through unrelaxed reintroduces the loose-coupling divergence. Slaving velocities to displacement increments via finite differences is exact only for a single semi-implicit Euler step and breaks for MuJoCo's default multi-stage RK4 integrator, whose velocity update is not a simple function of the displacement increment. Rejected. The state-dependent bound geometry and wake open a second feedback path, $\delta \mathbf{x} \to \delta \mathbf{B},\, \delta W \to \delta \boldsymbol{\ell}$, but it is $O(\Delta t)$ geometric and subdominant to the $\sim m_a/m$ velocity channel, so it does not change this picture.
 2. Velocity-only relaxation was considered and rejected. The converse splitting is sound: every closed feedback cycle through the displacement block of $H_n$ carries the $O(\Delta t^2)$ configuration response to a load perturbation and is $O(\Delta t)$ overall, so relaxing only $\big(\mathbf{v}^{(k)}_{n+1}, \boldsymbol{\omega}^{(k)}_{n+1}\big)$ while passing the configuration block through unrelaxed would converge, and would avoid relaxing the singular $\boldsymbol{\theta}$ block and the $\Delta t$-sensitive block structure of $\mathbf{D}$. Rejected in favor of relaxing the full 12-vector: full-state relaxation is the standard presentation in the partitioned-FSI literature, whereas the partial splitting would demand its own stability argument in peer review for a payoff that is only bookkeeping. The underlying observation (the stiff subspace is the velocity block) still informs the construction of $\mathbf{D}$ (Section 7).
 3. The state's $\boldsymbol{\theta}$ block is intrinsic zyx Euler angles, converted to degrees only at the `OperatingPoint` seam, where each angle is validated to lie in $(-180, 180]$. We do not implement wrap-aware arithmetic on the $\boldsymbol{\theta}$ block. Residuals and updates use plain subtraction and addition, which is accurate as long as the orientation stays away from the representation singularities. If the relaxation drives any angle out of $(-180, 180]$, building the next `OperatingPoint` hard-errors, so a divergent orientation aborts the solve rather than corrupting it silently. Two in-range singularities are not caught by that validation and are accepted as out of scope for now: the gimbal-lock pole at pitch $= \pm 90^\circ$ (it passes validation, and the angle extraction resolves it with a non-erroring fallback, so the solve degrades silently rather than aborting), and the $\pm 180^\circ$ wrap seam (two candidates straddling it both pass validation but differ by nearly $360^\circ$ under plain arithmetic). These are acceptable because the intended flight regimes stay well away from both. Extreme or aerobatic orientations are not supported.
 4. AIC reuse across sub-iterations is only partial, because the bound geometry is not fully iterate-independent. The AIC is assembled from $\mathbf{B}^{(k)}_{n+1} = G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big)$, whose trailing-edge back legs carry the freestream-dependent offset (the geometry map $G$), so they move with the trial state. The rest of $\mathbf{B}^{(k)}_{n+1}$ (front legs, interior back legs) is fixed at $t_{n+1}$. In free air this trailing-edge dependence is the only trial dependence, so most of the matrix could be built once and only its trailing-edge contributions and the right-hand sides refreshed per trial. With a surface active, the image system's geometry in GP1 additionally depends on the trial attitude and position, spreading the dependence across the whole matrix. We do not exploit any of this for now: each sub-iteration rebuilds the AIC matrix in full. The partial reuse (freezing all but the trailing-edge rings in free air) is left as a future optimization, to be considered only after the initial implementation and testing.

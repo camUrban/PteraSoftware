@@ -44,7 +44,7 @@ The wake $W_n$, the bound geometry $\mathbf{V}_n$, and the strengths $\boldsymbo
 
 ### Initialization
 
-At the first snapshot ($n = 0$): $\boldsymbol{\Gamma}_{-1} := 0$ and $W_0 := \emptyset$. The first official solve is therefore $\boldsymbol{\Gamma}_0 = \operatorname{C}\pn{\mathbf{x}_0, \mathbf{V}_0, \emptyset}$ and $\boldsymbol{\ell}_0 = \operatorname{L}\pn{\mathbf{x}_0, \mathbf{V}_0, \boldsymbol{\Gamma}_0, 0, \emptyset}$ with $\mathbf{V}_0 = \operatorname{G}\pn{\mathbf{x}_0, t_0}$, whose unsteady term $\dot{\boldsymbol{\Gamma}}_0 \approx \boldsymbol{\Gamma}_0 / \Delta t$ is the impulsive-start convention.
+At the first snapshot ($n = 0$): $\boldsymbol{\Gamma}_{-1} \coloneqq 0$ and $W_0 \coloneqq \emptyset$. The first official solve is therefore $\boldsymbol{\Gamma}_0 = \operatorname{C}\pn{\mathbf{x}_0, \mathbf{V}_0, \emptyset}$ and $\boldsymbol{\ell}_0 = \operatorname{L}\pn{\mathbf{x}_0, \mathbf{V}_0, \boldsymbol{\Gamma}_0, 0, \emptyset}$ with $\mathbf{V}_0 = \operatorname{G}\pn{\mathbf{x}_0, t_0}$, whose unsteady term $\dot{\boldsymbol{\Gamma}}_0 \approx \boldsymbol{\Gamma}_0 / \Delta t$ is the impulsive-start convention.
 
 ## 3. Functions
 
@@ -88,7 +88,7 @@ For the fixed-point algebra it is convenient to compose the circulation solve an
 
 $$\begin{aligned}
 \boldsymbol{\ell}^{\pn{k}}_{n+1} &= \operatorname{A}\pn{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, \boldsymbol{\Gamma}_n, W^{\pn{k}}_{n+1}} \\
-&:= \operatorname{L}\bk{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, \operatorname{C}\pn{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, W^{\pn{k}}_{n+1}}, \boldsymbol{\Gamma}_n, W^{\pn{k}}_{n+1}}
+&\coloneqq \operatorname{L}\bk{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, \operatorname{C}\pn{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, W^{\pn{k}}_{n+1}}, \boldsymbol{\Gamma}_n, W^{\pn{k}}_{n+1}}
 \end{aligned}$$
 
 $\boldsymbol{\Gamma}^{\pn{k}}_{n+1}$ is thus an internal product of $\operatorname{A}$: a deterministic function of $\pn{\mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}^{\pn{k}}_{n+1}, W^{\pn{k}}_{n+1}}$, not an independent input. The bound geometry and wake are internal products as well, $\mathbf{V}^{\pn{k}}_{n+1} = \operatorname{G}\pn{\mathbf{x}^{\pn{k}}_{n+1}, t_{n+1}}$ and $W^{\pn{k}}_{n+1} = \operatorname{P}\pn{\mathbf{x}_n, \mathbf{x}^{\pn{k}}_{n+1}, \mathbf{V}_n, \boldsymbol{\Gamma}_n, \mathbf{V}^{\pn{k}}_{n+1}, W_n}$. They are kept as explicit arguments for the algorithm but are not free.
@@ -127,14 +127,14 @@ The first two equations are no longer free of unknowns: the bound geometry and t
 
 $$\begin{aligned}
 \mathbf{x}_{n+1} &= \operatorname{H}_n\pn{\mathbf{x}_{n+1}} \\
-\operatorname{H}_n\pn{\mathbf{x}_{n+1}} &:= \operatorname{S}\bk{\mathbf{x}_n, \operatorname{A}\pn{\mathbf{x}_{n+1}, \mathbf{V}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}}}
+\operatorname{H}_n\pn{\mathbf{x}_{n+1}} &\coloneqq \operatorname{S}\bk{\mathbf{x}_n, \operatorname{A}\pn{\mathbf{x}_{n+1}, \mathbf{V}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}}}
 \end{aligned}$$
 
 Here $\mathbf{V}_{n+1} = \operatorname{G}\pn{\mathbf{x}_{n+1}, t_{n+1}}$ and $W_{n+1} = \operatorname{P}\pn{\mathbf{x}_n, \mathbf{x}_{n+1}, \mathbf{V}_n, \boldsymbol{\Gamma}_n, \mathbf{V}_{n+1}, W_n}$ are themselves functions of $\mathbf{x}_{n+1}$. $\operatorname{H}_n: \mathbb{R}^{12} \to \mathbb{R}^{12}$ is a self-map, and the snapshot-$\pn{n{+}1}$ state is its fixed point. The subscript on $\operatorname{H}_n$ records that this step's frozen data $\pn{\mathbf{x}_n, \mathbf{V}_n, \boldsymbol{\Gamma}_n, W_n}$ is baked into the self-map. The unknown is $\mathbf{x}_{n+1}$. The trial bound geometry, strengths, wake, and loads are produced as byproducts, with the official $\boldsymbol{\Gamma}_{n+1}$ and $\boldsymbol{\ell}_{n+1}$ finalized at the accepted state in Section 6.
 
 The stored and relaxed variable is the increment:
 
-$$\Delta \mathbf{x}^{\pn{k}}_{n+1} := \mathbf{x}^{\pn{k}}_{n+1} - \mathbf{x}_n$$
+$$\Delta \mathbf{x}^{\pn{k}}_{n+1} \coloneqq \mathbf{x}^{\pn{k}}_{n+1} - \mathbf{x}_n$$
 
 The absolute state is reconstructed only inside calls to $\operatorname{S}$ and $\operatorname{A}$. Because the sub-iteration algorithm touches only differences (residuals and inter-iterate updates), the increment and absolute parameterizations generate identical iterate sequences. The increment is preferred for floating-point hygiene and to keep Euler-angle arithmetic in a small, wrap-free neighborhood.
 
@@ -165,7 +165,7 @@ For $k = 0, 1, 2, \dots, k_{\text{max}}$:
 3. Residual (two candidates for the same snapshot):
 
    $$\mathbf{r}^{\pn{k}}_{n+1} = \tilde{\mathbf{x}}^{\pn{k}}_{n+1} - \mathbf{x}^{\pn{k}}_{n+1}$$
-4. Test for convergence. Accept at $K_{n+1} := k$ and exit once the weighted residual satisfies the bound:
+4. Test for convergence. Accept at $K_{n+1} \coloneqq k$ and exit once the weighted residual satisfies the bound:
 
    $$\nm{\mathbf{D} \mathbf{r}^{\pn{k}}_{n+1}} \le \varepsilon_{\text{rel}} \nm{\mathbf{D} \Delta \mathbf{x}^{\pn{k}}_{n+1}} + \varepsilon_{\text{abs}}$$
 5. Compute the relaxation factor. $\lambda^{\pn{0}}_{n+1} = \lambda_{\text{init}}$. For $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted dot product:
@@ -183,8 +183,8 @@ Log $\nm{\mathbf{D} \mathbf{r}^{\pn{k}}_{n+1}}$ and $\lambda^{\pn{k}}_{n+1}$ at 
 
 At $k = K_{n+1}$:
 
-- Interval load: $\hat{\boldsymbol{\ell}}_{n+1} := \boldsymbol{\ell}^{\pn{K_{n+1}}}_{n+1}$.
-- State: $\mathbf{x}_{n+1} := \tilde{\mathbf{x}}^{\pn{K_{n+1}}}_{n+1}$, so that $\mathbf{x}_{n+1} = \operatorname{S}\pn{\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1}}$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\boldsymbol{\ell}}_{n+1} = \operatorname{A}\pn{\mathbf{x}_{n+1}, \mathbf{V}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}}$ holds to tolerance.
+- Interval load: $\hat{\boldsymbol{\ell}}_{n+1} \coloneqq \boldsymbol{\ell}^{\pn{K_{n+1}}}_{n+1}$.
+- State: $\mathbf{x}_{n+1} \coloneqq \tilde{\mathbf{x}}^{\pn{K_{n+1}}}_{n+1}$, so that $\mathbf{x}_{n+1} = \operatorname{S}\pn{\mathbf{x}_n, \hat{\boldsymbol{\ell}}_{n+1}}$ holds exactly (the accepted state is a genuine MuJoCo trajectory output), and $\hat{\boldsymbol{\ell}}_{n+1} = \operatorname{A}\pn{\mathbf{x}_{n+1}, \mathbf{V}_{n+1}, \boldsymbol{\Gamma}_n, W_{n+1}}$ holds to tolerance.
 
 The outer chain then proceeds with the official snapshot solve, rebuilding the bound geometry and wake at the accepted state:
 
@@ -228,15 +228,15 @@ Multiplying each derivative block by $\Delta t$ converts a rate into the increme
 
 ### Reference length
 
-Use the `Airplane`'s reference chord, $L_{\text{ref}} := c_{\text{ref}}$, which defaults to the main `Wing`'s mean aerodynamic chord. It is the aerodynamically meaningful length of the unsteady problem, it is already an `Airplane` attribute, and it scales with the vehicle, so the same $\mathbf{D}$ serves a full-size flapper and a centimeter-scale device without retuning. It is a characteristic scale, not a coordinate range. That distinction drives the angle choice below.
+Use the `Airplane`'s reference chord, $L_{\text{ref}} \coloneqq c_{\text{ref}}$, which defaults to the main `Wing`'s mean aerodynamic chord. It is the aerodynamically meaningful length of the unsteady problem, it is already an `Airplane` attribute, and it scales with the vehicle, so the same $\mathbf{D}$ serves a full-size flapper and a centimeter-scale device without retuning. It is a characteristic scale, not a coordinate range. That distinction drives the angle choice below.
 
 ### Reference angle
 
 Choose $\theta_{\text{ref}}$ so the attitude block balances the position block. A load perturbation applies a force $\mathbf{f}$ at a characteristic aerodynamic moment arm of order $c_{\text{ref}}$, hence a torque of order $c_{\text{ref}}\nm{\mathbf{f}}$. The $\Delta t$-scaled, per-step residual blocks are then of order $\pn{\nm{\mathbf{f}}/m}\Delta t^2$ for position and $\pn{c_{\text{ref}}\nm{\mathbf{f}}/\bar{I}}\Delta t^2$ for attitude, where $\bar{I}$ is a scalar inertia. Weighting by $1/L_{\text{ref}}$ and $1/\theta_{\text{ref}}$ and equating the two gives:
 
 $$\begin{aligned}
-\theta_{\text{ref}} &:= \frac{mc_{\text{ref}}^2}{\bar{I}} \\
-\bar{I} &:= \frac{1}{3}\operatorname{tr}\pn{\mathbf{J}}
+\theta_{\text{ref}} &\coloneqq \frac{mc_{\text{ref}}^2}{\bar{I}} \\
+\bar{I} &\coloneqq \frac{1}{3}\operatorname{tr}\pn{\mathbf{J}}
 \end{aligned}$$
 
 This is the squared ratio of the reference chord to the radius of gyration $\sqrt{\bar{I}/m}$. Both the first `Airplane`'s mass $m$ and its body inertia $\mathbf{J}$ (the tag `I_BP1_CgP1`, in body axes about the CG) are already supplied to the MuJoCo model, so $\theta_{\text{ref}}$ introduces no new input. For a typical vehicle the gyration radius is a few chords, so $\theta_{\text{ref}}$ lands well below 1 rad, weighting attitude more heavily than position. That is consistent with attitude being the aerodynamically sensitive direction, since the attitude block sets the angle of attack.

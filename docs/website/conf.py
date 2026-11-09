@@ -86,19 +86,22 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
-# Define the paired-delimiter macros that the math in docs/STRONG_COUPLING.md uses. Each
-# one sizes its delimiters to their contents and spaces them as an opening and closing
-# pair. The option name says MathJax 3, but Sphinx passes it through unchanged to
-# whichever MathJax version it loads.
+# Set up the math that docs/STRONG_COUPLING.md uses. Load the mathtools extension, which
+# provides \coloneqq and which MathJax does not load on its own, and define the
+# paired-delimiter macros. Each macro sizes its delimiters to their contents and spaces
+# them as an opening and closing pair. The option name says MathJax 3, but Sphinx passes
+# it through unchanged to whichever MathJax version it loads.
 mathjax3_config = {
+    "loader": {"load": ["[tex]/mathtools"]},
     "tex": {
+        "packages": {"[+]": ["mathtools"]},
         "macros": {
             "pn": [r"\mathopen{}\mathclose{\left( #1\right)}", 1],
             "bk": [r"\mathopen{}\mathclose{\left[ #1\right]}", 1],
             "ab": [r"\mathopen{}\mathclose{\left\lvert #1\right\rvert}", 1],
             "nm": [r"\mathopen{}\mathclose{\left\lVert #1\right\rVert}", 1],
-        }
-    }
+        },
+    },
 }
 
 # Render the tutorial notebooks from their committed outputs instead of executing them.

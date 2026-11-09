@@ -86,6 +86,21 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
+# Define the paired-delimiter macros that the math in docs/STRONG_COUPLING.md uses. Each
+# one sizes its delimiters to their contents and spaces them as an opening and closing
+# pair. The option name says MathJax 3, but Sphinx passes it through unchanged to
+# whichever MathJax version it loads.
+mathjax3_config = {
+    "tex": {
+        "macros": {
+            "pn": [r"\mathopen{}\mathclose{\left( #1\right)}", 1],
+            "bk": [r"\mathopen{}\mathclose{\left[ #1\right]}", 1],
+            "ab": [r"\mathopen{}\mathclose{\left\lvert #1\right\rvert}", 1],
+            "nm": [r"\mathopen{}\mathclose{\left\lVert #1\right\rVert}", 1],
+        }
+    }
+}
+
 # Render the tutorial notebooks from their committed outputs instead of executing them.
 # The docs build does not install pterasoftware or its runtime dependencies (see
 # autodoc_mock_imports above), so it cannot run the notebooks.

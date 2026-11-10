@@ -547,8 +547,8 @@ def compute_wake_area_mismatch(
             max_airplane_movement_period, operating_point_movement_copy._max_period
         )
 
-        # Calculate the number of time steps to traverse the max period (or just a
-        #  two time steps if there is no movement).
+        # Calculate the number of time steps to traverse the max period (or just a  two
+        # time steps if there is no movement).
         num_steps = 2
         if max_period > 0.0:
             num_steps = math.ceil(max_period / delta_time)

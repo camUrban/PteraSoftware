@@ -2264,8 +2264,6 @@ class CoreUnsteadyProblem:
         "_first_results_step",
         "finalForces_W",
         "finalForceCoefficients_W",
-        "finalMoments_W_CgP1",
-        "finalMomentCoefficients_W_CgP1",
         "finalForces_G",
         "finalForceCoefficients_G",
         "finalMoments_G_Cg",
@@ -2274,8 +2272,6 @@ class CoreUnsteadyProblem:
         "finalMomentCoefficients_W_Cg",
         "finalMeanForces_W",
         "finalMeanForceCoefficients_W",
-        "finalMeanMoments_W_CgP1",
-        "finalMeanMomentCoefficients_W_CgP1",
         "finalMeanForces_G",
         "finalMeanForceCoefficients_G",
         "finalMeanMoments_G_Cg",
@@ -2366,8 +2362,6 @@ class CoreUnsteadyProblem:
         # axes" and "relative to the entry's own Airplane's CG".
         self.finalForces_W: list[np.ndarray] = []
         self.finalForceCoefficients_W: list[np.ndarray] = []
-        self.finalMoments_W_CgP1: list[np.ndarray] = []
-        self.finalMomentCoefficients_W_CgP1: list[np.ndarray] = []
         self.finalForces_G: list[np.ndarray] = []
         self.finalForceCoefficients_G: list[np.ndarray] = []
         self.finalMoments_G_Cg: list[np.ndarray] = []
@@ -2383,8 +2377,6 @@ class CoreUnsteadyProblem:
         # axes" and "relative to the entry's own Airplane's CG".
         self.finalMeanForces_W: list[np.ndarray] = []
         self.finalMeanForceCoefficients_W: list[np.ndarray] = []
-        self.finalMeanMoments_W_CgP1: list[np.ndarray] = []
-        self.finalMeanMomentCoefficients_W_CgP1: list[np.ndarray] = []
         self.finalMeanForces_G: list[np.ndarray] = []
         self.finalMeanForceCoefficients_G: list[np.ndarray] = []
         self.finalMeanMoments_G_Cg: list[np.ndarray] = []

@@ -1326,17 +1326,9 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
         # These are mutable list attributes, initialized empty.
         self.assertIsInstance(self.core_unsteady_problem.finalForces_W, list)
         self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_W, list)
-        self.assertIsInstance(self.core_unsteady_problem.finalMoments_W_CgP1, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalMomentCoefficients_W_CgP1, list
-        )
         self.assertIsInstance(self.core_unsteady_problem.finalMeanForces_W, list)
         self.assertIsInstance(
             self.core_unsteady_problem.finalMeanForceCoefficients_W, list
-        )
-        self.assertIsInstance(self.core_unsteady_problem.finalMeanMoments_W_CgP1, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalMeanMomentCoefficients_W_CgP1, list
         )
         self.assertIsInstance(self.core_unsteady_problem.finalForces_G, list)
         self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_G, list)

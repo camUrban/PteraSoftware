@@ -130,8 +130,6 @@ Store collections as tuples internally to prevent external mutation via `.append
 |--------------------------------------|--------------------|--------------------------------------------------|
 | `finalForces_W`                      | `list[np.ndarray]` | Final forces                                     |
 | `finalForceCoefficients_W`           | `list[np.ndarray]` | Final force coefficients                         |
-| `finalMoments_W_CgP1`                | `list[np.ndarray]` | Final moments                                    |
-| `finalMomentCoefficients_W_CgP1`     | `list[np.ndarray]` | Final moment coefficients                        |
 | `finalForces_G`                      | `list[np.ndarray]` | Final geometry-axes forces                       |
 | `finalForceCoefficients_G`           | `list[np.ndarray]` | Final geometry-axes force coefficients           |
 | `finalMoments_G_Cg`                  | `list[np.ndarray]` | Final own-CG moments (geometry axes)             |
@@ -140,8 +138,6 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalMomentCoefficients_W_Cg`       | `list[np.ndarray]` | Final own-CG moment coefficients (wind axes)     |
 | `finalMeanForces_W`                  | `list[np.ndarray]` | Cycle averaged counterparts of the above         |
 | `finalMeanForceCoefficients_W`       | `list[np.ndarray]` |                                                  |
-| `finalMeanMoments_W_CgP1`            | `list[np.ndarray]` |                                                  |
-| `finalMeanMomentCoefficients_W_CgP1` | `list[np.ndarray]` |                                                  |
 | `finalMeanForces_G`                  | `list[np.ndarray]` |                                                  |
 | `finalMeanForceCoefficients_G`       | `list[np.ndarray]` |                                                  |
 | `finalMeanMoments_G_Cg`              | `list[np.ndarray]` |                                                  |

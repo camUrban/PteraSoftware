@@ -3227,12 +3227,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 "finalForceCoefficients_W",
                 "finalMeanForceCoefficients_W",
             ),
-            ("moments_W_CgP1", "finalMoments_W_CgP1", "finalMeanMoments_W_CgP1"),
-            (
-                "momentCoefficients_W_CgP1",
-                "finalMomentCoefficients_W_CgP1",
-                "finalMeanMomentCoefficients_W_CgP1",
-            ),
             ("forces_G", "finalForces_G", "finalMeanForces_G"),
             (
                 "forceCoefficients_G",

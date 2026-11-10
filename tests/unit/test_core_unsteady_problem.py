@@ -123,12 +123,10 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
             lcm_period=0.0,
         )
 
-        # All 20 load lists should be initialized as empty lists.
+        # All 16 load lists should be initialized as empty lists.
         load_list_names = [
             "finalForces_W",
             "finalForceCoefficients_W",
-            "finalMoments_W_CgP1",
-            "finalMomentCoefficients_W_CgP1",
             "finalForces_G",
             "finalForceCoefficients_G",
             "finalMoments_G_Cg",
@@ -137,8 +135,6 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
             "finalMomentCoefficients_W_Cg",
             "finalMeanForces_W",
             "finalMeanForceCoefficients_W",
-            "finalMeanMoments_W_CgP1",
-            "finalMeanMomentCoefficients_W_CgP1",
             "finalMeanForces_G",
             "finalMeanForceCoefficients_G",
             "finalMeanMoments_G_Cg",

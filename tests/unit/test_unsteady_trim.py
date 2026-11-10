@@ -548,12 +548,20 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                     / trial_operating_point.qInf__E
                     / base_airplane.s_ref
                 )
-                self.unsteady_problem.finalForceCoefficients_W = [
-                    -externalForceCoefficients_W
-                ]
-                self.unsteady_problem.finalMomentCoefficients_W_Cg = [
-                    np.zeros(3, dtype=float)
-                ]
+                # Only the wind axes force and moment coefficients are read by the trim
+                # analysis, so the other loads are recorded as zeros.
+                stack_zeros = np.zeros((1, 3), dtype=float)
+                self.unsteady_problem._record_final_loads(
+                    cycle_averaged=False,
+                    stackForces_W=stack_zeros,
+                    stackForceCoefficients_W=np.array([-externalForceCoefficients_W]),
+                    stackForces_G=stack_zeros,
+                    stackForceCoefficients_G=stack_zeros,
+                    stackMoments_G_Cg=stack_zeros,
+                    stackMomentCoefficients_G_Cg=stack_zeros,
+                    stackMoments_W_Cg=stack_zeros,
+                    stackMomentCoefficients_W_Cg=stack_zeros,
+                )
 
         with patch(
             "pterasoftware._trim._unsteady_ring_vortex_lattice_method."
@@ -595,12 +603,18 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 self.unsteady_problem = unsteady_problem
 
             def run(self, **_: Any) -> None:
-                self.unsteady_problem.finalForceCoefficients_W = [
-                    np.zeros(3, dtype=float)
-                ]
-                self.unsteady_problem.finalMomentCoefficients_W_Cg = [
-                    np.zeros(3, dtype=float)
-                ]
+                stack_zeros = np.zeros((1, 3), dtype=float)
+                self.unsteady_problem._record_final_loads(
+                    cycle_averaged=False,
+                    stackForces_W=stack_zeros,
+                    stackForceCoefficients_W=stack_zeros,
+                    stackForces_G=stack_zeros,
+                    stackForceCoefficients_G=stack_zeros,
+                    stackMoments_G_Cg=stack_zeros,
+                    stackMomentCoefficients_G_Cg=stack_zeros,
+                    stackMoments_W_Cg=stack_zeros,
+                    stackMomentCoefficients_W_Cg=stack_zeros,
+                )
 
         with patch(
             "pterasoftware._trim._unsteady_ring_vortex_lattice_method."
@@ -645,12 +659,18 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 trial_movements.append(unsteady_problem.movement)
 
             def run(self, **_: Any) -> None:
-                self.unsteady_problem.finalMeanForceCoefficients_W = [
-                    np.zeros(3, dtype=float)
-                ]
-                self.unsteady_problem.finalMeanMomentCoefficients_W_Cg = [
-                    np.zeros(3, dtype=float)
-                ]
+                stack_zeros = np.zeros((1, 3), dtype=float)
+                self.unsteady_problem._record_final_loads(
+                    cycle_averaged=True,
+                    stackForces_W=stack_zeros,
+                    stackForceCoefficients_W=stack_zeros,
+                    stackForces_G=stack_zeros,
+                    stackForceCoefficients_G=stack_zeros,
+                    stackMoments_G_Cg=stack_zeros,
+                    stackMomentCoefficients_G_Cg=stack_zeros,
+                    stackMoments_W_Cg=stack_zeros,
+                    stackMomentCoefficients_W_Cg=stack_zeros,
+                )
 
         with patch(
             "pterasoftware._trim._unsteady_ring_vortex_lattice_method."

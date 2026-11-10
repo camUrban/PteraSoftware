@@ -124,7 +124,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `max_wake_rows`        | `int \| None`               | `CoreUnsteadyProblem` | Copied from `Movement` |
 | `steady_problems`      | `tuple[SteadyProblem, ...]` | `UnsteadyProblem`     | Generated during init  |
 
-#### Mutable (populated by solver)
+#### Solver Populated (read-only property, backing slot written by `_record_final_loads`)
 
 | Attribute                            | Type               | Notes                                            |
 |--------------------------------------|--------------------|--------------------------------------------------|
@@ -145,9 +145,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalMeanMoments_W_Cg`              | `list[np.ndarray]` |                                                  |
 | `finalMeanMomentCoefficients_W_Cg`   | `list[np.ndarray]` |                                                  |
 
-**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-`Airplane` lists, the G and Cg IDs are used without an `Airplane` index to implicitly mean "in the entry's own `Airplane`'s geometry axes" and "relative to the entry's own `Airplane`'s CG".
+**Note**: Each of these read-only properties is defined on `CoreUnsteadyProblem` and reads a `_`-prefixed backing slot of the same name (for example, `finalForces_W` reads `_finalForces_W`). The backing slots are initialized as empty lists. The solver cannot populate them until after a run, so it does so by calling `CoreUnsteadyProblem._record_final_loads`, which keeps every write to the backing slots inside the owning class. That method copies each (N, 3) stack of loads it is given, sets the copy read-only, and stores the copy's rows as a new list in place of the old one. It records to the final lists for static motion and to the cycle averaged lists for cyclic motion. Each property returns a new list on every read, so changing a returned list does not change the problem, and the ndarrays in it are read-only. In these per-`Airplane` lists, the G and Cg IDs are used without an `Airplane` index to implicitly mean "in the entry's own `Airplane`'s geometry axes" and "relative to the entry's own `Airplane`'s CG".
 
-#### Derived from Mutable (read-only property, no backing slot)
+#### Derived from Solver Populated (read-only property, no backing slot)
 
 These read-only properties expose the named load components and coefficients defined in [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md) for the wind axes lists. Each returns one signed component per `Airplane`, or an empty list while its source list is empty, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source lists.
 

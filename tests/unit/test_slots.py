@@ -1323,7 +1323,7 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.core_unsteady_problem.first_averaging_step, int)
         self.assertIsInstance(self.core_unsteady_problem.first_results_step, int)
 
-        # These are mutable list attributes, initialized empty.
+        # These are read only properties that return lists, which start out empty.
         self.assertIsInstance(self.core_unsteady_problem.finalForces_W, list)
         self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_W, list)
         self.assertIsInstance(self.core_unsteady_problem.finalMeanForces_W, list)

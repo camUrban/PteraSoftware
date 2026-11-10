@@ -4,8 +4,30 @@ import math
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 
 from pterasoftware import _core
+
+# The names of CoreUnsteadyProblem's load list properties: the eight final lists, then
+# the eight final mean lists, each in the order _record_final_loads takes its stacks.
+LOAD_LIST_NAMES = (
+    "finalForces_W",
+    "finalForceCoefficients_W",
+    "finalForces_G",
+    "finalForceCoefficients_G",
+    "finalMoments_G_Cg",
+    "finalMomentCoefficients_G_Cg",
+    "finalMoments_W_Cg",
+    "finalMomentCoefficients_W_Cg",
+    "finalMeanForces_W",
+    "finalMeanForceCoefficients_W",
+    "finalMeanForces_G",
+    "finalMeanForceCoefficients_G",
+    "finalMeanMoments_G_Cg",
+    "finalMeanMomentCoefficients_G_Cg",
+    "finalMeanMoments_W_Cg",
+    "finalMeanMomentCoefficients_W_Cg",
+)
 
 
 class TestCoreUnsteadyProblem(unittest.TestCase):
@@ -124,25 +146,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
         )
 
         # All 16 load lists should be initialized as empty lists.
-        load_list_names = [
-            "finalForces_W",
-            "finalForceCoefficients_W",
-            "finalForces_G",
-            "finalForceCoefficients_G",
-            "finalMoments_G_Cg",
-            "finalMomentCoefficients_G_Cg",
-            "finalMoments_W_Cg",
-            "finalMomentCoefficients_W_Cg",
-            "finalMeanForces_W",
-            "finalMeanForceCoefficients_W",
-            "finalMeanForces_G",
-            "finalMeanForceCoefficients_G",
-            "finalMeanMoments_G_Cg",
-            "finalMeanMomentCoefficients_G_Cg",
-            "finalMeanMoments_W_Cg",
-            "finalMeanMomentCoefficients_W_Cg",
-        ]
-        for name in load_list_names:
+        for name in LOAD_LIST_NAMES:
             with self.subTest(name=name):
                 load_list = getattr(core_unsteady_problem, name)
                 self.assertIsInstance(load_list, list)
@@ -214,10 +218,104 @@ class TestCoreUnsteadyProblemImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             setattr(self.core_unsteady_problem, "max_wake_rows", 10)
 
-    def test_mutable_load_lists(self) -> None:
-        """Test that load lists remain mutable for solver population."""
-        self.core_unsteady_problem.finalForces_W.append(np.array([1.0, 2.0, 3.0]))
-        self.assertEqual(len(self.core_unsteady_problem.finalForces_W), 1)
+    def test_immutable_load_list_properties(self) -> None:
+        """Test that the load list properties are read only."""
+        for name in LOAD_LIST_NAMES:
+            with self.subTest(name=name):
+                with self.assertRaises(AttributeError):
+                    setattr(self.core_unsteady_problem, name, [])
 
-        # Clean up.
-        self.core_unsteady_problem.finalForces_W.pop()
+    def test_load_lists_cannot_be_mutated(self) -> None:
+        """Test that recorded loads cannot be changed through the properties."""
+        stackLoads = np.arange(48, dtype=float).reshape(8, 2, 3)
+        self.core_unsteady_problem._record_final_loads(
+            cycle_averaged=False,
+            stackForces_W=stackLoads[0],
+            stackForceCoefficients_W=stackLoads[1],
+            stackForces_G=stackLoads[2],
+            stackForceCoefficients_G=stackLoads[3],
+            stackMoments_G_Cg=stackLoads[4],
+            stackMomentCoefficients_G_Cg=stackLoads[5],
+            stackMoments_W_Cg=stackLoads[6],
+            stackMomentCoefficients_W_Cg=stackLoads[7],
+        )
+
+        # Each read returns a new list, so appending to one changes nothing.
+        self.core_unsteady_problem.finalForces_W.append(np.zeros(3, dtype=float))
+        self.assertEqual(len(self.core_unsteady_problem.finalForces_W), 2)
+
+        # The recorded ndarrays are read only.
+        with self.assertRaises(ValueError):
+            self.core_unsteady_problem.finalForces_W[0][0] = 999.0
+
+        # The recorded ndarrays share no memory with the ndarrays passed in.
+        stackLoads[0, 0, 0] = 999.0
+        self.assertEqual(self.core_unsteady_problem.finalForces_W[0][0], 0.0)
+
+
+class TestCoreUnsteadyProblemRecordFinalLoads(unittest.TestCase):
+    """Tests for CoreUnsteadyProblem's _record_final_loads method."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the _record_final_loads tests."""
+        self.core_unsteady_problem = _core.CoreUnsteadyProblem(
+            only_final_results=False,
+            delta_time=0.01,
+            num_steps=50,
+            max_wake_rows=None,
+            lcm_period=0.0,
+        )
+
+        # Make one distinct (2, 3) stack per load quantity, as if for two Airplanes.
+        self.stackLoads = np.arange(48, dtype=float).reshape(8, 2, 3)
+
+    def record(self, cycle_averaged: bool) -> None:
+        """Records the stacks to the CoreUnsteadyProblem.
+
+        :param cycle_averaged: The value to pass as cycle_averaged.
+        :return: None
+        """
+        self.core_unsteady_problem._record_final_loads(
+            cycle_averaged=cycle_averaged,
+            stackForces_W=self.stackLoads[0],
+            stackForceCoefficients_W=self.stackLoads[1],
+            stackForces_G=self.stackLoads[2],
+            stackForceCoefficients_G=self.stackLoads[3],
+            stackMoments_G_Cg=self.stackLoads[4],
+            stackMomentCoefficients_G_Cg=self.stackLoads[5],
+            stackMoments_W_Cg=self.stackLoads[6],
+            stackMomentCoefficients_W_Cg=self.stackLoads[7],
+        )
+
+    def test_records_final_lists(self) -> None:
+        """Test that cycle_averaged=False records only to the final lists."""
+        self.record(cycle_averaged=False)
+
+        for stack_id, name in enumerate(LOAD_LIST_NAMES[:8]):
+            with self.subTest(name=name):
+                load_list = getattr(self.core_unsteady_problem, name)
+                self.assertEqual(len(load_list), 2)
+                npt.assert_array_equal(np.array(load_list), self.stackLoads[stack_id])
+        for name in LOAD_LIST_NAMES[8:]:
+            with self.subTest(name=name):
+                self.assertEqual(getattr(self.core_unsteady_problem, name), [])
+
+    def test_records_final_mean_lists(self) -> None:
+        """Test that cycle_averaged=True records only to the final mean lists."""
+        self.record(cycle_averaged=True)
+
+        for stack_id, name in enumerate(LOAD_LIST_NAMES[8:]):
+            with self.subTest(name=name):
+                load_list = getattr(self.core_unsteady_problem, name)
+                self.assertEqual(len(load_list), 2)
+                npt.assert_array_equal(np.array(load_list), self.stackLoads[stack_id])
+        for name in LOAD_LIST_NAMES[:8]:
+            with self.subTest(name=name):
+                self.assertEqual(getattr(self.core_unsteady_problem, name), [])
+
+    def test_recording_again_replaces(self) -> None:
+        """Test that a second call replaces the lists instead of extending them."""
+        self.record(cycle_averaged=False)
+        self.record(cycle_averaged=False)
+
+        self.assertEqual(len(self.core_unsteady_problem.finalForces_W), 2)

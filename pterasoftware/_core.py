@@ -2247,12 +2247,12 @@ class CoreUnsteadyProblem:
     See UnsteadyProblem for full documentation of the shared interface.
 
     CoreUnsteadyProblem holds the time stepping parameters, wake truncation setting,
-    result storage mode, and the mutable load result lists that the solver populates,
-    along with read only properties that derive the named load quantities from the wind
-    axes lists. Unlike UnsteadyProblem, it does not take a Movement or pre create
-    SteadyProblems. Feature variants (FreeFlightUnsteadyProblem,
-    AeroelasticUnsteadyProblem) extend this class and provide SteadyProblems dynamically
-    at each time step.
+    result storage mode, and the load result lists that the solver populates through
+    _record_final_loads, along with read only properties that expose those lists and
+    that derive the named load quantities from the wind axes lists. Unlike
+    UnsteadyProblem, it does not take a Movement or pre create SteadyProblems. Feature
+    variants (FreeFlightUnsteadyProblem, AeroelasticUnsteadyProblem) extend this class
+    and provide SteadyProblems dynamically at each time step.
     """
 
     __slots__ = (
@@ -2262,22 +2262,22 @@ class CoreUnsteadyProblem:
         "_max_wake_rows",
         "_first_averaging_step",
         "_first_results_step",
-        "finalForces_W",
-        "finalForceCoefficients_W",
-        "finalForces_G",
-        "finalForceCoefficients_G",
-        "finalMoments_G_Cg",
-        "finalMomentCoefficients_G_Cg",
-        "finalMoments_W_Cg",
-        "finalMomentCoefficients_W_Cg",
-        "finalMeanForces_W",
-        "finalMeanForceCoefficients_W",
-        "finalMeanForces_G",
-        "finalMeanForceCoefficients_G",
-        "finalMeanMoments_G_Cg",
-        "finalMeanMomentCoefficients_G_Cg",
-        "finalMeanMoments_W_Cg",
-        "finalMeanMomentCoefficients_W_Cg",
+        "_finalForces_W",
+        "_finalForceCoefficients_W",
+        "_finalForces_G",
+        "_finalForceCoefficients_G",
+        "_finalMoments_G_Cg",
+        "_finalMomentCoefficients_G_Cg",
+        "_finalMoments_W_Cg",
+        "_finalMomentCoefficients_W_Cg",
+        "_finalMeanForces_W",
+        "_finalMeanForceCoefficients_W",
+        "_finalMeanForces_G",
+        "_finalMeanForceCoefficients_G",
+        "_finalMeanMoments_G_Cg",
+        "_finalMeanMomentCoefficients_G_Cg",
+        "_finalMeanMoments_W_Cg",
+        "_finalMeanMomentCoefficients_W_Cg",
     )
 
     def __init__(
@@ -2356,33 +2356,33 @@ class CoreUnsteadyProblem:
 
         # Initialize empty lists to hold the final loads and load coefficients each
         # Airplane experiences. These will only be populated if this
-        # CoreUnsteadyProblem's motion is static. These are mutable and populated by the
-        # solver. In these per-Airplane lists, the G and Cg IDs are used without an
-        # Airplane index to implicitly mean "in the entry's own Airplane's geometry
-        # axes" and "relative to the entry's own Airplane's CG".
-        self.finalForces_W: list[np.ndarray] = []
-        self.finalForceCoefficients_W: list[np.ndarray] = []
-        self.finalForces_G: list[np.ndarray] = []
-        self.finalForceCoefficients_G: list[np.ndarray] = []
-        self.finalMoments_G_Cg: list[np.ndarray] = []
-        self.finalMomentCoefficients_G_Cg: list[np.ndarray] = []
-        self.finalMoments_W_Cg: list[np.ndarray] = []
-        self.finalMomentCoefficients_W_Cg: list[np.ndarray] = []
+        # CoreUnsteadyProblem's motion is static. The solver populates them through
+        # _record_final_loads. In these per-Airplane lists, the G and Cg IDs are used
+        # without an Airplane index to implicitly mean "in the entry's own Airplane's
+        # geometry axes" and "relative to the entry's own Airplane's CG".
+        self._finalForces_W: list[np.ndarray] = []
+        self._finalForceCoefficients_W: list[np.ndarray] = []
+        self._finalForces_G: list[np.ndarray] = []
+        self._finalForceCoefficients_G: list[np.ndarray] = []
+        self._finalMoments_G_Cg: list[np.ndarray] = []
+        self._finalMomentCoefficients_G_Cg: list[np.ndarray] = []
+        self._finalMoments_W_Cg: list[np.ndarray] = []
+        self._finalMomentCoefficients_W_Cg: list[np.ndarray] = []
 
         # Initialize empty lists to hold the final cycle averaged loads and load
         # coefficients each Airplane experiences. These will only be populated if this
-        # CoreUnsteadyProblem's motion is cyclic. These are mutable and populated by the
-        # solver. In these per-Airplane lists, the G and Cg IDs are used without an
-        # Airplane index to implicitly mean "in the entry's own Airplane's geometry
-        # axes" and "relative to the entry's own Airplane's CG".
-        self.finalMeanForces_W: list[np.ndarray] = []
-        self.finalMeanForceCoefficients_W: list[np.ndarray] = []
-        self.finalMeanForces_G: list[np.ndarray] = []
-        self.finalMeanForceCoefficients_G: list[np.ndarray] = []
-        self.finalMeanMoments_G_Cg: list[np.ndarray] = []
-        self.finalMeanMomentCoefficients_G_Cg: list[np.ndarray] = []
-        self.finalMeanMoments_W_Cg: list[np.ndarray] = []
-        self.finalMeanMomentCoefficients_W_Cg: list[np.ndarray] = []
+        # CoreUnsteadyProblem's motion is cyclic. The solver populates them through
+        # _record_final_loads. In these per-Airplane lists, the G and Cg IDs are used
+        # without an Airplane index to implicitly mean "in the entry's own Airplane's
+        # geometry axes" and "relative to the entry's own Airplane's CG".
+        self._finalMeanForces_W: list[np.ndarray] = []
+        self._finalMeanForceCoefficients_W: list[np.ndarray] = []
+        self._finalMeanForces_G: list[np.ndarray] = []
+        self._finalMeanForceCoefficients_G: list[np.ndarray] = []
+        self._finalMeanMoments_G_Cg: list[np.ndarray] = []
+        self._finalMeanMomentCoefficients_G_Cg: list[np.ndarray] = []
+        self._finalMeanMoments_W_Cg: list[np.ndarray] = []
+        self._finalMeanMomentCoefficients_W_Cg: list[np.ndarray] = []
 
     # --- Immutable: read only properties ---
     @property
@@ -2428,7 +2428,266 @@ class CoreUnsteadyProblem:
             "property."
         )
 
-    # --- Mutable derived: read only properties, no backing slots ---
+    # --- Solver populated: read only properties ---
+    @property
+    def finalForces_W(self) -> list[np.ndarray]:
+        """The final force experienced by each Airplane (in wind axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newtons. The ndarrays are read only. Empty until the solver populates it,
+            which it does only for static motion.
+        """
+        return list(self._finalForces_W)
+
+    @property
+    def finalForceCoefficients_W(self) -> list[np.ndarray]:
+        """The final force coefficients experienced by each Airplane (in wind axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            static motion.
+        """
+        return list(self._finalForceCoefficients_W)
+
+    @property
+    def finalForces_G(self) -> list[np.ndarray]:
+        """The final force experienced by each Airplane (in its own geometry axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newtons. The ndarrays are read only. Empty until the solver populates it,
+            which it does only for static motion.
+        """
+        return list(self._finalForces_G)
+
+    @property
+    def finalForceCoefficients_G(self) -> list[np.ndarray]:
+        """The final force coefficients experienced by each Airplane (in its own
+        geometry axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            static motion.
+        """
+        return list(self._finalForceCoefficients_G)
+
+    @property
+    def finalMoments_G_Cg(self) -> list[np.ndarray]:
+        """The final moment experienced by each Airplane (in its own geometry axes,
+        relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newton-meters. The ndarrays are read only. Empty until the solver populates
+            it, which it does only for static motion.
+        """
+        return list(self._finalMoments_G_Cg)
+
+    @property
+    def finalMomentCoefficients_G_Cg(self) -> list[np.ndarray]:
+        """The final moment coefficients experienced by each Airplane (in its own
+        geometry axes, relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            static motion.
+        """
+        return list(self._finalMomentCoefficients_G_Cg)
+
+    @property
+    def finalMoments_W_Cg(self) -> list[np.ndarray]:
+        """The final moment experienced by each Airplane (in wind axes, relative to its
+        own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newton-meters. The ndarrays are read only. Empty until the solver populates
+            it, which it does only for static motion.
+        """
+        return list(self._finalMoments_W_Cg)
+
+    @property
+    def finalMomentCoefficients_W_Cg(self) -> list[np.ndarray]:
+        """The final moment coefficients experienced by each Airplane (in wind axes,
+        relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            static motion.
+        """
+        return list(self._finalMomentCoefficients_W_Cg)
+
+    @property
+    def finalMeanForces_W(self) -> list[np.ndarray]:
+        """The final cycle averaged force experienced by each Airplane (in wind axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newtons. The ndarrays are read only. Empty until the solver populates it,
+            which it does only for cyclic motion.
+        """
+        return list(self._finalMeanForces_W)
+
+    @property
+    def finalMeanForceCoefficients_W(self) -> list[np.ndarray]:
+        """The final cycle averaged force coefficients experienced by each Airplane (in
+        wind axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            cyclic motion.
+        """
+        return list(self._finalMeanForceCoefficients_W)
+
+    @property
+    def finalMeanForces_G(self) -> list[np.ndarray]:
+        """The final cycle averaged force experienced by each Airplane (in its own
+        geometry axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newtons. The ndarrays are read only. Empty until the solver populates it,
+            which it does only for cyclic motion.
+        """
+        return list(self._finalMeanForces_G)
+
+    @property
+    def finalMeanForceCoefficients_G(self) -> list[np.ndarray]:
+        """The final cycle averaged force coefficients experienced by each Airplane (in
+        its own geometry axes).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            cyclic motion.
+        """
+        return list(self._finalMeanForceCoefficients_G)
+
+    @property
+    def finalMeanMoments_G_Cg(self) -> list[np.ndarray]:
+        """The final cycle averaged moment experienced by each Airplane (in its own
+        geometry axes, relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newton-meters. The ndarrays are read only. Empty until the solver populates
+            it, which it does only for cyclic motion.
+        """
+        return list(self._finalMeanMoments_G_Cg)
+
+    @property
+    def finalMeanMomentCoefficients_G_Cg(self) -> list[np.ndarray]:
+        """The final cycle averaged moment coefficients experienced by each Airplane (in
+        its own geometry axes, relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            cyclic motion.
+        """
+        return list(self._finalMeanMomentCoefficients_G_Cg)
+
+    @property
+    def finalMeanMoments_W_Cg(self) -> list[np.ndarray]:
+        """The final cycle averaged moment experienced by each Airplane (in wind axes,
+        relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The units are in
+            Newton-meters. The ndarrays are read only. Empty until the solver populates
+            it, which it does only for cyclic motion.
+        """
+        return list(self._finalMeanMoments_W_Cg)
+
+    @property
+    def finalMeanMomentCoefficients_W_Cg(self) -> list[np.ndarray]:
+        """The final cycle averaged moment coefficients experienced by each Airplane (in
+        wind axes, relative to its own CG).
+
+        :return: A list of (3,) ndarrays of floats, one per Airplane. The ndarrays are
+            read only. Empty until the solver populates it, which it does only for
+            cyclic motion.
+        """
+        return list(self._finalMeanMomentCoefficients_W_Cg)
+
+    def _record_final_loads(
+        self,
+        *,
+        cycle_averaged: bool,
+        stackForces_W: np.ndarray,
+        stackForceCoefficients_W: np.ndarray,
+        stackForces_G: np.ndarray,
+        stackForceCoefficients_G: np.ndarray,
+        stackMoments_G_Cg: np.ndarray,
+        stackMomentCoefficients_G_Cg: np.ndarray,
+        stackMoments_W_Cg: np.ndarray,
+        stackMomentCoefficients_W_Cg: np.ndarray,
+    ) -> None:
+        """Records each Airplane's final loads and load coefficients as lists of read
+        only ndarrays.
+
+        It is called by the solver at the end of a run. It replaces whatever the lists
+        it records to held before.
+
+        In the parameters below, N is the number of Airplanes, and the G and Cg IDs are
+        used without an Airplane index to implicitly mean "in the row's own Airplane's
+        geometry axes" and "relative to the row's own Airplane's CG".
+
+        :param cycle_averaged: True to record to the final cycle averaged lists, which
+            is what the solver does for cyclic motion. False to record to the final
+            lists, which is what the solver does for static motion.
+        :param stackForces_W: A (N,3) ndarray of floats holding each Airplane's force
+            (in wind axes). The units are in Newtons.
+        :param stackForceCoefficients_W: A (N,3) ndarray of floats holding each
+            Airplane's force coefficients (in wind axes).
+        :param stackForces_G: A (N,3) ndarray of floats holding each Airplane's force
+            (in geometry axes). The units are in Newtons.
+        :param stackForceCoefficients_G: A (N,3) ndarray of floats holding each
+            Airplane's force coefficients (in geometry axes).
+        :param stackMoments_G_Cg: A (N,3) ndarray of floats holding each Airplane's
+            moment (in geometry axes, relative to the CG). The units are in Newton-
+            meters.
+        :param stackMomentCoefficients_G_Cg: A (N,3) ndarray of floats holding each
+            Airplane's moment coefficients (in geometry axes, relative to the CG).
+        :param stackMoments_W_Cg: A (N,3) ndarray of floats holding each Airplane's
+            moment (in wind axes, relative to the CG). The units are in Newton-meters.
+        :param stackMomentCoefficients_W_Cg: A (N,3) ndarray of floats holding each
+            Airplane's moment coefficients (in wind axes, relative to the CG).
+        :return: None
+        """
+        # Copy each stack so the recorded loads share no memory with the caller's
+        # ndarrays, make the copy read only, and split it into one row per Airplane. The
+        # rows are views of the read only copy, so they are read only too.
+        load_lists: list[list[np.ndarray]] = []
+        for stack in (
+            stackForces_W,
+            stackForceCoefficients_W,
+            stackForces_G,
+            stackForceCoefficients_G,
+            stackMoments_G_Cg,
+            stackMomentCoefficients_G_Cg,
+            stackMoments_W_Cg,
+            stackMomentCoefficients_W_Cg,
+        ):
+            stack_copy = stack.copy()
+            stack_copy.flags.writeable = False
+            load_lists.append(list(stack_copy))
+
+        if cycle_averaged:
+            (
+                self._finalMeanForces_W,
+                self._finalMeanForceCoefficients_W,
+                self._finalMeanForces_G,
+                self._finalMeanForceCoefficients_G,
+                self._finalMeanMoments_G_Cg,
+                self._finalMeanMomentCoefficients_G_Cg,
+                self._finalMeanMoments_W_Cg,
+                self._finalMeanMomentCoefficients_W_Cg,
+            ) = load_lists
+        else:
+            (
+                self._finalForces_W,
+                self._finalForceCoefficients_W,
+                self._finalForces_G,
+                self._finalForceCoefficients_G,
+                self._finalMoments_G_Cg,
+                self._finalMomentCoefficients_G_Cg,
+                self._finalMoments_W_Cg,
+                self._finalMomentCoefficients_W_Cg,
+            ) = load_lists
+
+    # --- Solver populated derived: read only properties, no backing slots ---
     @property
     def finalInducedDrags_W(self) -> list[float]:
         """The final induced drag force experienced by each Airplane (in wind axes).
@@ -2439,7 +2698,7 @@ class CoreUnsteadyProblem:
         :return: The final induced drag forces in Newtons, one entry per Airplane. Empty
             if finalForces_W has not been populated.
         """
-        return [float(-entry[0]) for entry in self.finalForces_W]
+        return [float(-entry[0]) for entry in self._finalForces_W]
 
     @property
     def finalCrosswindForces_W(self) -> list[float]:
@@ -2451,7 +2710,7 @@ class CoreUnsteadyProblem:
         :return: The final crosswind forces in Newtons, one entry per Airplane. Empty if
             finalForces_W has not been populated.
         """
-        return [float(-entry[1]) for entry in self.finalForces_W]
+        return [float(-entry[1]) for entry in self._finalForces_W]
 
     @property
     def finalLifts_W(self) -> list[float]:
@@ -2463,7 +2722,7 @@ class CoreUnsteadyProblem:
         :return: The final lift forces in Newtons, one entry per Airplane. Empty if
             finalForces_W has not been populated.
         """
-        return [float(-entry[2]) for entry in self.finalForces_W]
+        return [float(-entry[2]) for entry in self._finalForces_W]
 
     @property
     def finalInducedDragCoefficients_W(self) -> list[float]:
@@ -2477,7 +2736,7 @@ class CoreUnsteadyProblem:
         :return: The final induced drag coefficients, one entry per Airplane. Empty if
             finalForceCoefficients_W has not been populated.
         """
-        return [float(-entry[0]) for entry in self.finalForceCoefficients_W]
+        return [float(-entry[0]) for entry in self._finalForceCoefficients_W]
 
     @property
     def finalCrosswindForceCoefficients_W(self) -> list[float]:
@@ -2491,7 +2750,7 @@ class CoreUnsteadyProblem:
         :return: The final crosswind force coefficients, one entry per Airplane. Empty
             if finalForceCoefficients_W has not been populated.
         """
-        return [float(-entry[1]) for entry in self.finalForceCoefficients_W]
+        return [float(-entry[1]) for entry in self._finalForceCoefficients_W]
 
     @property
     def finalLiftCoefficients_W(self) -> list[float]:
@@ -2504,7 +2763,7 @@ class CoreUnsteadyProblem:
         :return: The final lift coefficients, one entry per Airplane. Empty if
             finalForceCoefficients_W has not been populated.
         """
-        return [float(-entry[2]) for entry in self.finalForceCoefficients_W]
+        return [float(-entry[2]) for entry in self._finalForceCoefficients_W]
 
     @property
     def finalRollingMoments_W_Cg(self) -> list[float]:
@@ -2517,7 +2776,7 @@ class CoreUnsteadyProblem:
         :return: The final rolling moments in Newton-meters, one entry per Airplane.
             Empty if finalMoments_W_Cg has not been populated.
         """
-        return [float(entry[0]) for entry in self.finalMoments_W_Cg]
+        return [float(entry[0]) for entry in self._finalMoments_W_Cg]
 
     @property
     def finalPitchingMoments_W_Cg(self) -> list[float]:
@@ -2530,7 +2789,7 @@ class CoreUnsteadyProblem:
         :return: The final pitching moments in Newton-meters, one entry per Airplane.
             Empty if finalMoments_W_Cg has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMoments_W_Cg]
+        return [float(entry[1]) for entry in self._finalMoments_W_Cg]
 
     @property
     def finalYawingMoments_W_Cg(self) -> list[float]:
@@ -2543,7 +2802,7 @@ class CoreUnsteadyProblem:
         :return: The final yawing moments in Newton-meters, one entry per Airplane.
             Empty if finalMoments_W_Cg has not been populated.
         """
-        return [float(entry[2]) for entry in self.finalMoments_W_Cg]
+        return [float(entry[2]) for entry in self._finalMoments_W_Cg]
 
     @property
     def finalRollingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2557,7 +2816,7 @@ class CoreUnsteadyProblem:
         :return: The final rolling moment coefficients, one entry per Airplane. Empty if
             finalMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[0]) for entry in self.finalMomentCoefficients_W_Cg]
+        return [float(entry[0]) for entry in self._finalMomentCoefficients_W_Cg]
 
     @property
     def finalPitchingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2571,7 +2830,7 @@ class CoreUnsteadyProblem:
         :return: The final pitching moment coefficients, one entry per Airplane. Empty
             if finalMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMomentCoefficients_W_Cg]
+        return [float(entry[1]) for entry in self._finalMomentCoefficients_W_Cg]
 
     @property
     def finalYawingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2585,7 +2844,7 @@ class CoreUnsteadyProblem:
         :return: The final yawing moment coefficients, one entry per Airplane. Empty if
             finalMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[2]) for entry in self.finalMomentCoefficients_W_Cg]
+        return [float(entry[2]) for entry in self._finalMomentCoefficients_W_Cg]
 
     @property
     def finalMeanInducedDrags_W(self) -> list[float]:
@@ -2598,7 +2857,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged induced drag forces in Newtons, one entry per
             Airplane. Empty if finalMeanForces_W has not been populated.
         """
-        return [float(-entry[0]) for entry in self.finalMeanForces_W]
+        return [float(-entry[0]) for entry in self._finalMeanForces_W]
 
     @property
     def finalMeanCrosswindForces_W(self) -> list[float]:
@@ -2611,7 +2870,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged crosswind forces in Newtons, one entry per
             Airplane. Empty if finalMeanForces_W has not been populated.
         """
-        return [float(-entry[1]) for entry in self.finalMeanForces_W]
+        return [float(-entry[1]) for entry in self._finalMeanForces_W]
 
     @property
     def finalMeanLifts_W(self) -> list[float]:
@@ -2624,7 +2883,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged lift forces in Newtons, one entry per
             Airplane. Empty if finalMeanForces_W has not been populated.
         """
-        return [float(-entry[2]) for entry in self.finalMeanForces_W]
+        return [float(-entry[2]) for entry in self._finalMeanForces_W]
 
     @property
     def finalMeanInducedDragCoefficients_W(self) -> list[float]:
@@ -2638,7 +2897,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged induced drag coefficients, one entry per
             Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
         """
-        return [float(-entry[0]) for entry in self.finalMeanForceCoefficients_W]
+        return [float(-entry[0]) for entry in self._finalMeanForceCoefficients_W]
 
     @property
     def finalMeanCrosswindForceCoefficients_W(self) -> list[float]:
@@ -2652,7 +2911,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged crosswind force coefficients, one entry per
             Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
         """
-        return [float(-entry[1]) for entry in self.finalMeanForceCoefficients_W]
+        return [float(-entry[1]) for entry in self._finalMeanForceCoefficients_W]
 
     @property
     def finalMeanLiftCoefficients_W(self) -> list[float]:
@@ -2666,7 +2925,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged lift coefficients, one entry per Airplane.
             Empty if finalMeanForceCoefficients_W has not been populated.
         """
-        return [float(-entry[2]) for entry in self.finalMeanForceCoefficients_W]
+        return [float(-entry[2]) for entry in self._finalMeanForceCoefficients_W]
 
     @property
     def finalMeanRollingMoments_W_Cg(self) -> list[float]:
@@ -2679,7 +2938,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged rolling moments in Newton-meters, one entry
             per Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
         """
-        return [float(entry[0]) for entry in self.finalMeanMoments_W_Cg]
+        return [float(entry[0]) for entry in self._finalMeanMoments_W_Cg]
 
     @property
     def finalMeanPitchingMoments_W_Cg(self) -> list[float]:
@@ -2692,7 +2951,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged pitching moments in Newton-meters, one entry
             per Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanMoments_W_Cg]
+        return [float(entry[1]) for entry in self._finalMeanMoments_W_Cg]
 
     @property
     def finalMeanYawingMoments_W_Cg(self) -> list[float]:
@@ -2705,7 +2964,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged yawing moments in Newton-meters, one entry per
             Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
         """
-        return [float(entry[2]) for entry in self.finalMeanMoments_W_Cg]
+        return [float(entry[2]) for entry in self._finalMeanMoments_W_Cg]
 
     @property
     def finalMeanRollingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2719,7 +2978,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged rolling moment coefficients, one entry per
             Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[0]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+        return [float(entry[0]) for entry in self._finalMeanMomentCoefficients_W_Cg]
 
     @property
     def finalMeanPitchingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2733,7 +2992,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged pitching moment coefficients, one entry per
             Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+        return [float(entry[1]) for entry in self._finalMeanMomentCoefficients_W_Cg]
 
     @property
     def finalMeanYawingMomentCoefficients_W_Cg(self) -> list[float]:
@@ -2747,7 +3006,7 @@ class CoreUnsteadyProblem:
         :return: The final cycle averaged yawing moment coefficients, one entry per
             Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
         """
-        return [float(entry[2]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+        return [float(entry[2]) for entry in self._finalMeanMomentCoefficients_W_Cg]
 
     # --- Other methods ---
     def diagram(

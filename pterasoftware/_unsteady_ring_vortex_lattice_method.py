@@ -3217,41 +3217,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Determine if this SteadyProblem's geometry is static or variable.
         static = self.unsteady_problem.movement._static
 
-        # Each row names one load quantity: the Airplane attribute that holds its value
-        # at each time step, followed by the UnsteadyProblem lists that receive its
-        # final and final mean values.
+        # Each entry names the Airplane attribute that holds one load quantity's value
+        # at each time step.
         load_names = (
-            ("forces_W", "finalForces_W", "finalMeanForces_W"),
-            (
-                "forceCoefficients_W",
-                "finalForceCoefficients_W",
-                "finalMeanForceCoefficients_W",
-            ),
-            ("forces_G", "finalForces_G", "finalMeanForces_G"),
-            (
-                "forceCoefficients_G",
-                "finalForceCoefficients_G",
-                "finalMeanForceCoefficients_G",
-            ),
-            ("moments_G_Cg", "finalMoments_G_Cg", "finalMeanMoments_G_Cg"),
-            (
-                "momentCoefficients_G_Cg",
-                "finalMomentCoefficients_G_Cg",
-                "finalMeanMomentCoefficients_G_Cg",
-            ),
-            ("moments_W_Cg", "finalMoments_W_Cg", "finalMeanMoments_W_Cg"),
-            (
-                "momentCoefficients_W_Cg",
-                "finalMomentCoefficients_W_Cg",
-                "finalMeanMomentCoefficients_W_Cg",
-            ),
+            "forces_W",
+            "forceCoefficients_W",
+            "forces_G",
+            "forceCoefficients_G",
+            "moments_G_Cg",
+            "momentCoefficients_G_Cg",
+            "moments_W_Cg",
+            "momentCoefficients_W_Cg",
         )
 
         # Initialize a ndarray for each load quantity to hold each Airplane's values at
         # each of the time steps that calculated the loads.
         load_histories = {
             name: np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
-            for name, _, _ in load_names
+            for name in load_names
         }
 
         # Iterate through the time steps with loads and add each Airplane's loads to
@@ -3263,25 +3246,36 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 step
             )
             for airplane_id, airplane in enumerate(this_steady_problem.airplanes):
-                for name, _, _ in load_names:
+                for name in load_names:
                     load_histories[name][airplane_id, :, results_step] = getattr(
                         airplane, name
                     )
 
-        # For each Airplane, calculate and then save the final or cycle-averaged loads
-        # and load coefficients. For variable geometry cases, use the trapezoidal rule
-        # to compute the time-averaged mean over the final cycle. The number of
-        # intervals for the trapezoidal rule is one less than the number of samples.
+        # For each load quantity, calculate every Airplane's final or cycle-averaged
+        # value. For variable geometry cases, use the trapezoidal rule to compute the
+        # time-averaged mean over the final cycle. The number of intervals for the
+        # trapezoidal rule is one less than the number of samples.
         num_intervals = num_steps_to_average - 1
-        for airplane_id in range(self.num_airplanes):
-            for name, final_name, mean_name in load_names:
-                history = load_histories[name][airplane_id]
-                if static:
-                    getattr(self.unsteady_problem, final_name).append(history[:, -1])
-                else:
-                    getattr(self.unsteady_problem, mean_name).append(
-                        np.trapezoid(history, axis=-1) / num_intervals
-                    )
+        final_loads: dict[str, np.ndarray] = {}
+        for name in load_names:
+            history = load_histories[name]
+            if static:
+                final_loads[name] = history[:, :, -1]
+            else:
+                final_loads[name] = np.trapezoid(history, axis=-1) / num_intervals
+
+        # Record the values on the UnsteadyProblem.
+        self.unsteady_problem._record_final_loads(
+            cycle_averaged=not static,
+            stackForces_W=final_loads["forces_W"],
+            stackForceCoefficients_W=final_loads["forceCoefficients_W"],
+            stackForces_G=final_loads["forces_G"],
+            stackForceCoefficients_G=final_loads["forceCoefficients_G"],
+            stackMoments_G_Cg=final_loads["moments_G_Cg"],
+            stackMomentCoefficients_G_Cg=final_loads["momentCoefficients_G_Cg"],
+            stackMoments_W_Cg=final_loads["moments_W_Cg"],
+            stackMomentCoefficients_W_Cg=final_loads["momentCoefficients_W_Cg"],
+        )
 
     def _get_steady_problem_at(self, step: int) -> _problems.SteadyProblem:
         """Gets the SteadyProblem at a given time step.

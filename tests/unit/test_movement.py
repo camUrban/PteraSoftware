@@ -1516,7 +1516,8 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_returns_zero_for_static_single_step(self) -> None:
-        """Test that compute_wake_area_mismatch performs a comparison for static Movement."""
+        """Test that compute_wake_area_mismatch performs a comparison for static
+        Movement."""
         from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [

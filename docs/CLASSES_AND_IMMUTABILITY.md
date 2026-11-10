@@ -218,14 +218,14 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 |------------|-------------|--------------------------------------------------------------------------------------------------------------------------|
 | `movement` | `_movement` | Overrides the inherited property, casting the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
 
-#### Mutable (populated by solver)
+#### Populated During the Solve
 
-These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
+These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to by `AeroelasticUnsteadyProblem` itself as it generates each time step during the run. Both live in `_`-prefixed slots, and every write to them happens inside the class. `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz` is a read-only property over its backing slot: it returns new lists on every read, and each ndarray is set read-only when it is stored, so changing what the property returns does not change the problem. The derivative time series is internal and has no property.
 
-| Attribute                                                | Type                     | Notes                                                                                 |
-|----------------------------------------------------------|--------------------------|---------------------------------------------------------------------------------------|
-| `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz`             | `list[list[np.ndarray]]` | Cumulative torsional angle time series (radians), indexed `[wing][entry]`, seeded     |
-| `_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz`  | `list[list[np.ndarray]]` | Torsional angle time derivative time series (rad/s), indexed `[wing][entry]`, seeded  |
+| Attribute                                                | Type                     | Notes                                                                                                    |
+|----------------------------------------------------------|--------------------------|----------------------------------------------------------------------------------------------------------|
+| `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz`             | `list[list[np.ndarray]]` | Cumulative torsional angle time series (radians), indexed `[wing][entry]`, seeded, read-only property    |
+| `_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz`  | `list[list[np.ndarray]]` | Torsional angle time derivative time series (rad/s), indexed `[wing][entry]`, seeded, internal slot      |
 
 ## `FreeFlightUnsteadyProblem` Class (`_problems.py`)
 

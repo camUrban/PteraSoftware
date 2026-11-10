@@ -1447,7 +1447,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         "_spring_constant_rad",
         "_damping_constant_rad",
         "_step_discards",
-        "listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz",
+        "_listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz",
         "_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz",
     )
 
@@ -1517,7 +1517,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         # because differentiating a scalar coordinate involves no rotating basis (see
         # the Angle Component Time Derivatives section of
         # ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
-        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: list[list[np.ndarray]] = []
+        self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: list[list[np.ndarray]] = []
         self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: list[
             list[np.ndarray]
         ] = []
@@ -1551,12 +1551,37 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def step_discards(self) -> int:
         return self._step_discards
 
+    # --- Populated during the solve: read only property ---
+    @property
+    def listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz(self) -> list[list[np.ndarray]]:
+        """The time series, for each Wing, of the y components of the cumulative
+        deformation angle vectors that perturb its WingCrossSections'
+        angles_Wcsp_to_Wcs_ixyz.
+
+        The deformation angle vectors' x and z components are always zero, so only the y
+        components are stored. Each Wing's time series starts with a zero-valued initial
+        state, and gains one entry per time step as the solve advances. For time steps
+        up to and including step_discards, each new entry repeats the entry before it.
+        The entries of a Wing that does not deform are all zero.
+
+        :return: A list, indexed first by Wing and then by entry, of
+            (num_spanwise_panels + 1,) ndarrays of floats, each with one element per
+            WingCrossSection in root-to-tip order. The units are in radians. The
+            ndarrays are read only.
+        """
+        return [
+            list(deformationAnglesYRad_Wcsp_to_Wcs_ixyz)
+            for deformationAnglesYRad_Wcsp_to_Wcs_ixyz in (
+                self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+            )
+        ]
+
     def _initialize_per_wing_state(self, airplane: _geometry.airplane.Airplane) -> None:
         """Allocate per-wing time series lists sized to the Airplane's geometry.
 
         Called once from __init__ after the initial Airplane is generated. Iterates over
         every Wing in the Airplane and appends one entry per Wing to each per-wing time
-        series list. listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz and
+        series list. _listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz and
         _listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz are each seeded with a
         zero-valued (num_spanwise_panels + 1,) initial-state entry, so their last
         entries always hold the current structural state.
@@ -1567,8 +1592,14 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         for wing in airplane.wings:
             num_spanwise_panels = wing.num_spanwise_panels
             assert num_spanwise_panels is not None
-            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
-                [np.zeros(num_spanwise_panels + 1, dtype=float)]
+            # The deformation angle entries are read only, because the
+            # listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz property hands them out.
+            initialDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.zeros(
+                num_spanwise_panels + 1, dtype=float
+            )
+            initialDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.flags.writeable = False
+            self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+                [initialDeformationAnglesYRad_Wcsp_to_Wcs_ixyz]
             )
             self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
                 [np.zeros(num_spanwise_panels + 1, dtype=float)]
@@ -1585,11 +1616,15 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         :param wing_idx: Index of the Wing in airplane.wings (and the per-wing lists).
         :return: None
         """
-        num_wing_cross_sections = self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
+        num_wing_cross_sections = self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
             wing_idx
         ][-1].shape[0]
-        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
-            np.zeros(num_wing_cross_sections, dtype=float)
+        nullDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.zeros(
+            num_wing_cross_sections, dtype=float
+        )
+        nullDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.flags.writeable = False
+        self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
+            nullDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
         )
         self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
             np.zeros(num_wing_cross_sections, dtype=float)
@@ -1744,7 +1779,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
                 # chain consumes.
                 results.append(
                     self._build_deformation_vector(
-                        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1],
+                        self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1],
                         num_spanwise_panels,
                     )
                 )
@@ -1862,16 +1897,18 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         # whose numerical startup effects cause large aerodynamic forces. The strips'
         # ODEs are re-seeded from the time series' last entries, so recording only one
         # component would seed a mixed state. Each recorded entry is a fresh array, so
-        # no time series entry aliases a later one.
+        # no time series entry aliases a later one. The deformation angle entries are
+        # read only, because the listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz property
+        # hands them out.
         deformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
-            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+            self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
         deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
             self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
         if step > self.step_discards:
-            deformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
-                np.array(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, dtype=float)
+            recordedDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.array(
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, dtype=float
             )
             deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
                 np.array(
@@ -1879,12 +1916,16 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
                 )
             )
         else:
-            deformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+            recordedDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
                 deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1].copy()
             )
             deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
                 deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1].copy()
             )
+        recordedDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.flags.writeable = False
+        deformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+            recordedDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+        )
 
     def _calculate_spring_moments(
         self,
@@ -1941,7 +1982,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         # reads happen before this step's entries are appended, so they see the state at
         # the end of the previous time step.
         lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
-            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
+            self._listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
         )
         lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
             self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]

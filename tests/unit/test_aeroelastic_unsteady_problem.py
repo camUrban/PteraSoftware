@@ -141,8 +141,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         aeroMoments_GP1_Slep[:, 0, 1] = 2.0 / num_chordwise_panels
         static_theta_rad = 2.0 / problem.spring_constant_rad
 
-        # March the structural solve, replicating _record_structural_state's
-        # post-discard recording after each time step.
+        # March the structural solve, recording each time step's new state with
+        # _record_structural_state. Every step is past the discard window.
         theta_history_rad = []
         for step in range(problem.step_discards + 1, problem.step_discards + 61):
             (
@@ -157,13 +157,15 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
                 wing_idx=0,
                 wing_movement=static_wing_movement,
             )
-            problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0].append(
-                np.array(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, dtype=float)
-            )
-            problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0].append(
-                np.array(
-                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, dtype=float
-                )
+            problem._record_structural_state(
+                step=step,
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz=(
+                    newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+                ),
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz
+                ),
+                wing_idx=0,
             )
             theta_history_rad.append(
                 float(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[1])
@@ -289,6 +291,47 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1],
             deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-2],
         )
+
+    def test_deformation_angles_time_series_cannot_be_mutated(self) -> None:
+        """Test that listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz is read only, and that
+        the time series cannot be changed through it."""
+        problem = self.problem
+        wing_idx = 0
+        num_wing_cross_sections = problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
+            wing_idx
+        ][-1].shape[0]
+        problem._record_structural_state(
+            step=problem.step_discards + 1,
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz=np.full(
+                num_wing_cross_sections, 0.25, dtype=float
+            ),
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz=np.full(
+                num_wing_cross_sections, -0.5, dtype=float
+            ),
+            wing_idx=wing_idx,
+        )
+
+        # The property cannot be reassigned.
+        with self.assertRaises(AttributeError):
+            setattr(problem, "listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz", [])
+
+        # Each read returns new lists, so appending to them changes nothing.
+        num_wings = len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz)
+        problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.append([])
+        problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
+            np.zeros(num_wing_cross_sections, dtype=float)
+        )
+        self.assertEqual(
+            len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz), num_wings
+        )
+        self.assertEqual(
+            len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]), 2
+        )
+
+        # Every entry is read only: the seeded one and the recorded one.
+        for entry in problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]:
+            with self.assertRaises(ValueError):
+                entry[0] = 999.0
 
     def test_spring_numerical_ode_zero_initial_zero_forces_theta_stays_zero(
         self,

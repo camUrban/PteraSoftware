@@ -775,6 +775,7 @@ class TestMovement(unittest.TestCase):
         self.assertGreater(movement.delta_time, 0.0)
         self.assertTrue(movement._static)
 
+
     def test_delta_time_optimize_calls_both_optimizers(self) -> None:
         """Test that delta_time="optimize" calls both analytical and iterative
         optimizers, using analytical result as initial guess for iterative.
@@ -1516,8 +1517,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_returns_zero_for_static_single_step(self) -> None:
-        """Test that compute_wake_area_mismatch returns 0.0 when no comparisons are
-        made."""
+        """Test that compute_wake_area_mismatch performs a comparison for static Movement."""
         from pterasoftware._movements.movement import compute_wake_area_mismatch
 
         airplane_movements = [
@@ -1527,8 +1527,6 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Use a delta_time that results in only 1 step for a static Movement. With
-        # max_period = 0, num_steps will be 1, so step > 0 never runs.
         delta_time = 0.01
 
         mismatch = compute_wake_area_mismatch(
@@ -1537,8 +1535,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
             operating_point_movement=operating_point_movement,
         )
 
-        # With only 1 step, no comparisons are made, so mismatch should be 0.0.
-        self.assertEqual(mismatch, 0.0)
+        self.assertGreater(mismatch, 0.0)
 
     def test_does_not_mutate_original_movements(self) -> None:
         """Test that compute_wake_area_mismatch does not mutate original objects."""

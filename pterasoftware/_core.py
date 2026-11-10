@@ -2282,16 +2282,6 @@ class CoreUnsteadyProblem:
         "finalMeanMomentCoefficients_G_Cg",
         "finalMeanMoments_W_Cg",
         "finalMeanMomentCoefficients_W_Cg",
-        "finalRmsForces_W",
-        "finalRmsForceCoefficients_W",
-        "finalRmsMoments_W_CgP1",
-        "finalRmsMomentCoefficients_W_CgP1",
-        "finalRmsForces_G",
-        "finalRmsForceCoefficients_G",
-        "finalRmsMoments_G_Cg",
-        "finalRmsMomentCoefficients_G_Cg",
-        "finalRmsMoments_W_Cg",
-        "finalRmsMomentCoefficients_W_Cg",
     )
 
     def __init__(
@@ -2401,23 +2391,6 @@ class CoreUnsteadyProblem:
         self.finalMeanMomentCoefficients_G_Cg: list[np.ndarray] = []
         self.finalMeanMoments_W_Cg: list[np.ndarray] = []
         self.finalMeanMomentCoefficients_W_Cg: list[np.ndarray] = []
-
-        # Initialize empty lists to hold the final cycle root mean squared loads and
-        # load coefficients each Airplane experiences. These will only be populated for
-        # variable geometry problems. These are mutable and populated by the solver. In
-        # these per-Airplane lists, the G and Cg IDs are used without an Airplane index
-        # to implicitly mean "in the entry's own Airplane's geometry axes" and "relative
-        # to the entry's own Airplane's CG".
-        self.finalRmsForces_W: list[np.ndarray] = []
-        self.finalRmsForceCoefficients_W: list[np.ndarray] = []
-        self.finalRmsMoments_W_CgP1: list[np.ndarray] = []
-        self.finalRmsMomentCoefficients_W_CgP1: list[np.ndarray] = []
-        self.finalRmsForces_G: list[np.ndarray] = []
-        self.finalRmsForceCoefficients_G: list[np.ndarray] = []
-        self.finalRmsMoments_G_Cg: list[np.ndarray] = []
-        self.finalRmsMomentCoefficients_G_Cg: list[np.ndarray] = []
-        self.finalRmsMoments_W_Cg: list[np.ndarray] = []
-        self.finalRmsMomentCoefficients_W_Cg: list[np.ndarray] = []
 
     # --- Immutable: read only properties ---
     @property

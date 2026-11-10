@@ -320,9 +320,8 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     """A class used to contain unsteady aerodynamics problems.
 
     The solver populates the mutable load lists during simulation, with one entry per
-    Airplane: the final lists for static motion, the final cycle averaged lists for
-    cyclic motion, and the final cycle root mean squared lists for variable geometry
-    problems. The lists with names ending in Forces_W, ForceCoefficients_W,
+    Airplane: the final lists for static motion, and the final cycle averaged lists for
+    cyclic motion. The lists with names ending in Forces_W, ForceCoefficients_W,
     Moments_W_CgP1, and MomentCoefficients_W_CgP1 hold the total force (in wind axes),
     the total moment (in wind axes, relative to the first Airplane's CG), and their
     coefficients. The lists with names ending in Forces_G, ForceCoefficients_G,

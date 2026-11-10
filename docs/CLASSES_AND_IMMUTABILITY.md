@@ -148,16 +148,6 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalMeanMomentCoefficients_G_Cg`   | `list[np.ndarray]` |                                                  |
 | `finalMeanMoments_W_Cg`              | `list[np.ndarray]` |                                                  |
 | `finalMeanMomentCoefficients_W_Cg`   | `list[np.ndarray]` |                                                  |
-| `finalRmsForces_W`                   | `list[np.ndarray]` | RMS counterparts of the above                    |
-| `finalRmsForceCoefficients_W`        | `list[np.ndarray]` |                                                  |
-| `finalRmsMoments_W_CgP1`             | `list[np.ndarray]` |                                                  |
-| `finalRmsMomentCoefficients_W_CgP1`  | `list[np.ndarray]` |                                                  |
-| `finalRmsForces_G`                   | `list[np.ndarray]` |                                                  |
-| `finalRmsForceCoefficients_G`        | `list[np.ndarray]` |                                                  |
-| `finalRmsMoments_G_Cg`               | `list[np.ndarray]` |                                                  |
-| `finalRmsMomentCoefficients_G_Cg`    | `list[np.ndarray]` |                                                  |
-| `finalRmsMoments_W_Cg`               | `list[np.ndarray]` |                                                  |
-| `finalRmsMomentCoefficients_W_Cg`    | `list[np.ndarray]` |                                                  |
 
 **Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-`Airplane` lists, the G and Cg IDs are used without an `Airplane` index to implicitly mean "in the entry's own `Airplane`'s geometry axes" and "relative to the entry's own `Airplane`'s CG".
 

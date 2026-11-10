@@ -1338,14 +1338,6 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(
             self.core_unsteady_problem.finalMeanMomentCoefficients_W_CgP1, list
         )
-        self.assertIsInstance(self.core_unsteady_problem.finalRmsForces_W, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalRmsForceCoefficients_W, list
-        )
-        self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_W_CgP1, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalRmsMomentCoefficients_W_CgP1, list
-        )
         self.assertIsInstance(self.core_unsteady_problem.finalForces_G, list)
         self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_G, list)
         self.assertIsInstance(self.core_unsteady_problem.finalMoments_G_Cg, list)
@@ -1367,18 +1359,6 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.core_unsteady_problem.finalMeanMoments_W_Cg, list)
         self.assertIsInstance(
             self.core_unsteady_problem.finalMeanMomentCoefficients_W_Cg, list
-        )
-        self.assertIsInstance(self.core_unsteady_problem.finalRmsForces_G, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalRmsForceCoefficients_G, list
-        )
-        self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_G_Cg, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalRmsMomentCoefficients_G_Cg, list
-        )
-        self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_W_Cg, list)
-        self.assertIsInstance(
-            self.core_unsteady_problem.finalRmsMomentCoefficients_W_Cg, list
         )
 
 

@@ -775,7 +775,6 @@ class TestMovement(unittest.TestCase):
         self.assertGreater(movement.delta_time, 0.0)
         self.assertTrue(movement._static)
 
-
     def test_delta_time_optimize_calls_both_optimizers(self) -> None:
         """Test that delta_time="optimize" calls both analytical and iterative
         optimizers, using analytical result as initial guess for iterative.

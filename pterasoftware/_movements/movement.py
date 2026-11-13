@@ -505,8 +505,8 @@ def compute_wake_area_mismatch(
 
     The number of time steps checked is picked to capture the full range of differences
     in areas for the wake and bound ring vortex child parent pairs. For static cases,
-    this is just a single time step. For non static cases, it is enough time steps to
-    cover one full maximum length period of motion.
+    this is two time steps, which give one comparison. For non static cases, it is
+    enough time steps to cover one full maximum length period of motion.
 
     Bound trailing edge ring vortex back vertices are computed exactly as
     UnsteadyRingVortexLatticeMethodSolver._initialize_panel_vortices_at would: at step
@@ -547,8 +547,8 @@ def compute_wake_area_mismatch(
             max_airplane_movement_period, operating_point_movement_copy._max_period
         )
 
-        # Calculate the number of time steps to traverse the max period (or just a  two
-        # time steps if there is no movement).
+        # Calculate the number of time steps to traverse the max period (or just two
+        # time steps, which give one comparison, if there is no movement).
         num_steps = 2
         if max_period > 0.0:
             num_steps = math.ceil(max_period / delta_time)
@@ -1107,14 +1107,44 @@ def optimize_delta_time_static(
 
     Uses scipy.optimize.minimize_scalar to find the delta_time that minimizes wake area
     mismatch. The search terminates early if the mismatch falls below the specified
-    cutoff value.
+    cutoff value. The initial estimate is returned if the search does not find a lower
+    mismatch.
+
+    The search's absolute tolerance on delta_time (scipy's xatol) is 0.75 *
+    mismatch_cutoff * initial_delta_time. This value is chosen so that the returned
+    mismatch is within mismatch_cutoff of the local minimum that the search converged
+    to. It follows from three results:
+
+    1. For a static, planar Wing with the freestream along its chord, a trailing edge
+    Panel with chord c has a bound ring vortex area proportional to 0.75 * c + 0.25 *
+    vInf * delta_time and a wake ring vortex area proportional to vInf * delta_time.
+    With tau = vInf * delta_time / c, that Panel's mismatch is 3 * abs(tau - 1) / (3 +
+    tau). The magnitude of its derivative with respect to ln(delta_time) is 12 * tau /
+    (3 + tau)^2, which is at most 1 (at tau = 3). The average mismatch is a mean over
+    Panels, so it changes by at most abs(ln(delta_time_1 / delta_time_2)) between any
+    two delta_time values, whatever the Wing's taper.
+
+    2. scipy's bounded search stops when the returned point is within 2 * (xatol / 3 +
+    sqrt(2.2e-16) * abs(x)) of both ends of its bracket, so the returned point is
+    within about (2 / 3) * xatol of the bracketed minimum.
+
+    3. The search's lower bound is initial_delta_time / 2, so the relative error in
+    delta_time is at most (2 / 3) * xatol / (initial_delta_time / 2), which is (4 / 3)
+    * xatol / initial_delta_time. Requiring this to be at most mismatch_cutoff gives
+    the 0.75 factor.
+
+    The first result is exact only for the idealized geometry it describes. Angle of
+    attack, camber, and Panel edges that are not streamwise perturb it slightly. The
+    bound is also local: a strongly tapered Wing's mismatch can have more than one
+    local minimum, and the search finds only one of them.
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
     :param initial_delta_time: The initial estimate. It must be a positive float. Its
         units are in seconds.
     :param mismatch_cutoff: A positive float for early termination. When the average
-        area mismatch falls below this value, the search terminates early.
+        area mismatch falls below this value, the search terminates early. It also
+        sets the search's tolerance on delta_time.
     :return: The optimized delta_time value. Its units are in seconds.
     """
     lower_bound = initial_delta_time / 2.0
@@ -1173,13 +1203,17 @@ def optimize_delta_time_static(
             objective,
             bounds=(lower_bound, upper_bound),
             method="bounded",
-            options={"xatol": 0.001},
+            options={"xatol": 0.75 * mismatch_cutoff * initial_delta_time},
         )
 
         if not result.success:
             raise RuntimeError("delta_time optimization failed to converge.")
 
+        # The bounded search never evaluates the initial estimate, so keep it if the
+        # search did not find a lower mismatch.
         optimized_delta_time = float(result.x)
+        if initial_mismatch <= float(result.fun):
+            optimized_delta_time = initial_delta_time
     except StopIteration:
         optimized_delta_time = best_delta_time
         logger.info(_logging.indent() + "Acceptable value reached")

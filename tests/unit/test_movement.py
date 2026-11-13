@@ -1515,7 +1515,7 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertIsInstance(mismatch, float)
         self.assertGreaterEqual(mismatch, 0.0)
 
-    def test_returns_zero_for_static_single_step(self) -> None:
+    def test_performs_comparison_for_static_movement(self) -> None:
         """Test that compute_wake_area_mismatch performs a comparison for static
         Movement."""
         from pterasoftware._movements.movement import compute_wake_area_mismatch
@@ -1617,6 +1617,70 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
 
         # Should return the initial since it should be below the high cutoff.
         self.assertEqual(optimized_delta_time, initial_delta_time)
+
+    def test_search_tolerance_bounds_mismatch_excess(self) -> None:
+        """Test that optimize_delta_time_static returns a delta_time within (2 / 3) *
+        xatol of the minimum, with a mismatch within mismatch_cutoff of the minimum.
+
+        The xatol value optimize_delta_time_static passes to scipy is derived from
+        scipy's bounded search stopping rule. This test replaces the mismatch with its
+        closed form for a rectangular Wing, whose minimum is known, so that it fails if
+        scipy changes that rule in a way that invalidates the derivation.
+        """
+        from pterasoftware._movements.movement import optimize_delta_time_static
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        initial_delta_time = 0.01
+        mismatch_cutoff = 0.01
+        xatol = 0.75 * mismatch_cutoff * initial_delta_time
+
+        # Offset the mismatch so that it never falls below the cutoff, which forces the
+        # search to run until scipy's own stopping rule ends it.
+        minimum_mismatch = 0.1
+
+        # Place the minimum across the search range, which runs from 0.5 to 2.0 times
+        # the initial delta_time.
+        for minimum_factor in (0.55, 0.7, 0.9, 1.1, 1.5, 1.9):
+            with self.subTest(minimum_factor=minimum_factor):
+                minimum_delta_time = minimum_factor * initial_delta_time
+
+                def fake_mismatch(
+                    delta_time: float,
+                    _airplane_movements: object,
+                    _operating_point_movement: object,
+                    this_minimum_delta_time: float = minimum_delta_time,
+                ) -> float:
+                    tau = delta_time / this_minimum_delta_time
+                    return minimum_mismatch + 3.0 * abs(tau - 1.0) / (3.0 + tau)
+
+                with patch(
+                    "pterasoftware._movements.movement.compute_wake_area_mismatch",
+                    side_effect=fake_mismatch,
+                ):
+                    optimized_delta_time = optimize_delta_time_static(
+                        airplane_movements=airplane_movements,
+                        operating_point_movement=operating_point_movement,
+                        initial_delta_time=initial_delta_time,
+                        mismatch_cutoff=mismatch_cutoff,
+                    )
+
+                # scipy's stopping rule also has a relative term of 2 * sqrt(2.2e-16)
+                # times the returned point, which the 1e-6 factor covers.
+                self.assertLessEqual(
+                    abs(optimized_delta_time - minimum_delta_time),
+                    (2.0 / 3.0) * xatol + 1e-6 * initial_delta_time,
+                )
+
+                excess_mismatch = (
+                    fake_mismatch(optimized_delta_time, None, None) - minimum_mismatch
+                )
+                self.assertLessEqual(excess_mismatch, mismatch_cutoff)
 
 
 class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
@@ -2612,9 +2676,9 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
     """Tests for warning logic in optimize_delta_time_static.
 
-    scipy's bounded optimizer uses xatol=0.001 tolerance, so it may not converge exactly
-    to bounds. These tests verify the warning logic by mocking the optimizer to return
-    values exactly at the bounds.
+    scipy's bounded optimizer stops within a tolerance proportional to the initial
+    delta_time, so it may not converge exactly to bounds. These tests verify the warning
+    logic by mocking the optimizer to return values exactly at the bounds.
     """
 
     def test_warning_logic_for_lower_bound(self) -> None:
@@ -2644,6 +2708,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         class MockResult:
             success = True
             x = lower_bound
+            fun = 0.25
 
         with (
             patch(
@@ -2702,6 +2767,7 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         class MockResult:
             success = True
             x = upper_bound
+            fun = 0.25
 
         with (
             patch(

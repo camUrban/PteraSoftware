@@ -86,7 +86,7 @@ Ptera Software uses GitHub Flow to manage code contributions. If this is new to 
     ```shell
     git remote add upstream https://github.com/camUrban/PteraSoftware.git
     ```
-    - Create a virtual environment and install dependencies for development. Note that Ptera Software requires Python 3.11, 3.12, 3.13, or 3.14 (3.14 is recommended):
+    - Create a virtual environment and install dependencies for development. Note that Ptera Software requires Python 3.11, 3.12, 3.13, 3.14, or 3.15 (3.15 is recommended):
     ```shell
     python3 -m venv .venv # On Windows use python instead of python3
     source .venv/bin/activate # On Windows use .venv\Scripts\activate

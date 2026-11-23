@@ -2,7 +2,7 @@ black
 build
 codecov
 codespell
-coverage
+coverage == 7.17.4
 docformatter
 ipykernel
 ipywidgets

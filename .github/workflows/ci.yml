@@ -39,11 +39,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      # Cap coverage below 7.17.5, which removed the Collector.lock_data
+      # attribute that Numba's JIT coverage hook (enabled by NUMBA_JIT_COVERAGE
+      # below) reads. Remove the cap once a Numba release supports newer
+      # coverage versions.
       - name: Install latest dependencies and Codecov
         if: ${{ matrix.dependency-set == 'latest' && matrix.python-version == '3.15' }}
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt codecov
+          pip install -r requirements.txt codecov "coverage < 7.17.5"
       - name: Run tests without coverage
         if: ${{ !(matrix.python-version == '3.15' && matrix.dependency-set == 'latest') }}
         run: |

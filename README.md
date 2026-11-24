@@ -6,7 +6,7 @@
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![build](https://github.com/camUrban/PteraSoftware/actions/workflows/ci.yml/badge.svg?branch=main)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
-![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
+![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue)
 ![types](https://img.shields.io/badge/types-typed-blue)
 ![code style](https://img.shields.io/badge/code_style-black-black)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
@@ -19,7 +19,7 @@ This is Ptera Software: a fast, easy-to-use, and open-source package for analyzi
 
 ## Quick Start
 
-Install the package with pip (requires Python 3.11, 3.12, 3.13, or 3.14):
+Install the package with pip (requires Python 3.11, 3.12, 3.13, 3.14, or 3.15):
 
 ```shell
 pip install pterasoftware

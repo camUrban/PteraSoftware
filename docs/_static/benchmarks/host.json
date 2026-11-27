@@ -15,7 +15,7 @@
   },
   "gpu": {
     "model": "NVIDIA GeForce RTX 5080",
-    "driver_version": "580.178.04",
+    "driver_version": "580.196.07",
     "cuda_version": "13.0"
   },
   "storage": {
